@@ -93,12 +93,8 @@ const config: Config = {
 					title: "Explore",
 					items: [
 						{
-							label: "Newest Snippets",
-							href: "https://tscircuit.com/newest",
-						},
-						{
-							label: "Tutorial",
-							to: "/docs/quickstart",
+							label: "tscircuit.com",
+							href: "https://tscircuit.com",
 						},
 					],
 				},
