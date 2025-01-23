@@ -79,10 +79,16 @@ const config: Config = {
 				},
 				{ to: "https://blog.tscircuit.com", label: "Blog", position: "left" },
 				{
+					href: "https://discord.com/invite/V7FGE5ZCbA",
+					position: "right",
+					className: "header-discord-link",
+					html: '<img src="/img/discord.svg" alt="Discord" style="height: 22px; width: 22px; margin-bottom: -4px;" class="github-icon" />',
+				},
+				{
 					href: "https://github.com/tscircuit/tscircuit",
-					label: "GitHub",
 					position: "right",
 					className: "header-github-link",
+					html: '<img src="/img/github.svg" alt="GitHub" style="height: 22px; width: 22px; margin-bottom: -4px; margin-right: 6px;" class="github-icon" />',
 				},
 			],
 		},
