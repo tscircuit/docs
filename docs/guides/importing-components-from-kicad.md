@@ -1,4 +1,4 @@
 ---
 title: Importing Components from KiCad
-sidebar_position: 1
+sidebar_position: 3
 ---

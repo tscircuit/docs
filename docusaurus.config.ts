@@ -50,6 +50,17 @@ const config: Config = {
 		],
 	],
 
+	plugins: [
+		[
+			"posthog-docusaurus",
+			{
+				apiKey: "phc_htd8AQjSfVEsFCLQMAiUooG4Q0DKBCjqYuQglc9V3Wo",
+				appUrl: "https://postpig.tscircuit.com",
+				enableInDevelopment: false, // optional
+			},
+		],
+	],
+
 	themeConfig: {
 		navbar: {
 			logo: {
