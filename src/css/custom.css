@@ -33,3 +33,7 @@
 [data-theme='dark'] .github-icon {
   filter: invert(1);
 }
+
+.github-icon {
+  opacity: 0.6;
+}

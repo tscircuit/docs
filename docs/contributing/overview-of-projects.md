@@ -1,5 +1,5 @@
 ---
-title: Project Overview
+title: Overview of Projects
 sidebar_position: 2
 ---
 
