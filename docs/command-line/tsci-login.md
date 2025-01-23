@@ -1,5 +1,6 @@
 ---
-title: Login
+title: tsci login
+sidebar_position: 1
 ---
 
 `tsci login` allows you to login to the tscircuit registry. You don't need to

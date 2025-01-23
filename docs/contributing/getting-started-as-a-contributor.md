@@ -44,15 +44,11 @@ For example, you might turn the string "quad24" into the image below:
 
 Here's the [video tutorial for contributing to footprinter](https://blog.tscircuit.com/p/learn-how-to-contribute-to-tscircuits)
 
-## 3. [tscircuit/core](https://github.com/tscircuit/core)
+## 3. [tscircuit/cli](https://github.com/tscircuit/cli)
 
-Difficulty: ⭐⭐⭐ (hard) · [Issues](https://github.com/tscircuit/core/issues) · [Repo](https://github.com/tscircuit/core)
+Difficulty: ⭐⭐ (medium) · [Issues](https://github.com/tscircuit/cli/issues) · [Repo](https://github.com/tscircuit/cli)
 
-This is the core library that powers tscircuit. It contains all the logic for converting React components into circuit boards, schematics and PCBs.
-
-The core library is written in Typescript and uses React. It's a great project to contribute to if you want to learn about how tscircuit works under the hood.
-
-Here's a [video tutorial for contributing to core](https://blog.tscircuit.com/p/learn-how-to-contribute-to-tscircuits-core).
+This is the main development tool for tscircuit. It provides a local development server and package management. The CLI is what you use when you run `tsci dev` or `tsci init`.
 
 ## 4. [tscircuit.com](https://github.com/tscircuit/tscircuit.com)
 
@@ -69,3 +65,13 @@ Difficulty: ⭐⭐ (medium) · [Issues](https://github.com/tscircuit/circuit-to-
 This is a library that converts [Circuit JSON](https://github.com/tscircuit/circuit-json) into SVG files. We use
 this all over the place, including in almost all of our
 tests!
+
+## 6. [tscircuit/core](https://github.com/tscircuit/core)
+
+Difficulty: ⭐⭐⭐ (hard) · [Issues](https://github.com/tscircuit/core/issues) · [Repo](https://github.com/tscircuit/core)
+
+This is the core library that powers tscircuit. It contains all the logic for converting React components into circuit boards, schematics and PCBs.
+
+The core library is written in Typescript and uses React. It's a great project to contribute to if you want to learn about how tscircuit works under the hood.
+
+Here's a [video tutorial for contributing to core](https://blog.tscircuit.com/p/learn-how-to-contribute-to-tscircuits-core).
