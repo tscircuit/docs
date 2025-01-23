@@ -40,3 +40,85 @@ export const A555Timer = (props: Props) => {
 ```
 
 > TODO show the output here!
+
+## Custom Footprints
+
+Often you will have a chip that you want to carefully specify the position of
+each pad, plated hole, silkscreen line or other PCB element. To do this, just
+insert a `<footprint />` component instead of string for the `footprint` prop.
+
+```tsx
+
+```
+
+For more information about custom footprints, check out the [<footprint /> element](./footprint.mdx)
+
+## 
+
+## Creating Custom Component Hooks
+
+Component hooks are a great way to 
+
+```tsx
+import { createUseComponent, type CommonLayoutProps } from "tscircuit"
+
+interface Props extends CommonLayoutProps {
+  name: string
+}
+
+
+const pinLabels = {
+  pin1: "VCC",
+  pin2: "DISCH",
+  pin3: "THRES",
+  pin4: "CTRL",
+  pin5: "GND",
+  pin6: "TRIG",
+  pin7: "OUT",
+  pin8: "RESET"
+} as const
+
+export const A555Timer = (props: Props) => (
+  <chip
+    footprint="soic8"
+    pinLabels={pinLabels}
+    {...props}
+  />
+)
+
+export const use555Timer = createUseComponent(A555Timer, pinLabels)
+```
+
+:::warning
+Make sure to have `as const` when you're defining your `pinLabels`, if you're
+missing this the types won't work!
+:::
+
+When you use Component Hooks, you get better type checking in your component usage
+because all the pin labels are now available on the component!
+
+```tsx
+import { use555Timer } from "./a555timer"
+import { usePowerRegulator } from "./power-regulator"
+
+export default () => {
+  const U1 = use555Timer("U1")
+  const M1 = usePowerRegulator("M1")
+
+  return (
+    <board width="10mm" height="10mm">
+      <U1 />
+      <M1 />
+
+      <trace from={U1.GND} to="net.GND" />
+      <trace from={U1.VCC} to={M1.V5} />
+    </board>
+  )
+}
+```
+
+
+## Getting Chips from JLCPCB, KiCad or Circuit JSON
+
+There are a lot of ways to import a chip configuration, each with their own
+guide! This is often much easier and reliable than configuring a chip yourself.
