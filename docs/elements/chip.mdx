@@ -3,3 +3,40 @@ title: <chip />
 sidebar_position: 1
 ---
 
+The `<chip />` is the most common and most powerful built-in tscircuit element.
+You can represent virtually any "single-part" electronic component with `<chip />`,
+it is extremely flexible.
+
+## Simple Chips
+
+Here's an example of typical `<chip />` usage. We specify a footprint string and
+the pin labels that should be used for the schematic representation.
+
+```tsx simple-chip.tsx
+import type { CommonLayoutProps } from "tscircuit"
+
+interface Props extends CommonLayoutProps {
+  name: string
+}
+
+export const A555Timer = (props: Props) => {
+  return (
+    <chip
+      footprint="soic8"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "DISCH",
+        pin3: "THRES",
+        pin4: "CTRL",
+        pin5: "GND",
+        pin6: "TRIG",
+        pin7: "OUT",
+        pin8: "RESET"
+      }}
+      {...props}
+    />
+  )
+}
+```
+
+> TODO show the output here!
