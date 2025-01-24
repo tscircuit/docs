@@ -32,6 +32,7 @@
         "noForEach": "info"
       },
       "style": {
+        "noUnusedTemplateLiteral": "off",
         "noUselessElse": "off",
         "noNonNullAssertion": "off",
         "useNumberNamespace": "off",

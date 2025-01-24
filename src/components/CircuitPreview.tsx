@@ -1,7 +1,7 @@
 import { createSvgUrl } from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
 import { useMemo, useState } from "react"
-import { useColorMode } from "@docusaurus/theme-common"
+import { useColorMode } from "../hooks/use-color-mode"
 import CodeBlock from "@theme/CodeBlock"
 
 const Tab = ({
@@ -77,18 +77,20 @@ export default function CircuitPreview({
           </div>
         </div>
       )}
-      <div className={tw("relative overflow-auto h-128")}>
+      <div className={tw("h-100 overflow-y-auto")}>
         {view === "code" && <CodeBlock language="tsx">{code}</CodeBlock>}
         <img
           src={pcbUrl}
           alt="PCB Circuit Preview"
-          className={tw(`w-full rounded ${view !== "pcb" ? "hidden" : ""}`)}
+          className={tw(
+            `w-full rounded object-contain bg-black h-96 ${view !== "pcb" ? "hidden" : ""}`,
+          )}
         />
         <img
           src={schUrl}
           alt="Schematic Circuit Preview"
           className={tw(
-            `w-full rounded ${view !== "schematic" ? "hidden" : ""}`,
+            `w-full rounded object-contain bg-[#F5F1ED] h-96 ${view !== "schematic" ? "hidden" : ""}`,
           )}
         />
       </div>

@@ -3,6 +3,7 @@ import * as colors from "twind/colors"
 
 setup({
   preflight: false,
+  // darkMode: "class",
   theme: {
     colors: {
       ...colors,
