@@ -19,7 +19,7 @@ const Tab = ({
           !isDarkTheme
             ? active
               ? "bg-white text-slate-950 shadow-sm"
-              : "bg-slate-950 text-slate-500"
+              : "bg-none text-slate-500"
             : active
               ? "bg-slate-700"
               : "bg-slate-800"
