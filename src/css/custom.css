@@ -37,3 +37,20 @@
 .github-icon {
   opacity: 0.6;
 }
+
+button {
+  all: unset;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+div {
+  border-width: 0;
+  border-style: solid;
+  border-color: theme('borderColor.DEFAULT', currentColor);
+  box-sizing: border-box;
+}
