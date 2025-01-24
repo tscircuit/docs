@@ -24,7 +24,9 @@ If you're not able to find an issue in the repo, ask on discord! Maintainers oft
 
 ## 1. [tscircuit/schematic-symbols](https://github.com/tscircuit/schematic-symbols)
 
-Difficulty: ⭐ (easy) · [![GitHub issues](https://img.shields.io/github/issues/tscircuit/schematic-symbols)] · [Issues](https://github.com/tscircuit/schematic-symbols/issues) · [Repo](https://github.com/tscircuit/schematic-symbols)
+Difficulty: ⭐ (easy) · [Issues](https://github.com/tscircuit/schematic-symbols/issues) · [Repo](https://github.com/tscircuit/schematic-symbols)
+
+[![GitHub issues](https://img.shields.io/github/issues/tscircuit/schematic-symbols)](https://github.com/tscircuit/schematic-symbols/issues)
 
 This is a large repository of schematic symbols, you can view the [symbols here](https://symbols.tscircuit.com)
 
@@ -34,7 +36,9 @@ We also have a [video tutorial](https://blog.tscircuit.com/i/149495167/help-us-b
 
 ## 2. [tscircuit/footprinter](https://github.com/tscircuit/footprinter)
 
-Difficulty: ⭐⭐ (medium) · [![GitHub issues](https://img.shields.io/github/issues/tscircuit/footprinter)] · [Issues](https://github.com/tscircuit/footprinter/issues) · [Repo](https://github.com/tscircuit/footprinter)
+Difficulty: ⭐⭐ (medium) · [Issues](https://github.com/tscircuit/footprinter/issues) · [Repo](https://github.com/tscircuit/footprinter)
+
+[![GitHub issues](https://img.shields.io/github/issues/tscircuit/footprinter)](https://github.com/tscircuit/footprinter/issues)
 
 This is a project that generates the "footprint" where a chip is placed on a circuit board from a string.
 
@@ -46,13 +50,17 @@ Here's the [video tutorial for contributing to footprinter](https://blog.tscircu
 
 ## 3. [tscircuit/cli](https://github.com/tscircuit/cli)
 
-Difficulty: ⭐⭐ (medium) · [![GitHub issues](https://img.shields.io/github/issues/tscircuit/cli)] · [Issues](https://github.com/tscircuit/cli/issues) · [Repo](https://github.com/tscircuit/cli)
+Difficulty: ⭐⭐ (medium) · [Issues](https://github.com/tscircuit/cli/issues) · [Repo](https://github.com/tscircuit/cli)
+
+[![GitHub issues](https://img.shields.io/github/issues/tscircuit/cli)](https://github.com/tscircuit/cli/issues)
 
 This is the main development tool for tscircuit. It provides a local development server and package management. The CLI is what you use when you run `tsci dev` or `tsci init`.
 
 ## 4. [tscircuit.com](https://github.com/tscircuit/tscircuit.com)
 
-Difficulty: ⭐⭐ (medium) · [![GitHub issues](https://img.shields.io/github/issues/tscircuit/tscircuit.com)] · [Issues](https://github.com/tscircuit/tscircuit.com/issues) · [Repo](https://github.com/tscircuit/tscircuit.com)
+Difficulty: ⭐⭐ (medium) · [Issues](https://github.com/tscircuit/tscircuit.com/issues) · [Repo](https://github.com/tscircuit/tscircuit.com)
+
+[![GitHub issues](https://img.shields.io/github/issues/tscircuit/tscircuit.com)](https://github.com/tscircuit/tscircuit.com/issues)
 
 This is the main website for tscircuit, it features an editor for circuit boards! You should try it at [tscircuit.com](https://tscircuit.com)!
 
@@ -60,7 +68,9 @@ There are a lot of issues in this repo,
 
 ## 5. [circuit-to-svg](https://github.com/tscircuit/circuit-to-svg)
 
-Difficulty: ⭐⭐ (medium) · [![GitHub issues](https://img.shields.io/github/issues/tscircuit/circuit-to-svg)] · [Issues](https://github.com/tscircuit/circuit-to-svg/issues) · [Repo](https://github.com/tscircuit/circuit-to-svg)
+Difficulty: ⭐⭐ (medium) · [Issues](https://github.com/tscircuit/circuit-to-svg/issues) · [Repo](https://github.com/tscircuit/circuit-to-svg)
+
+[![GitHub issues](https://img.shields.io/github/issues/tscircuit/circuit-to-svg)](https://github.com/tscircuit/circuit-to-svg/issues)
 
 This is a library that converts [Circuit JSON](https://github.com/tscircuit/circuit-json) into SVG files. We use
 this all over the place, including in almost all of our
@@ -68,7 +78,9 @@ tests!
 
 ## 6. [tscircuit/core](https://github.com/tscircuit/core)
 
-Difficulty: ⭐⭐⭐ (hard) · [![GitHub issues](https://img.shields.io/github/issues/tscircuit/core)] · [Issues](https://github.com/tscircuit/core/issues) · [Repo](https://github.com/tscircuit/core)
+Difficulty: ⭐⭐⭐ (hard) · [Issues](https://github.com/tscircuit/core/issues) · [Repo](https://github.com/tscircuit/core)
+
+[![GitHub issues](https://img.shields.io/github/issues/tscircuit/core)](https://github.com/tscircuit/core/issues)
 
 This is the core library that powers tscircuit. It contains all the logic for converting React components into circuit boards, schematics and PCBs.
 
