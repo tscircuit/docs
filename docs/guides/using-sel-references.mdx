@@ -1,0 +1,53 @@
+---
+title: Using "sel" References
+---
+
+The `sel` object is a special import that allows you to easily reference
+components with a bit more type-safety than a string. It can also be more ergonomic
+than typing out a [port selector](./port-selectors.md).
+
+<CodePreview code={`
+import { sel } from "tscircuit"
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <resistor
+      resistance="1k"
+      footprint="0402"
+      name="R1"
+    />
+    <capacitor
+      capacitance="1000pF"
+      footprint="0402"
+      name="C1"
+    />
+    <trace from={sel.R1.pin1} to={sel.C1.pos} />
+  </board>
+)
+`} />
+
+
+The `sel` can be thought of as a very large mapping of conventional strings.
+
+Here are some `sel` expressions and their corresponding string:
+
+```tsx
+import { sel } from "tscircuit"
+
+sel.R1.pin1
+// ".R1 > .pin1"
+
+sel.C1.pos
+// ".C1 > .pos"
+
+sel.net.GND
+// "net.GND"
+
+sel.U1.GPIO1
+// ".U1 > .GPIO1"
+```
+
+So `sel` is really just a slightly more type-safe, conventional way of writing
+port selectors. Where possible, it's much better to use [component hooks](./component-hooks.md)
+because they can guarantee more type-safety and have the exact pins that a chip
+supports.

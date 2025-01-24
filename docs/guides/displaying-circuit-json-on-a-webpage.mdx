@@ -1,0 +1,96 @@
+---
+title: Displaying Circuit JSON on a Webpage
+---
+
+[Circuit JSON](https://github.com/tscircuit/circuit-json) is a universal
+intermediary format for representing an electronic circuit. It contains PCB,
+Schematic, 3D, Bill of Materials and simulation information.
+
+tscircuit code always converts into Circuit JSON, which can be displayed in
+any of our React components
+
+:::tip
+You can also upload your Circuit JSON to [circuitjson.com](https://circuitjson.com)
+for a quick preview!
+:::
+
+
+![Circuit JSON Pipeline](../../static/img/circuit-json-explain.png)
+
+## React: Display all available previews with `<CircuitJsonPreview />`
+
+The `<CircuitJsonPreview />` component is a simple way to display all available
+previews for a Circuit JSON array. You can use it by installing the `@tscircuit/runframe`
+package and importing it into your `React` project.
+
+```tsx
+import { CircuitJsonPreview } from "@tscircuit/runframe"
+import { renderToCircuitJson } from "lib/dev/render-to-circuit-json"
+
+export default () => (
+  <CircuitJsonPreview
+    circuitJson={renderToCircuitJson(
+      <board width="10mm" height="10mm">
+        <resistor name="R1" resistance="1k" footprint="0402" />
+      </board>,
+    )}
+  />
+)
+```
+
+You should see something like this:
+
+![RunFrame Preview](../../static/img/runframe-example.png)
+
+For more examples and usage, check out the [runframe repo](https://github.com/tscircuit/runframe)
+and the [examples directory](https://github.com/tscircuit/runframe/tree/main/examples)!
+
+:::info
+Have tscircuit code and want to skip converting to Circuit JSON? Try using the
+`<RunFrame />` component directly to build your circuit in the browser!
+:::
+
+### React: Running tscircuit code in the browser (no Circuit JSON needed!)
+
+The `<RunFrame />` component is a simple way to run tscircuit code in the browser.
+RunFrame loads the tscircuit runtime (and all the dependencies to build Typescript
+code) into a WebWorker and runs the code in the background.
+
+To use RunFrame, you must provide a `fsMap` object. This object maps file paths
+to file contents. Files inside this "filesystem map" can import each other, this
+is super useful when you have many files to import such as a `manual-edits.json`
+file!
+
+```tsx
+import { RunFrame } from "@tscircuit/runframe"
+
+export default () => (
+  <RunFrame
+    fsMap={{
+      "main.tsx":
+`
+circuit.add(
+  <board width="10mm" height="10mm">
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={4} />
+    <trace from=".R1 .pin1" to=".C1 .pin1" />
+  </board>
+)
+`,
+    }}
+    entrypoint="main.tsx"
+  />
+)
+```
+
+You can see different examples of how RunFrame looks for different circuits
+on the [RunFrame online examples page](https://runframe.vercel.app/)
+
+`<RunFrame />` automatically handles imports from the tscircuit registry
+
+
+
+## Displaying Circuit JSON without React
+
+Are you interested in this? Please [upvote this issue](https://github.com/tscircuit/tscircuit/issues/508)
+so we can prioritize it!
