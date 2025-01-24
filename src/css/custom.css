@@ -18,7 +18,7 @@
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
+[data-theme="dark"] {
   --ifm-color-primary: #4080ff;
   --ifm-color-primary-dark: #2b73ff;
   --ifm-color-primary-darker: #1e6aff;
@@ -30,7 +30,7 @@
 }
 
 /* GitHub icon theming */
-[data-theme='dark'] .github-icon {
+[data-theme="dark"] .github-icon {
   filter: invert(1);
 }
 
@@ -51,6 +51,5 @@ button:disabled {
 div {
   border-width: 0;
   border-style: solid;
-  border-color: theme('borderColor.DEFAULT', currentColor);
   box-sizing: border-box;
 }

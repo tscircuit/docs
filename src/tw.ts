@@ -3,7 +3,11 @@ import presetTailwind from "@twind/preset-tailwind"
 
 install(
   defineConfig({
-    presets: [presetTailwind()],
+    presets: [
+      presetTailwind({
+        disablePreflight: true,
+      }),
+    ],
     preflight: false,
   }),
 )
