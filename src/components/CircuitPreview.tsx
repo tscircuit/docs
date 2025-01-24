@@ -47,7 +47,11 @@ export default function CircuitPreview({
   const schUrl = useMemo(() => createSvgUrl(code, "schematic"), [code])
 
   return (
-    <div className={tw("shadow-lg p-2 border border-gray-100 rounded-lg mb-8")}>
+    <div
+      className={tw(
+        `shadow-lg p-2 pb-1 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8`,
+      )}
+    >
       {showTabs && (
         <div className={tw("flex justify-end")}>
           <div
