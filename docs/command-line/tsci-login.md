@@ -25,4 +25,4 @@ To logout again, just run `tsci logout`
 ## Other Auth Functions
 
 Run `tsci auth --help` to see other auth functions, such as printing your token
-for use with the [Registry API](../registry/the-registry-api.md)
+for use with the [Registry API](../web-apis/the-registry-api.md)

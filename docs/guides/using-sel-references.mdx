@@ -4,7 +4,7 @@ title: Using "sel" References
 
 The `sel` object is a special import that allows you to easily reference
 components with a bit more type-safety than a string. It can also be more ergonomic
-than typing out a [port selector](./port-selectors.md).
+than typing out a [port selector](./port-and-net-selectors.md).
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
@@ -50,6 +50,6 @@ sel.U1.GPIO1
 ```
 
 So `sel` is really just a slightly more type-safe, conventional way of writing
-[port selectors](./port-selectors.md). Where possible, it's much better to use [component hooks](./component-hooks.md)
+[port selectors](./port-and-net-selectors.md). Where possible, it's much better to use [component hooks](./component-hooks.md)
 because they can guarantee more type-safety and have the exact pins that a chip
 supports.

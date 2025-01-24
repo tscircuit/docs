@@ -98,4 +98,4 @@ Now that you've installed tscircuit, you can start developing your first electro
 
 - [Quickstart CLI Guide](./quickstart-cli.md)
 - [Understanding essential tscircuit elements](../guides/essential-elements.md)
-- [What are electronics made of?](../guides/what-are-electronics-made-of.md)
+- [What are electronics made of?](../building-electronics/what-are-electronics-made-of.md)

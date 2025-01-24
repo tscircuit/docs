@@ -39,6 +39,6 @@ console.log(circuit.getCircuitJson())
 ```
 
 This will output a long [Circuit JSON](https://github.com/tscircuit/circuit-json) array that you can convert into many
-other formats or display directly inside a [<CircuitJsonPreview />](./displaying-circuit-json-on-a-webpage.mdx) component.
+other formats or display directly inside a [CircuitJsonPreview](./displaying-circuit-json-on-a-webpage.mdx) component.
 
 ## Evaluating Typescript Circuits
