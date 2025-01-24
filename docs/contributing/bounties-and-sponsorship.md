@@ -11,7 +11,7 @@ in our weekly [contribution-tracker](https://github.com/tscircuit/contribution-t
 Many people follow the [bounties channel on discord](https://discord.com/channels/1233487248129921135/1301957862762872832) or our [bounty board](https://console.algora.io/org/tscircuit/bounties?status=open)
 to find issues to contribute to, but **this is actually the hardest way to get bounties!**
 
-The easiest way to get bounties and sponsorship is to _actually use tscircuit and try to build a circuit_. When you
+**The easiest way to get bounties and sponsorship is to _actually use tscircuit and try to build a circuit_.** When you
 find something confusing or buggy, create an issue. When you create an issue that
 gets bountied, you get extra points on the contribution tracker and you become
 the best person to fix the issue because you understand it so well! If you
