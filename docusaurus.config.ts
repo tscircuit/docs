@@ -162,7 +162,7 @@ const config: Config = {
       appId: "BFNVOSEFDT",
 
       // Public API key: it is safe to commit it
-      apiKey: "A2CDE38A49866DFB",
+      apiKey: "4767b9e4c48eb4ec054be1c079d51b31",
 
       indexName: "tscircuit_docs",
 

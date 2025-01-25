@@ -14,7 +14,7 @@ it is extremely flexible.
 Here's an example of typical `<chip />` usage. We specify a footprint string and
 the pin labels that should be used for the schematic representation.
 
-```tsx simple-chip.tsx
+<CircuitPreview alwaysShowCode defaultView="schematic" code={`
 import type { CommonLayoutProps } from "tscircuit"
 
 interface Props extends CommonLayoutProps {
@@ -39,13 +39,9 @@ export const A555Timer = (props: Props) => {
     />
   )
 }
-```
+`} />
 
-> TODO show the output here!
-
-## Configuring Chips
-
-### Customizing the Schematic Representation
+## Customizing the Schematic Representation
 
 You can alter how a chip appears on the schematic by using the `schPinArrangement`
 , `schPinStyles` and `schWidth` properties.
@@ -134,6 +130,78 @@ export default () => (
   </board>
 )
 `} />
+
+#### `schPinStyles`
+
+`schPinStyles` controls the style of the pins on the schematic box 
+
+<CircuitPreview splitView defaultView="schematic" code={`
+
+export default () => (
+    <board width="10mm" height="10mm">
+      <chip
+        name="U1"
+        footprint="soic8"
+        schPinArrangement={{
+          topSide: {
+            direction: "left-to-right",
+            pins: ["VCC"],
+          },
+          bottomSide: {
+            direction: "left-to-right",
+            pins: ["GND"],
+          },
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["DISCH", "THRES", "CTRL"],
+          },
+          rightSide: {
+            direction: "bottom-to-top",
+            pins: ["TRIG", "OUT", "RESET"],
+          },
+        }}
+        schPinStyle={{
+          pin1: {
+            bottomMargin: 0.2
+          },
+          GND: {
+            rightMargin: "0.5mm"
+          },
+          THRES: {
+            topMargin: 0.5
+          },
+          OUT: {
+            topMargin: 1,
+            bottomMargin: "1mm"
+          }
+        }}
+        // This is the future syntax for schPinStyle!
+        //   schPinStyle={{
+          //   pin1: {
+            //   marginBottom: 0.2,
+          //   },
+          //   GND: { marginRight: "0.5mm" },
+          //   THRES: { marginTop: 0.5 },
+          //   OUT: {
+            //   marginTop: 1,
+            //   marginBottom: "1mm",
+          //   },
+        //   }}
+        pinLabels={{
+          pin1: "VCC",
+          pin2: "DISCH",
+          pin3: "THRES",
+          pin4: "CTRL",
+          pin5: "GND",
+          pin6: "TRIG",
+          pin7: "OUT",
+          pin8: "RESET",
+        }}
+      />
+    </board>
+)
+`} />
+
 
 ### Custom Footprints
 

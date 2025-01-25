@@ -1,0 +1,74 @@
+---
+title: <board />
+---
+
+The `<board />` element is a root element that contains all the chips and traces
+to create a PCB.
+
+You can think of a `<board />` like a `<body />` element in HTML. Everything
+goes in a board!
+
+
+import CircuitPreview from '@site/src/components/CircuitPreview'
+
+<CircuitPreview defaultView="pcb" code={`
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <resistor resistance="1k" footprint="0402" name="R1" />
+  </board>
+)
+
+`} />
+
+
+## Customizing the Size of the Board
+
+Generally you'll use the `width` and `height` properties to define the size of
+the board.
+
+
+### Custom Board Outlines
+
+You can specify a custom outline for your board by passing an `outline` prop.
+The PCB you get will have this outline cut out, this is great when you want a
+board that's not a rectangle!
+
+<CircuitPreview defaultView="pcb" code={`
+
+export default () => (
+  <board
+    outline={[
+      { x: -22.5, y: 24.5 },
+      { x: 22.5, y: 24.5 },
+      { x: 22.5, y: 16.5 },
+      { x: 20.5, y: 16.5 },
+      { x: 20.5, y: 12.5 },
+      { x: 22.5, y: 12.5 },
+      { x: 22.5, y: 2.5 },
+      { x: 18, y: -1.5 },
+      { x: 18, y: -18 },
+      { x: -18, y: -18 },
+      { x: -18, y: -1.5 },
+      { x: -22.5, y: 2.5 },
+      { x: -22.5, y: 12.5 },
+      { x: -20.5, y: 12.5 },
+      { x: -20.5, y: 16.5 },
+      { x: -22.5, y: 16.5 },
+      { x: -22.5, y: 24.5 },
+    ]}
+
+    // These are currently required due to this issue:
+    // https://github.com/tscircuit/core/issues/564
+    width="50mm"
+    height="50mm"
+  />
+)
+
+`} />
+
+## Flexible PCBs
+
+:::info
+Interested in flexible PCBs? Upvote [this issue on Github](https://github.com/tscircuit/tscircuit/issues/510)!
+:::

@@ -37,7 +37,7 @@ export default function CircuitPreview({
   code,
   showTabs = true,
   defaultView = "pcb",
-  splitView = false,
+  splitView = true,
 }: {
   code: string
   showTabs?: boolean
@@ -86,9 +86,9 @@ export default function CircuitPreview({
           </div>
         </div>
       )}
-      <div className={tw("max-h-100 overflow-y-auto flex m-0 p-0")}>
+      <div className={tw("max-h-[400px] overflow-y-auto flex m-0 p-0")}>
         {(view === "code" || shouldSplitCode) && (
-          <div className={tw("flex-1 m-0 p-0")}>
+          <div className={tw("flex-1 m-0 p-0 max-h-100 overflow-y-auto")}>
             <CodeBlock language="tsx">{code.trim()}</CodeBlock>
           </div>
         )}
