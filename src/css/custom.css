@@ -75,3 +75,16 @@ figure figcaption {
   line-height: 1.2rem;
   width: 60%;
 }
+
+.img-rounded {
+  border-radius: 8px;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  object-fit: cover;
+  align-self: center;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
