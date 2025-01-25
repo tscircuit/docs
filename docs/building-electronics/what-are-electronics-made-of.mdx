@@ -3,6 +3,8 @@ title: What are electronics made of?
 sidebar_position: 1
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
 ## Overview
 
 In this tutorial, we're going to be talking about the different elements that
@@ -52,24 +54,22 @@ the top layer can pass to the bottom.
 <figcaption>Vias connect different layers of a PCB</figcaption> 
 </figure>
 
-```tsx title="via.tsx"
-<via x={0} y={0} toLayer="bottom" fromLayer="top" outerDiameter="0.35mm" />
-```
+<CircuitPreview defaultView="pcb" code={`
 
-```json titile="via.circuit.json"
-{
-  "type": "pcb_via",
-  "position": {
-    "x": 0,
-    "y": 0
-  },
-  "hole_diameter": "0.25mm",
-  "outer_diameter": "0.35mm",
-  "from_layer": "top",
-  "to_layer": "bottom",
-  "layers": ["top", "bottom"]
-}
-```
+
+export default () => (
+  <footprint>
+    <via
+      toLayer="bottom"
+      fromLayer="top"
+      holeDiameter="0.25mm"
+      outerDiameter="0.6mm"
+    />
+  </footprint>
+)
+
+`} />
+
 
 ## Plated Holes
 
@@ -79,30 +79,21 @@ holes. Chips with big pins that must go through holes are called "through-hole"
 chips, and chips with small
 pins are called "surface-mount" chips.
 
-```tsx title="plated-hole.tsx"
-<platedhole
-  shape="circle"
-  x="5mm"
-  y="2.4mm"
-  holeDiameter="0.25mm"
-  outerDiameter="0.35mm"
-/>
-```
+<CircuitPreview defaultView="pcb" code={`
 
-```json title="plated-hole.circuit.json"
-{
-  "type": "pcb_plated_hole",
-  "shape": "circle",
-  "outer_diameter": "1.2mm",
-  "hole_diameter": "0.08in",
-  "x": "3mm",
-  "y": "1mm",
-  "layers": ["top", "bottom"],
-  "port_hints": ["1", "left"],
-  "pcb_component_id": "pcb_component_1",
-  "pcb_port_id": "pcb_port_1"
-}
-```
+export default () => (
+  <footprint>
+    <platedhole
+      shape="circle"
+      x="5mm"
+      y="2.4mm"
+      holeDiameter="0.25mm"
+      outerDiameter="0.35mm"
+    />
+  </footprint>
+)
+
+`} />
 
 ## Unplated Holes "Regular Holes"
 
@@ -110,18 +101,54 @@ Unplated holes or "regular holes" are just holes in the printed circuit board
 without any copper around them. They don't electrically connect anything, but
 can be very helpful for mounting the printed circuit board.
 
-```tsx title="unplated-hole.tsx"
-<hole x="5mm" y="2.4mm" holeDiameter="0.25mm" />
-```
+<CircuitPreview defaultView="pcb" code={`
 
-```json titile="unplated-hole.circuit.json"
-{
-  "type": "pcb_hole",
-  "x": "5mm",
-  "y": "2.4mm",
-  "hole_diameter": "0.25mm"
-}
-```
+export default () => (
+  <footprint>
+    <hole diameter="1mm" />
+  </footprint>
+)
+
+`} />
+
+## Traces
+
+Traces are the wires that connect the components on a PCB. They are made of
+copper and mostly covered by green soldermask so that they don't accidentally
+conduct to each other if something conductive like a wire or piece of metal falls
+across them.
+
+We represent traces in PCB viewers with different colors depending on what
+layer they fall on. In tscircuit, traces are always autorouted, so you don't
+need to tell it which path to take- it'll automatically find one that makes sure
+it doesn't cross any other traces.
+
+Traces allow chips to "talk" to each other and for power to be shared across all
+chips.
+
+<CircuitPreview defaultView="pcb" code={`
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <resistor
+      resistance="1k"
+      footprint="0402"
+      name="R1"
+      schX={3}
+      pcbX={3}
+    />
+    <capacitor
+      capacitance="1000pF"
+      footprint="0402"
+      name="C1"
+      schX={-3}
+      pcbX={-3}
+    />
+    <trace from=".R1 > .pin1" to=".C1 > .pin1" />
+  </board>
+)
+
+`} />
 
 ## What are inner layers?
 

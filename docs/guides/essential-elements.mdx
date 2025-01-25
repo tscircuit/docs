@@ -1,0 +1,64 @@
+---
+title: Essential Elements
+sidebar_position: 1
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+There are some essential elements you'll need for almost every circuit you make,
+this doc gives a brief overview of each of them so you can jump right in and
+get started building electronics!
+
+| Element                                      | Description                                                                                                               |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| [`<board />`](../elements/board.mdx)         | The root element of a circuit, defines the size of the board and settings like the autorouting method that should be used |
+| [`<chip />`](../elements/chip.mdx)           | A packaged integrated circuit (IC).                                                                                       |
+| [`<trace />`](../elements/trace.mdx)         | Represents a connection between different chips.                                                                          |
+| [`<led />`](../elements/led.mdx)             | Light emitting diode, a small light often used to represent power or status indicators                                    |
+| [`<resistor />`](../elements/resistor.mdx)   | Resists the flow of electrical current.                                                                                   |
+| [`<capacitor />`](../elements/capacitor.mdx) | Stores electrical charge. Often used to smooth out voltage fluctuations.                                                  |
+| [`<diode />`](../elements/diode.mdx)         | Allows current to flow in one direction.                                                                                  |
+
+## The Essential Elements
+
+### [`<board />`](../elements/board.mdx)
+
+The `<board />` element is the root container for your circuit, similar to how `<body />` works in HTML. Every circuit needs a board! You can customize the size using `width` and `height` props, or even create custom board outlines for non-rectangular shapes.
+
+<CircuitPreview defaultView="pcb" code={`
+
+export default () => (
+    <board width="10mm" height="10mm">
+      <resistor resistance="1k" footprint="0402" name="R1" />
+    </board>
+)`
+} />
+
+### [`<chip />`](../elements/chip.mdx)
+
+The `<chip />` element is the most versatile component in tscircuit - it can represent virtually any packaged electronic component. You specify a footprint and pin labels, and can customize how it appears in both schematic and PCB views. Here's a simple example:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+    <board width="10mm" height="10mm">
+      <chip
+        name="U1" 
+        footprint="soic8"
+        pinLabels={{
+          pin1: "VCC",
+          pin2: "DISCH", 
+          pin3: "THRES",
+          pin4: "CTRL",
+          pin5: "GND",
+          pin6: "TRIG",
+          pin7: "OUT",
+          pin8: "RESET"
+        }}
+      />
+    </board>
+)`} />
+
+You can control pin arrangements, add custom footprints, specify internally connected pins, and more. The `<chip />` element is commonly used for ICs, connectors, buttons, and other discrete components.
+
