@@ -45,6 +45,96 @@ export const A555Timer = (props: Props) => {
 
 ## Configuring Chips
 
+### Customizing the Schematic Representation
+
+You can alter how a chip appears on the schematic by using the `schPinArrangement`
+, `schPinStyles` and `schWidth` properties.
+
+#### `schPinArrangement`
+
+`schPinArrangement` controls the arrangement of the pins on the schematic box
+representing the chip. You can use this to group similar pins together e.g. to
+group GPIO pins together.
+
+:::note
+`schPortArrangement` was renamed to `schPinArrangement` in 2025.
+:::
+
+<CircuitPreview splitView defaultView="schematic" code={`
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      schPortArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VCC", "DISCH", "THRES", "CTRL"],
+        },
+        rightSide: {
+          direction: "bottom-to-top",
+          pins: ["GND", "TRIG", "OUT", "RESET"],
+        },
+      }}
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "DISCH",
+        pin3: "THRES",
+        pin4: "CTRL",
+        pin5: "GND",
+        pin6: "TRIG",
+        pin7: "OUT",
+        pin8: "RESET"
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+You can also place pins on the top or bottom of the schematic box.
+
+<CircuitPreview splitView defaultView="schematic" code={`
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      schPortArrangement={{
+        topSide: {
+          direction: "left-to-right",
+          pins: ["VCC"],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["GND"],
+        },
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["DISCH", "THRES", "CTRL"],
+        },
+        rightSide: {
+          direction: "bottom-to-top",
+          pins: ["TRIG", "OUT", "RESET"],
+        },
+      }}
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "DISCH",
+        pin3: "THRES",
+        pin4: "CTRL",
+        pin5: "GND",
+        pin6: "TRIG",
+        pin7: "OUT",
+        pin8: "RESET"
+      }}
+    />
+  </board>
+)
+`} />
+
 ### Custom Footprints
 
 Often you will have a chip that you want to carefully specify the position of
@@ -53,82 +143,84 @@ insert a `<footprint />` component instead of string for the `footprint` prop.
 
 Here's an example of a chip with a custom footprint:
 
-<CircuitPreview defaultView="code" code={`
+<CircuitPreview splitView defaultView="pcb" code={`
 
 export default () => (
-  <chip
-    name="U1"
-    footprint={
-      <footprint>
-        <platedhole
-          portHints={["4"]}
-          pcbX="3.2499299999998357mm"
-          pcbY="-2.249932000000058mm"
-          outerDiameter="1.9999959999999999mm"
-          holeDiameter="1.3000228mm"
-          shape="circle"
-        />
-        <platedhole
-          portHints={["2"]}
-          pcbX="3.2499299999998357mm"
-          pcbY="2.249932000000058mm"
-          outerDiameter="1.9999959999999999mm"
-          holeDiameter="1.3000228mm"
-          shape="circle"
-        />
-        <platedhole
-          portHints={["1"]}
-          pcbX="-3.2499299999999494mm"
-          pcbY="2.249932000000058mm"
-          outerDiameter="1.9999959999999999mm"
-          holeDiameter="1.3000228mm"
-          shape="circle"
-        />
-        <platedhole
-          portHints={["3"]}
-          pcbX="-3.2499299999999494mm"
-          pcbY="-2.249932000000058mm"
-          outerDiameter="1.9999959999999999mm"
-          holeDiameter="1.3000228mm"
-          shape="circle"
-        />
-        <silkscreenpath
-          route={[
-            { x: -2.2743160000001126, y: -2.999994000000015 },
-            { x: 2.274315999999999, y: -2.999994000000015 },
-          ]}
-        />
-        <silkscreenpath
-          route={[
-            { x: -2.999994000000129, y: 1.0999978000000965 },
-            { x: -2.999994000000129, y: -0.999998000000005 },
-          ]}
-        />
-        <silkscreenpath
-          route={[
-            { x: 3.0999937999998792, y: 1.0279888000000028 },
-            { x: 3.0999937999998792, y: -1.0999977999999828 },
-          ]}
-        />
-        <silkscreenpath
-          route={[
-            { x: -1.99999600000001, y: 2.999994000000015 },
-            { x: 2.274315999999999, y: 2.999994000000015 },
-          ]}
-        />
-      </footprint>
-    }
-    schPortArrangement={{
-      leftSide: {
-        direction: "top-to-bottom",
-        pins: [1, 3],
-      },
-      rightSide: {
-        direction: "bottom-to-top",
-        pins: [4, 2],
-      },
-    }}
-  />
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole
+            portHints={["4"]}
+            pcbX="3.2499299999998357mm"
+            pcbY="-2.249932000000058mm"
+            outerDiameter="1.9999959999999999mm"
+            holeDiameter="1.3000228mm"
+            shape="circle"
+          />
+          <platedhole
+            portHints={["2"]}
+            pcbX="3.2499299999998357mm"
+            pcbY="2.249932000000058mm"
+            outerDiameter="1.9999959999999999mm"
+            holeDiameter="1.3000228mm"
+            shape="circle"
+          />
+          <platedhole
+            portHints={["1"]}
+            pcbX="-3.2499299999999494mm"
+            pcbY="2.249932000000058mm"
+            outerDiameter="1.9999959999999999mm"
+            holeDiameter="1.3000228mm"
+            shape="circle"
+          />
+          <platedhole
+            portHints={["3"]}
+            pcbX="-3.2499299999999494mm"
+            pcbY="-2.249932000000058mm"
+            outerDiameter="1.9999959999999999mm"
+            holeDiameter="1.3000228mm"
+            shape="circle"
+          />
+          <silkscreenpath
+            route={[
+              { x: -2.2743160000001126, y: -2.999994000000015 },
+              { x: 2.274315999999999, y: -2.999994000000015 },
+            ]}
+          />
+          <silkscreenpath
+            route={[
+              { x: -2.999994000000129, y: 1.0999978000000965 },
+              { x: -2.999994000000129, y: -0.999998000000005 },
+            ]}
+          />
+          <silkscreenpath
+            route={[
+              { x: 3.0999937999998792, y: 1.0279888000000028 },
+              { x: 3.0999937999998792, y: -1.0999977999999828 },
+            ]}
+          />
+          <silkscreenpath
+            route={[
+              { x: -1.99999600000001, y: 2.999994000000015 },
+              { x: 2.274315999999999, y: 2.999994000000015 },
+            ]}
+          />
+        </footprint>
+      }
+      schPortArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: [1, 3],
+        },
+        rightSide: {
+          direction: "bottom-to-top",
+          pins: [4, 2],
+        },
+      }}
+    />
+  </board>
 )
 `} />
 
@@ -202,7 +294,10 @@ export default () => (
 
 ## Type-safe Chips: Custom Component Hooks
 
-Component hooks are a great way to 
+Component hooks are a great way to improve type safety and simplify the usage
+of your component. A component hook is created with the `createUseComponent`
+from `tscircuit` and returns a hook that when used, will generate a component
+with properties for each pin label.
 
 ```tsx
 import { createUseComponent, type CommonLayoutProps } from "tscircuit"

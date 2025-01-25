@@ -53,3 +53,7 @@ div {
   border-style: solid;
   box-sizing: border-box;
 }
+
+.theme-code-block {
+  font-size: 12px;
+}

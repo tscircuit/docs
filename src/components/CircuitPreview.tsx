@@ -3,6 +3,7 @@ import { tw } from "@site/src/tw"
 import { useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
 import CodeBlock from "@theme/CodeBlock"
+import { useWindowSize } from "@docusaurus/theme-common"
 
 const Tab = ({
   label,
@@ -36,15 +37,21 @@ export default function CircuitPreview({
   code,
   showTabs = true,
   defaultView = "pcb",
+  splitView = false,
 }: {
   code: string
   showTabs?: boolean
   defaultView?: "code" | "pcb" | "schematic"
+  splitView?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
+  const windowSize = useWindowSize()
+
   const [view, setView] = useState<"pcb" | "schematic" | "code">(defaultView)
   const pcbUrl = useMemo(() => createSvgUrl(code, "pcb"), [code])
   const schUrl = useMemo(() => createSvgUrl(code, "schematic"), [code])
+
+  const shouldSplitCode = splitView // && windowSize !== "mobile"
 
   return (
     <div
@@ -59,11 +66,13 @@ export default function CircuitPreview({
               `flex-inline justify-end gap-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-100" : "bg-slate-800"} p-1 gap-2`,
             )}
           >
-            <Tab
-              label="Code"
-              active={view === "code"}
-              onClick={() => setView("code")}
-            />
+            {!shouldSplitCode && (
+              <Tab
+                label="Code"
+                active={view === "code"}
+                onClick={() => setView("code")}
+              />
+            )}
             <Tab
               label="PCB"
               active={view === "pcb"}
@@ -77,22 +86,30 @@ export default function CircuitPreview({
           </div>
         </div>
       )}
-      <div className={tw("h-100 overflow-y-auto")}>
-        {view === "code" && <CodeBlock language="tsx">{code.trim()}</CodeBlock>}
-        <img
-          src={pcbUrl}
-          alt="PCB Circuit Preview"
-          className={tw(
-            `w-full rounded object-contain bg-black h-96 ${view !== "pcb" ? "hidden" : ""}`,
-          )}
-        />
-        <img
-          src={schUrl}
-          alt="Schematic Circuit Preview"
-          className={tw(
-            `w-full rounded object-contain bg-[#F5F1ED] h-96 ${view !== "schematic" ? "hidden" : ""}`,
-          )}
-        />
+      <div className={tw("max-h-100 overflow-y-auto flex m-0 p-0")}>
+        {(view === "code" || shouldSplitCode) && (
+          <div className={tw("flex-1 m-0 p-0")}>
+            <CodeBlock language="tsx">{code.trim()}</CodeBlock>
+          </div>
+        )}
+        {(view === "pcb" || view === "schematic") && (
+          <div className={tw("flex-1 m-0 p-0")}>
+            <img
+              src={pcbUrl}
+              alt="PCB Circuit Preview"
+              className={tw(
+                `w-full h-[calc(100%-10px)] m-0 rounded object-contain bg-black ${view !== "pcb" ? "hidden" : ""}`,
+              )}
+            />
+            <img
+              src={schUrl}
+              alt="Schematic Circuit Preview"
+              className={tw(
+                `w-full h-[calc(100%-10px)] m-0 rounded object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
+              )}
+            />
+          </div>
+        )}
       </div>
     </div>
   )
