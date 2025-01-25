@@ -3,6 +3,8 @@ title: <chip />
 sidebar_position: 1
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
 The `<chip />` is the most common and most powerful built-in tscircuit element.
 You can represent virtually any "single-part" electronic component with `<chip />`,
 it is extremely flexible.
@@ -41,21 +43,164 @@ export const A555Timer = (props: Props) => {
 
 > TODO show the output here!
 
-## Custom Footprints
+## Configuring Chips
+
+### Custom Footprints
 
 Often you will have a chip that you want to carefully specify the position of
 each pad, plated hole, silkscreen line or other PCB element. To do this, just
 insert a `<footprint />` component instead of string for the `footprint` prop.
 
-```tsx
+Here's an example of a chip with a custom footprint:
 
-```
+<CircuitPreview defaultView="code" code={`
+
+export default () => (
+  <chip
+    name="U1"
+    footprint={
+      <footprint>
+        <platedhole
+          portHints={["4"]}
+          pcbX="3.2499299999998357mm"
+          pcbY="-2.249932000000058mm"
+          outerDiameter="1.9999959999999999mm"
+          holeDiameter="1.3000228mm"
+          shape="circle"
+        />
+        <platedhole
+          portHints={["2"]}
+          pcbX="3.2499299999998357mm"
+          pcbY="2.249932000000058mm"
+          outerDiameter="1.9999959999999999mm"
+          holeDiameter="1.3000228mm"
+          shape="circle"
+        />
+        <platedhole
+          portHints={["1"]}
+          pcbX="-3.2499299999999494mm"
+          pcbY="2.249932000000058mm"
+          outerDiameter="1.9999959999999999mm"
+          holeDiameter="1.3000228mm"
+          shape="circle"
+        />
+        <platedhole
+          portHints={["3"]}
+          pcbX="-3.2499299999999494mm"
+          pcbY="-2.249932000000058mm"
+          outerDiameter="1.9999959999999999mm"
+          holeDiameter="1.3000228mm"
+          shape="circle"
+        />
+        <silkscreenpath
+          route={[
+            { x: -2.2743160000001126, y: -2.999994000000015 },
+            { x: 2.274315999999999, y: -2.999994000000015 },
+          ]}
+        />
+        <silkscreenpath
+          route={[
+            { x: -2.999994000000129, y: 1.0999978000000965 },
+            { x: -2.999994000000129, y: -0.999998000000005 },
+          ]}
+        />
+        <silkscreenpath
+          route={[
+            { x: 3.0999937999998792, y: 1.0279888000000028 },
+            { x: 3.0999937999998792, y: -1.0999977999999828 },
+          ]}
+        />
+        <silkscreenpath
+          route={[
+            { x: -1.99999600000001, y: 2.999994000000015 },
+            { x: 2.274315999999999, y: 2.999994000000015 },
+          ]}
+        />
+      </footprint>
+    }
+    schPortArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: [1, 3],
+      },
+      rightSide: {
+        direction: "bottom-to-top",
+        pins: [4, 2],
+      },
+    }}
+  />
+)
+`} />
 
 For more information about custom footprints, check out the [<footprint /> element](./footprint.mdx)
 
-## 
+### Internally Connected Pins
 
-## Creating Custom Component Hooks
+Some chips, such as a standard 4 pin pushbutton, have pins that are internally
+connected. This can be useful to represent for simulation or to enable omitting
+pins from a schematic.
+
+
+<CircuitPreview defaultView="code" code={`
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="pushbutton"
+      internallyConnectedPins={[
+        ["pin1", "pin4"],
+        ["pin2", "pin3"]
+      ]}
+    />
+  </board>
+)
+
+`} />
+
+
+:::note
+You may not want to do this for power or ground pins on boards where you're
+expected to connect the pins specifically externally. For example, if you have
+several V5 pins that each need a decoupling capacitor, it would be better to
+manage the connections explicitly with traces (perhaps using `maxTraceLength`!)
+even if they are internally connected.
+:::
+
+### Externally Connected Pins
+
+To indicate that pins should be externally connected, you can use the `externallyConnectedPins` props.
+Just like the `internallyConnectedPins` prop, this is an array of arrays of pin labels, where each
+sub-array represents a group of pins that should be connected together.
+
+<CircuitPreview defaultView="code" code={`
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "DISCH",
+        pin3: "THRES",
+        pin4: "CTRL",
+        pin5: "GND",
+        pin6: "TRIG",
+        pin7: "OUT",
+        pin8: "RESET"
+      }}
+      externallyConnectedPins={[
+        ["GND", "DISCH"],
+        ["TRIG", "VCC"]
+      ]}
+    />
+  </board>
+)
+
+`} />
+
+## Type-safe Chips: Custom Component Hooks
 
 Component hooks are a great way to 
 
@@ -118,7 +263,7 @@ export default () => {
 ```
 
 
-## Getting Chips from JLCPCB, KiCad or Circuit JSON
+## Importing Chips from JLCPCB, KiCad or Circuit JSON
 
 There are a lot of ways to import a chip configuration, each with their own
 guide! This is often much easier and reliable than configuring a chip yourself.

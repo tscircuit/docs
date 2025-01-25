@@ -78,7 +78,7 @@ export default function CircuitPreview({
         </div>
       )}
       <div className={tw("h-100 overflow-y-auto")}>
-        {view === "code" && <CodeBlock language="tsx">{code}</CodeBlock>}
+        {view === "code" && <CodeBlock language="tsx">{code.trim()}</CodeBlock>}
         <img
           src={pcbUrl}
           alt="PCB Circuit Preview"

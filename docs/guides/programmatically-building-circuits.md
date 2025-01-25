@@ -42,3 +42,61 @@ This will output a long [Circuit JSON](https://github.com/tscircuit/circuit-json
 other formats or display directly inside a [CircuitJsonPreview](./displaying-circuit-json-on-a-webpage.mdx) component.
 
 ## Evaluating Typescript Circuits
+
+`@tscircuit/eval` can be used to evaluate Typescript/React code and
+automatically import modules from the tscircuit registry.
+
+```tsx
+import { CircuitRunner } from "@tscircuit/eval"
+
+const circuitRunner = new CircuitRunner()
+
+await circuitRunner.execute(`
+import { RedLed } from "@tsci/seveibar.red-led"
+
+circuit.add(
+  <board width="10mm" height="10mm">
+    <RedLed name="LED1" />
+  </board>
+)`)
+
+await circuitRunner.renderUntilSettled()
+
+const circuitJson = await circuitRunner.getCircuitJson()
+
+// Display or convert the circuit json to any other format!
+```
+
+### Evaluating tscircuit inside a web worker
+
+```tsx
+import { createCircuitWebWorker } from "@tscircuit/eval/webworker"
+
+const circuitWebWorker = createCircuitWebWorker()
+
+await circuitWebWorker.execute(`
+import { RedLed } from "@tsci/seveibar.red-led"
+
+circuit.add(
+  <board width="10mm" height="10mm">
+    <RedLed />
+  </board>
+)
+`)
+
+await circuitWebWorker.renderUntilSettled()
+
+const circuitJson = await circuitWebWorker.getCircuitJson()
+```
+
+## Converting Circuit JSON to other formats
+
+You can convert [Circuit JSON](https://github.com/tscircuit/circuit-json) to many
+other formats:
+
+- [Gerber files](https://github.com/tscircuit/circuit-json-to-gerber)
+- [Specctra DSN Autorouting files](https://github.com/tscircuit/dsn-converter)
+- [Pick'n'Place Files](https://github.com/tscircuit/circuit-json-to-pnp)
+- [PCB and Schematic SVGs](https://github.com/tscircuit/circuit-to-svg)
+- [Bill of Materials](https://github.com/tscircuit/circuit-json-to-bom)
+- [SPICE netlists and simulations](https://github.com/tscircuit/circuit-json-to-spice)
