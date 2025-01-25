@@ -9,18 +9,22 @@ In this tutorial, we're going to be talking about the different elements that
 make up a Printed Circuit Board (PCB). For each element, we'll show different
 ways that the element can be represented in tscircuit.
 
-## What is copper? Why are PCBs green and with yellow parts?
+## What is copper? Why are PCBs green?
 
 Copper is a conductive material that's used on a PCB to make an electrical
-connection between chips. Electricity can move through copper, but not through
-the green fiberglass part of a circuit board.
+connection between chips. A PCB is mostly made up of fiberglass with a small
+layer of precisely etched copper. The fiberglass is non-conductive and often
+coated with non-conductive green "soldermask" to cover parts of the copper that
+aren't meant to be connected to chips.
 
-A PCB can be thought of as a bunch of "printed" copper separated by green fiberglass
-sections that "insulate" or don't conduct electricity. We "glue" chips to
+<figure style={{ textAlign: "center" }}>
+<img style={{ width: 400, height: 240, objectFit: "cover" }} src="/img/ai-pcb-1.webp" alt="AI Generated PCB Image" />
+<figcaption>An AI-generated PCB image. All the yellow parts represent copper, while the green parts represent fiberglass with a green soldermask</figcaption>
+</figure>
 
-In reality, the copper is chemically etched and there can be different materials
-separating copper sections, but it's easiest to think of a PCB as a bunch of
-printed copper separated by green fiberglass sections.
+A PCB can be thought of as a bunch of "printed" copper separated by fiberglass
+sections that "insulate" or don't conduct electricity. We "glue" (solder) chips
+to the copper "pads" to add them to the circuit.
 
 ## What are PCB layers?
 

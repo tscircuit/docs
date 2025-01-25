@@ -57,3 +57,21 @@ div {
 .theme-code-block {
   font-size: 12px;
 }
+
+figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+figure figcaption {
+  margin-top: 0.5rem;
+  opacity: 0.8;
+  text-align: center;
+  align-self: center;
+  font-size: 0.8rem;
+  line-height: 1.2rem;
+  width: 60%;
+}

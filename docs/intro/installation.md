@@ -9,10 +9,6 @@ To use tscircuit, you'll need to have [npm](https://npmjs.com) or [bun](https://
 
 ## Installing tscircuit
 
-:::info
-If you're using [tscircuit online](https://tscircuit.com), you can skip installation. tscircuit is fully-featured and usable online!
-:::
-
 To install tscircuit's command line tool, just run:
 
 ```bash
@@ -24,6 +20,10 @@ bun install --global tscircuit
 ```
 
 This will install a `tsci` command globally!
+
+:::info
+If you're using [tscircuit online](https://tscircuit.com), you can skip installation. tscircuit is fully-featured and usable online!
+:::
 
 You can test it out by running `tsci --help`!
 
