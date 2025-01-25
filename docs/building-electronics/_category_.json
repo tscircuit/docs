@@ -4,5 +4,7 @@
   "link": {
     "type": "generated-index",
     "description": "Your general approach for understanding and building electronics"
-  }
+  },
+  "collapsible": false,
+  "collapsed": false
 }
