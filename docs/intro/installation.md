@@ -9,7 +9,7 @@ To use tscircuit, you'll need to have [npm](https://npmjs.com) or [bun](https://
 
 ## Installing tscircuit
 
-:::note
+:::info
 If you're using [tscircuit online](https://tscircuit.com), you can skip installation. tscircuit is fully-featured and usable online!
 :::
 
