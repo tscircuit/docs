@@ -56,7 +56,7 @@ together.
    elements of the circuit in tscircuit
 2. Run design checks to make sure the circuit is hooked up correctly
 
-In this phase you should create chip modules or [import third party chips](../guides/importing-modules-and-chips)
+In this phase you should create chip modules or [import third party chips](../guides/importing-modules-and-chips/importing-from-jlcpcb.mdx)
 as you build up your circuit. You shouldn't be configuring chips in
 the same file that connects all your chips together- give each chip it's own
 module.

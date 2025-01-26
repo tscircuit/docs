@@ -97,5 +97,5 @@ bun add -D tscircuit
 Now that you've installed tscircuit, you can start developing your first electronic device!
 
 - [Quickstart CLI Guide](./quickstart-cli.md)
-- [Understanding essential tscircuit elements](../guides/essential-elements.md)
-- [What are electronics made of?](../building-electronics/what-are-electronics-made-of.md)
+- [Understanding essential tscircuit elements](../guides/essential-elements.mdx)
+- [What are electronics made of?](../building-electronics/what-are-electronics-made-of.mdx)

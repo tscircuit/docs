@@ -26,7 +26,7 @@ The editor will open with a template board that looks like this:
 <img className="img-rounded img-400" src="/img/editor-with-template-board-3d.png" />
 
 You can now edit the board by adding or removing elements! Check out the
-[essential elements guide](../guides/essential-elements.md) to learn more about
+[essential elements guide](../guides/essential-elements.mdx) to learn more about
 the available elements. If you've already got an idea of what you want to build,
 try breaking down the problem into modules using our [designing electronics from scratch guide](../building-electronics/designing-electronics-from-scratch.md)
 
