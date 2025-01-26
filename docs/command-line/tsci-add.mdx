@@ -1,0 +1,30 @@
+---
+title: tsci add
+---
+
+`tsci add` is the same as `npm add` or `bun add`, but defaults to the tscircuit
+registry. If your project has the [tsci `.npmrc`](../web-apis/the-registry-api.md#using-the-tscircuit-npm-registry), you can just do `bun add @tsci/<author>.<package>`
+and it has the same effect.
+
+```
+> tsci add seveibar/PICO_W
+# Added @tsci/seveibar.PICO_W@0.0.1
+```
+
+You can then import the module and use it for your board!
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+
+
+import { PICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => (
+    <PICO_W name="U1" />
+)
+
+`}
+/>

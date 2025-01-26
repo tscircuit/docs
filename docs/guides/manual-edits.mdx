@@ -63,6 +63,42 @@ file from the tscircuit editor or find the file on your filesystem. Make sure
 that it changes when you drag'n'drop components.
 
 
+## The Manual Edits Format
 
 
+The manual edits file's format is defined in [this typescript file](https://github.com/tscircuit/props/blob/main/lib/manual-edits/manual_edits_file.ts), it contains 3 main types of edits:
 
+- **pcb_placements** - Component positions on the PCB
+- **manual_trace_hints** - "Hints" indicating where PCB traces should go
+- **schematic_placements** - Component positions on the schematic
+
+Here's an example of a manual edits file:
+
+```json
+{
+  pcb_placements: [
+    {
+      "selector": "R1",
+      "center": {
+        "x": 0,
+        "y": 6.869495369849336
+      },
+      "relative_to": "group_center",
+      "_edit_event_id": "0.037205222437411756"
+    }
+  ]
+  manual_trace_hints: []
+  schematic_placements: [
+    {
+      selector: "R1",
+      center: { x: 5, y: 5 },
+      relative_to: "group_center",
+    },
+    {
+      selector: "C1",
+      center: { x: -5, y: -5 },
+      relative_to: "group_center",
+    },
+  ]
+}
+```

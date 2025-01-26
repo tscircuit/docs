@@ -5,6 +5,6 @@
     "type": "generated-index",
     "description": "What is tscircuit?"
   },
-  "collapsible": false,
+  "collapsible": true,
   "collapsed": false
 }

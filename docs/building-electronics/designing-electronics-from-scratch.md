@@ -62,7 +62,11 @@ In this phase we create a layout of the circuit on a PCB.
 
 tscircuit automatically autoroutes the circuit for you, but you may still need
 to "drag'n'drop" components in the PCB viewer to the locations you want them to
-be in.
+be in. When
+
+:::note
+TODO add an example of a manualEdits prop
+:::
 
 ## Ordering
 
