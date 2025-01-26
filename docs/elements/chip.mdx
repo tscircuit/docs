@@ -360,6 +360,129 @@ export default () => (
 
 `} />
 
+## Specifying the Manufacturer Part Number or Supplier Part Numbers
+
+tscircuit will attempt to find matching parts based on the `manufacturerPartNumber`
+and `footprint` that was provided. If you know the exact part from your supplier
+you'd like to use, you should set the `supplierPartNumbers` property as shown
+below:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+
+import { createUseComponent } from "@tscircuit/core"
+import type { CommonLayoutProps } from "@tscircuit/props"
+
+
+interface Props extends CommonLayoutProps {
+  name: string
+}
+
+export const Diode1N4148WS = (props: Props) => {
+  return (
+    <diode
+      {...props}
+      supplierPartNumbers={{
+        jlcpcb: ["C57759"]
+      }}
+      footprint={
+        <footprint>
+          <smtpad
+            portHints={["1"]}
+            pcbX="-1.1725910000000113mm"
+            pcbY="0mm"
+            width="0.9999979999999999mm"
+            height="0.7500112mm"
+            shape="rect"
+          />
+          <smtpad
+            portHints={["2"]}
+            pcbX="1.1725910000000113mm"
+            pcbY="0mm"
+            width="0.9999979999999999mm"
+            height="0.7500112mm"
+            shape="rect"
+          />
+          <silkscreenpath
+            route={[
+              { x: 0.9012427999999773, y: -0.726211400000011 },
+              { x: 0.9012427999999773, y: -0.5199887999999646 },
+            ]}
+          />
+          <silkscreenpath
+            route={[
+              { x: 0.9012427999999773, y: 0.726211400000011 },
+              { x: 0.9012427999999773, y: 0.5299964000000728 },
+            ]}
+          />
+          <silkscreenpath
+            route={[
+              { x: -0.8512047999998913, y: 0.726211400000011 },
+              { x: 0.9012427999999773, y: 0.726211400000011 },
+            ]}
+          />
+          <silkscreenpath
+            route={[
+              { x: -0.8512047999998913, y: -0.726211400000011 },
+              { x: 0.9012427999999773, y: -0.726211400000011 },
+            ]}
+          />
+          <silkscreenpath
+            route={[
+              { x: -0.44676059999994777, y: 0.726211400000011 },
+              { x: -0.44676059999994777, y: -0.726211400000011 },
+            ]}
+          />
+        </footprint>
+      }
+      cadModel={{
+        objUrl:
+          "https://modelcdn.tscircuit.com/easyeda_models/download?uuid=973acf8a660c48b1975f1ba1c890421a&pn=C57759",
+        rotationOffset: { x: 0, y: 0, z: 0 },
+        positionOffset: { x: 0, y: 0, z: 0 },
+      }}
+      schPinSpacing={0.75}
+      schPortArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: [1],
+        },
+        rightSide: {
+          direction: "bottom-to-top",
+          pins: [2],
+        },
+      }}
+    />
+  )
+}
+
+
+`}
+
+/>
+
+If you don't specify `supplierPartNumbers`, tscircuit will automatically scan
+for in-stock parts and select a chip using vendor APIs in the Cloud API using
+the [platform parts engine](../guides/platform-configuration.md)
+
+### Supported Suppliers
+
+The following are the supported supplier keys. The list is [maintained here](https://github.com/tscircuit/props/blob/main/lib/common/layout.ts#L56) and you can [request additional suppliers by creating an issue](https://github.com/tscircuit/props/issues/new?template=Blank+issue&title=Supplier%20Request%3A%20)
+
+Available supplier keys:
+
+- jlcpcb
+- digikey
+- mouser
+- macrofab
+- pcbway
+- lcsc
+
+You can also insert custom keys for your organization and they will be copied to
+the output [Circuit JSON](https://github.com/tscircuit/circuit-json)
+
+
 ## Type-safe Chips: Custom Component Hooks
 
 Component hooks are a great way to improve type safety and simplify the usage
