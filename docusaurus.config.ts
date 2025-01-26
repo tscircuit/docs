@@ -164,7 +164,7 @@ const config: Config = {
       // Public API key: it is safe to commit it
       apiKey: "a99d3dd75009c9edeac43565cb215602",
 
-      indexName: "tscircuit_docs",
+      indexName: "crawler_docs.tscircuit.com_BFNVOSEFDT_2",
 
       // Optional: see doc section below
       // contextualSearch: true,
