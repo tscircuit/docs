@@ -39,7 +39,7 @@ download [fabrication files.](../guides/understanding-fabrication-files.md)
 
 <img className="img-rounded img-400" src="/img/online-editor-download.png" />
 
-When you're ready to order your board, check out the [ordering prototypes guide](../building-electronics/bill-of-materials-and-ordering-prototypes.md). You can
+When you're ready to order your board, check out the [ordering prototypes guide](../building-electronics/ordering-prototypes.md). You can
 electronics fully assembled and ready to use from the many services that accept
 our standard fabrication files.
 
