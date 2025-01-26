@@ -19,7 +19,10 @@ main types of files inside our fabrication files `zip`:
 
 On the web, you can just hit "Download" on any circuit, then hit "Fabrication Files"
 
-![](../../static/img/online-editor-download.png)
+<figure>
+<img src="/img/online-editor-download.png" alt="Online Editor Download Button" />
+<figcaption>Downloading fabrication files from the online editor</figcaption>
+</figure>
 
 ### CLI
 
