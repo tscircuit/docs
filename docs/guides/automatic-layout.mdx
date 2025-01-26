@@ -1,0 +1,102 @@
+---
+title: Automatic Layout
+---
+
+:::warning
+Automatic layout is in beta! We're changing and improving the layout algorithms,
+if it doesn't work for you stay tuned! Many changes are on the way!
+:::
+
+You can automatically lay out schematics and PCBs using the `schAutoLayoutEnabled` and
+`pcbAutoLayoutEnabled` props.
+
+## Automatic Schematic Layout
+
+Here's an example of a Pico-driven nine key keyboard with `schAutoLayoutEnabled`:
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+
+import { SmdDiode } from "@tsci/seveibar.SmdDiode"
+import { Key } from "@tsci/seveibar.Key"
+import { Pico2 } from "@tsci/seveibar.pico2"
+
+const rowToMicroPin = {
+  0: "GP0",
+  1: "GP1",
+  2: "GP10",
+}
+const colToMicroPin = {
+  0: "GP19",
+  1: "GP17",
+  2: "GP5",
+}
+
+export default () => (
+  <board width="100mm" height="100mm" schTraceAutoLabelEnabled schAutoLayoutEnabled>
+    <Pico2 name="U1" pcbX={-30} />
+    {grid({ sizeX: 3, sizeY: 3, pitch: 19.05, offset: { x: 20, y: 0 } }).map(
+      ({ x, y, row, col }, index) => {
+        const schOffX = 5 + x/6
+        const schOffY = -y / 8
+        return (
+          <group key={\`Kgroup\${index}\`}>
+            <Key pcbX={x} pcbY={y} schX={schOffX} schY={schOffY + 0.5} name={\`K\${index + 1}\`} />
+            <SmdDiode
+              pcbX={x}
+              pcbY={y - 13}
+              layer="bottom"
+              name={\`D\${index + 1}\`}
+            />
+            <trace from={\`.D\${index + 1} .pin1\`} to={\`.K\${index + 1} .pin1\`} />
+            <trace
+              from={\`.D\${index + 1} .pin2\`}
+              to={\`.U1 .\${rowToMicroPin[row]}\`}
+            />
+            <trace
+              from={\`.K\${index + 1} .pin2\`}
+              to={\`.U1 .\${colToMicroPin[col]}\`}
+            />
+          </group>
+        )
+      }
+    )}
+  </board>
+)
+
+function grid(opts: {
+  sizeX: number
+  sizeY: number
+  pitch: number
+  offset?: { x: number; y: number }
+}): Array<{ x: number; y: number; row: number; col: number }> {
+  const { sizeX, sizeY, pitch, offset = { x: 0, y: 0 } } = opts
+  const points: Array<{ x: number; y: number; row: number; col: number }> = []
+  const startX = (-(sizeX - 1) * pitch) / 2
+  const startY = (-(sizeY - 1) * pitch) / 2
+  for (let row = 0; row < sizeY; row++) {
+    for (let col = 0; col < sizeX; col++) {
+      points.push({
+        x: startX + col * pitch + offset.x,
+        y: startY + row * pitch + offset.y,
+        row,
+        col,
+      })
+    }
+  }
+  return points
+}
+
+  `}
+
+/>
+
+## Automatic PCB Layout
+
+:::danger
+PCB Autolayout is not currently available but coming soon!
+:::

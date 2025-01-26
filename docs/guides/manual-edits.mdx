@@ -1,0 +1,68 @@
+---
+title: Manual Edits
+---
+
+It can be cumbersome to programmatically define the locations of every component
+on the PCB and schematic, but [automatic layout](./automatic-layout.mdx) can
+be too uncontrolled. Manual edits allow you to use a schematic or PCB viewer
+to drag and drop components.
+
+Every time you drag a component, a file conventionally called `manual-edits.json`
+is edited with your edits. This manual edits file is imported and can be given
+as the `manualEdits` prop to a `<board />` or `<subcircuit />`
+
+## Creating Manual Edits with a GUI
+
+Each GUI features an "edit button" to turn on an editing mode. After you turn
+on the editing mode, you can drag and drop components and your edits will
+automatically edit the `manual-edits.json` file.
+
+### Creating Manual Edits in the Schematic Viewer
+
+In the top-right corner there is a pencil edit button. This turns on the edit
+mode.
+
+:::note
+TODO insert a video here showing the manual edits in action!
+:::
+
+### Creating Manual Edits in the PCB Viewer
+
+The PCB Viewer features two edits modes:
+
+- Edit Trace Mode
+- Move Components Mode
+
+You can find both of them by hovering over the PCB viewer.
+
+:::note
+TODO insert a video here showing the manual edits in action!
+:::
+
+### Troubleshooting manual edits not being applied
+
+Usually if manual edits aren't being applied, it's because you haven't imported
+the `manual-edits.json` file. On the [tscircuit.com editor](https://tscircuit.com),
+you'll get a warning that automatically edits your code to insert the import.
+
+If you're editing locally, add the following lines:
+
+```tsx
+import manualEdits from "./manual-edits.json"
+
+export default () => (
+  //                                VVVV add this prop!
+  <board width="10mm" height="10mm" manualEdits={manualEdits}>
+    {/* ... */}
+  </board>
+)
+```
+
+If you're still not seeing your manual edits, select the `manual-edits.json`
+file from the tscircuit editor or find the file on your filesystem. Make sure
+that it changes when you drag'n'drop components.
+
+
+
+
+
