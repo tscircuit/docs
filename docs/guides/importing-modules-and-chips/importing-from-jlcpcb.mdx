@@ -1,0 +1,67 @@
+---
+title: Importing from JLCPCB
+sidebar_position: 2
+---
+
+## Overview
+
+JLCPCB has a massive component catalog of 3d models and footprints.
+
+## Web Import
+
+You can import JLCPCB components on [tscircuit.com](https://tscircuit.com). After
+importing the snippet, it'll be given a package name like `@tsci/YOUR_NAME.CHIP_NAME`
+and available for import from the tscircuit registry.
+
+<figure>
+  <img src="/img/tscircuit-new-import-part.png" />
+  <figcaption>Step 1: Go to `tscircuit.com` and press the "new" button</figcaption>
+</figure>
+
+<figure>
+  <img src="/img/tscircuit-import-jlcpcb-button.png" />
+  <figcaption>Step 2: Click "Import JLCPCB Component"</figcaption>
+</figure>
+
+<figure>
+  <img src="/img/tscircuit-jlcpcb-dialog.png" />
+  <figcaption>Step 3: Paste in the JLCPCB Part Number</figcaption>
+</figure>
+
+<figure>
+  <img src="/img/jlcpcb-part-number.png" />
+  <figcaption>You can find the JLCPCB Part Number on JLCPCB's website</figcaption>
+</figure>
+
+<figure>
+  <img src="/img/example-imported-jlcpcb-component.png" />
+  <figcaption>An example of an imported JLCPCB component</figcaption>
+</figure>
+
+After your component has been added to tscircuit, you can import it as a
+`@tsci/*` import like this:
+
+```tsx
+import { ESP32_WROOM_32DC } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC"
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <ESP32_WROOM_32DC />
+  </board>
+)
+```
+
+
+## CLI Import
+
+To import using the CLI, run `npm install -g easyeda`. This will give you the
+`easyeda` command line tool. You can then run `easyeda convert` as shown below
+
+```
+# Convert a schematic and footprint for JLCPCB part number C46749 (NE555)
+# to tscircuit component
+easyeda convert -i C46749 -o C46749.tsx
+easyeda convert -i C46749 -t tsx
+```
+
+This will create a `tsx` file that you can impor.

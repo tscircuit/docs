@@ -97,3 +97,24 @@ figure img {
   margin-left: auto;
   margin-right: auto;
 }
+
+.menu__list {
+  font-size: 14px;
+}
+
+.menu__caret {
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+}
+
+.theme-doc-sidebar-menu .menu__list-item {
+  margin: 0;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.menu__list-item .menu__link {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}

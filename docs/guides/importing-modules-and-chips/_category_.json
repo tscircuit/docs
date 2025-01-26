@@ -1,0 +1,10 @@
+{
+  "label": "Importing Modules and Chips",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Convert and import chips from JLCPCB, KiCad and the tscircuit registry"
+  },
+  "collapsible": true,
+  "collapsed": true
+}

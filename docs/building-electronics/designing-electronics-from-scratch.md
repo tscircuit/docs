@@ -56,17 +56,24 @@ together.
    elements of the circuit in tscircuit
 2. Run design checks to make sure the circuit is hooked up correctly
 
+In this phase you should create chip modules or [import third party chips](../guides/importing-modules-and-chips)
+as you build up your circuit. You shouldn't be configuring chips in
+the same file that connects all your chips together- give each chip it's own
+module.
+
+After the schematics look good, you can export to a readable netlist and upload
+the netlist to AI tools like OpenAI O1 to get a review and make sure everything
+is connected properly! This is also a good stage to get your schematic reviewed
+by your team members.
+
 ## PCB Layout
 
 In this phase we create a layout of the circuit on a PCB.
 
 tscircuit automatically autoroutes the circuit for you, but you may still need
 to "drag'n'drop" components in the PCB viewer to the locations you want them to
-be in. When
-
-:::note
-TODO add an example of a manualEdits prop
-:::
+be in. Use [manual editing](../guides/manual-edits.mdx) to drag'n'drop
+components on the PCB.
 
 ## Ordering
 

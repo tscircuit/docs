@@ -51,7 +51,7 @@ export default function CircuitPreview({
   const pcbUrl = useMemo(() => createSvgUrl(code, "pcb"), [code])
   const schUrl = useMemo(() => createSvgUrl(code, "schematic"), [code])
 
-  const shouldSplitCode = splitView // && windowSize !== "mobile"
+  const shouldSplitCode = splitView && windowSize !== "mobile"
 
   return (
     <div
