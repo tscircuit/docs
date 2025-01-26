@@ -3,3 +3,29 @@ title: <resistor />
 sidebar_position: 2
 ---
 
+## Overview
+
+A `<resistor />` is an extremely common element of electronic designs. It limits
+the flow of electricity and is critial to making sure digital signals are
+properly "pulled up" or "pulled down" to set their default value as `1` or `0`
+
+A resistor element has two pins and is non-polar, meaning it doesn't matter if
+you place it on backwards (it resists electricity identically either way!)
+
+When specifying a resistor, you'll usually want to give it a footprint string
+such as `0402` or `0603` to indicate it's size. Different 
+
+
+## Tolerances
+
+Resistors can be made to different tolerances. In particular, you might care
+about the following resistor characteristics:
+
+- **tolerance** - a percentage given with a string, e.g. `tolerance="5%"`. This specifies how accurate the resistance needs to be
+- **temperatureOperatingRange** - a string indicating the listed range for the resistor's operating temperature `"-15F-150F"`
+
+## Automatic Part Selection
+
+You generally don't need to specify `supplierPartNumbers` with a resistor, tscircuit
+will use the [platform parts engine](../guides/platform-configuration.md) to
+automatically search vendors for a part matching your tolerances.
