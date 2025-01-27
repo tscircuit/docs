@@ -1,0 +1,342 @@
+---
+title: Autorouting API
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+tscircuit allows heavy customization of the autorouting process. In tscircuit
+you can use local or cloud autorouters, use different autorouters for different
+subcircuits, and disable autorouting entirely.
+
+This page provides details on the autorouting cloud API so you can import your
+own cloud autorouter.
+
+## Using Custom Autorouters
+
+Here's an example of how a customer autorouter can be configured with tscircuit:
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board
+      width="20mm"
+      height="20mm"
+      autorouter={{
+        serverUrl: "https://registry-api.tscircuit.com",
+        serverMode: "job",
+        inputFormat: "simplified",
+      }}
+    >
+      <chip name="U1" footprint="soic8" pcbX={5} pcbY={0} />
+      <resistor
+        name="R1"
+        pcbX={-5}
+        pcbY={0}
+        resistance={100}
+        footprint="0402"
+      />
+      <trace from=".U1 > .pin1" to=".R1 > .pin1" />
+    </board>
+  )
+`} />
+
+### The Autorouter Object
+
+The autorouter object is used to configure the autorouter. The following properties are supported:
+
+- `serverUrl`: The URL of the autorouter server.
+- `serverMode`: [`job`]( or `solve-endpoint`
+- `inputFormat`: The format of the input to the autorouter server.
+
+## Input and Output Formats
+
+### Simplified Input/Output
+
+The `simplified` input format is simple to build an autorouter for. It contains
+a JSON object with the desired connections to make and the obstacles the algorithm must
+avoid to solve the routing problem.
+
+When using the `simplified` input format, the `/autorouting/jobs/create` and/or `/autorouting/solve`
+endpoint must accept a `input_simple_route_json` file with the following interface:
+
+```tsx
+interface SimpleRouteJson {
+  layerCount: number
+  minTraceWidth: number
+  obstacles: Obstacle[]
+  connections: Array<SimpleRouteConnection>
+  bounds: { minX: number; maxX: number; minY: number; maxY: number }
+}
+
+interface Obstacle {
+  type: "rect"
+  layers: string[]
+  center: { x: number; y: number }
+  width: number
+  height: number
+  connectedTo: string[]
+}
+
+interface SimpleRouteConnection {
+  name: string
+  pointsToConnect: Array<{ x: number; y: number; layer: string }>
+}
+```
+
+Here's an example of a `SimpleRouteJson` object:
+
+```json
+{
+  "layerCount": 2,
+  "minTraceWidth": 0.2,
+  "obstacles": [
+    {
+      "type": "rect",
+      "layers": ["top"],
+      "center": { "x": 30, "y": 25 },
+      "width": 10,
+      "height": 8,
+      "connectedTo": ["power"]
+    },
+    {
+      "type": "rect",
+      "layers": ["bottom"],
+      "center": { "x": 70, "y": 25 },
+      "width": 12,
+      "height": 6,
+      "connectedTo": ["ground"]
+    }
+  ],
+  "connections": [
+    {
+      "name": "power_net",
+      "pointsToConnect": [
+        { "x": 10, "y": 10, "layer": "top" },
+        { "x": 90, "y": 40, "layer": "bottom" }
+      ]
+    },
+    {
+      "name": "ground_net",
+      "pointsToConnect": [
+        { "x": 20, "y": 20, "layer": "top" },
+        { "x": 80, "y": 30, "layer": "top" }
+      ]
+    }
+  ],
+  "bounds": {
+    "minX": 0,
+    "maxX": 100,
+    "minY": 0,
+    "maxY": 50
+  }
+}
+```
+
+When in `simplified` mode you should respond with an
+`output_simple_route_json` object that adds a `traces` field to the original
+input object.
+
+```json
+{
+  "output_simple_route_json": {
+    // ...the original input object fields
+    "traces": [
+      {
+        "type": "pcb_trace",
+        "pcb_trace_id": "trace_1",
+        "route": [
+          {
+            "route_type": "via",
+            "x": 45,
+            "y": 25,
+            "from_layer": "top",
+            "to_layer": "bottom"
+          },
+          {
+            "route_type": "wire",
+            "x": 45,
+            "y": 25,
+            "width": 0.2,
+            "layer": "bottom"
+          },
+          {
+            "route_type": "wire",
+            "x": 60,
+            "y": 35,
+            "width": 0.2,
+            "layer": "bottom"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The `traces` field should match this type:
+
+```tsx
+type SimplifiedPcbTraces = Array<{
+  type: "pcb_trace"
+  pcb_trace_id: string
+  route: Array<
+    | {
+        route_type: "wire"
+        x: number
+        y: number
+        width: number
+        layer: string
+      }
+    | {
+        route_type: "via"
+        x: number
+        y: number
+        to_layer: string
+        from_layer: string
+      }
+  >
+}>
+```
+
+
+### Circuit JSON Input/Output
+
+When using `inputFormat: "circuit_json"` you the API must accept `{ input_circuit_json }` and
+respond with PCB traces in the format `{ output_pcb_traces }` that can be concatenated to the Circuit JSON to complete the circuit.
+
+## Choosing a `serverMode`
+
+When you're implementing the autorouter API, you can choose to implement either
+the `job` API (recommended) or the `solve-endpoint` API. The `solve-endpoint` is easier because
+it's a single endpoint, but has many limitations because it must perform the
+autorouting in the lifecycle of a single request.
+
+When defining your autorouter object, you can choose the `serverMode` and `inputFormat`
+to correspond to what you've implemented.
+
+## The `solve-endpoint` API
+
+| Endpoint |  Description |
+| -------- | ----------- |
+| `/autorouting/solve` | Takes autorouting input and returns the solved routes | 
+
+### `solve-endpoint` with `simplified` input
+
+```
+POST /autorouting/solve
+
+{
+  "input_simple_route_json": {
+    // ...
+  }
+}
+
+RESPONSE:
+
+{
+  "output_simple_route_json": {
+    // ...
+  }
+}
+```
+
+### `solve-endpoint` with `circuit_json` input
+
+```
+POST /autorouting/solve
+
+{
+  "input_circuit_json": {
+    // ...
+  }
+}
+
+RESPONSE:
+
+{
+  "output_pcb_traces": [
+    {
+      "type": "pcb_trace",
+      "pcb_trace_id": "trace_1",
+      "route": [
+        // ...
+      ]
+    }
+  ]
+}
+```
+
+## The `job` API
+
+The `job` autorouting API allows you to perform long-running autorouting jobs for
+large circuits. When using the `job` API, you must use the `"circuit_json"` input format.
+
+| Endpoint |  Description |
+| -------- | ----------- |
+| `/autorouting/jobs/create` | Create the autorouting job | 
+| `/autorouting/jobs/get`    | Get the status of the autorouting job |
+| `/autorouting/jobs/cancel` | Cancel the autorouting job |
+| `/autorouting/jobs/get_output` | Get the solved routes from a completed autorouting job |
+
+:::info
+Here's the [source code](https://github.com/tscircuit/core/blob/main/lib/components/primitive-components/Group/Group.ts#L232) in tscircuit core where the `job` API is used to autoroute a circuit. You can
+see that each endpoint is called in order
+:::
+
+```
+POST /autorouting/jobs/create
+{
+  "input_simple_route_json": {
+    // ...
+  },
+  "autostart": true
+}
+
+RESPONSE:
+
+{
+  "autorouting_job": {
+    "autorouting_job_id": "1234567890",
+    // ...
+  }
+}
+
+
+
+GET /autorouting/jobs/get?autorouting_job_id=1234567890
+
+RESPONSE:
+
+{
+  "autorouting_job": {
+    "is_running": false,
+    "is_finished": true,
+    // ...
+  }
+}
+
+
+GET /autorouting/jobs/get_output?autorouting_job_id=1234567890
+
+RESPONSE:
+
+{
+  "autorouting_job_output": {
+    "output_pcb_traces": [
+      // ...
+    ]
+  }
+}
+```
+
+## Additional Configuration
+
+Additional configuration parameters can be passed to either the `/autorouting/jobs/create`
+endpoint or the `/autorouting/solve` endpoint to configure the autorouter.
+
+| Parameter | Example Value | Description |
+| --------- | ------------- | ----------- |
+| `display_name` | `"Nine-key Macropad"` | A display name for the autorouting job. Useful for debugging! |
+| `provider` | `"freerouting"` | The autorouting algorithm to use |
+| `subcircuit_id` | `"subcircuit_source_group_1"` | To support subcircuit autorouting, you must accept this parameter and only solve for the subset of routes within the subcircuit. |
