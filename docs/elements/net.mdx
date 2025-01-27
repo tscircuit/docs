@@ -3,3 +3,42 @@ title: <net />
 sidebar_position: 6.5
 ---
 
+## Overview
+
+The `<net />` element represents a bunch of traces that are all connected. You
+should use nets for representing power buses such as "V5", "V3_3" and "GND"
+
+When using a `<net />`, you're being less specific than 
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <group>
+      <capacitor capacitance="1uF" footprint="0603" name="C1" />
+      <net name="V5" />
+      <trace from="net.V5" to=".C1 .pos" />
+    </group>
+  )
+  `}
+/>
+
+
+## Net Properties
+
+Nets can have properties that will pass onto any PCB trace within them. The 
+trace properties can be automatically used for autorouting adjustments or to
+validate connections (such as validating that a chip is connected to a power
+source)
+
+| Property | Description |
+| -------- | ----------- |
+| `isForPower`  | The net is used to deliver power ("V5", "V3_3") |  
+| `isGround` | The net is used as a ground path |
+
+## Implicit Nets
+
+If you use a net in a [port or net selector](../guides/port-and-net-selectors.md)
+e.g. `"net.V5"` and there is not `<net name="V5" />`, then you
