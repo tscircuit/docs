@@ -3,5 +3,108 @@ title: <trace />
 sidebar_position: 5
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
+## Overview
 
+The `<trace />` element represents an electrical connection between two or more points in your circuit. Traces can connect components, nets, or specific pins on components.
+
+## Basic Usage
+
+Here's a simple example connecting two components:
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={-2} schX={-2} />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={2} />
+      <trace
+        from=".R1 > .pin1"
+        to=".C1 > .pin1"
+      />
+    </board>
+  )
+`} />
+
+## Trace Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `from` | Starting point of the trace using a [port selector](../guides/port-and-net-selectors.md) | `".R1 > .pin1"` |
+| `to` | Ending point of the trace using a [port selector](../guides/port-and-net-selectors.md) | `".C1 > .pin1"` |
+| `maxLength` | Maximum length the trace can be (optional) | `"10mm"` |
+| `minLength` | Minimum length the trace must be (optional) | `"5mm"` |
+| `width` | Width of the trace (optional) | `"0.2mm"` |
+
+## Connecting to Nets
+
+Traces can connect to named nets like power and ground:
+
+<CircuitPreview defaultView="schematic" code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <resistor name="R1" resistance="1k" footprint="0402" />
+      <trace from=".R1 > .pin1" to="net.GND" />
+      <trace from=".R1 > .pin2" to="net.VCC" />
+    </board>
+  )
+`} />
+
+## Autorouting
+
+Traces are automatically routed by tscircuit's [autorouting system](./board.mdx#setting-the-autorouter). The autorouter will:
+
+1. Find a path between components that doesn't intersect other traces
+2. Use vias to change layers when needed
+3. Respect any length constraints specified
+4. Try to minimize the number of vias used
+
+You can customize the autorouting behavior by setting the `autorouter` property on the parent [`<board />`](./board.mdx) or [`<subcircuit />`](./subcircuit.mdx).
+
+## Length Constraints 
+
+Sometimes you need traces to be exactly a certain length, like for high-speed signals. You can use `maxLength` and `minLength`:
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip name="U1" footprint="soic8" pcbX={-5} />
+    <chip name="U2" footprint="soic8" pcbX={5} />
+    <trace
+      from=".U1 > .pin1"
+      to=".U2 > .pin1"
+      maxLength="15mm"
+      minLength="12mm"
+    />
+  </board>
+)
+`} />
+
+## Differential Pairs
+
+For high-speed signals, you often need pairs of traces to have matched lengths. You can use the `differentialPairKey` property to group traces:
+
+:::info
+The `differentialPairKey` property is in beta and not available on all autorouters yet!
+:::
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="20mm" height="20mm">
+      <chip name="U1" footprint="soic8" pcbX={-5} />
+      <chip name="U2" footprint="soic8" pcbX={5} />
+      <trace
+        from=".U1 > .pin1"
+        to=".U2 > .pin1"
+        differentialPairKey="pair1"
+      />
+      <trace
+        from=".U1 > .pin2"
+        to=".U2 > .pin2"
+        differentialPairKey="pair1"
+      />
+    </board>
+  )
+`} />
+
+The autorouter will ensure both traces in the pair have the same length.
