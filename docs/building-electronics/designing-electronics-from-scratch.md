@@ -84,3 +84,5 @@ and "dragging and dropping" them into a manufacturer's website.
 Sometimes you'll want to assemble the PCB yourself (or sometimes just a single
 component that your manufacturer doesn't have!). In this case, you'll need a
 lab setup to facilitate soldering.
+
+Check out our guide on [Ordering Prototypes](./ordering-prototypes.mdx) to learn more.
