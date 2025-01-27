@@ -3,3 +3,56 @@ title: <capacitor />
 sidebar_position: 3
 ---
 
+## Overview
+
+A `<capacitor />` stores electrical energy in an electric field. Capacitors are commonly used for filtering, energy storage, and timing circuits. Unlike resistors, capacitors can be polarized (like electrolytic capacitors) or non-polarized (like ceramic capacitors).
+
+A capacitor element has two pins. Polarized capacitors must be placed with correct orientation to avoid damage.
+
+When specifying a capacitor, you'll need to provide a footprint string (like `0402` or `0805`) and capacitance value. Popular capacitor types and sizes can be found at [jlcsearch](https://jlcsearch.tscircuit.com/capacitors/list).
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+
+  export default () => (
+    <capacitor
+      name="C2"
+      footprint="axial_p5mm"
+      capacitance="10μF"
+      polarized
+    />
+  )
+
+  `}
+/>
+
+## Pins
+
+A capacitor has the following pins and aliases:
+
+| Pin # | Aliases (Polarized) | Description |
+| ---------- | ------- | ----------- |
+| pin1 | pos, anode, left | The positive terminal (required for polarized capacitors) |
+| pin2 | neg, cathode, right | The negative terminal (must be connected properly for polarized caps) |
+
+:::warning
+For polarized capacitors, you must connect the positive and negative pins correctly. Reversing polarity can cause capacitor failure or even explosion!
+:::
+
+## Specifications
+
+Capacitors can be configured with these key properties:
+
+- **capacitance** - The capacitance value specified as a string e.g. `"100nF"` or `"2.2μF"`
+- **voltageRating** - Maximum voltage the capacitor can handle e.g. `"25V"`
+- **tolerance** - Capacitance tolerance percentage e.g. `"±10%"`
+- **temperatureCoefficient** - Temperature stability specification e.g. `"X7R"`
+- **equivalentSeriesResistance** - ESR value for critical applications e.g. `"0.5Ω"`
+
+## Automatic Part Selection
+
+Like resistors, tscircuit will automatically select suitable capacitor parts based on your specifications through the [platform parts engine](../guides/platform-configuration.md). For specialized capacitors (e.g., low ESR, high voltage), you may want to specify `supplierPartNumbers` explicitly.
+
