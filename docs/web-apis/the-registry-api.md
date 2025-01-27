@@ -1,5 +1,6 @@
 ---
-title: The Registry API
+title: Registry API
+sidebar_position: 1
 ---
 
 The tscircuit Registry API is an extension of the NPM Registry API that allows for additional features, such as building Circuit JSON in the cloud, automatic bundling to ESM and CommonJS, and more versioning automations.

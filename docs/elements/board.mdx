@@ -48,32 +48,30 @@ to take advantage of tscircuit's cloud autorouters, which internally use the pop
 You can also specify a custom autorouter object to use your own autorouter.
 
 <CircuitPreview defaultView="pcb" code={`
-
-export default () => (
-  <board
-    width="20mm"
-    height="20mm"
-    autorouter={{
-      serverUrl: "https://registry-api.tscircuit.com",
-      serverMode: "solve-endpoint",
-      inputFormat: "simplified",
-    }}
-  >
-    <chip name="U1" footprint="soic8" pcbX={5} pcbY={0} />
-    <resistor
-      name="R1"
-      pcbX={-5}
-      pcbY={0}
-      resistance={100}
-      footprint="0402"
-    />
-    <trace from=".U1 > .pin1" to=".R1 > .pin1" />
-  </board>
-)
-
+  export default () => (
+    <board
+      width="20mm"
+      height="20mm"
+      autorouter={{
+        serverUrl: "https://registry-api.tscircuit.com",
+        serverMode: "job",
+        inputFormat: "simplified",
+      }}
+    >
+      <chip name="U1" footprint="soic8" pcbX={5} pcbY={0} />
+      <resistor
+        name="R1"
+        pcbX={-5}
+        pcbY={0}
+        resistance={100}
+        footprint="0402"
+      />
+      <trace from=".U1 > .pin1" to=".R1 > .pin1" />
+    </board>
+  )
 `} />
 
-Learn more about [the Autorouting API here](../web-apis/autorouting-api.md)
+Learn more about [the Autorouting API here](../web-apis/autorouting-api.mdx)
 
 
 ### Custom Board Outlines
