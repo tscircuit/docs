@@ -1,0 +1,48 @@
+---
+title: Ordering Prototypes
+sidebar_position: 4
+---
+
+## Overview
+
+After [you've designed your device](./designing-electronics-from-scratch.md),
+you can use [fabrication files](../guides/understanding-fabrication-files.md)
+to get your device fully assembled.
+
+The two most popular services for
+ordering prototypes are [JLCPCB](https://jlcpcb.com) and [PCBWay](https://pcbway.com).
+
+## Uploading [Fabrication Files](../guides/understanding-fabrication-files.md)
+
+Most fabrication or turn-key assembly services allow you to directly upload 3 types of files:
+
+- Gerbers
+- Bill of Materials (BOM CSV)
+- Pick'n'Place File (CSV)
+
+These files are all available inside your [Fabrication Files zip file](../guides/understanding-fabrication-files.md) when
+you export from tscircuit.
+
+<figure>
+<img src="/img/jlcpcb-upload.png" />
+<figcaption>Many fabricators allow you to directly drop fabrication files on their website!</figcaption>
+</figure>
+
+## Assembling your own boards
+
+It can sometimes be easier to assemble your own boards, this gives you more
+control over your inventory and can lower the cost of your prototypes since
+assembly services often have a minimum order quantity.
+
+Even if you're assembling your own board, you should still order your PCB
+from a fabrication service. PCBs require a chemical etching process to do
+at home and it's rarely worth the hassle to do it yourself.
+
+When you're assembling your own board, you can create a printout of your
+Assembly View to make it easier to place components. In an assembly view,
+the "pin1" location is marked with a cut corner. This can help you verify
+the orientation of each component as you place it.
+
+<figure>
+<img src="/img/assembly-view-in-editor.png" />
+</figure>

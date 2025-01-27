@@ -1,0 +1,110 @@
+---
+title: Using Layout Properties
+---
+
+## Overview
+
+There are many ways to layout your schematic and PCB with tscircuit including
+[automatic layout](./automatic-layout.mdx) and [manual edits](./manual-edits.mdx). In this
+article we'll discuss how to programmatically lay out a board using layout properties like
+`schX`/`schY` and `pcbX` and `pcbY`
+
+All position properties default to `mm` but you can pass a string with any distance
+unit. For example, `pcbX="0.1in"` is the same as `pcbX="2.54mm"`.
+
+
+## PCB Layout Properties
+
+The following properties can be placed on nearly any tscircuit element to control
+its position on the board:
+
+| Property | Description | Example Value |
+| -------- | ----------- | ------------- |
+| `pcbX`   | Set the center X position of the element | `0` |
+| `pcbY`   | Set the center Y position of the element | `0` |
+| `pcbRotation` | Set the rotation of the element | `"90deg"` |
+
+Here's an example of moving a resistor with default properties versus custom
+layout properties:
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+<CircuitPreview defaultView="pcb" code={`
+
+export default () => (
+    <resistor
+      name="R1"
+      footprint="0805"
+      resistance="1k"
+    />
+)
+
+`} />
+
+<CircuitPreview defaultView="pcb" code={`
+
+export default () => (
+    <resistor
+      name="R1"
+      footprint="0805"
+      resistance="1k"
+      pcbX="3mm"
+      pcbY="2.5mm"
+      pcbRotation="90deg"
+    />
+)
+
+`} />
+
+:::info
+To see positions and measure distances in the PCB Viewer, you can press "d" on
+your keyboard to toggle measurement mode.
+
+<figure>
+<img src="/img/pcb-dimension-mode.png" alt="PCB Viewer Measurement Mode" />
+<figcaption>PCB Viewer Measurement Mode, press "d" to toggle when using the PCB tool</figcaption>
+</figure>
+
+:::
+
+
+
+## Schematic Layout Properties
+
+The following properties can be placed on a schematic element to control its position on the board:
+
+| Property | Description | Example Value |
+| -------- | ----------- | ------------- |
+| `schX`   | Set the center X position of the element | `0` |
+| `schY`   | Set the center Y position of the element | `0` |
+| `schRotation` | Set the rotation of the element | `"90deg"` |
+
+Here's an example of moving a resistor with default properties versus custom
+schematic layout properties:
+
+<CircuitPreview defaultView="schematic" code={`
+
+export default () => (
+    <resistor
+      name="R1"
+      footprint="0805"
+      resistance="1k"
+    />
+)
+
+`} />
+
+<CircuitPreview defaultView="schematic" code={`
+
+export default () => (
+    <resistor
+      name="R1"
+      footprint="0805"
+      resistance="1k"
+      // schX="3mm"
+      // schY="2.5mm"
+      schRotation="90deg"
+    />
+)
+
+`} />

@@ -7,6 +7,11 @@ on the PCB and schematic, but [automatic layout](./automatic-layout.mdx) can
 be too uncontrolled. Manual edits allow you to use a schematic or PCB viewer
 to drag and drop components.
 
+:::info
+Are you trying to programmatically define the locations of components? Check out
+[using layout properties](./layout-properties.mdx) instead.
+:::
+
 Every time you drag a component, a file conventionally called `manual-edits.json`
 is edited with your edits. This manual edits file is imported and can be given
 as the `manualEdits` prop to a `<board />` or `<subcircuit />`

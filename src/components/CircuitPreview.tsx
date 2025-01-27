@@ -56,11 +56,11 @@ export default function CircuitPreview({
   return (
     <div
       className={tw(
-        `shadow-lg p-2 pb-1 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8`,
+        `shadow-lg p-2 pb-0 pl-0 pr-0 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8 overflow-hidden`,
       )}
     >
       {showTabs && (
-        <div className={tw("flex justify-end")}>
+        <div className={tw("flex justify-end px-2")}>
           <div
             className={tw(
               `flex-inline justify-end gap-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-100" : "bg-slate-800"} p-1 gap-2`,
@@ -86,26 +86,39 @@ export default function CircuitPreview({
           </div>
         </div>
       )}
-      <div className={tw("max-h-[400px] overflow-y-auto flex m-0 p-0")}>
+      <div
+        className={tw("max-h-[400px] overflow-hidden flex m-0 p-0 mb-[-10px]")}
+      >
         {(view === "code" || shouldSplitCode) && (
-          <div className={tw("flex-1 m-0 p-0 max-h-100 overflow-y-auto")}>
-            <CodeBlock language="tsx">{code.trim()}</CodeBlock>
+          <div
+            className={tw(
+              "flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0",
+            )}
+          >
+            <CodeBlock
+              className={tw(
+                "h-[calc(100%-10px)] w-full rounded-none shadow-none p-0 m-0",
+              )}
+              language="tsx"
+            >
+              {code.trim()}
+            </CodeBlock>
           </div>
         )}
         {(view === "pcb" || view === "schematic") && (
-          <div className={tw("flex-1 m-0 p-0")}>
+          <div className={tw("flex-1 flex-shrink-0 overflow-hidden m-0 p-0")}>
             <img
               src={pcbUrl}
               alt="PCB Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-10px)] m-0 rounded object-contain bg-black ${view !== "pcb" ? "hidden" : ""}`,
+                `w-full h-[calc(100%-8px)] m-0 object-contain bg-black ${view !== "pcb" ? "hidden" : ""}`,
               )}
             />
             <img
               src={schUrl}
               alt="Schematic Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-10px)] m-0 rounded object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
+                `w-full h-[calc(100%-8px)] m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
               )}
             />
           </div>

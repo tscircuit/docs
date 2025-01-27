@@ -22,10 +22,58 @@ export default () => (
 `} />
 
 
-## Customizing the Size of the Board
+## Board Properties
+
+### Customizing the Size of the Board
 
 Generally you'll use the `width` and `height` properties to define the size of
 the board.
+
+### Setting the `autorouter`
+
+Boards or [subcircuits](./subcircuit.mdx) can specify what autorouter should be
+used to route any traces within them.
+
+Usually you'll want to use an autorouter preset:
+
+- `autorouter="auto"` - Uses the [platform configuration](../guides/platform-configuration.md). For tscircuit.com this defaults to `sequential-trace`.
+- `autorouter="sequential-trace"` - Iterate over each trace and use tscircuit's fast built-in autorouter. This method is fast and deterministic but often fails with over 50 traces.
+- `autorouter="auto-local"` - Use the platform configuration, but only route locally (do not make API calls)
+- `autorouter="auto-cloud"` - Use the platform configuration for 
+
+For complex boards with over 50 traces, you should use `autorouter="auto-cloud"`
+to take advantage of tscircuit's cloud autorouters, which internally use the popular
+[freerouting](https://github.com/freerouting/freerouting) library.
+
+You can also specify a custom autorouter object to use your own autorouter.
+
+<CircuitPreview defaultView="pcb" code={`
+
+export default () => (
+  <board
+    width="20mm"
+    height="20mm"
+    autorouter={{
+      serverUrl: "https://registry-api.tscircuit.com",
+      serverMode: "solve-endpoint",
+      inputFormat: "simplified",
+    }}
+  >
+    <chip name="U1" footprint="soic8" pcbX={5} pcbY={0} />
+    <resistor
+      name="R1"
+      pcbX={-5}
+      pcbY={0}
+      resistance={100}
+      footprint="0402"
+    />
+    <trace from=".U1 > .pin1" to=".R1 > .pin1" />
+  </board>
+)
+
+`} />
+
+Learn more about [the Autorouting API here](../web-apis/autorouting-api.md)
 
 
 ### Custom Board Outlines

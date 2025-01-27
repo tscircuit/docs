@@ -13,15 +13,47 @@ A resistor element has two pins and is non-polar, meaning it doesn't matter if
 you place it on backwards (it resists electricity identically either way!)
 
 When specifying a resistor, you'll usually want to give it a footprint string
-such as `0402` or `0603` to indicate it's size. Different 
+such as `0402` or `0603` to indicate it's size. You can see the most popular
+resistor sizes for different power ratings at [jlcsearch](https://jlcsearch.tscircuit.com/resistors/list)
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+
+export default () => (
+    <resistor
+      name="R1"
+      footprint="0402"
+      resistance="1k"
+    />
+)
+
+  `}
+/>
+
+## Pins
+
+A resistor has the following pins and aliases
+
+| Pin # | Aliases | Description |
+| ---------- | ------- | ----------- |
+| pin1 | left, pos | The left side pin in normal orientation |
+| pin2 | right, neg | The right side pin in normal orientation |
+
+:::note
+For convenience, you can use the `pos` and `neg` aliases for the resistor. This
+can help to remember which pin is which for the purpose of pulling up or pulling
+down a signal, but the resistor is non-polar so `pos`/`neg` are meaningless. 
+:::
 ## Tolerances
 
 Resistors can be made to different tolerances. In particular, you might care
 about the following resistor characteristics:
 
 - **tolerance** - a percentage given with a string, e.g. `tolerance="5%"`. This specifies how accurate the resistance needs to be
+- **powerRating** - a wattage e.g. "5W" indicating how much power can transfer through the resistor for normal operation
 - **temperatureOperatingRange** - a string indicating the listed range for the resistor's operating temperature `"-15F-150F"`
 
 ## Automatic Part Selection
