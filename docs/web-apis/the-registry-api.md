@@ -36,7 +36,7 @@ for dynamic loading and execution, e.g. we use it in our [tscircuit/import](http
 
 You can use your tscircuit CLI token to use the advanced API at `https://registry-api.tscircuit.com`.
 
-You can get a tscircuit auth token with `tsci auth get-token`. After you get this token, you just need to add the `Authorization: Bearer ${token}` header to each API request.
+You can get a tscircuit auth token with `tsci auth print-token`. After you get this token, you just need to add the `Authorization: Bearer ${token}` header to each API request.
 
 The following endpoints are available:
 
