@@ -2,4 +2,32 @@
 title: <diode />
 ---
 
-The `<diode />` element is used to represent a diode.
+## Overview
+
+Diodes are semiconductor devices that allow current to flow primarily in one direction, making them ideal for rectification, signal clipping, and protection against reverse voltage. They are essential in power supply circuits and for protecting sensitive components from voltage spikes.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <diode name="D1" footprint="0402" />
+  )
+`}
+/>
+
+In this example, the diode is placed on a board using the default footprint "smd-diode".
+
+## Properties
+
+| Property         | Type     | Description                            | Example |
+| ---------------- | -------- | -------------------------------------- | ------- |
+| `forwardVoltage` | `number` | The forward voltage drop of the diode. | `0.7V`  |
+
+## Pins
+
+Diodes have two pins:
+
+- `pin1`/`anode`/`pos` - The positive terminal where current enters.
+- `pin2`/`cathode`/`neg` - The negative terminal where current exits.
