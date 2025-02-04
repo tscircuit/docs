@@ -8,20 +8,23 @@ Light emitting diodes are [diodes](./diode.mdx) that emit light when current
 passes through them. They are commonly used as indicators on a circuit board
 such as a "power on indicator" or "data transfer in progress indicator".
 
-import CircuitPreview from '@site/src/components/CircuitPreview';
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
-<CircuitPreview code={`
+<CircuitPreview
+  defaultView="schematic"
+  code={`
   export default () => (
     <led name="LED1" footprint="0603" color="red" />
   )
-`} />
+`}
+/>
 
 ## Properties
 
-| Property | Example Value | Description |
-| -------- | ------------- | ----------- |
-| `color` | `red` | The color of the LED. `red` LEDs are most common. |
-| `forwardVoltage` | `1.6V` | The voltage drop across the LED when forward current is applied. |
+| Property         | Example Value | Description                                                      |
+| ---------------- | ------------- | ---------------------------------------------------------------- |
+| `color`          | `red`         | The color of the LED. `red` LEDs are most common.                |
+| `forwardVoltage` | `1.6V`        | The voltage drop across the LED when forward current is applied. |
 
 ### Common LED Footprints
 
@@ -29,12 +32,11 @@ The following represent the most common footprints for LEDs based on [jlcsearch]
 you can provide these as the `footprint` property to the `led` element e.g. `<led footprint="led0603" />`
 
 | Footprint | ~JLCPCB Popularity |
-| --------- | ----------- |
-| `led0603` | 37% |
-| `led0805` | 23% |
-| `led1206` | 10% |
-| `led0402` | 4% |
-
+| --------- | ------------------ |
+| `led0603` | 37%                |
+| `led0805` | 23%                |
+| `led1206` | 10%                |
+| `led0402` | 4%                 |
 
 ## Automatic Part Selection
 
