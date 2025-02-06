@@ -47,9 +47,10 @@ export default function CircuitPreview({
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
 
-  const [view, setView] = useState<"pcb" | "schematic" | "code">(defaultView)
+  const [view, setView] = useState<"pcb" | "schematic" | "code" | "3d">(defaultView)
   const pcbUrl = useMemo(() => createSvgUrl(code, "pcb"), [code])
   const schUrl = useMemo(() => createSvgUrl(code, "schematic"), [code])
+  const threeDUrl = useMemo(() => createSvgUrl(code, "3d"), [code])
 
   const shouldSplitCode = splitView && windowSize !== "mobile"
 
@@ -83,6 +84,11 @@ export default function CircuitPreview({
               active={view === "schematic"}
               onClick={() => setView("schematic")}
             />
+            <Tab
+              label="3D"
+              active={view === "3d"}
+              onClick={() => setView("3d")}
+            />
           </div>
         </div>
       )}
@@ -105,7 +111,7 @@ export default function CircuitPreview({
             </CodeBlock>
           </div>
         )}
-        {(view === "pcb" || view === "schematic") && (
+        {(view === "pcb" || view === "schematic" || view === "3d") && (
           <div className={tw("flex-1 flex-shrink-0 overflow-hidden m-0 p-0")}>
             <img
               src={pcbUrl}
@@ -119,6 +125,13 @@ export default function CircuitPreview({
               alt="Schematic Circuit Preview"
               className={tw(
                 `w-full h-[calc(100%-8px)] m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
+              )}
+            />
+            <img
+              src={threeDUrl}
+              alt="3D Circuit Preview"
+              className={tw(
+                `w-full h-[calc(100%-8px)] m-0 object-contain bg-black ${view !== "3d" ? "hidden" : ""}`,
               )}
             />
           </div>
