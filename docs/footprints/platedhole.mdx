@@ -1,0 +1,56 @@
+---
+title: <platedhole />
+---
+
+## Overview
+
+The `<platedhole />` element is used to represent a plated through hole on a PCB.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <platedhole
+            pcbX="0mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1mm"
+            outerDiameter="2mm"
+            portHints={["pin1"]}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
+## Plated Hole Shapes
+
+There are 3 types of plated holes:
+
+- `circle` - A circular plated hole
+- `oval` - An oval plated hole
+- `pill` - A pill-shaped plated hole (rounded rectangle)
+
+Each shape has different properties
+
+## Properties
+
+| Property      | Shape      | Description                                    |
+| ------------- | ---------- | ---------------------------------------------- |
+| holeDiameter  | circle     | The diameter of the inner hole                 |
+| outerDiameter | circle     | The diameter of the outer copper pad           |
+| innerWidth    | oval, pill | The width of the inner hole                    |
+| innerHeight   | oval, pill | The height of the inner hole                   |
+| outerWidth    | oval, pill | The width of the outer copper pad              |
+| outerHeight   | oval, pill | The height of the outer copper pad             |
+| portHints     | all        | Array of port names that this hole connects to |
+| pcbX          | all        | X position of the hole center on the PCB       |
+| pcbY          | all        | Y position of the hole center on the PCB       |
+| name          | all        | Optional name identifier for the plated hole   |

@@ -2,3 +2,56 @@
 title: <subcircuit />
 ---
 
+## Overview
+
+A `<subcircuit />` is a powerful organizational element in tscircuit that
+represents a collection of elements that are tightly coupled. Subcircuits are
+often used for a small functional block, such as a voltage regulator.
+
+Within a subcircuit, you can have a custom autorouter or isolated nets from the
+larger circuits. You can also re-use reference designators. Your subcircuit is
+essentially isolated from other subcircuits.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <subcircuit name="subcircuit1" schX={-2}>
+        <resistor name="R1" resistance="1k" />
+      </subcircuit>
+      <subcircuit name="subcircuit2" schX={2}>
+        <resistor name="R2" resistance="1k"  />
+      </subcircuit>
+      <trace from=".subcircuit1 .R1 .pin1" to=".subcircuit2 .R2 .pin1" />
+    </board>
+  )
+  `}
+/>
+
+## Re-using Reference Designators
+
+Re-using reference designators is typically considered a bad practice, but in
+tscircuit reference designators are intelligently prefixed prior to being
+written on the silkscreen. This means that you can design your subcircuits
+without worrying about whether or not a reference designator has been previously
+used.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <subcircuit name="subcircuit1" schX={-2}>
+        <resistor name="R1" resistance="1k" />
+      </subcircuit>
+      <subcircuit name="subcircuit2" schX={2}>
+        <resistor name="R1" resistance="1k" />
+      </subcircuit>
+      <trace from=".subcircuit1 .R1 .pin1" to=".subcircuit2 .R1 .pin1" />
+    </board>
+  )
+  `}
+/>

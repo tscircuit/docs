@@ -1,0 +1,34 @@
+---
+title: <transistor />
+---
+
+## Overview
+
+A transistor is a three-terminal semiconductor device that can amplify or switch electronic signals. It is a fundamental component in many electronic circuits, including amplifiers, oscillators, and digital logic gates.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <transistor
+      name="Q1"
+      transistorType="npn" // renamed to "type" in new versions
+      footprint="sot23"
+    />
+  )
+`}
+/>
+
+There are different types of transistors, so where possible you should use the
+most specific element to represent your use case
+
+- [`<transistor />`](./transistor.mdx) - Generic transistor
+- [`<mosfet />`](./mosfet.mdx) - MOSFET transistor
+
+## Properties
+
+| Property | Description                                                     | Example |
+| -------- | --------------------------------------------------------------- | ------- |
+| `type`   | The type of transistor (`npn`, `pnp`, `mosfet`, `igbt`, `jfet`) | `"npn"` |
