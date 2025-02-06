@@ -1,0 +1,55 @@
+---
+title: <smtpad />
+---
+
+## Overview
+
+The `<smtpad />` element is used to represent a surface mount pad.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <smtpad
+            pcbX="0mm"
+            pcbY="0mm"
+            layer="top"
+            shape="rect"
+            width="5mm"
+            height="5mm"
+            portHints={["pin1"]}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
+## SMT Pad Shapes
+
+There are 3 main types of smtpads:
+
+- `rect` - A rectangular pad
+- `circle` - A circular pad
+- `pill` - A pill-shaped pad
+
+Each smtpad shape has different properties
+
+## Properties
+
+| Property    | Shape        | Description                                                    |
+| ----------- | ------------ | -------------------------------------------------------------- |
+| width       | rect, pill   | The width of the pad                                           |
+| height      | rect, pill   | The height of the pad                                          |
+| radius      | circle, pill | The radius of the pad (for circle) or corner radius (for pill) |
+| ccwRotation | rect         | Counter-clockwise rotation angle in degrees                    |
+| portHints   | all          | Array of port names that this pad connects to                  |
+| pcbX        | all          | X position of the pad center on the PCB                        |
+| pcbY        | all          | Y position of the pad center on the PCB                        |
+| layer       | all          | Which layer the pad is on ("top" or "bottom")                  |
