@@ -1,0 +1,30 @@
+---
+title: <silkscreentext />
+---
+
+## Overview
+
+The `<silkscreentext />` element is used to add text to the silkscreen layer within a PCB footprint.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <silkscreentext text="Hello, World!" fontSize="1mm" />
+    </board>
+  )`}
+/>
+
+
+
+## Properties
+
+| Property        | Type   | Description                                                                                                   |
+|-----------------|--------|---------------------------------------------------------------------------------------------------------------|
+| `text`            | string | The text string to display.                                                                                   |
+| `anchorAlignment` | enum   | Alignment of the text. One of "center", "top_left", "top_right", "bottom_left", "bottom_right". Defaults to "center". |
+| `font`            | enum   | Optional. The font type, e.g. `"tscircuit2024"`.                                                                |
+| `fontSize`        | length | Optional. The size of the font.                                                                               |
