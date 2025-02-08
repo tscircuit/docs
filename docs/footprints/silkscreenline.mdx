@@ -4,12 +4,7 @@ title: <silkscreenline />
 
 ## Overview
 
-The `<silkscreenline />` element creates a line on the silkscreen layer within a footprint. It is defined by two endpoints using the following properties:
-
-- x1, y1: The starting coordinates of the line.
-- x2, y2: The ending coordinates of the line.
-
-This element is used to add visual details to your PCB silkscreen, such as boundaries or markers.
+The `<silkscreenline />` element creates a line on the silkscreen layer within a footprint.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
@@ -23,7 +18,9 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
           x1="10mm" 
           y1="10mm" 
           x2="40mm" 
-          y2="10mm" />
+          y2="40mm"
+          strokeWidth="0.1mm"
+        />
       </footprint>
     </board>
   )
@@ -34,9 +31,10 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 | Property | Description                                        |
 |----------|----------------------------------------------------|
-| x1       | X coordinate of the starting point                 |
-| y1       | Y coordinate of the starting point                 |
-| x2       | X coordinate of the ending point                   |
-| y2       | Y coordinate of the ending point                   |
+| `x1`       | X coordinate of the starting point                 |
+| `y1`       | Y coordinate of the starting point                 |
+| `x2`       | X coordinate of the ending point                   |
+| `y2`       | Y coordinate of the ending point                   |
+| `strokeWidth` | Stroke width of the line                         |
 
 Feel free to experiment with different coordinate values to see how the silkscreen line is rendered.
