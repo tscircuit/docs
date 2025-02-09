@@ -1,0 +1,30 @@
+---
+title: <mosfet />
+---
+
+## Overview
+
+A MOSFET or "metal-oxide-semiconductor field-effect transistor" is a type of transistor that is used to control the flow of current through a circuit.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <mosfet
+      name="Q1"
+      channelType="n"
+      mosfetMode="depletion"
+      footprint="sot23"
+    />
+  )
+`}
+/>
+
+## Properties
+
+| Property      | Description                                         | Example       |
+| ------------- | --------------------------------------------------- | ------------- |
+| `channelType` | The type of channel the MOSFET has (`n`, `p`)       | `"n"`         |
+| `mosfetMode`  | The mode of the MOSFET (`enhancement`, `depletion`) | `"depletion"` |

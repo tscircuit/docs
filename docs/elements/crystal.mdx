@@ -1,0 +1,34 @@
+--- 
+title: <crystal />
+sidebar_position: 7
+---
+
+## Overview
+
+A crystal oscillator provides a stable clock signal essential for timing applications and microcontroller operations.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="50mm" height="50mm">
+      <crystal
+        name="XT1"
+        frequency="16MHz"
+        loadCapacitance="18pF"
+        footprint="hc49"
+      />
+    </board>
+  )`}
+/>
+
+
+## Properties
+
+| Property         | Type                  | Description                                                                                           | Example                |
+| ---------------- | --------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------- |
+| `frequency`      | number or string      | The operating frequency of the crystal oscillator.                                                  | `16e6` or `"16MHz"`    |
+| `loadCapacitance`| number or string      | The load capacitance required for stable operation.                                                 | `18pF`                 |
+| `pinVariant`     | PinVariant (optional) | Optional property to select a pin configuration variant if multiple options exist.                    | `"2pin"`            |

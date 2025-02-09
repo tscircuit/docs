@@ -1,0 +1,40 @@
+---
+title: <silkscreenline />
+---
+
+## Overview
+
+The `<silkscreenline />` element creates a line on the silkscreen layer within a footprint.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="50mm" height="50mm">
+      <footprint>
+        <silkscreenline 
+          x1="10mm" 
+          y1="10mm" 
+          x2="40mm" 
+          y2="40mm"
+          strokeWidth="0.1mm"
+        />
+      </footprint>
+    </board>
+  )
+  `}
+/>
+
+## Properties
+
+| Property | Description                                        |
+|----------|----------------------------------------------------|
+| `x1`       | X coordinate of the starting point                 |
+| `y1`       | Y coordinate of the starting point                 |
+| `x2`       | X coordinate of the ending point                   |
+| `y2`       | Y coordinate of the ending point                   |
+| `strokeWidth` | Stroke width of the line                         |
+
+Feel free to experiment with different coordinate values to see how the silkscreen line is rendered.
