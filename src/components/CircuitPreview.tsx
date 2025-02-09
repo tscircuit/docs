@@ -1,4 +1,4 @@
-import { createSvgUrl } from "@tscircuit/create-snippet-url"
+import { createSvgUrl, createPngUrl } from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
 import { useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
@@ -47,10 +47,12 @@ export default function CircuitPreview({
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
 
-  const [view, setView] = useState<"pcb" | "schematic" | "code" | "3d">(defaultView)
+  const [view, setView] = useState<"pcb" | "schematic" | "code" | "3d">(
+    defaultView,
+  )
   const pcbUrl = useMemo(() => createSvgUrl(code, "pcb"), [code])
   const schUrl = useMemo(() => createSvgUrl(code, "schematic"), [code])
-  const threeDUrl = useMemo(() => createSvgUrl(code, "3d"), [code])
+  const threeDUrl = useMemo(() => createPngUrl(code, "3d"), [code])
 
   const shouldSplitCode = splitView && windowSize !== "mobile"
 
@@ -127,11 +129,16 @@ export default function CircuitPreview({
                 `w-full h-[calc(100%-8px)] m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
               )}
             />
+            {view === "3d" && (
+              <div className={tw("text-gray-500 text-center p-2")}>
+                PNG 3D Preview is in beta
+              </div>
+            )}
             <img
               src={threeDUrl}
               alt="3D Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-8px)] m-0 object-contain bg-black ${view !== "3d" ? "hidden" : ""}`,
+                `w-full h-[calc(100%-8px)] m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
               )}
             />
           </div>
