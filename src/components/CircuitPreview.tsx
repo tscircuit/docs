@@ -129,11 +129,6 @@ export default function CircuitPreview({
                 `w-full h-[calc(100%-8px)] m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
               )}
             />
-            {view === "3d" && (
-              <div className={tw("text-gray-500 text-center p-2")}>
-                PNG 3D Preview is in beta
-              </div>
-            )}
             <img
               src={threeDUrl}
               alt="3D Circuit Preview"
