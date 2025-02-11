@@ -108,3 +108,22 @@ The `differentialPairKey` property is in beta and not available on all autoroute
 `} />
 
 The autorouter will ensure both traces in the pair have the same length.
+
+## Net vs Direct connections
+
+There are generally two ways that traces are represented on a PCB "Rats Nest" 
+or on a schematic and they have very different results:
+
+- **Net** - A trace that connects a net to a component pin.
+  - `<trace from="net.GND" to=".R1 > .pin1" />`
+- **Direct** - A trace that connects two component pins directly.
+  - `<trace from=".R1 > .pin1" to=".C2 > .pin2" />`
+
+When you specify a trace with a net, the autorouter will look for the best
+place to tie into the net. This means you're not specifying the exact location
+where the trace will go.
+
+When using net connections we use a Rats Nest on a PCB view or a net label on a
+schematic view. When you see a dotted line on a Rats Nest, you should think of
+it as a _possible_ connection point, but not necessarily the final place where
+the autorouter will connect to the net.
