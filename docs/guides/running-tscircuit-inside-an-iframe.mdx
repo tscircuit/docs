@@ -1,0 +1,91 @@
+---
+title: Running tscircuit inside an iframe
+---
+
+## Overview
+
+tscircuit can be evaluated inside an iframe. This makes it easy to embed
+snippets on a webpage without complex build systems.
+
+Here's an example of an iframe running a tscircuit snippet:
+
+import { TscircuitIframe } from "../../src/components/TscircuitIframe"
+
+<TscircuitIframe
+  fsMap={{
+    "main.tsx": `circuit.add(
+      <board width="10mm" height="10mm">
+        <resistor name="R1" footprint="0402" resistance="1k" />
+      </board>
+    )`,
+  }}
+  entrypoint="main.tsx"
+/>
+
+## Running tscircuit inside an iframe
+
+To run tscircuit inside an iframe, perform the following steps:
+
+1. Add an iframe that points to `"https://runframe.tscircuit.com/iframe.html"`
+2. Listen for the `runframe_ready_to_receive` message from the iframe
+3. Send the code you want to run to the iframe via `postMessage`
+
+Here's a fully working example:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RunFrame Host</title>
+  </head>
+  <body>
+    <iframe
+      id="runframe"
+      src="https://runframe.tscircuit.com/iframe.html"
+      style="width: 100%; height: 600px; border: none;"
+    ></iframe>
+
+    <script>
+      const iframe = document.getElementById("runframe")
+
+      // Listen for ready message from iframe
+      window.addEventListener("message", (event) => {
+        if (event.data?.runframe_type === "runframe_ready_to_receive") {
+          // Send circuit configuration
+          iframe.contentWindow.postMessage(
+            {
+              runframe_type: "runframe_props_changed",
+              runframe_props: {
+                fsMap: {
+                  "main.tsx": `circuit.add(<resistor resistance="1k" />)`,
+                },
+                entrypoint: "main.tsx",
+              },
+            },
+            "*"
+          )
+        }
+      })
+    </script>
+  </body>
+</html>
+```
+
+## React iframe wrapper for tscircuit
+
+An iframe wrapper is available to simplify the process of running tscircuit
+inside an iframe. To use it, add the `@tscircuit/runframe` package to your
+project and use the [`RunFrameWithIframe` component](https://github.com/tscircuit/runframe/blob/main/lib/components/RunFrameWithIframe/RunFrameWithIframe.tsx) like so:
+
+```tsx
+import { RunFrameWithIframe } from "@tscircuit/runframe/iframe"
+
+export default () => (
+  <RunFrameWithIframe
+    fsMap={{
+      "main.tsx": `circuit.add(<resistor resistance="1k" />)`,
+    }}
+    entrypoint="main.tsx"
+  />
+)
+```
