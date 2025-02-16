@@ -1,0 +1,53 @@
+---
+title: Math Utils
+---
+
+## Overview
+
+The `@tscircuit/math-utils` package provides a set of utilities that are
+commonly used in circuit design. The `@tscircuit/math-utils` package is
+generally available in any platform that uses `tscircuit`.
+
+The source code for the `@tscircuit/math-utils` package [is available here](https://github.com/tscircuit/math-utils)
+
+
+## `grid`
+
+A utility function that generates a grid of cells with configurable dimensions, spacing, and positioning. Each cell contains its index, position (row/column), and coordinate points (center, top-left, bottom-right).
+
+```tsx
+import { grid } from "@tscircuit/math-utils"
+
+const gridCells = grid({
+  rows: 3,
+  cols: 3,
+  width: 300,   // optional
+  height: 300,  // optional
+  xSpacing: 100,  // optional, default: 1
+  ySpacing: 100,  // optional, default: 1
+  offsetX: 0,     // optional, default: 0
+  offsetY: 0,     // optional, default: 0
+  yDirection: "cartesian", // optional, default: "cartesian"
+  centered: true  // optional, default: true
+})
+
+export default () => (
+  <board width="30mm" height="30mm">
+    {gridCells.map((cell) => (
+      <led
+        name={`LED${cell.index}`}
+        footprint="led_0402"
+        schX={cell.center.x}
+        schY={cell.center.y}
+        pcbX={cell.center.x}
+        pcbY={cell.center.y}
+      />
+    ))}
+  </board>
+)
+```
+
+The array of `GridCellPositions` contains:
+- `index`: Sequential cell number
+- `row`, `col`: Grid position
+- `center`, `topLeft`, `bottomRight`: Coordinate points

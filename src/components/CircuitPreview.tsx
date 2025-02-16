@@ -108,27 +108,27 @@ export default function CircuitPreview({
           </div>
         )}
         {(view === "pcb" || view === "schematic" || view === "3d") && (
-          <div className={tw("flex-1 flex-shrink-0 overflow-hidden m-0 p-0")}>
+          <div className={tw("flex-1 min-h-[300px] flex-shrink-0 overflow-hidden m-0 p-0")}>
             {showTabs && shouldSplitCode && tabsElm}
             <img
               src={pcbUrl}
               alt="PCB Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-8px)] m-0 object-contain bg-black ${view !== "pcb" ? "hidden" : ""}`,
+                `w-full h-[calc(100%-46px)] m-0 object-contain bg-black flex items-center justify-center ${view !== "pcb" ? "hidden" : ""}`,
               )}
             />
             <img
               src={schUrl}
               alt="Schematic Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-8px)] m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
+                `w-full h-[calc(100%-46px)] m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
               )}
             />
             <img
               src={threeDUrl}
               alt="3D Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-8px)] m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
+                `w-full h-[calc(100%-46px)] m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
               )}
             />
           </div>
