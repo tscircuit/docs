@@ -1,0 +1,26 @@
+---
+title: <resonator />
+---
+
+## Overview
+
+Resonators are common components used to provide a stable frequency reference for
+circuits. They are often used in clock circuits or as a timing element.
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <resonator
+        name="X1"
+        frequency="16MHz"
+        loadCapacitance="5pF"
+        footprint="hc49"
+      />
+    </board>
+  )
+  `}
+/>

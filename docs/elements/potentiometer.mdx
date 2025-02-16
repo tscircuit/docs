@@ -24,3 +24,29 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   )
   `}
 />
+
+## Variants (two or three terminals)
+
+The `<potentiometer />` element can be configured with two or three terminals
+using the `pinVariant` prop.
+
+| Pin Variant | Description |
+| ----------- | ----------- |
+| `two_pin` | Two terminals |
+| `three_pin` | Three terminals |
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <potentiometer
+        name="P1"
+        maxResistance="10k"
+        pinVariant="three_pin"
+        footprint="pinrow3"
+      />
+    </board>
+  )
+  `}
+/>

@@ -1,0 +1,66 @@
+---
+title: <pushbutton />
+---
+
+## Overview
+
+Pushbuttons a common type of switch normally open momentary switch. They are
+commonly used as a reset or pairing button.
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+      />
+    </board>
+  )
+  
+  `}
+/>
+
+## Pins
+
+| Pin  | Aliases    | Description |
+| ------- | -- |----------- |
+| `1` | `side1` | One of the left side pins  |
+| `2` | `side1` | One of the left side pins |
+| `3` | `side2` | One of the right side pins |
+| `4` | `side2` | One of the right side pins |
+
+:::info
+The pins are internally connected, so you only need to connect one of the
+left or right pins.
+:::
+
+## Example: A small keyboard grid of pushbuttons
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  import { grid } from "@tscircuit/math-utils"
+
+  export default () => (
+    <board width="36mm" height="36mm">
+      {grid({
+        rows: 3,
+        cols: 3,
+      }).map((cell) => (
+        <pushbutton
+          name={\`SW\${cell.index}\`}
+          footprint="pushbutton"
+          schX={cell.center.x * 2}
+          schY={cell.center.y}
+          pcbX={cell.center.x * 12}
+          pcbY={cell.center.y * 12}
+        />  
+      ))}
+    </board>
+  )
+  `}
+/>
