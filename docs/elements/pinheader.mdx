@@ -1,0 +1,54 @@
+---
+title: <pinheader />
+---
+
+## Overview
+
+The `<pinheader />` element is used to create a male or female pin header
+with configurable spacing and number of pins.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Example
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`export default () => (
+    <pinheader
+      name="J1"
+      pinCount={8}
+      gender="male"
+      pitch="2.54mm"
+      doubleRow={true}
+      showSilkscreenPinLabels={true}
+      pinLabels={["VCC", "GND", "SDA", "SCL", "MISO", "MOSI", "SCK", "CS"]}
+      x={10}
+      y={10}
+    />
+  )
+`}
+/>
+
+## Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| pinCount | number | (required) | Number of pins in the header |
+| pitch | number \| string | "2.54mm" | Distance between pins |
+| schFacingDirection | "up" \| "down" \| "left" \| "right" | "right" | Direction the header faces in schematic view |
+| gender | "male" \| "female" | "male" | Whether the header is male or female |
+| showSilkscreenPinLabels | boolean | false | Whether to show pin labels in silkscreen |
+| doubleRow | boolean | false | Whether the header has two rows of pins |
+| holeDiameter | number \| string | "1mm" | Diameter of the through-hole for each pin |
+| platedDiameter | number \| string | "1.7mm" | Diameter of the plated area around each hole |
+| pinLabels | string[] | undefined | Labels for each pin |
+| facingDirection | "left" \| "right" | "right" | Direction the header is facing |
+| x | number | 0 | X position of the component |
+| y | number | 0 | Y position of the component |
+| rotation | number | 0 | Rotation of the component in degrees |
+| id | string | auto-generated | Unique identifier for the component |
+
+
+
+
+

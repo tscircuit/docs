@@ -8,6 +8,27 @@ A group is the basic container element that can contain other elements.
 
 By default, a group doesn't have any effect on the circuit.
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  showTabs={false}
+  code={`
+  import { sel } from "tscircuit"
+
+  export default () => (
+    <board width="10mm" height="10mm">
+      <resistor name="R1" resistance="1k" schX={-2} />
+      <group schY={-3}>
+        <resistor name="R2" resistance="1k" schX={2} />
+        <trace from={sel.R1.pin2} to={sel.R2.pin1} />
+      </group>
+    </board>
+  )
+  `}
+/>
+
+
 ## Moving multiple components via a `<group />`
 
 `<group />` elements can be used to move multiple components at once.
