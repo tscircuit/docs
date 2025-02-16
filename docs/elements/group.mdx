@@ -1,0 +1,34 @@
+---
+title: <group />
+---
+
+## Overview
+
+A group is the basic container element that can contain other elements.
+
+By default, a group doesn't have any effect on the circuit.
+
+## Moving multiple components via a `<group />`
+
+`<group />` elements can be used to move multiple components at once.
+
+In the example below every schematic symbol inside the `<group />` will be moved
+5mm to the right and 3mm up.
+
+```tsx
+<group schX={5} schY={3}>
+  <resistor name="R1" resistance="1k" footprint="0402" />
+  <resistor name="R2" resistance="1k" footprint="0402" schY={2} />
+  <resistor name="R3" resistance="1k" footprint="0402" schY={2} />
+</group>
+```
+
+We can similarly use a `<group />` to move multiple PCB elements at once:
+
+```tsx
+<group pcbX={5} pcbY={3}>
+  <resistor name="R1" resistance="1k" footprint="0402" />
+  <resistor name="R2" resistance="1k" footprint="0402" pcbY={2} />
+  <resistor name="R3" resistance="1k" footprint="0402" pcbY={2} />
+</group>
+```
