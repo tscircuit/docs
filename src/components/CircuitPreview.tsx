@@ -56,6 +56,8 @@ export default function CircuitPreview({
 
   const shouldSplitCode = splitView && windowSize !== "mobile"
 
+  const tabContentHeightCss = showTabs && (windowSize !== "mobile") ? "h-[calc(100%-46px)]"  : "h-full max-h-[300px]"
+
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
       <div
@@ -92,8 +94,8 @@ export default function CircuitPreview({
       )}
     >
       {showTabs && !shouldSplitCode && tabsElm}
-      <div className={tw("h-full overflow-hidden flex m-0 p-0")}>
-        {(view === "code" || shouldSplitCode) && (
+      <div className={tw(`h-full overflow-hidden flex m-0 p-0 ${!showTabs && windowSize === "mobile" ? "flex-col" : ""}`)}>
+        {(view === "code" || shouldSplitCode || (!showTabs && windowSize === "mobile")) && (
           <div
             className={tw(
               `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
@@ -114,21 +116,21 @@ export default function CircuitPreview({
               src={pcbUrl}
               alt="PCB Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-46px)] m-0 object-contain bg-black flex items-center justify-center ${view !== "pcb" ? "hidden" : ""}`,
+                `w-full ${tabContentHeightCss} m-0 object-contain bg-black flex items-center justify-center ${view !== "pcb" ? "hidden" : ""}`,
               )}
             />
             <img
               src={schUrl}
               alt="Schematic Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-46px)] m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
+                `w-full ${tabContentHeightCss} m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
               )}
             />
             <img
               src={threeDUrl}
               alt="3D Circuit Preview"
               className={tw(
-                `w-full h-[calc(100%-46px)] m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
+                `w-full ${tabContentHeightCss} m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
               )}
             />
           </div>
