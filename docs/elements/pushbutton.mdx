@@ -46,18 +46,18 @@ left or right pins.
   import { grid } from "@tscircuit/math-utils"
 
   export default () => (
-    <board width="30mm" height="30mm">
+    <board width="36mm" height="36mm">
       {grid({
         rows: 3,
         cols: 3,
       }).map((cell) => (
         <pushbutton
-          name={\`SW${cell.index}\`}
+          name={\`SW\${cell.index}\`}
           footprint="pushbutton"
-          schX={cell.center.x}
+          schX={cell.center.x * 2}
           schY={cell.center.y}
-          pcbX={cell.center.x}
-          pcbY={cell.center.y}
+          pcbX={cell.center.x * 12}
+          pcbY={cell.center.y * 12}
         />  
       ))}
     </board>
