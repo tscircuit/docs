@@ -1,0 +1,41 @@
+---
+title: <via />
+---
+
+## Overview
+
+A via is a plated hole that connects different layers of a PCB. Vias are
+commonly used to route traces between layers and for thermal management.
+
+Vias do not have a schematic representation.
+
+You generally do not need to manually create vias, they will be handled
+automatically by the [autorouter](./board.mdx#setting-the-autorouter).
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+    <via
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="0.8mm"
+      holeDiameter="0.4mm"
+      x={10}
+      y={10}
+    />
+  )`}
+/>
+
+## Properties
+
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| fromLayer | string | "top" | Starting layer for the via |
+| toLayer | string | "bottom" | Ending layer for the via |
+| holeDiameter | number \| string | "0.4mm" | Diameter of the plated hole |
+| outerDiameter | number \| string | "0.8mm" | Outer diameter of the copper annular ring |
+| x | number | 0 | PCB X position of the via |
+| y | number | 0 | PCB Y position of the via |
