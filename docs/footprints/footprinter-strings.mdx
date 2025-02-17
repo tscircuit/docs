@@ -1,0 +1,79 @@
+---
+title: Footprinter Strings
+---
+
+## Overview
+
+You can quickly specify the footprint and 3d model for any element by setting
+the `footprint` property to a string. 
+
+import FootprintPreview from "@site/src/components/FootprintPreview"
+
+<FootprintPreview footprint="0402" />
+
+## dip
+
+Dual in-line package.
+
+<FootprintPreview footprints={["dip", "dip16_p1.27_id0.6mm_od0.9mm", "dip8_wide"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `p`       | `"2.54mm"` | Pitch. Space between pins |
+| `id`      | `"1mm"`  | Inner diameter (hole diameter) of plated holes |
+| `od`      | `"1.5mm"`| Outer diameter (copper diameter) of plated holes |
+| `w`       | `"300mil"` | Distance between columns |
+| `wide`    | `false`   | Wide DIP style (600mil between columns) |
+| `narrow`    | `true`   | Narrow DIP style (300mil between columns) |
+
+
+## axial
+
+Basic through-hole “axial” resistor or diode footprint.
+
+Examples:
+
+- `axial`
+- `axial_p0.1in`
+
+<FootprintPreview footprint="axial" />
+
+`axial` parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `p`       | `"2.54mm"` | Pitch. Space between pins |
+| `id`      | `"0.7mm"`  | Inner diameter (hole diameter) of plated holes |
+| `od`      | `"1mm"`    | Outer diameter (copper diameter) of plated holes |
+
+## 0402
+
+Standard imperial 0402 package. `1.0mm × 0.5mm`
+
+<FootprintPreview footprint="0402" />
+
+## 0603
+
+Standard imperial 0603 package. `1.6mm × 0.8mm`
+
+<FootprintPreview footprint="0603" />
+
+## 0805
+
+Standard imperial 0805 package. `2.0mm × 1.2mm`
+
+<FootprintPreview footprint="0805" />
+
+## 1206
+
+Standard imperial 1206 package. `3.2mm × 1.6mm`
+
+<FootprintPreview footprint="1206" />
+
+## 1210
+
+Standard imperial 1210 package. `3.2mm × 2.5mm`
+
+<FootprintPreview footprint="1210" />

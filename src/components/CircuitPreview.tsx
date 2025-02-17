@@ -38,11 +38,13 @@ export default function CircuitPreview({
   showTabs = true,
   defaultView = "pcb",
   splitView = true,
+  hideSchematicTab = false,
 }: {
   code: string
   showTabs?: boolean
   defaultView?: "code" | "pcb" | "schematic"
   splitView?: boolean
+  hideSchematicTab?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -56,7 +58,10 @@ export default function CircuitPreview({
 
   const shouldSplitCode = splitView && windowSize !== "mobile"
 
-  const tabContentHeightCss = showTabs && (windowSize !== "mobile") ? "h-[calc(100%-46px)]"  : "h-full max-h-[300px]"
+  const tabContentHeightCss =
+    showTabs && windowSize !== "mobile"
+      ? "h-[calc(100%-46px)]"
+      : "h-full max-h-[300px]"
 
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
@@ -77,11 +82,13 @@ export default function CircuitPreview({
           active={view === "pcb"}
           onClick={() => setView("pcb")}
         />
-        <Tab
-          label="Schematic"
-          active={view === "schematic"}
-          onClick={() => setView("schematic")}
-        />
+        {!hideSchematicTab && (
+          <Tab
+            label="Schematic"
+            active={view === "schematic"}
+            onClick={() => setView("schematic")}
+          />
+        )}
         <Tab label="3D" active={view === "3d"} onClick={() => setView("3d")} />
       </div>
     </div>
@@ -94,8 +101,14 @@ export default function CircuitPreview({
       )}
     >
       {showTabs && !shouldSplitCode && tabsElm}
-      <div className={tw(`h-full overflow-hidden flex m-0 p-0 ${!showTabs && windowSize === "mobile" ? "flex-col" : ""}`)}>
-        {(view === "code" || shouldSplitCode || (!showTabs && windowSize === "mobile")) && (
+      <div
+        className={tw(
+          `h-full overflow-hidden flex m-0 p-0 ${!showTabs && windowSize === "mobile" ? "flex-col" : ""}`,
+        )}
+      >
+        {(view === "code" ||
+          shouldSplitCode ||
+          (!showTabs && windowSize === "mobile")) && (
           <div
             className={tw(
               `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
@@ -110,7 +123,11 @@ export default function CircuitPreview({
           </div>
         )}
         {(view === "pcb" || view === "schematic" || view === "3d") && (
-          <div className={tw("flex-1 min-h-[300px] flex-shrink-0 overflow-hidden m-0 p-0")}>
+          <div
+            className={tw(
+              "flex-1 min-h-[300px] flex-shrink-0 overflow-hidden m-0 p-0",
+            )}
+          >
             {showTabs && shouldSplitCode && tabsElm}
             <img
               src={pcbUrl}
