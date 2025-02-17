@@ -2,3 +2,35 @@
 title: Footprint Elements vs Strings
 sidebar_position: 1
 ---
+
+When setting the `footprint` property for an element, you can either
+use [footprinter strings](./footprinter-strings.mdx) or use the [`<footprint />`](../elements/footprint.mdx)
+element and manually specify pad positions.
+
+Footprinter strings are often quicker, more concise, and have the benefit of often
+mapping to a 3d model.
+
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview code={`
+  export default () => (
+    <group>
+      <resistor name="R1" footprint="0402" resistance="1k" pcbX={-3} />
+      <resistor name="R2" footprint={
+        <footprint>
+          <smtpad portHints={["1"]} pcbX={-0.5} shape="rect" width={0.6} height={0.6} />
+          <smtpad portHints={["2"]} pcbX={0.5} shape="rect" width={0.6} height={0.6} />
+          <silkscreenpath route={[
+            {x: -0.1, y: 0.2},
+            {x: 0.1, y: 0.2}
+          ]} />
+          <silkscreenpath route={[
+            {x: -0.1, y: -0.2}, 
+            {x: 0.1, y: -0.2}
+          ]} />
+        </footprint>
+      } pcbX={3} resistance="1k" />
+    </group>
+  )
+`} />

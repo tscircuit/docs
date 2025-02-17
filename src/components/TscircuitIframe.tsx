@@ -3,10 +3,23 @@ import { useEffect, useRef } from "react"
 export interface TscircuitIframeProps {
   fsMap: Record<string, string>
   entrypoint: string
+  code?: string
 }
 
 export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  let additionalProps = {}
+
+  if (runFrameProps.code) {
+    additionalProps = {
+      entrypoint: "entrypoint.tsx",
+      fsMap: {
+        "entrypoint.tsx": `import Component from "./component.tsx"\ncircuit.add(<Component />)`,
+        "component.tsx": runFrameProps.code,
+      },
+    }
+  }
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -14,7 +27,7 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
         iframeRef.current?.contentWindow?.postMessage(
           {
             runframe_type: "runframe_props_changed",
-            runframe_props: runFrameProps,
+            runframe_props: { ...runFrameProps, ...additionalProps },
           },
           "*",
         )
@@ -46,3 +59,5 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
     </div>
   )
 }
+
+export default TscircuitIframe
