@@ -77,3 +77,45 @@ Standard imperial 1206 package. `3.2mm × 1.6mm`
 Standard imperial 1210 package. `3.2mm × 2.5mm`
 
 <FootprintPreview footprint="1210" />
+
+## soic
+
+Small Outline Integrated Circuit (SOIC) footprint.
+
+<FootprintPreview footprints={["soic", "soic16_w7mm_p0.8mm"]} />
+
+**Parameters:**
+
+| Parameter     | Default    | Description                                                             |
+|---------------|------------|-------------------------------------------------------------------------|
+| `num_pins`    | `8`        | Number of pins in the package.                                          |
+| `w`           | `"5.3mm"`  | Overall package width.                                                  |
+| `p`           | `"1.27mm"` | Pin pitch (center-to-center distance between adjacent pins).            |
+| `pl`          | `"1.0mm"`  | Pin length.                                                             |
+| `pw`          | `"0.6mm"`  | Pin width.                                                              |
+| `legsoutside` | `false`    | If true, positions pins outside the package body; otherwise, pins are inset. |
+
+---
+
+## bga
+
+Ball Grid Array (BGA) footprint.
+
+<FootprintPreview footprints={["bga9", "bga16_p2mm", "bga14_p1.5mm_missing(1,2)"]} />
+
+**Parameters:**
+
+| Parameter   | Default       | Description                                                                      |
+|-------------|---------------|----------------------------------------------------------------------------------|
+| `num_pins`  | `64`          | Total number of solder balls.                                                    |
+| `grid`      | _calculated_  | Grid dimensions as an object (e.g. `{ x: N, y: N }`). If unspecified, a square grid is assumed. |
+| `p`         | `"0.8mm"`     | Ball pitch: center-to-center distance between adjacent balls.                   |
+| `w`         | _none_        | Package width (optional).                                                        |
+| `h`         | _none_        | Package height (optional).                                                       |
+| `ball`      | _none_        | Ball diameter (optional).                                                        |
+| `pad`       | _none_        | Pad size for each ball (optional).                                               |
+| `tlorigin`  | `false`       | Use top-left numbering for balls.                                                |
+| `blorigin`  | `false`       | Use bottom-left numbering for balls.                                             |
+| `trorigin`  | `false`       | Use top-right numbering for balls.                                               |
+| `brorigin`  | `false`       | Use bottom-right numbering for balls.                                            |
+| `missing`   | `[]`          | List of balls to omit (by number or position) to accommodate design needs.       |

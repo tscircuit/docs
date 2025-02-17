@@ -3,7 +3,7 @@ import { grid } from "@tscircuit/math-utils"
 
 const grids = {
   2: {
-    width: 20,
+    width: 30,
     height: 12,
     grid: grid({
       rows: 1,
