@@ -50,7 +50,14 @@ export const FootprintPreview = ({
         code={`
 export default () => (
   <board width="${grid.width}mm" height="${grid.height}mm">
-${footprints.map((f, i) => `    <chip footprint="${f}" name="U${i + 1}" pcbX={${grid.grid[i].center.x}} pcbY={${grid.grid[i].center.y}} />`).join("  \n")}
+${footprints
+  .map((f, i) =>
+    !f
+      ? ""
+      : `    <chip footprint="${f}" name="U${i + 1}" pcbX={${grid.grid[i].center.x}} pcbY={${grid.grid[i].center.y}} />`,
+  )
+  .filter((a) => Boolean(a))
+  .join("  \n")}
   </board>
 )
 `}

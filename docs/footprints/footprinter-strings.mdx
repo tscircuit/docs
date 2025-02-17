@@ -119,3 +119,145 @@ Ball Grid Array (BGA) footprint.
 | `trorigin`  | `false`       | Use top-right numbering for balls.                                               |
 | `brorigin`  | `false`       | Use bottom-right numbering for balls.                                            |
 | `missing`   | `[]`          | List of balls to omit (by number or position) to accommodate design needs.       |
+
+## tssop
+
+Thin-Shrink Small Outline Package (TSSOP) footprint. Default configuration is 6.1mm width with 0.65mm pitch.
+
+<FootprintPreview footprints={["tssop20", "tssop20_w6.5mm_p0.65mm"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `8` | Number of pins in the package |
+| `w` | `"6.1mm"` | Overall package width |
+| `p` | `"0.65mm"` | Pin pitch (center-to-center distance between adjacent pins) |
+| `pw` | _calculated_ | Pin width (calculated from pitch if not specified) |
+| `pl` | _calculated_ | Pin length (calculated from pin width if not specified) |
+
+## stampboard
+
+A breakout board with configurable pins on all sides. Can include inner holes for mounting.
+
+<FootprintPreview footprints={["stampboard_left10_right10_bottom4_top0_w21mm_p2.54mm", "", "stampboard_left20_right20_bottom3_top2_w21mm_p2.54mm_innerhole"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `w` | `"22.58mm"` | Board width |
+| `h` | _calculated_ | Board height (calculated from number of pins if not specified) |
+| `left` | `20` | Number of pins on left side |
+| `right` | `20` | Number of pins on right side |
+| `top` | `2` | Number of pins on top side |
+| `bottom` | `2` | Number of pins on bottom side |
+| `p` | `"2.54mm"` | Pin pitch |
+| `pw` | `"1.6mm"` | Pin width |
+| `pl` | `"2.4mm"` | Pin length |
+| `innerhole` | `false` | Whether to include inner mounting holes |
+| `innerholeedgedistance` | `"1.61mm"` | Distance of inner holes from edge |
+
+## stampreceiver
+
+Similar to stampboard but with modified pad dimensions for receiving a stampboard component.
+
+<FootprintPreview footprints={["stampreceiver_left20_right20_bottom3_top2_w21mm_p2.54mm", "", "stampreceiver_left20_right20_bottom3_top2_w21mm_p2.54mm_innerhole"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `w` | `"22.58mm"` | Board width |
+| `h` | _calculated_ | Board height (calculated from number of pins if not specified) |
+| `left` | `20` | Number of pins on left side |
+| `right` | `20` | Number of pins on right side |
+| `top` | `2` | Number of pins on top side |
+| `bottom` | `2` | Number of pins on bottom side |
+| `p` | `"2.54mm"` | Pin pitch |
+| `pw` | `"1.6mm"` | Pin width |
+| `pl` | `"3.2mm"` | Pin length |
+| `innerhole` | `false` | Whether to include inner mounting holes |
+| `innerholeedgedistance` | `"1.61mm"` | Distance of inner holes from edge |
+
+## hc49
+
+Standard HC49 crystal footprint.
+
+<FootprintPreview footprint="hc49" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `p` | `"4.88mm"` | Pin pitch |
+| `id` | `"0.6mm"` | Inner diameter of plated holes |
+| `od` | `"1.2mm"` | Outer diameter of plated holes |
+| `w` | `"5.6mm"` | Package width |
+| `h` | `"3.5mm"` | Package height |
+
+## to92
+
+TO-92 transistor package footprint, available in triangular or inline arrangements.
+
+<FootprintPreview footprints={["to92", "to92_inline"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `p` | `"1.27mm"` | Pin pitch |
+| `id` | `"0.72mm"` | Inner diameter of plated holes |
+| `od` | `"0.95mm"` | Outer diameter of plated holes |
+| `w` | `"4.5mm"` | Package width |
+| `h` | `"4.5mm"` | Package height |
+| `arrangement` | `"triangular"` | Pin arrangement, either "triangular" or "inline" |
+
+## to220
+
+TO-220 package footprint with configurable number of pins.
+
+<FootprintPreview footprints={["to220_2", "to220_3", "to220_4"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `3` | Number of pins (specify using format "to220_N") |
+| `p` | `"5.0mm"` | Pin pitch |
+| `id` | `"1.0mm"` | Inner diameter of plated holes |
+| `od` | `"1.9mm"` | Outer diameter of plated holes |
+| `w` | `"13mm"` | Package width |
+| `h` | `"7mm"` | Package height |
+
+## ssop
+
+Shrink Small Outline Package (SSOP) footprint.
+
+<FootprintPreview footprints={["ssop8", "ssop16"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `8` | Number of pins in the package |
+| `w` | `"3.9mm"` | Overall package width |
+| `p` | `"1.27mm"` | Pin pitch (center-to-center distance between adjacent pins) |
+| `pw` | _calculated_ | Pin width (calculated from pitch if not specified) |
+| `pl` | _calculated_ | Pin length (calculated from pin width if not specified) |
+
+## sop8
+
+8-pin Small Outline Package (SOP) footprint.
+
+<FootprintPreview footprint="sop8" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `8` | Fixed at 8 pins |
+| `w` | _inherited_ | Overall package width |
+| `p` | _inherited_ | Pin pitch |
+| `pl` | `"1.5mm"` | Pin length |
+| `pw` | `"0.6mm"` | Pin width |
