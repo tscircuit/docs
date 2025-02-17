@@ -5,7 +5,8 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "docusaurus build",
+    "build": "docusaurus build && bun run build:repomix",
+    "build:repomix": "repomix --style xml --include '**/*.md,**/*.mdx' --output ./build/ai.txt && bun run scripts/cleanup-ai-txt.ts",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
@@ -31,6 +32,7 @@
     "@tscircuit/create-snippet-url": "^0.0.8",
     "@twind/core": "^1.1.3",
     "posthog-docusaurus": "^2.0.2",
+    "repomix": "^0.2.28",
     "twind": "^0.16.19",
     "typescript": "~5.6.2"
   },
