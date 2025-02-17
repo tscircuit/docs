@@ -1,0 +1,20 @@
+---
+title: <silkscreenrect />
+---
+
+## Overview
+
+Silkscreen rectangles can be used to encapsulate a rectangular area around a
+chip
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview code={`
+  export default () => (
+    <group>
+      <footprint>
+        <silkscreenrect pcbX={0} pcbY={0} width={1} height={1} />
+      </footprint>
+    </group>
+  )
+`} />
