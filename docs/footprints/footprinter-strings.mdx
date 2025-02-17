@@ -261,3 +261,83 @@ Parameters:
 | `p` | _inherited_ | Pin pitch |
 | `pl` | `"1.5mm"` | Pin length |
 | `pw` | `"0.6mm"` | Pin width |
+
+## qfp
+
+Quad Flat Package (QFP) footprint with configurable number of pins.
+
+<FootprintPreview footprints={["qfp32", "qfp44"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `32` | Total number of pins (must be divisible by 4) |
+| `body_size` | `"7mm"` | Size of the package body (square) |
+| `p` | `"0.8mm"` | Pin pitch (center-to-center distance between adjacent pins) |
+| `pw` | `"0.25mm"` | Pin width |
+| `pl` | `"0.6mm"` | Pin length (exposed pad length) |
+
+## qfn
+
+Quad Flat No-Lead (QFN) package footprint with configurable number of pins.
+
+<FootprintPreview footprints={["qfn20", "qfn32"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `20` | Total number of pins (must be divisible by 4) |
+| `body_size` | `"4mm"` | Size of the package body (square) |
+| `p` | `"0.5mm"` | Pin pitch (center-to-center distance between adjacent pins) |
+| `pw` | `"0.25mm"` | Pin width |
+| `pl` | `"0.4mm"` | Pin length (exposed pad length) |
+
+## sot23
+
+Small Outline Transistor (SOT-23) footprint with 3 pins.
+
+<FootprintPreview footprint="sot23" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `3` | Fixed at 3 pins |
+| `body_size` | `"2.9mm"` | Size of the package body |
+| `p` | `"0.95mm"` | Pin pitch |
+| `pw` | `"0.4mm"` | Pin width |
+| `pl` | `"0.6mm"` | Pin length |
+
+## sot23_5
+
+Small Outline Transistor (SOT-23-5) footprint with 5 pins.
+
+<FootprintPreview footprint="sot23_5" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `5` | Fixed at 5 pins |
+| `body_size` | `"2.9mm"` | Size of the package body |
+| `p` | `"0.95mm"` | Pin pitch |
+| `pw` | `"0.4mm"` | Pin width |
+| `pl` | `"0.6mm"` | Pin length |
+
+## sot223
+
+Small Outline Transistor (SOT-223) footprint with 4 pins.
+
+<FootprintPreview footprint="sot223" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `4` | Fixed at 4 pins |
+| `body_size` | `"6.5mm"` | Size of the package body |
+| `p` | `"2.3mm"` | Pin pitch |
+| `pw` | `"0.7mm"` | Pin width |
+| `pl` | `"0.8mm"` | Pin length |
