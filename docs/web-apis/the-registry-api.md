@@ -64,3 +64,28 @@ You can also use the registry to perform autorouting jobs for a
 | `/autorouting/jobs/create`     | Create a new autorouting job         |
 | `/autorouting/jobs/get`        | Get the status of an autorouting job |
 | `/autorouting/jobs/get_output` | Get the output of an autorouting job |
+
+## Endpoint Documentation
+
+### `/packages/search`
+
+Search for a package by name.
+
+```
+POST /packages/search
+{
+  "query": "555timer"
+}
+
+RESPONSE:
+
+{
+  "packages": [
+    {
+      "name": "@tsci/555timer",
+      "version": "1.0.0",
+      "description": "A 555 timer circuit"
+    }
+  ]
+}
+```
