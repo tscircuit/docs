@@ -5,7 +5,7 @@ sidebar_position: 4
 
 ## Install the tscircuit CLI
 
-You can install the tscircuit CLI by running `npm install -g tscircuit`.
+You can install the tscircuit CLI by running `npm install -g @tscircuit/cli`.
 
 ## Create a new Project
 
