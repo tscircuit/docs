@@ -1,0 +1,31 @@
+---
+title: Building a Custom Keyboard
+---
+
+## Overview
+
+In this tutorial, we'll walk through building a custom keyboard using tscircuit.
+We'll start by creating a simple 4-key macropad with pushbuttons and a microcontroller.
+We'll then replace the pushbuttons with mechanical switches and diodes, then expand on our simple keyboard to a full 60% keyboard
+design with custom mounting holes and "matrix scanning" to detect key presses.
+
+## Starting Simple: A 4-key Pushbutton Macropad
+
+Let's start by creating a simple 4-key macropad with pushbuttons. Pushbuttons
+are commonly available and builtin to tscircuit via the `<pushbutton />` element.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Building Large Keyboards with Matrix Scanning
+
+A keyboard is essentially a matrix of switches that are scanned by a microcontroller to detect key presses. Each key consists of:
+- A mechanical switch
+- A diode to prevent "ghosting" (unwanted keypress detection)
+
+The switches are arranged in rows and columns, with the microcontroller scanning each intersection to determine which keys are pressed.
+
+## Building the Circuit
+
+Let's start by creating a basic 2x2 matrix keyboard:
+
+
