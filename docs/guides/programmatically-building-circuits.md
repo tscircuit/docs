@@ -96,7 +96,7 @@ other formats:
 
 - [Gerber files](https://github.com/tscircuit/circuit-json-to-gerber)
 - [Specctra DSN Autorouting files](https://github.com/tscircuit/dsn-converter)
-- [Pick'n'Place Files](https://github.com/tscircuit/circuit-json-to-pnp)
+- [Pick'n'Place Files](https://github.com/tscircuit/circuit-json-to-pnp-csv)
 - [PCB and Schematic SVGs](https://github.com/tscircuit/circuit-to-svg)
-- [Bill of Materials](https://github.com/tscircuit/circuit-json-to-bom)
+- [Bill of Materials](https://github.com/tscircuit/circuit-json-to-bom-csv)
 - [SPICE netlists and simulations](https://github.com/tscircuit/circuit-json-to-spice)
