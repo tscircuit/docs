@@ -3,6 +3,6 @@
   "position": 7,
   "link": {
     "type": "generated-index",
-    "description": "How to use the tscircuit registry API to publish, build and share modules"
+    "description": "Documentation for tscircuit's web APIs including the registry API, image generation API, and autorouting API"
   }
 }

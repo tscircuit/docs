@@ -1,0 +1,185 @@
+# Image Generation API
+
+The tscircuit image generation API allows you to dynamically create visual representations of your circuits in various formats. This guide explains how to use the dedicated subdomains for generating SVGs, PNGs, and 3D renderings of your circuits.
+
+## Using the Official Package
+
+The recommended way to generate image URLs is to use the official `@tscircuit/create-snippet-url` package:
+
+```bash
+npm install @tscircuit/create-snippet-url
+# or
+bun add @tscircuit/create-snippet-url
+```
+
+This package handles URL encoding, compression, and proper formatting:
+
+```javascript
+import { createSvgUrl, createPngUrl } from '@tscircuit/create-snippet-url';
+
+// Create a URL to view the PCB SVG
+const svgUrl = createSvgUrl(
+  `
+export default () => (
+  <board width="10mm" height="10mm">
+    <resistor resistance="1k" footprint="0402" name="R1" schX={3} pcbX={3} />
+  </board>
+)
+`,
+  "pcb" // View type: "pcb", "schematic", or "3d"
+);
+
+// Create a PNG URL
+const pngUrl = createPngUrl(
+  tscircuitCode,
+  "pcb" // View type: "pcb", "schematic", or "3d"
+);
+```
+
+## SVG Generation API
+
+The `svg.tscircuit.com` subdomain provides endpoints for generating SVG renderings of your circuits.
+
+### Basic Usage
+
+```
+https://svg.tscircuit.com/?svg_type=<type>&code=<compressed-code>
+```
+
+### Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `svg_type` | View type: `pcb`, `schematic`, or `3d` | Yes |
+| `code` | Compressed and encoded circuit code | Yes |
+| `width` | Width of the SVG in pixels | No (default: 800) |
+| `height` | Height of the SVG in pixels | No (default: 600) |
+| `dark_mode` | Enable dark mode rendering | No (default: false) |
+| `zoom` | Zoom level for the view | No |
+| `download` | Set to "true" to download as file | No |
+
+### Direct SVG Generation Example
+
+```javascript
+import { getCompressedBase64SnippetString } from '@tscircuit/create-snippet-url';
+
+const tscircuitCode = `
+export default () => (
+  <board width="10mm" height="10mm">
+    <resistor resistance="1k" footprint="0402" name="R1" schX={3} pcbX={3} />
+  </board>
+)`;
+
+const compressedCode = getCompressedBase64SnippetString(tscircuitCode);
+const svgUrl = `https://svg.tscircuit.com/?svg_type=pcb&code=${encodeURIComponent(compressedCode)}`;
+```
+
+## PNG Generation API
+
+The `png.tscircuit.com` subdomain allows you to generate PNG renderings of your circuits.
+
+### Basic Usage
+
+```
+https://png.tscircuit.com/?view=<type>&code=<compressed-code>
+```
+
+### Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `view` | View type: `pcb`, `schematic`, or `3d` | Yes |
+| `code` | Compressed and encoded circuit code | Yes |
+| `width` | Width of the PNG in pixels | No (default: 800) |
+| `height` | Height of the PNG in pixels | No (default: 600) |
+| `scale` | Scale factor for rendering (for high-DPI) | No (default: 1) |
+| `dark_mode` | Enable dark mode rendering | No (default: false) |
+| `transparent` | Use transparent background | No (default: false) |
+| `download` | Set to "true" to download as file | No |
+
+## 3D Rendering API
+
+For 3D renderings of PCBs, use the dedicated endpoints:
+
+### Basic Usage
+
+```
+https://svg.tscircuit.com/?svg_type=3d&code=<compressed-code>
+```
+
+### Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `svg_type` | Must be set to `3d` | Yes |
+| `code` | Compressed and encoded circuit code | Yes |
+| `width` | Width of the rendering in pixels | No (default: 800) |
+| `height` | Height of the rendering in pixels | No (default: 600) |
+| `angle` | Camera angle in degrees | No (default: 45) |
+| `zoom` | Zoom level | No (default: 1.0) |
+| `show_components` | Show 3D components | No (default: true) |
+| `wireframe` | Show wireframe rendering | No (default: false) |
+
+### Example: Embedding a 3D View
+
+```jsx
+import React from 'react';
+import { createSvgUrl } from '@tscircuit/create-snippet-url';
+
+const Circuit3DViewer = ({ circuitCode }) => {
+  const viewerUrl = createSvgUrl(circuitCode, "3d");
+  
+  return (
+    <iframe 
+      src={viewerUrl}
+      width="800"
+      height="600"
+      style={{ border: 'none' }}
+      title="3D Circuit Viewer"
+    />
+  );
+};
+```
+
+## Browser Preview
+
+You can also use the browser preview feature:
+
+```javascript
+import { createBrowserPreviewUrl } from '@tscircuit/create-snippet-url';
+
+const previewUrl = createBrowserPreviewUrl(
+  tscircuitCode,
+  "pcb" // optional view type
+);
+```
+
+## Code Format
+
+The code format expected by all of these endpoints is a React component that exports a default function returning a circuit. For example:
+
+```jsx
+export default () => (
+  <board width="20mm" height="20mm">
+    <resistor resistance="1k" footprint="0402" name="R1" pcbX={0} pcbY={0} />
+    <capacitor capacitance="10uF" footprint="0805" name="C1" pcbX={5} pcbY={5} />
+    <trace from=".R1 > .pin1" to=".C1 > .pin1" />
+  </board>
+)
+```
+
+## Rate Limits and Authentication
+
+Free usage of the image generation APIs is rate-limited. For production applications, consider:
+
+1. Using an API key (contact support for details)
+2. Caching generated images when possible
+3. Self-hosting the rendering service for high-volume applications
+
+## Best Practices
+
+- Use the official `@tscircuit/create-snippet-url` package instead of manually constructing URLs
+- Cache images when possible to reduce bandwidth and processing overhead
+- Use appropriate image dimensions to minimize bandwidth
+- For interactive applications, use lower quality/size during manipulation, then higher quality for final rendering
+- When embedding in web applications, include width and height attributes to prevent layout shifts
