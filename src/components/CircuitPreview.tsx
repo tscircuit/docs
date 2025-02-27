@@ -39,12 +39,16 @@ export default function CircuitPreview({
   defaultView = "pcb",
   splitView = true,
   hideSchematicTab = false,
+  hidePCBTab = false,
+  hide3DTab = false,
 }: {
   code: string
   showTabs?: boolean
   defaultView?: "code" | "pcb" | "schematic"
   splitView?: boolean
   hideSchematicTab?: boolean
+  hidePCBTab?: boolean
+  hide3DTab?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -77,11 +81,13 @@ export default function CircuitPreview({
             onClick={() => setView("code")}
           />
         )}
-        <Tab
-          label="PCB"
-          active={view === "pcb"}
-          onClick={() => setView("pcb")}
-        />
+        {!hidePCBTab && (
+          <Tab
+            label="PCB"
+            active={view === "pcb"}
+            onClick={() => setView("pcb")}
+          />
+        )}
         {!hideSchematicTab && (
           <Tab
             label="Schematic"
@@ -89,7 +95,9 @@ export default function CircuitPreview({
             onClick={() => setView("schematic")}
           />
         )}
-        <Tab label="3D" active={view === "3d"} onClick={() => setView("3d")} />
+        {!hide3DTab && (
+          <Tab label="3D" active={view === "3d"} onClick={() => setView("3d")} />
+        )}
       </div>
     </div>
   )
