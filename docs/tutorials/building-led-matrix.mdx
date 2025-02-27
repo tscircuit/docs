@@ -79,22 +79,22 @@ export default () => {
 
 ## Objectives of Building an LED Matrix
 
-Some of the practical applications of building an LED Matrix are:
+Some practical applications of building an LED Matrix include:
 
-- **Signage** - Build signs for events, products, etc.
-- **Data Visualization Tool** - Display real-time data metrics like GitHub contributions, website traffic, or temperature readings through color intensity
-- **Interactive Notification System** - Create a physical notification system for emails, social media, or calendar events with customizable brightness levels
+- **Signage** - Building signs for events, products, etc.
+- **Data Visualization Tool** - Displaying real-time data metrics like GitHub contributions, website traffic, or temperature readings through color intensity
+- **Interactive Notification System** - Creating a physical notification system for emails, social media, or calendar events with customizable brightness levels
 
 ## LED Matrix Requirements
 
-- The LED matrix should be WiFi controllable
-- The matrix layout pattern should be grid-based
-- We want to be able to control the brightness and color of each LED
+- The LED matrix must be WiFi-controllable
+- The matrix layout pattern must be grid-based
+- Each LED should be individually controllable for brightness and color
 
 ## System Diagram
 
-The matrix is connected to the Pico microcontroller via a data chain. The Pico is connected to WiFi via the `PICO_W` module.
-Components and connections between them are shown in the diagram below:
+The matrix connects to the Pico microcontroller via a data chain. The Pico connects to WiFi through the `PICO_W` module.
+The components and connections between them are shown in the diagram below:
 
 ![System Diagram](../../static/img/tutorials/led-matrix/matrix-system-requirements.png)
 
@@ -106,7 +106,7 @@ We will follow the following steps to build the circuit step by step:
 1. Import the Pico microcontroller Schematic
 2. Import the LED Schematic
 3. Chain two LEDs together
-4. Chaining many LEDs together
+4. Chain many LEDs together
 5. Connect the Pico to the LED matrix
 
 ### Pico Schematic
@@ -426,7 +426,7 @@ export const usePICO_W = createUseComponent(PICO_W, pinLabels)
 `} />
 
 ### LED Schematic
-We are using IC LEDs (specifically WS2812B), which have RGB LED and the control chip integrated in the same package. These IC LEDs offer several advantages over traditional RGB LEDs:
+We are using IC LEDs (specifically WS2812B), which have an RGB LED and control chip integrated into the same package. These IC LEDs offer several advantages over traditional RGB LEDs:
 
 - **Simplified Wiring** - Only 4 pins needed (VDD, GND, Data In, Data Out) compared to 4+ pins for traditional RGB LEDs
 - **Serial Communication** - LEDs can be daisy-chained together, requiring only one data pin from the microcontroller
@@ -767,4 +767,4 @@ The LED matrix can be controlled through a simple web interface that provides a 
 
 3. **Pico W Connection**: The matrix connects to WiFi using the Pico W's wireless capabilities, allowing for remote control through the web interface.
 
-The complete implementation including the web interface and Pico W code is available in our [LED Matrix Server repository](https://github.com/tscircuit/led-matrix-server).
+The complete implementation, including the web interface and Pico W code, is available in our [LED Matrix Server repository](https://github.com/tscircuit/led-matrix-server).
