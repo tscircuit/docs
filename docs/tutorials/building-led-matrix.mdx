@@ -110,7 +110,7 @@ We will follow the following steps to build the circuit step by step:
 5. Connect the Pico to the LED matrix
 
 ### Pico Schematic
-Schematic of the Pico microcontroller imported from JLCPCB is shown below:
+Schematic of the Pico microcontroller [imported from JLCPCB](/guides/importing-modules-and-chips/importing-from-jlcpcb) is shown below:
 <CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
 import { createUseComponent } from "@tscircuit/core"
 import type { CommonLayoutProps } from "@tscircuit/props"
@@ -426,7 +426,7 @@ export const usePICO_W = createUseComponent(PICO_W, pinLabels)
 `} />
 
 ### LED Schematic
-We are using IC LEDs (specifically WS2812B), which have an RGB LED and control chip integrated into the same package. These IC LEDs offer several advantages over traditional RGB LEDs:
+We are using IC LEDs (specifically [WS2812B](https://jlcpcb.com/partdetail/Worldsemi-WS2812B2020/C965555)), which have an RGB LED and control chip integrated into the same package. These IC LEDs offer several advantages over traditional RGB LEDs:
 
 - **Simplified Wiring** - Only 4 pins needed (VDD, GND, Data In, Data Out) compared to 4+ pins for traditional RGB LEDs
 - **Serial Communication** - LEDs can be daisy-chained together, requiring only one data pin from the microcontroller
@@ -540,7 +540,8 @@ export default () => (
 
 ### Connecting Pico to the LED Matrix
 
-The Pico is connected to the LED matrix via the `GP6` pin, and the other pins of the Pico are connected to ground.
+The Pico is connected to the LED matrix via a general purpose input/output (GPIO) pin in this example we are using `GP6`,
+and the other pins of the Pico are connected to ground.
 
 <CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
 import { usePICO_W } from "@tsci/seveibar.PICO_W"
@@ -589,20 +590,15 @@ export default () => {
 
 #### LED Matrix Layout
 We can connect multiple LEDs together by chaining them, but doing this for a large number of LEDs would be tedious.
-Luckily, tscircuit has a helper function to create a grid of components. We will be using that helper function to create our matrix layout.
+Luckily, tscircuit has a [helper function to create a grid](https://github.com/tscircuit/math-utils) of components. We will be using that helper function to create our matrix layout.
 
-:::note
-This helper method can be imported from the [`math-utils`](https://github.com/tscircuit/math-utils) library
-:::
-
-Here we are using the `grid` function to create a 3x5 LED matrix. The `grid` function takes in the number of columns and rows, and the spacing between the components.
+Here we are using the [`grid`](https://github.com/tscircuit/math-utils/blob/main/src/grid.ts) function to create a 3x5 LED matrix. The `grid` function takes in the number of columns and rows, and the spacing between the components.
 
 <CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
 import { WS2812B_2020 as LedWithIc } from "@tsci/seveibar.WS2812B_2020"
 import { grid } from "@tscircuit/math-utils"
 
 export default () => {
-  const cells = grid({ cols: 3, rows: 5, xSpacing: 8, ySpacing: 5, offsetX: 3 })
   return (
     <board width="65mm" height="52mm" routingDisabled>
       {/* 3x5 LED matrix */}
@@ -652,7 +648,7 @@ export default () => {
       <U1 />
 
       {/* LED matrix */}
-      {grid({ cols: 3, rows: 5, xSpacing: 8, ySpacing: 5, offsetX: 20, offsetY: 5 }).map(
+      {grid({ cols: 3, rows: 5, xSpacing: 8, ySpacing: 5, offsetX: 20 }).map(
         ({ center, index }) => {
           const ledName = "LED" + (index + 1)
           const prevLedName = index > 0 ? "LED" + (index) : null
@@ -755,6 +751,18 @@ You can order this PCB by downloading the fabrication files and uploading them t
 ## Controlling the LED Matrix
 
 The LED matrix can be controlled through a simple web interface that provides a visual grid for controlling individual LEDs. The control system includes:
+
+<table>
+  <tr>
+    <td>
+      <img src="/img/tutorials/led-matrix/led-matrix-board.png" alt="LED Matrix board" />
+    </td>
+    <td>
+      <img src="/img/tutorials/led-matrix/web-interface-1.png" alt="LED Matrix web interface" />
+    </td>
+  </tr>
+</table>
+
 
 1. **Web Interface**: A 3x5 grid interface where clicking each cell cycles through:
    - Off (Gray)
