@@ -483,20 +483,14 @@ You can also insert custom keys for your organization and they will be copied to
 the output [Circuit JSON](https://github.com/tscircuit/circuit-json)
 
 
-## Type-safe Chips: Custom Component Hooks
+## Type-safe Chips: `ChipProps` and Chip Selectors
 
-Component hooks are a great way to improve type safety and simplify the usage
-of your component. A component hook is created with the `createUseComponent`
-from `tscircuit` and returns a hook that when used, will generate a component
-with properties for each pin label.
+tscircuit has a type called `ChipProps` that can be used to properly define
+components that wrap a `<chip />` element. By using `ChipProps`, you're
+making it 
 
 ```tsx
-import { createUseComponent, type CommonLayoutProps } from "tscircuit"
-
-interface Props extends CommonLayoutProps {
-  name: string
-}
-
+import { sel, type ChipProps } from "tscircuit"
 
 const pinLabels = {
   pin1: "VCC",
@@ -509,15 +503,13 @@ const pinLabels = {
   pin8: "RESET"
 } as const
 
-export const A555Timer = (props: Props) => (
+export const A555Timer = (props: ChipProps<typeof pinLabels>) => (
   <chip
     footprint="soic8"
     pinLabels={pinLabels}
     {...props}
   />
 )
-
-export const use555Timer = createUseComponent(A555Timer, pinLabels)
 ```
 
 :::warning
@@ -525,24 +517,25 @@ Make sure to have `as const` when you're defining your `pinLabels`, if you're
 missing this the types won't work!
 :::
 
-When you use Component Hooks, you get better type checking in your component usage
-because all the pin labels are now available on the component!
+You can also use the `sel` object to access the pins of a chip for traces!
 
 ```tsx
-import { use555Timer } from "./a555timer"
-import { usePowerRegulator } from "./power-regulator"
+import { sel } from "tscircuit"
+import { A555Timer } from "./a555timer"
+import { PowerRegulator } from "./power-regulator"
 
 export default () => {
-  const U1 = use555Timer("U1")
-  const M1 = usePowerRegulator("M1")
-
   return (
     <board width="10mm" height="10mm">
-      <U1 />
-      <M1 />
+      <PowerRegulator name="M1" />
 
-      <trace from={U1.GND} to="net.GND" />
-      <trace from={U1.VCC} to={M1.V5} />
+      <A555Timer
+        name="U1"
+        connections={{
+          GND: "net.GND",
+          VCC: sel.M1(PowerRegulator).V5
+        }}
+      />
     </board>
   )
 }

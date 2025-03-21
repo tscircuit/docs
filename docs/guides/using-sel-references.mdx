@@ -49,7 +49,64 @@ sel.U1.GPIO1
 // ".U1 > .GPIO1"
 ```
 
-So `sel` is really just a slightly more type-safe, conventional way of writing
-[port selectors](./port-and-net-selectors.md). Where possible, it's much better to use [component hooks](../elements/chip.mdx#type-safe-chips-custom-component-hooks)
-because they can guarantee more type-safety and have the exact pins that a chip
-supports.
+## Type-Safe Chip Pin References
+
+The `sel` object provides enhanced type safety when working with chips by allowing you to reference pins with proper TypeScript types. There are two advanced ways to use `sel` with chips:
+
+You can pass a chip component to `sel` to get fully type-safe pin accessors:
+
+```tsx
+import { MyChip } from "./my-chip"
+
+const selectors = {
+  U1: sel.U1(MyChip)
+}
+
+export const MyChipWithSomeTraces = () => (
+  <group>
+    <MyChip name="U1" />
+    <trace from={selectors.U1.VCC} to="net.VCC" />
+    <trace from={selectors.U1.GND} to="net.GND" />
+  </group>
+)
+```
+
+`sel.U1(MyChip).VCC` is the same as `sel.U1.VCC`,
+however, when we pass `MyChip` to `sel.U1`, TypeScript will check that `MyChip`
+has a pin called `VCC` and will error if it doesn't.
+
+```tsx
+import { sel } from "tscircuit"
+import { MyChip } from "./my-chip"
+
+sel.U1(MyChip).VCC
+// ".U1 > .VCC"
+
+sel.U1(MyChip).GND
+// ".U1 > .GND"
+
+// TypeScript will error on non-existent pins!
+// sel.U1(MyChip).DOES_NOT_EXIST -> ERROR!
+```
+
+
+## Generic Pin Selectors (no chip needed!)
+
+You can also use TypeScript generics to define custom pin types directly:
+
+```tsx
+import { sel } from "tscircuit"
+
+// Define custom pin types using generics
+const selU2 = sel.U2<"custompin1" | "custompin2">()
+
+selU2.custompin1 // Returns ".U2 > .custompin1"
+selU2.custompin2 // Returns ".U2 > .custompin2"
+
+// TypeScript will error on non-existent pins!
+// selU2.doesnotexist // TypeScript error!
+```
+
+
+So `sel` is a more type-safe, conventional way of writing
+[port selectors](./port-and-net-selectors.md).
