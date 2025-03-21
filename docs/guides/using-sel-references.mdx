@@ -71,6 +71,24 @@ export const MyChipWithSomeTraces = () => (
 )
 ```
 
+:::info
+In order for type-safe selectors to work, you need to define your chip component
+with a `ChipProps` type, like this:
+
+```tsx
+import { ChipProps } from "tscircuit"
+
+const pinLabels = {
+  VCC: string
+  GND: string
+} as const
+
+const MyChip = (props: ChipProps<typeof pinLabels>) => (
+  <chip {...props} pinLabels={pinLabels} />
+)
+```
+:::
+
 `sel.U1(MyChip).VCC` is the same as `sel.U1.VCC`,
 however, when we pass `MyChip` to `sel.U1`, TypeScript will check that `MyChip`
 has a pin called `VCC` and will error if it doesn't.
