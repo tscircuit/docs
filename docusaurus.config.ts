@@ -59,6 +59,12 @@ const config: Config = {
   ],
 
   themeConfig: {
+    metadata: [
+      { name: "twitter:card", content: "summary" }, // Small preview with logo
+      { name: "twitter:title", content: "tscircuit Docs" },
+      { name: "twitter:description", content: "Create Electronics with TypeScript and React" },
+      { name: "twitter:image", content: "https://docs.tscircuit.com/logo/logo.svg" },
+    ],
     navbar: {
       logo: {
         alt: "tscircuit logo",
