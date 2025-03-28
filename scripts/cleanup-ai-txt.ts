@@ -2,6 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 
 const aiTxtPath = path.join(process.cwd(), "build/ai.txt")
+const llmsTxtPath = path.join(process.cwd(), "build/llms.txt")
 
 // Read the file
 let content = fs.readFileSync(aiTxtPath, "utf-8")
@@ -19,3 +20,4 @@ for (const pattern of importPatterns) {
 
 // Write back to the file
 fs.writeFileSync(aiTxtPath, content, "utf-8")
+fs.writeFileSync(llmsTxtPath, content, "utf-8")

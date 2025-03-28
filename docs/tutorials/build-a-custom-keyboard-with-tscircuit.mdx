@@ -67,31 +67,17 @@ A keyboard PCB primarily consists of three types of components:
 
 Let's import these into our project.
 
-First, you'll need to install the packages containing the Pico and Key components if you don't have them (the `tsci init` template might include some). We'll assume they are available via the `@tsci/seveibar` scope as shown in the provided `index.tsx`. If `tsci init` didn't add them, you might need:
+First, you'll need to install the packages containing the `Pico` and `Key` components:
 
 ```bash
-# If using npm
-npm install @tsci/seveibar.PICO @tsci/seveibar.Key
-
-# If using bun
-bun add @tsci/seveibar.PICO @tsci/seveibar.Key
+tsci add @tsci/seveibar.PICO @tsci/seveibar.Key
 ```
 
-Now, let's look at the code for importing and previewing each component.
+Now, let's import and preview each component to see what we're working with:
 
 ### Microcontroller (Raspberry Pi Pico)
 
 We import the `PICO` component. It provides the necessary footprint and pin definitions for the Raspberry Pi Pico.
-
-```tsx title="index.tsx (partial)"
-import { PICO } from "@tsci/seveibar.PICO";
-
-export default () => (
-  <board width="50mm" height="60mm">
-    <PICO name="U1" />
-  </board>
-);
-```
 
 <CircuitPreview defaultView="pcb" code={`
 import { PICO } from "@tsci/seveibar.PICO";
@@ -103,19 +89,12 @@ export default () => (
 );
 `} />
 
-### Key Switch (Kailh Choc Style)
+### Hot-Swappable Key Switch (Kailh Choc Style)
 
-We import a `Key` component, representing a single switch with its footprint.
-
-```tsx title="index.tsx (partial)"
-import { Key } from "@tsci/seveibar.Key";
-
-export default () => (
-  <board width="30mm" height="30mm">
-    <Key name="K1" />
-  </board>
-);
-```
+We import a `Key` component, representing a single switch with its footprint. This
+component is comprised of a couple different footprints and 3d models, but when
+placed on the board is just a small plastic piece that key switches can be
+pressed into.
 
 <CircuitPreview defaultView="pcb" code={`
 import { Key } from "@tsci/seveibar.Key";
@@ -129,7 +108,10 @@ export default () => (
 
 ### Diode (1N4148WS SMD)
 
-We import the `A_1N4148WS` diode component, defined locally in our project (as seen in the provided `repomix-output.txt`). This SMD diode is suitable for keyboard matrices. Make sure the `imports/A1N4148WS.tsx` file exists in your project.
+Let's import a diode component. The 1N4148WS is one of the most in-stock and common
+diodes according to [jlcsearch](https://jlcsearch.tscircuit.com/diodes/list). We
+can use the `File > Import` menu to quickly add it to our project. You should get
+something like this:
 
 ```tsx title="imports/A1N4148WS.tsx"
 import type { ChipProps } from "@tscircuit/props"
@@ -179,16 +161,6 @@ export const A_1N4148WS = (props: ChipProps<typeof pinLabels>) => {
     />
   )
 }
-```
-
-```tsx title="index.tsx (partial)"
-import { A_1N4148WS } from "./imports/A1N4148WS";
-
-export default () => (
-  <board width="20mm" height="20mm">
-    <A_1N4148WS name="D1" />
-  </board>
-);
 ```
 
 <CircuitPreview defaultView="pcb" code={`
@@ -647,16 +619,6 @@ import { Key } from "@tsci/seveibar.Key"; // Need Key for KeyMatrix
 import { A_1N4148WS } from "./imports/A1N4148WS"; // Need Diode for KeyMatrix
 import { parseKLELayout } from "./lib/KLELayout"; // Need parser for KeyMatrix
 import { getRefDesForKey } from "./lib/getRefDesForKey"; // Need refdes for parser
-
-const KeyMatrix = ({ layout, rowToMicroPin, colToMicroPin, name="KB", pcbX=0, pcbY=0, schX=0, schY=0 }) => { /* ... full implementation ... */
-  const keys=parseKLELayout(layout); const minX=Math.min(...keys.map((k)=>k.x-k.width/2)); const maxX=Math.max(...keys.map((k)=>k.x+k.width/2)); const minY=Math.min(...keys.map((k)=>k.y-k.height/2)); const maxY=Math.max(...keys.map((k)=>k.y+k.height/2)); const centerX=(minX+maxX)/2; const centerY=(minY+maxY)/2; return(<group name={name} pcbX={pcbX} pcbY={pcbY} schX={schX} schY={schY}> {keys.map((key)=>{ const relX=key.x-centerX; const relY=key.y-centerY; const rowNet=rowToMicroPin?.[key.row]; const colNet=colToMicroPin?.[key.col]; return(<group key={key.name} pcbX={relX} pcbY={relY} schX={relX/10} schY={relY/10}> <Key name={key.name} /> {rowNet!==undefined&&(<A_1N4148WS name={\`\${key.name}_DIO\`} connections={{pin2: \`.\${key.name} .pin1\`, pin1:rowNet}} pcbX={0} pcbY={-7} schY={-1} layer="bottom" />)} {colNet!==undefined&&(<trace from={\`.\${key.name} .pin2\`} to={colNet} />)} </group>) })} </group>)
-};
-
-const diodePinLabels = { pin1: ["C"], pin2: ["A"] }
-const A_1N4148WS = (props) => ( <chip pinLabels={diodePinLabels} symbolName="diode" supplierPartNumbers={{ jlcpcb: ["C57759"] }} manufacturerPartNumber="A_1N4148WS" footprint={<footprint><smtpad portHints={["pin1"]} pcbX="-1.17mm" pcbY="0mm" width="1mm" height="0.75mm" shape="rect" /><smtpad portHints={["pin2"]} pcbX="1.17mm" pcbY="0mm" width="1mm" height="0.75mm" shape="rect" /></footprint>} {...props} /> );
-
-// --- End Re-included definitions ---
-
 
 // Define a simple 2x2 layout
 const simpleLayout = [
