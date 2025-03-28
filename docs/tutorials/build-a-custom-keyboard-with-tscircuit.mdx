@@ -649,24 +649,6 @@ import { A_1N4148WS } from "./imports/A1N4148WS"; // Need Diode for KeyMatrix
 import { parseKLELayout } from "./lib/KLELayout"; // Need parser for KeyMatrix
 import { getRefDesForKey } from "./lib/getRefDesForKey"; // Need refdes for parser
 
-// --- Re-including component definitions needed by CircuitPreview ---
-// Note: In a real project these are imported, not redefined.
-
-const refDesMap = {
-  "~": "K_TILDE", "~`": "K_TILDE", "!": "K_EXCLAMATION", "@": "K_AT", "#": "K_HASH", $: "K_DOLLAR", "%": "K_PERCENT", "^": "K_CARET", "&": "K_AMPERSAND", "*": "K_ASTERISK", "(": "K_LPAREN", ")": "K_RPAREN", "{": "K_LBRACE", "}": "K_RBRACE", "|": "K_PIPE", "[": "K_LSQBRAK", "]": "K_RSQBRAK", '"': "K_QUOTE", "'": "K_SINGLEQUOTE", "<": "K_LT", ">": "K_GT", "?": "K_QUESTION", "/": "K_SLASH", windows: "K_WINDOWS", win: "K_WINDOWS", menu: "K_MENU", "caps lock": "K_CAPSLOCK", ":": "K_COLON", ";": "K_SEMICOLON", "1": "K_N1", "2": "K_N2", "3": "K_N3", "4": "K_N4", "5": "K_N5", "6": "K_N6", "7": "K_N7", "8": "K_N8", "9": "K_N9", "0": "K_N0", "-": "K_MINUS", "+": "K_PLUS", backspace: "K_BACKSPACE", tab: "K_TAB", " ": "K_SPACE", enter: "K_ENTER", shift: "K_SHIFT", ctrl: "K_CTRL", alt: "K_ALT", escape: "K_ESCAPE", arrowleft: "K_ARROW_LEFT", arrowright: "K_ARROW_RIGHT", arrowup: "K_ARROW_UP", arrowdown: "K_ARROW_DOWN", backquote: "K_BACKQUOTE", quote: "K_QUOTE", semicolon: "K_SEMICOLON", comma: "K_COMMA", period: "K_PERIOD", slash: "K_SLASH", backslash: "K_BACKSLASH", bracketleft: "K_BRACKET_LEFT", bracketright: "K_BRACKET_RIGHT", a: "K_A", b: "K_B", c: "K_C", d: "K_D", e: "K_E", f: "K_F", g: "K_G", h: "K_H", i: "K_I", j: "K_J", k: "K_K", l: "K_L", m: "K_M", n: "K_N", o: "K_O", p: "K_P", q: "K_Q", r: "K_R", s: "K_S", t: "K_T", u: "K_U", v: "K_V", w: "K_W", x: "K_X", y: "K_Y", z: "K_Z",
-};
-const getRefDesForKey = (key) => { /* ... full implementation ... */
-  const normKeyLabels = key.toLowerCase().split("\\n");
-  for (const normKeyLabel of normKeyLabels) { if (normKeyLabel in refDesMap) { return refDesMap[normKeyLabel]; } }
-  if (key === "") { return "K_SPACE"; }
-  if (key.match(/^[a-zA-Z0-9]+$/)) { return \`K_\${key.toUpperCase()}\`; }
-  throw new Error(\`No defined refDes for key "\${key}"\`);
-};
-
-const parseKLELayout = (layout) => { /* ... full implementation ... */
-  const KEY_SIZE=19.05; const keys=[]; let currentX=0; let currentY=0; let currentRotation=0; let currentRotationX=0; let currentRotationY=0; let currentProps={width:1,height:1,x:0,y:0,align:undefined}; const nameCounters=new Map(); layout.forEach((row,rowIndex)=>{ currentX=0; let colIndex=0; row.forEach((item)=>{ if(typeof item==="object"){ if(item.x!==undefined)currentX+=item.x; if(item.y!==undefined)currentY+=item.y; if(item.w!==undefined)currentProps.width=item.w; if(item.h!==undefined)currentProps.height=item.h; if(item.r!==undefined)currentRotation=item.r; if(item.rx!==undefined)currentRotationX=item.rx; if(item.ry!==undefined)currentRotationY=item.ry; if(item.a!==undefined)currentProps.align=item.a }else if(typeof item==="string"){ let refDes=getRefDesForKey(item); const baseRefDes=refDes; if(nameCounters.has(baseRefDes)){ const count=nameCounters.get(baseRefDes); const ogKey=keys.find((k)=>k.name===baseRefDes); if(ogKey&&!ogKey.name.match(/\\d+$/)){ ogKey.name=\`\${baseRefDes}1\` } nameCounters.set(baseRefDes,count+1); refDes=\`\${baseRefDes}\${count+1}` }else{ nameCounters.set(baseRefDes,1) } keys.push({name:refDes,x:(currentX+currentProps.width/2)*KEY_SIZE,y:-(currentY+currentProps.height/2)*KEY_SIZE,width:currentProps.width*KEY_SIZE,height:currentProps.height*KEY_SIZE,rotation:currentRotation,rotationX:currentRotationX*KEY_SIZE,rotationY:currentRotationY*KEY_SIZE,row:rowIndex,col:colIndex}); currentX+=currentProps.width; colIndex++; currentProps.width=1; currentProps.height=1 } }); currentY++ }); return keys;
-};
-
 const KeyMatrix = ({ layout, rowToMicroPin, colToMicroPin, name="KB", pcbX=0, pcbY=0, schX=0, schY=0 }) => { /* ... full implementation ... */
   const keys=parseKLELayout(layout); const minX=Math.min(...keys.map((k)=>k.x-k.width/2)); const maxX=Math.max(...keys.map((k)=>k.x+k.width/2)); const minY=Math.min(...keys.map((k)=>k.y-k.height/2)); const maxY=Math.max(...keys.map((k)=>k.y+k.height/2)); const centerX=(minX+maxX)/2; const centerY=(minY+maxY)/2; return(<group name={name} pcbX={pcbX} pcbY={pcbY} schX={schX} schY={schY}> {keys.map((key)=>{ const relX=key.x-centerX; const relY=key.y-centerY; const rowNet=rowToMicroPin?.[key.row]; const colNet=colToMicroPin?.[key.col]; return(<group key={key.name} pcbX={relX} pcbY={relY} schX={relX/10} schY={relY/10}> <Key name={key.name} /> {rowNet!==undefined&&(<A_1N4148WS name={\`\${key.name}_DIO\`} connections={{pin2: \`.\${key.name} .pin1\`, pin1:rowNet}} pcbX={0} pcbY={-7} schY={-1} layer="bottom" />)} {colNet!==undefined&&(<trace from={\`.\${key.name} .pin2\`} to={colNet} />)} </group>) })} </group>)
 };
@@ -815,35 +797,6 @@ import { Key } from "@tsci/seveibar.Key"; // Need Key for KeyMatrix
 import { A_1N4148WS } from "./imports/A1N4148WS"; // Need Diode for KeyMatrix
 import { parseKLELayout } from "./lib/KLELayout"; // Need parser for KeyMatrix
 import { getRefDesForKey } from "./lib/getRefDesForKey"; // Need refdes for parser
-
-// --- Re-including component definitions needed by CircuitPreview ---
-// Note: In a real project these are imported, not redefined.
-
-const refDesMap = {
-  "~": "K_TILDE", "~`": "K_TILDE", "!": "K_EXCLAMATION", "@": "K_AT", "#": "K_HASH", $: "K_DOLLAR", "%": "K_PERCENT", "^": "K_CARET", "&": "K_AMPERSAND", "*": "K_ASTERISK", "(": "K_LPAREN", ")": "K_RPAREN", "{": "K_LBRACE", "}": "K_RBRACE", "|": "K_PIPE", "[": "K_LSQBRAK", "]": "K_RSQBRAK", '"': "K_QUOTE", "'": "K_SINGLEQUOTE", "<": "K_LT", ">": "K_GT", "?": "K_QUESTION", "/": "K_SLASH", windows: "K_WINDOWS", win: "K_WINDOWS", menu: "K_MENU", "caps lock": "K_CAPSLOCK", ":": "K_COLON", ";": "K_SEMICOLON", "1": "K_N1", "2": "K_N2", "3": "K_N3", "4": "K_N4", "5": "K_N5", "6": "K_N6", "7": "K_N7", "8": "K_N8", "9": "K_N9", "0": "K_N0", "-": "K_MINUS", "+": "K_PLUS", backspace: "K_BACKSPACE", tab: "K_TAB", " ": "K_SPACE", enter: "K_ENTER", shift: "K_SHIFT", ctrl: "K_CTRL", alt: "K_ALT", escape: "K_ESCAPE", arrowleft: "K_ARROW_LEFT", arrowright: "K_ARROW_RIGHT", arrowup: "K_ARROW_UP", arrowdown: "K_ARROW_DOWN", backquote: "K_BACKQUOTE", quote: "K_QUOTE", semicolon: "K_SEMICOLON", comma: "K_COMMA", period: "K_PERIOD", slash: "K_SLASH", backslash: "K_BACKSLASH", bracketleft: "K_BRACKET_LEFT", bracketright: "K_BRACKET_RIGHT", a: "K_A", b: "K_B", c: "K_C", d: "K_D", e: "K_E", f: "K_F", g: "K_G", h: "K_H", i: "K_I", j: "K_J", k: "K_K", l: "K_L", m: "K_M", n: "K_N", o: "K_O", p: "K_P", q: "K_Q", r: "K_R", s: "K_S", t: "K_T", u: "K_U", v: "K_V", w: "K_W", x: "K_X", y: "K_Y", z: "K_Z",
-};
-const getRefDesForKey = (key) => { /* ... full implementation ... */
-  const normKeyLabels = key.toLowerCase().split("\\n");
-  for (const normKeyLabel of normKeyLabels) { if (normKeyLabel in refDesMap) { return refDesMap[normKeyLabel]; } }
-  if (key === "") { return "K_SPACE"; }
-  if (key.match(/^[a-zA-Z0-9]+$/)) { return \`K_\${key.toUpperCase()}\`; }
-  throw new Error(\`No defined refDes for key "\${key}"\`);
-};
-
-const parseKLELayout = (layout) => { /* ... full implementation ... */
-  const KEY_SIZE=19.05; const keys=[]; let currentX=0; let currentY=0; let currentRotation=0; let currentRotationX=0; let currentRotationY=0; let currentProps={width:1,height:1,x:0,y:0,align:undefined}; const nameCounters=new Map(); layout.forEach((row,rowIndex)=>{ currentX=0; let colIndex=0; row.forEach((item)=>{ if(typeof item==="object"){ if(item.x!==undefined)currentX+=item.x; if(item.y!==undefined)currentY+=item.y; if(item.w!==undefined)currentProps.width=item.w; if(item.h!==undefined)currentProps.height=item.h; if(item.r!==undefined)currentRotation=item.r; if(item.rx!==undefined)currentRotationX=item.rx; if(item.ry!==undefined)currentRotationY=item.ry; if(item.a!==undefined)currentProps.align=item.a }else if(typeof item==="string"){ let refDes=getRefDesForKey(item); const baseRefDes=refDes; if(nameCounters.has(baseRefDes)){ const count=nameCounters.get(baseRefDes); const ogKey=keys.find((k)=>k.name===baseRefDes); if(ogKey&&!ogKey.name.match(/\\d+$/)){ ogKey.name=\`\${baseRefDes}1\` } nameCounters.set(baseRefDes,count+1); refDes=\`\${baseRefDes}\${count+1}` }else{ nameCounters.set(baseRefDes,1) } keys.push({name:refDes,x:(currentX+currentProps.width/2)*KEY_SIZE,y:-(currentY+currentProps.height/2)*KEY_SIZE,width:currentProps.width*KEY_SIZE,height:currentProps.height*KEY_SIZE,rotation:currentRotation,rotationX:currentRotationX*KEY_SIZE,rotationY:currentRotationY*KEY_SIZE,row:rowIndex,col:colIndex}); currentX+=currentProps.width; colIndex++; currentProps.width=1; currentProps.height=1 } }); currentY++ }); return keys;
-};
-
-const KeyMatrix = ({ layout, rowToMicroPin, colToMicroPin, name="KB", pcbX=0, pcbY=0, schX=0, schY=0 }) => { /* ... full implementation ... */
-  const keys=parseKLELayout(layout); const minX=Math.min(...keys.map((k)=>k.x-k.width/2)); const maxX=Math.max(...keys.map((k)=>k.x+k.width/2)); const minY=Math.min(...keys.map((k)=>k.y-k.height/2)); const maxY=Math.max(...keys.map((k)=>k.y+k.height/2)); const centerX=(minX+maxX)/2; const centerY=(minY+maxY)/2; return(<group name={name} pcbX={pcbX} pcbY={pcbY} schX={schX} schY={schY}> {keys.map((key)=>{ const relX=key.x-centerX; const relY=key.y-centerY; const rowNet=rowToMicroPin?.[key.row]; const colNet=colToMicroPin?.[key.col]; return(<group key={key.name} pcbX={relX} pcbY={relY} schX={relX/10} schY={relY/10}> <Key name={key.name} /> {rowNet!==undefined&&(<A_1N4148WS name={\`\${key.name}_DIO\`} connections={{pin2: \`.\${key.name} .pin1\`, pin1:rowNet}} pcbX={0} pcbY={-7} schY={-1} layer="bottom" />)} {colNet!==undefined&&(<trace from={\`.\${key.name} .pin2\`} to={colNet} />)} </group>) })} </group>)
-};
-
-const diodePinLabels = { pin1: ["C"], pin2: ["A"] }
-const A_1N4148WS = (props) => ( <chip pinLabels={diodePinLabels} symbolName="diode" supplierPartNumbers={{ jlcpcb: ["C57759"] }} manufacturerPartNumber="A_1N4148WS" footprint={<footprint><smtpad portHints={["pin1"]} pcbX="-1.17mm" pcbY="0mm" width="1mm" height="0.75mm" shape="rect" /><smtpad portHints={["pin2"]} pcbX="1.17mm" pcbY="0mm" width="1mm" height="0.75mm" shape="rect" /></footprint>} {...props} /> );
-
-const default60 = [ ["~\\n\`", "!\\n1", "@\\n2", "#\\n3", "$\\n4", "%\\n5", "^\\n6", "&\\n7", "*\\n8", "(\\n9", ")\\n0", "_\\n-", "+\\n=", { w: 2 }, "Backspace",], [{ w: 1.5 }, "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "{\\n[", "}\\n]", { w: 1.5 }, "|\\n\\\\",], [{ w: 1.75 }, "Caps Lock", "A", "S", "D", "F", "G", "H", "J", "K", "L", ":\\n;", '"\\n\'', { w: 2.25 }, "Enter",], [{ w: 2.25 }, "Shift", "Z", "X", "C", "V", "B", "N", "M", "<\\n,", ">\\n.", "?\\n/", { w: 2.75 }, "Shift",], [{ w: 1.25 }, "Ctrl", { w: 1.25 }, "Win", { w: 1.25 }, "Alt", { a: 7, w: 6.25 }, "", { a: 4, w: 1.25 }, "Alt", { w: 1.25 }, "Win", { w: 1.25 }, "Menu", { w: 1.25 }, "Ctrl",],];
-
-// --- End Re-included definitions ---
 
 // Define row and column nets needed for a 60% layout
 const rowPins = [ "net.ROW0", "net.ROW1", "net.ROW2", "net.ROW3", "net.ROW4", ];
