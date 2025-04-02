@@ -3,6 +3,14 @@ title: Quickstart CLI
 sidebar_position: 4
 ---
 
+## Overview
+
+The command line is the best way to use tscircuit. Using the CLI, you can just
+run `tsci dev` in a project and see previews of your circuit just like any
+other local development tool!
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/PxUpgIfR818?si=DSlfVU86MO0iIRUO" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## Install the tscircuit CLI
 
 You can install the tscircuit CLI by running `npm install -g @tscircuit/cli`.
