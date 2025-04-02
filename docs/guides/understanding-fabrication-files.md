@@ -17,7 +17,7 @@ main types of files inside our fabrication files `zip`:
 
 ### Web
 
-On the web, you can just hit "Download" on any circuit, then hit "Fabrication Files"
+On the web, you can just hit "Download" or "Export" on any circuit, then hit "Fabrication Files"
 
 <figure>
 <img src="/img/online-editor-download.png" alt="Online Editor Download Button" />
@@ -26,10 +26,23 @@ On the web, you can just hit "Download" on any circuit, then hit "Fabrication Fi
 
 ### CLI
 
-You can run [tsci export ./main.tsx --to fabrication-zip](../command-line/tsci-export) to export to a fabrication files zip file containing Gerbers, Bill of Materials and
-the Pick'n'Place CSV.
+The easiest way to get fabrication files is to go to `File > Export > Fabrication Files`
+in the web browser after doing `tsci dev`
 
-## Uploading Fabrication Files
+<figure>
+<img src="/img/tsci-dev-export.png" alt="CLI Export Button" />
+<figcaption>Downloading fabrication files from the online editor</figcaption>
+</figure>
+
+## What's inside the zip file?
+
+The zip file contains three types of files:
+
+- `gerbers` Describes the copper layers of your PCB
+- `bill-of-materials.csv` This is a csv file with the components in the circuit and their
+  quantity.
+- `pick-n-place.csv` This is a csv file with the components in the circuit and their
+  position on the board.
 
 <figure>
 <img className="img-rounded" src="/img/jlcpcb-upload.png" />
