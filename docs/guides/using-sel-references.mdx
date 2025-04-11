@@ -3,8 +3,20 @@ title: Using "sel" References
 ---
 
 The `sel` object is a special import that allows you to easily reference
-components with a bit more type-safety than a string. It can also be more ergonomic
+components with a more type-safety than a string. It can also be more ergonomic
 than typing out a [port selector](./port-and-net-selectors.md).
+
+There are many ways to use `sel`, the most common are:
+
+- [Conventional References `sel.C1.pos`](#conventional-references)
+- [Type-Safe Chip Pin References `sel.U1(MyChip).VCC`](#type-safe-chip-pin-references)
+- [Type-Safe Module References `sel.M1(MyModule).VCC` or `sel.M1(MyModule).U1.D0`](#type-safe-module-references)
+
+## Conventional References
+
+Conventional references are the most basic way to use `sel`. There is a large,
+built-in mapping of conventional strings to reference components. When you
+start typing `sel.`, you will see a list of the available references.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
@@ -109,8 +121,78 @@ sel.U1(MyChip).GND
 // sel.U1(MyChip).DOES_NOT_EXIST -> ERROR!
 ```
 
+## Type-Safe Module References
 
-## Generic Pin Selectors (no chip needed!)
+Similarly, you can use `sel` with modules that define `connections` or `selectors` in their props. This provides type-safety for accessing the exposed ports or nested selectors of a module instance.
+
+### Using `sel` with `connections` prop
+
+If a module defines a `connections` prop, you can pass the module component to `sel` to get type-safe accessors for its connections:
+
+```tsx
+import { sel } from "tscircuit"
+
+// Define a simple module that uses the `connections` prop
+const MyModuleWithConnections = (props: {
+  name: string
+  connections: {
+    GND: string
+    VCC?: string // Optional connection
+  }
+}) => (
+  <group>
+    <resistor name="R1" resistance="1k" connections={{ GND: props.connections.GND }} />
+    {/** etc. **/}
+  </group>
+)
+
+const selM1 = sel.M1(MyModuleWithConnections)
+
+selM1.GND // Returns ".M1 > .GND"
+selM1.VCC // Returns ".M1 > .VCC"
+
+// TypeScript will error on non-existent connection keys!
+// selM1.INVALID_KEY // TypeScript error!
+```
+
+### Using `sel` with `selectors` prop
+
+If a module defines a `selectors` prop, you can pass the module component to `sel` to get type-safe accessors for its nested selectors and their connections:
+
+```tsx
+import { sel } from "tscircuit"
+
+// Define a simple module that uses the `selectors` prop
+const MyModuleWithSelectors = (props: {
+  name: string
+  selectors: {
+    U1: { GND: string; VCC?: string }
+    R1: { pin1: string; pin2: string }
+  }
+}) => (
+  <group>
+    <chip name="U1" connections={props.selectors.U1} />
+    <resistor name="R1" resistance="1k" connections={props.selectors.R1} />
+  </group>
+)
+
+const selM2 = sel.M2(MyModuleWithSelectors)
+
+selM2.U1.GND // Returns ".M2 > .U1 > .GND"
+selM2.U1.VCC // Returns ".M2 > .U1 > .VCC"
+selM2.R1.pin1 // Returns ".M2 > .R1 > .pin1"
+selM2.R1.pin2 // Returns ".M2 > .R1 > .pin2"
+
+// TypeScript will error on non-existent selector keys!
+// selM2.U2 // TypeScript error!
+
+// TypeScript will error on non-existent connection keys within a selector!
+// selM2.U1.INVALID_KEY // TypeScript error!
+```
+
+## Custom Usage
+
+### Generic Pin Selectors (no chip needed!)
 
 You can also use TypeScript generics to define custom pin types directly:
 
