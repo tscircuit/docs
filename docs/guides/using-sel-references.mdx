@@ -79,8 +79,10 @@ with a `ChipProps` type, like this:
 import { ChipProps } from "tscircuit"
 
 const pinLabels = {
-  VCC: string
-  GND: string
+  pin1: "VCC",
+  pin2: "GND",
+  pin3: "DATA1",
+  pin4: "DATA2",
 } as const
 
 const MyChip = (props: ChipProps<typeof pinLabels>) => (
