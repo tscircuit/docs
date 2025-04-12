@@ -2,7 +2,7 @@
 title: Platform Configuration
 description: >-
   The Platform Configuration allows you to change tscircuit behavior to best
-  suite
+  suite the platform the tscircuit code is running on.
 ---
 
 ## Overview
