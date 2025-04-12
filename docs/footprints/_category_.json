@@ -6,5 +6,5 @@
     "description": "Quickly generate landing patterns (footprints) for chips on your PCB"
   },
   "collapsible": true,
-  "collapsed": true
+  "collapsed": false
 }
