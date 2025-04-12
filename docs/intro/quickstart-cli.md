@@ -1,6 +1,7 @@
 ---
 title: Quickstart CLI
 sidebar_position: 4
+description: 'The command line is the best way to use tscircuit. Using the CLI, you can just'
 ---
 
 ## Overview
