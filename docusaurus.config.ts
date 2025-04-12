@@ -68,8 +68,8 @@ const config: Config = {
 
       // LinkedIn & Open Graph Meta Tags
       { property: "og:type", content: "website" },
-      { property: "og:title", content: "tscircuit Docs" },
-      { property: "og:description", content: "Create Electronics with TypeScript and React" },
+      // { property: "og:title", content: "tscircuit Docs" },
+      // { property: "og:description", content: "Create Electronics with TypeScript and React" },
       { property: "og:image", content: "https://docs.tscircuit.com/logo/logo.png" },
       { property: "og:url", content: "https://docs.tscircuit.com/" },
     ],
