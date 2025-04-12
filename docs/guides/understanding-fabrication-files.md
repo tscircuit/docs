@@ -1,5 +1,6 @@
 ---
 title: Understanding Fabrication Files
+description: Fabrication files are files that can be uploaded to a fabricator or turn-key
 ---
 
 ## Overview

@@ -1,6 +1,7 @@
 ---
 title: Designing Electronics from Scratch
 sidebar_position: 2
+description: Typically electronics engineers go through the following steps when designing
 ---
 
 ## Overview
