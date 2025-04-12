@@ -1,6 +1,9 @@
 ---
 title: Understanding Fabrication Files
-description: Fabrication files are files that can be uploaded to a fabricator or turn-key
+description: >-
+  Fabrication files are files that can be uploaded to a fabricator or turn-key
+  manufacturer to get an entire circuit board made. tscircuit includes three
+  main types of files inside our fabrication files `zip`:
 ---
 
 ## Overview
