@@ -1,7 +1,7 @@
 ---
 title: Designing Electronics from Scratch
 sidebar_position: 2
-description: Typically electronics engineers go through the following steps when designing
+description: A comprehensive guide to electronics design workflow - from requirements analysis through system diagramming, schematic capture, PCB layout, to final manufacturing
 ---
 
 ## Overview
