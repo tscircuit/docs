@@ -1,6 +1,10 @@
 ---
 title: Quickstart CLI
 sidebar_position: 4
+description: >-
+    The command line is the best way to use tscircuit. Using the CLI, you can just
+    run `tsci dev` in a project and see previews of your circuit just like any
+    other local development tool!
 ---
 
 ## Overview
