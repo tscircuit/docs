@@ -1,6 +1,7 @@
 ---
 title: Importing from KiCad
 sidebar_position: 3
+description: You can import KiCad components or projects into tscircuit.
 ---
 
 ## Overview
