@@ -191,6 +191,7 @@ export default () => (
     <PICO
       name="U1"
       pcbX={-25} // Position Pico to the left
+      schX={-5}
       pcbRotation="90deg"
       connections={{
         // Connect Pico pins to our row/column nets
@@ -206,6 +207,7 @@ export default () => (
       layout={simpleLayout}
       rowToMicroPin={rowPins}
       colToMicroPin={colPins}
+      schX={5}
       pcbX={25} // Position matrix to the right
       pcbY={10}
     />
