@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
 import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
+import TscircuitIframe from "./TscircuitIframe"
 
 const Tab = ({
   label,
@@ -38,6 +39,7 @@ export default function CircuitPreview({
   showTabs = true,
   defaultView = "pcb",
   splitView = true,
+  showRunFrame = false,
   hideSchematicTab = false,
   hidePCBTab = false,
   hide3DTab = false,
@@ -46,6 +48,7 @@ export default function CircuitPreview({
   showTabs?: boolean
   defaultView?: "code" | "pcb" | "schematic"
   splitView?: boolean
+  showRunFrame?: boolean
   hideSchematicTab?: boolean
   hidePCBTab?: boolean
   hide3DTab?: boolean
@@ -53,9 +56,9 @@ export default function CircuitPreview({
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
 
-  const [view, setView] = useState<"pcb" | "schematic" | "code" | "3d">(
-    defaultView,
-  )
+  const [view, setView] = useState<
+    "pcb" | "schematic" | "code" | "3d" | "runframe"
+  >(defaultView)
   const pcbUrl = useMemo(() => createSvgUrl(code, "pcb"), [code])
   const schUrl = useMemo(() => createSvgUrl(code, "schematic"), [code])
   const threeDUrl = useMemo(() => createPngUrl(code, "3d"), [code])
@@ -96,7 +99,18 @@ export default function CircuitPreview({
           />
         )}
         {!hide3DTab && (
-          <Tab label="3D" active={view === "3d"} onClick={() => setView("3d")} />
+          <Tab
+            label="3D"
+            active={view === "3d"}
+            onClick={() => setView("3d")}
+          />
+        )}
+        {showRunFrame && (
+          <Tab
+            label="Run"
+            active={view === "runframe"}
+            onClick={() => setView("runframe")}
+          />
         )}
       </div>
     </div>
@@ -130,7 +144,10 @@ export default function CircuitPreview({
             </CodeBlock>
           </div>
         )}
-        {(view === "pcb" || view === "schematic" || view === "3d") && (
+        {(view === "pcb" ||
+          view === "schematic" ||
+          view === "3d" ||
+          view === "runframe") && (
           <div
             className={tw(
               "flex-1 min-h-[300px] flex-shrink-0 overflow-hidden m-0 p-0",
@@ -158,6 +175,9 @@ export default function CircuitPreview({
                 `w-full ${tabContentHeightCss} m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
               )}
             />
+            {showRunFrame && view === "runframe" && (
+              <TscircuitIframe code={code} />
+            )}
           </div>
         )}
       </div>
