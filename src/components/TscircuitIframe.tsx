@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react"
 
 export interface TscircuitIframeProps {
-  fsMap: Record<string, string>
-  entrypoint: string
+  fsMap?: Record<string, string>
+  entrypoint?: string
   code?: string
 }
 
@@ -13,10 +13,8 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
 
   if (runFrameProps.code) {
     additionalProps = {
-      entrypoint: "entrypoint.tsx",
       fsMap: {
-        "entrypoint.tsx": `import Component from "./component.tsx"\ncircuit.add(<Component />)`,
-        "component.tsx": runFrameProps.code,
+        "index.tsx": runFrameProps.code,
       },
     }
   }
