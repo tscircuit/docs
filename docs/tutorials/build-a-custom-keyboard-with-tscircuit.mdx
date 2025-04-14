@@ -59,7 +59,9 @@ tsci dev
 
 This command compiles your `index.tsx` file and serves it on `http://localhost:3020` (or the next available port). Open this URL in your browser. You should see a live preview of your circuit, including PCB, Schematic, and 3D views. The server watches for file changes and automatically updates the preview.
 
-![Browser preview example](../../static/img/pcb-runframe.png)
+import BrowserPreviewImage from "../../static/img/pcb-runframe.png";
+
+<ImageWithCaption src={BrowserPreviewImage} caption={`Browser preview of a freshly initialized project with \"tsci init\"`} />
 
 ## 2. Import the Main Components
 
@@ -169,7 +171,7 @@ Now, let's use our `KeyMatrix` component to create a simple 2x2 keyboard.
 
 We'll define the layout directly in our `index.tsx` and map the rows/columns to Pico pins.
 
-<CircuitPreview defaultView="3d" code={`
+<CircuitPreview defaultView="pcb" code={`
 import { PICO } from "@tsci/seveibar.PICO";
 import { type KLELayout, KeyMatrix } from "@tsci/seveibar.keyboard-utils";
 
@@ -214,9 +216,15 @@ export default () => (
 
 You now have a functional 4-key macropad PCB design!
 
+
 ## 5. Import a Standard Layout (60% Keyboard)
 
 Manually defining layouts for larger keyboards is tedious. We can use data directly from [Keyboard Layout Editor](http://www.keyboard-layout-editor.com/). This website allows you to design layouts graphically and export them as JSON data, which matches our `KLELayout` type.
+
+import KLEExampleImage from "../../static/img/kle-example.png";
+import ImageWithCaption from "../../src/components/ImageWithCaption";
+
+<ImageWithCaption src={KLEExampleImage} alt="Keyboard Layout Editor" caption={<span>How to get JSON from <a href="https://www.keyboard-layout-editor.com/" target="_blank" rel="noopener noreferrer">keyboard-layout-editor.com</a></span>} />
 
 Let's use the `default60` layout provided by the `@tsci/seveibar.keyboard-utils` package. It looks like this:
 
@@ -242,39 +250,51 @@ export const default60 = [
 
 Now, update `index.tsx` to use this layout. We also need to expand our `rowPins` and `colPins` to match the requirements of a 60% keyboard (typically 5 rows and up to 15 columns). We'll use the pin assignments from the `repomix-output.txt` `index.tsx` example.
 
-<CircuitPreview defaultView="3d" code={`
+<CircuitPreview defaultView="pcb" code={`
 import { PICO } from "@tsci/seveibar.PICO";
-import { type KLELayout, KeyMatrix } from "@tsci/seveibar.keyboard-utils";
+import { type KLELayout, KeyMatrix, layouts } from "@tsci/seveibar.keyboard-utils";
 
-// Define a simple 2x2 layout
-const simpleLayout: KLELayout = [
-  ["1", "2"],
-  ["3", "4"],
-]
-
-// Map rows and columns to Pico pins (using net names for clarity)
-const rowPins = ["net.ROW0", "net.ROW1"];
-const colPins = ["net.COL0", "net.COL1"];
+// We'll need more rows and columns for a 60% keyboard
+const rowPins = ["net.ROW0", "net.ROW1", "net.ROW2", "net.ROW3", "net.ROW4"];
+const colPins = ["net.COL0", "net.COL1", "net.COL2", "net.COL3", "net.COL4", "net.COL5", "net.COL6", "net.COL7", "net.COL8", "net.COL9", "net.COL10", "net.COL11", "net.COL12", "net.COL13", "net.COL14"];
 
 export default () => (
   <board>
     {/* Place the Pico */}
     <PICO
       name="U1"
-      pcbX={-25} // Position Pico to the left
+      pcbX={-150} // Position Pico to the left
+      pcbY={20}
+      layer="bottom"
       pcbRotation="90deg"
       connections={{
         // Connect Pico pins to our row/column nets
         GP15: rowPins[0], // Row 0
         GP16: rowPins[1], // Row 1
+        GP17: rowPins[2], // Row 2
+        GP18: rowPins[3], // Row 3
+        GP19: rowPins[4], // Row 4
         GP0: colPins[0],  // Col 0
         GP1: colPins[1],  // Col 1
+        GP2: colPins[2],  // Col 2
+        GP3: colPins[3],  // Col 3
+        GP4: colPins[4],  // Col 4
+        GP5: colPins[5],  // Col 5
+        GP6: colPins[6],  // Col 6
+        GP7: colPins[7],  // Col 7
+        GP8: colPins[8],  // Col 8
+        GP9: colPins[9],  // Col 9
+        GP10: colPins[10],  // Col 10
+        GP11: colPins[11],  // Col 11
+        GP12: colPins[12],  // Col 12
+        GP13: colPins[13],  // Col 13
+        GP14: colPins[14],  // Col 14
       }}
     />
 
     {/* Place the KeyMatrix */}
     <KeyMatrix
-      layout={simpleLayout}
+      layout={layouts.default60}
       rowToMicroPin={rowPins}
       colToMicroPin={colPins}
       pcbX={25} // Position matrix to the right
