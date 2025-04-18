@@ -173,12 +173,12 @@ const config: Config = {
     },
     algolia: {
       // The application ID provided by Algolia
-      appId: "BFNVOSEFDT",
+      appId: "N7V9Z4M87E",
 
       // Public API key: it is safe to commit it
-      apiKey: "a99d3dd75009c9edeac43565cb215602",
+      apiKey: "a25dae460e6a029fd1f7d8cc500aae4b",
 
-      indexName: "crawler_docs.tscircuit.com_BFNVOSEFDT_2",
+      indexName: "tscircuit",
 
       // Optional: see doc section below
       // contextualSearch: true,
