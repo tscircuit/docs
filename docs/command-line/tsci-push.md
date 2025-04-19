@@ -11,6 +11,18 @@ After publishing, you can use the [tsci add](https://docs.tscircuit.com/command-
 
 After running `tsci push` you can see your package on your tscircuit registry page. Packages default to private visibility, but you can change this from your registry page to enable sharing your package with the broader ecosystem.
 
-![tsci push result](../../static/img/tsci-push.png)
+import tsciPushImage from "../../static/img/tsci-push.png"
+import registrySnippetImage from "../../static/img/registry-snippet.png"
+import ImageWithCaption from "../../src/components/ImageWithCaption";
 
-![browser](../../static/img/registry-snippet.png)
+<ImageWithCaption
+  src={tsciPushImage}
+  alt="tsci push command result"
+  caption="Result of running tsci push command"
+/>
+
+<ImageWithCaption
+  src={registrySnippetImage}
+  alt="snippet in registry"
+  caption="Browser view of the package in the TSCircuit Registry"
+/>
