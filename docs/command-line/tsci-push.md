@@ -7,7 +7,7 @@ tscircuit code, like React code, is distributed as a "package". `tsci push` push
 
 After publishing, you can use the [tsci add](https://docs.tscircuit.com/command-line/tsci-add) command to install your package as part of a larger circuit.
 
-After you run `tsci push` you can see a your snippet file on your tscircuit account.
+After running `tsci push` you can see your package on your tscircuit registry page. Packages default to private visibility, but you can change this from your registry page to enable sharing your package with the broader ecosystem.
 
 ![tsci push result](../../static/img/tsci-push.png)
 
