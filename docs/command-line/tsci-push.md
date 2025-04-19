@@ -5,7 +5,7 @@ description: |
   tsci push uploads your package to the tscircuit registry for module re-use
 ---
 
-tscircuit code, like React code, is distributed as a "package". `tsci push` uploads your package to [tscircuit registry](https://tscircuit.com/trending) to enable sharing with your team.
+tscircuit code, like React code, is distributed as a "package". `tsci push` uploads your package to the [tscircuit registry](https://tscircuit.com/trending) to enable sharing with your team.
 
 After publishing, you can use the [tsci add](https://docs.tscircuit.com/command-line/tsci-add) command to install your package as part of a larger circuit.
 
