@@ -31,15 +31,18 @@ Next, start the development server by running `tsci dev`. This will start a loca
 
 ![tsci dev result](../../static/img/tsci-dev.png)
 
-Go to https://localhost:3020. You'll can now see PCB, Schematic and 3D views of your circuit, which update in real-time as you make changes to your code.
+Go to https://localhost:3020. You can now see PCB, Schematic and 3D views of your circuit, which update in real-time as you make changes to your code.
 
 ![browser](../../static/img/pcb-runframe.png)
 
 ## Pushing to the tscircuit Registry
 
 <!-- TODO -->
+Next, you push your project by running `tsci push`. This will push your project to your registry.
+![tsci push result](../../static/img/tsci-push.png)
 
-This section is coming soon!
+Go to your tscircuit account. You can now see PCB, Schematic and 3D views of your circuit in you registry. 
+![browser](../../static/img/registry-snippet.png)
 
 ## Exporting to SVGs, PDF, or Fabrication Files
 
