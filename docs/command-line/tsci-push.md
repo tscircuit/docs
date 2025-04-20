@@ -24,5 +24,5 @@ import ImageWithCaption from "../../src/components/ImageWithCaption";
 <ImageWithCaption
   src={registrySnippetImage}
   alt="snippet in registry"
-  caption="Browser view of the package in the TSCircuit Registry"
+  caption="Browser view of the package in the tscircuit Registry"
 />
