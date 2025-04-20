@@ -11,6 +11,12 @@ so make sure to install bun before you start contributing.
 
 To contribute to tscircuit, you need to make [Pull Requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) from a fork of a repository.
 
+:::tip
+
+You can quickly find issues (with or without bounties) by [spinning the wheel of issues](https://issues.tscircuit.com/)
+
+:::
+
 ## Before You Start
 
 1. Make sure bun is installed on your system
