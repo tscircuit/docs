@@ -6,6 +6,13 @@ sidebar_position: 1
 tscircuit is a great project to contribute to if you're familiar with Typescript
 and React.
 
+:::tip
+
+Make sure you've [joined the discord server](https://tscircuit.com/join) so we
+can help you get started and reviewed quickly!
+
+:::
+
 tscircuit is composed of over 200 repositories, but every project uses [bun](https://bun.sh),
 so make sure to install bun before you start contributing.
 
