@@ -118,3 +118,19 @@ figure img {
   padding-top: 3px;
   padding-bottom: 3px;
 }
+
+@media (max-width: 768px) {
+  iframe {
+    max-width: 90vw;
+  }
+
+  .container > iframe,
+  .container > img {
+    max-width: 90vw !important;
+  }
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+}
