@@ -2,7 +2,28 @@
 
 The tscircuit image generation API allows you to dynamically create visual representations of your circuits in various formats. This guide explains how to use the dedicated subdomains for generating SVGs, PNGs, and 3D renderings of your circuits.
 
-## Using the Official Package
+## Get images for a package
+
+Every package has images automatically generated for it. You can place these images
+in your README, website, or anywhere you'd like to display the latest version of your circuit.
+
+You can access the images at the following URLs:
+
+| View Type | URL |
+|-----------|-----|
+| **PCB** | `https://api.tscircuit.com/snippets/images/<author>/<package name>/pcb.png` |
+| **Schematic** | `https://api.tscircuit.com/snippets/images/<author>/<package name>/schematic.png` |
+| **3D** | `https://api.tscircuit.com/snippets/images/<author>/<package name>/3d.png` |
+
+Here are examples of the three image types available for the "seveibar/nine-key-keyboard" package:
+
+| PCB | Schematic | 3D |
+|-----|-----------|-----|
+| ![PCB](https://api.tscircuit.com/snippets/images/seveibar/nine-key-keyboard/pcb.png) | ![Schematic](https://api.tscircuit.com/snippets/images/seveibar/nine-key-keyboard/schematic.png) | ![CAD](https://api.tscircuit.com/snippets/images/seveibar/nine-key-keyboard/3d.png) |
+
+
+
+## Generate Images for any Code String
 
 The recommended way to generate image URLs is to use the official `@tscircuit/create-snippet-url` package:
 
