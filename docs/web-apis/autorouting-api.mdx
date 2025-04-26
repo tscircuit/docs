@@ -19,9 +19,26 @@ own cloud autorouter.
 
 ## Using Custom Autorouters
 
-Here's an example of how a customer autorouter can be configured with tscircuit:
+tscircuit provides several ways to configure autorouting:
 
-<CircuitPreview defaultView="pcb" code={`
+### Common Autorouter Prop Strings
+
+You can use these predefined autorouter strings for quick configuration:
+
+- `autorouter="auto"` - Uses the platform configuration. For tscircuit.com this defaults to `sequential-trace`.
+- `autorouter="sequential-trace"` - Iterate over each trace and use tscircuit's fast built-in autorouter. This method is fast and deterministic but often fails with over 50 traces.
+- `autorouter="auto-local"` - Use the platform configuration, but only route locally (do not make API calls)
+- `autorouter="auto-cloud"` - Use the platform configuration for cloud-based routing
+
+For more details on these options, see the [board element documentation](../elements/board.mdx#setting-the-autorouter).
+
+### Custom Autorouter Object
+
+For more advanced use cases, you can configure a custom autorouter object:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
   export default () => (
     <board
       width="20mm"
@@ -43,7 +60,8 @@ Here's an example of how a customer autorouter can be configured with tscircuit:
       <trace from=".U1 > .pin1" to=".R1 > .pin1" />
     </board>
   )
-`} />
+`}
+/>
 
 ### The Autorouter Object
 
@@ -203,7 +221,6 @@ type SimplifiedPcbTraces = Array<{
 }>
 ```
 
-
 ### Circuit JSON Input/Output
 
 When using `inputFormat: "circuit_json"` you the API must accept `{ input_circuit_json }` and
@@ -221,9 +238,9 @@ to correspond to what you've implemented.
 
 ## The `solve-endpoint` API
 
-| Endpoint |  Description |
-| -------- | ----------- |
-| `/autorouting/solve` | Takes autorouting input and returns the solved routes | 
+| Endpoint             | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `/autorouting/solve` | Takes autorouting input and returns the solved routes |
 
 ### `solve-endpoint` with `simplified` input
 
@@ -276,11 +293,11 @@ RESPONSE:
 The `job` autorouting API allows you to perform long-running autorouting jobs for
 large circuits. When using the `job` API, you must use the `"circuit_json"` input format.
 
-| Endpoint |  Description |
-| -------- | ----------- |
-| `/autorouting/jobs/create` | Create the autorouting job | 
-| `/autorouting/jobs/get`    | Get the status of the autorouting job |
-| `/autorouting/jobs/cancel` | Cancel the autorouting job |
+| Endpoint                       | Description                                            |
+| ------------------------------ | ------------------------------------------------------ |
+| `/autorouting/jobs/create`     | Create the autorouting job                             |
+| `/autorouting/jobs/get`        | Get the status of the autorouting job                  |
+| `/autorouting/jobs/cancel`     | Cancel the autorouting job                             |
 | `/autorouting/jobs/get_output` | Get the solved routes from a completed autorouting job |
 
 :::info
@@ -339,8 +356,8 @@ RESPONSE:
 Additional configuration parameters can be passed to either the `/autorouting/jobs/create`
 endpoint or the `/autorouting/solve` endpoint to configure the autorouter.
 
-| Parameter | Example Value | Description |
-| --------- | ------------- | ----------- |
-| `display_name` | `"Nine-key Macropad"` | A display name for the autorouting job. Useful for debugging! |
-| `provider` | `"freerouting"` | The autorouting algorithm to use |
+| Parameter       | Example Value                 | Description                                                                                                                      |
+| --------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `display_name`  | `"Nine-key Macropad"`         | A display name for the autorouting job. Useful for debugging!                                                                    |
+| `provider`      | `"freerouting"`               | The autorouting algorithm to use                                                                                                 |
 | `subcircuit_id` | `"subcircuit_source_group_1"` | To support subcircuit autorouting, you must accept this parameter and only solve for the subset of routes within the subcircuit. |
