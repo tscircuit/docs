@@ -19,7 +19,22 @@ own cloud autorouter.
 
 ## Using Custom Autorouters
 
-Here's an example of how a customer autorouter can be configured with tscircuit:
+tscircuit provides several ways to configure autorouting:
+
+### Common Autorouter Prop Strings
+
+You can use these predefined autorouter strings for quick configuration:
+
+- `autorouter="auto"` - Uses the platform configuration. For tscircuit.com this defaults to `sequential-trace`.
+- `autorouter="sequential-trace"` - Iterate over each trace and use tscircuit's fast built-in autorouter. This method is fast and deterministic but often fails with over 50 traces.
+- `autorouter="auto-local"` - Use the platform configuration, but only route locally (do not make API calls)
+- `autorouter="auto-cloud"` - Use the platform configuration for cloud-based routing
+
+For more details on these options, see the [board element documentation](../elements/board.mdx#setting-the-autorouter).
+
+### Custom Autorouter Object
+
+For more advanced use cases, you can configure a custom autorouter object:
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
