@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export interface TscircuitIframeProps {
   fsMap?: Record<string, string>
@@ -8,6 +8,7 @@ export interface TscircuitIframeProps {
 
 export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   let additionalProps = {}
 
@@ -29,6 +30,7 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
           },
           "*",
         )
+        setIsLoading(false)
       }
     }
 
@@ -38,6 +40,14 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
 
   return (
     <div>
+      {isLoading && (
+        <div className="skeleton-container">
+          <div>
+            <div className="skeleton-header" />
+            <div className="skeleton-body" />
+          </div>
+        </div>
+      )}
       <iframe
         ref={iframeRef}
         src="https://runframe.tscircuit.com/iframe.html"
@@ -52,6 +62,11 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
           padding: 0,
           margin: 0,
           boxSizing: "border-box",
+          display: isLoading ? "none" : "block",
+        }}
+        onLoad={() => {
+          // The iframe is loaded, but we'll only hide the skeleton 
+          // when we receive the "runframe_ready_to_receive" message
         }}
       />
     </div>
