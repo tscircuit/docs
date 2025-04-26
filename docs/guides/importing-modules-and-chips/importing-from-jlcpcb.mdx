@@ -6,17 +6,26 @@ description: JLCPCB has a massive component catalog of 3d models and footprints.
 
 ## Overview
 
-JLCPCB has a massive component catalog of 3d models and footprints.
+JLCPCB has a massive component catalog of 3d models and footprints. You can import components using either the web interface at tscircuit.com or through RunFrame.
 
 ## Web Import
 
-You can import JLCPCB components on [tscircuit.com](https://tscircuit.com). After
+You can also import JLCPCB components on [tscircuit.com](https://tscircuit.com). After
 importing the snippet, it'll be given a package name like `@tsci/YOUR_NAME.CHIP_NAME`
 and available for import from the tscircuit registry.
 
+import video from "@site/static/video/JLCPCB-import.webm"
+
+<video controls width="100%" style={{ maxWidth: "800px" }}>
+  <source src={video} type="video/webm" />
+  Your browser does not support the video tag.
+</video>
+
 <figure>
   <img src="/img/tscircuit-new-import-part.png" />
-  <figcaption>Step 1: Go to `tscircuit.com` and press the "new" button</figcaption>
+  <figcaption>
+    Step 1: Go to `tscircuit.com` and press the "new" button
+  </figcaption>
 </figure>
 
 <figure>
@@ -31,7 +40,9 @@ and available for import from the tscircuit registry.
 
 <figure>
   <img src="/img/jlcpcb-part-number.png" />
-  <figcaption>You can find the JLCPCB Part Number on JLCPCB's website</figcaption>
+  <figcaption>
+    You can find the JLCPCB Part Number on JLCPCB's website
+  </figcaption>
 </figure>
 
 <figure>
@@ -51,7 +62,6 @@ export default () => (
   </board>
 )
 ```
-
 
 ## CLI Import
 
