@@ -125,10 +125,8 @@ Original: [SPARKFUN_LINK]
 
 ## Tips for Success
 
-Use precision measuring tools
-Document everything thoroughly
-Test extensively
-Communicate actively with maintainers
-Follow tscircuit's code style guide
+- Document everything thoroughly
+- Communicate actively with maintainers
+- Follow tscircuit's code style guide
 
 Join our [Discord](https://tscircuit.com/join) for help and to discuss your module replication project!
