@@ -119,11 +119,9 @@ Original: [SPARKFUN_LINK]
 
 ## Payment Process
 
-Once your module is approved and merged:
-A maintainer will create an Algora bounty for your contribution
-Claim the bounty on algora.io
-Payment will be processed through the Algora platform
-Bonus may be available for exceptional quality implementations
+- Once your issue is approved, an Algora bounty will be placed on the issue.
+- The payment will be processed through the Algora platform
+- Bonus may be available for exceptional quality implementations!
 
 ## Tips for Success
 
