@@ -7,6 +7,10 @@ sidebar_position: 5
 
 tscircuit offers up to $150 for accurately replicating Sparkfun modules in tscircuit. This program helps expand our component library while providing learning opportunities for contributors.
 
+Building a sparkfun module is a great way to find friction, bugs and understand the tscircuit
+tools and ecosystem better. If you're looking to contribute to tscircuit, it's a great first
+step.
+
 ## Program Steps
 
 **Create Implementation Issue**
@@ -23,10 +27,12 @@ labels: sparkfun-module
 ---
 
 ## Module Information
+
 **Original Module**: [LINK_TO_SPARKFUN_MODULE]
 **Description**: Brief description of the module's function
 
 ## Implementation Plan
+
 [ ] Get maintainer approval to proceed
 [ ] Components identified and sourced
 [ ] Schematic created matching Sparkfun documentation
@@ -39,9 +45,11 @@ labels: sparkfun-module
 [ ] Gerber files generated and verified
 
 ## Additional Notes
+
 Any special considerations or challenges you foresee?
 
 ## Screenshots
+
 Add screenshot of original Sparkfun module
 ```
 
@@ -82,21 +90,25 @@ Module: [MODULE_NAME]
 Original: [SPARKFUN_LINK]
 
 ## Components
+
 [ ] All components identified
 [ ] Footprints verified
 [ ] Values matched
 
 ## Board
+
 [ ] Dimensions matched
 [ ] Layer stackup correct
 [ ] Silkscreen complete
 
 ## Documentation
+
 [ ] Usage example created
 [ ] All pins documented
 [ ] Power requirements noted
 
 ## Verification
+
 [ ] Gerber files generated
 [ ] Comparison completed
 [ ] Test circuit working
