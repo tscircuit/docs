@@ -1,5 +1,6 @@
 ---
 title: Report an Autorouter Bug
+description: Learn how to report an autorouter bug so that the tscircuit team can fix it.
 ---
 
 ## Overview
