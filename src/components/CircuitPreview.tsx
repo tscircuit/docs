@@ -34,6 +34,38 @@ const Tab = ({
   )
 }
 
+const FileTab = ({
+  filename,
+  active,
+  onClick,
+}: {
+  filename: string
+  active: boolean
+  onClick: () => void
+}) => {
+  const { isDarkTheme } = useColorMode()
+
+  return (
+    <button
+      type="button"
+      className={tw(
+        `px-3 py-1 text-sm font-mono rounded-md ${
+          !isDarkTheme
+            ? active
+              ? "bg-slate-100 text-slate-950"
+              : "text-slate-500 hover:text-slate-700"
+            : active
+              ? "text-white"
+              : "text-slate-400 hover:text-slate-200"
+        }`,
+      )}
+      onClick={onClick}
+    >
+      {filename}
+    </button>
+  )
+}
+
 export default function CircuitPreview({
   code,
   showTabs = true,
@@ -43,8 +75,10 @@ export default function CircuitPreview({
   hideSchematicTab = false,
   hidePCBTab = false,
   hide3DTab = false,
+  fsMap = {},
+  entrypoint = "index.tsx",
 }: {
-  code: string
+  code?: string
   showTabs?: boolean
   defaultView?: "code" | "pcb" | "schematic"
   splitView?: boolean
@@ -52,16 +86,26 @@ export default function CircuitPreview({
   hideSchematicTab?: boolean
   hidePCBTab?: boolean
   hide3DTab?: boolean
+  fsMap?: Record<string, string>
+  entrypoint?: string
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
+  const [currentFile, setCurrentFile] = useState<string>(entrypoint)
 
   const [view, setView] = useState<
     "pcb" | "schematic" | "code" | "3d" | "runframe"
   >(defaultView)
-  const pcbUrl = useMemo(() => createSvgUrl(code, "pcb"), [code])
-  const schUrl = useMemo(() => createSvgUrl(code, "schematic"), [code])
-  const threeDUrl = useMemo(() => createPngUrl(code, "3d"), [code])
+  const currentCode = code || fsMap[entrypoint] || ""
+  const pcbUrl = useMemo(() => createSvgUrl(currentCode, "pcb"), [currentCode])
+  const schUrl = useMemo(
+    () => createSvgUrl(currentCode, "schematic"),
+    [currentCode],
+  )
+  const threeDUrl = useMemo(
+    () => createPngUrl(currentCode, "3d"),
+    [currentCode],
+  )
 
   const shouldSplitCode = splitView && windowSize !== "mobile"
 
@@ -70,6 +114,8 @@ export default function CircuitPreview({
       ? "h-[calc(100%-46px)]"
       : "h-full max-h-[300px]"
 
+  const hasMultipleFiles = Object.keys(fsMap).length > 1
+  
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
       <div
@@ -116,6 +162,25 @@ export default function CircuitPreview({
     </div>
   )
 
+  const fileTabsElm = (
+    <div className={tw("flex justify-start px-2")}>
+      <div
+        className={tw(
+          `flex-inline justify-start gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-white" : "bg-slate-800"} p-1 gap-2`,
+        )}
+      >
+        {Object.keys(fsMap).map((filename) => (
+          <FileTab
+            key={filename}
+            filename={filename}
+            active={currentFile === filename}
+            onClick={() => setCurrentFile(filename)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+
   return (
     <div
       className={tw(
@@ -133,15 +198,22 @@ export default function CircuitPreview({
           (!showTabs && windowSize === "mobile")) && (
           <div
             className={tw(
-              `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
+              `flex flex-col flex-1`,
             )}
           >
-            <CodeBlock
-              className={tw("w-full rounded-none shadow-none p-0 m-0")}
-              language="tsx"
+            {hasMultipleFiles && fileTabsElm}
+            <div
+              className={tw(
+                `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
+              )}
             >
-              {code.trim()}
-            </CodeBlock>
+              <CodeBlock
+                className={tw("w-full rounded-none shadow-none p-0 m-0")}
+                language="tsx"
+              >
+                {fsMap[currentFile]?.trim() || code?.trim() || ""}
+              </CodeBlock>
+            </div>
           </div>
         )}
         {(view === "pcb" ||
@@ -176,7 +248,7 @@ export default function CircuitPreview({
               )}
             />
             {showRunFrame && view === "runframe" && (
-              <TscircuitIframe code={code} />
+              <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
             )}
           </div>
         )}
