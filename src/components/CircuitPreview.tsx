@@ -211,7 +211,7 @@ export default function CircuitPreview({
                 className={tw("w-full rounded-none shadow-none p-0 m-0")}
                 language="tsx"
               >
-                {fsMap[currentFile].trim()}
+                {fsMap[currentFile]?.trim() || code?.trim() || ""}
               </CodeBlock>
             </div>
           </div>
