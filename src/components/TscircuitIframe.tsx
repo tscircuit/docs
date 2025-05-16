@@ -20,6 +20,13 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
     }
   }
 
+  if (runFrameProps.fsMap) {
+    additionalProps = {
+      fsMap: runFrameProps.fsMap,
+      entrypoint: runFrameProps.entrypoint,
+    }
+  }
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.runframe_type === "runframe_ready_to_receive") {
