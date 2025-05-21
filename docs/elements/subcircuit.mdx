@@ -35,13 +35,19 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   `}
 />
 
-## Re-using Reference Designators
+## Reuse Reference Designators
 
-Re-using reference designators is typically considered a bad practice, but in
+Reusing reference designators is typically considered a bad practice, but in
 tscircuit reference designators are intelligently prefixed prior to being
 written on the silkscreen. This means that you can design your subcircuits
 without worrying about whether or not a reference designator has been previously
 used.
+
+Within a subcircuit, you'll never select inside of another subcircuit without
+explicitly specifying the subcircuit `name` in a selector. This means you never
+need to worry about other `R1` or `C1` selectors from other subcircuits, they
+will not be selected unless you explicitly include a subcircuit selector
+e.g. `.somesubcircuit .R1`
 
 <CircuitPreview
   defaultView="schematic"
