@@ -62,25 +62,28 @@ figure {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 3rem;
-  margin-bottom: 2rem;
+  margin: 3rem auto 2rem;
+  max-width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 figure figcaption {
   margin-top: 0.5rem;
   opacity: 0.8;
   text-align: center;
-  align-self: center;
   font-size: 0.8rem;
   line-height: 1.2rem;
-  width: 60%;
+  width: 90%; 
+  max-width: 600px;
 }
 
 figure img {
+  width: 100%;
   max-width: 600px;
-  object-fit: cover;
-  align-self: center;
+  height: auto;
   display: block;
+  object-fit: cover;
   margin-left: auto;
   margin-right: auto;
 }
