@@ -16,7 +16,9 @@ and available for import from the tscircuit registry.
 
 <figure>
   <img src="/img/tscircuit-new-import-part.png" />
-  <figcaption>Step 1: Go to `tscircuit.com` and press the "new" button</figcaption>
+  <figcaption>
+    Step 1: Go to `tscircuit.com` and press the "new" button
+  </figcaption>
 </figure>
 
 <figure>
@@ -31,7 +33,9 @@ and available for import from the tscircuit registry.
 
 <figure>
   <img src="/img/jlcpcb-part-number.png" />
-  <figcaption>You can find the JLCPCB Part Number on JLCPCB's website</figcaption>
+  <figcaption>
+    You can find the JLCPCB Part Number on JLCPCB's website
+  </figcaption>
 </figure>
 
 <figure>
@@ -43,15 +47,14 @@ After your component has been added to tscircuit, you can import it as a
 `@tsci/*` import like this:
 
 ```tsx
-import { ESP32_WROOM_32DC } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC"
+import { ESP32_WROOM_32DC } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC";
 
 export default () => (
   <board width="10mm" height="10mm">
     <ESP32_WROOM_32DC />
   </board>
-)
+);
 ```
-
 
 ## CLI Import
 
@@ -66,3 +69,33 @@ easyeda convert -i C46749 -t tsx
 ```
 
 This will create a `tsx` file that you can import.
+
+## Runframe Imports
+
+Runframe provides an alternative way to import components from JLCPCB. This method is particularly useful for batch imports and automated workflows.
+
+<figure>
+  <video controls>
+    <source src="/video/runframe-import-guide.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+  <figcaption>Video guide: Importing components using Runframe</figcaption>
+</figure>
+
+To use Runframe imports:
+
+1. Install the Runframe CLI tool
+2. Configure your JLCPCB credentials
+3. Use the import command to fetch components
+
+The imported components will be available in your project's component library and can be used just like any other imported component.
+
+```tsx
+import { ComponentName } from "@your-project/runframe-imports";
+
+export default () => (
+  <board>
+    <ComponentName />
+  </board>
+);
+```
