@@ -72,7 +72,7 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
           display: isLoading ? "none" : "block",
         }}
         onLoad={() => {
-          // The iframe is loaded, but we'll only hide the skeleton 
+          // The iframe is loaded, but we'll only hide the skeleton
           // when we receive the "runframe_ready_to_receive" message
         }}
       />
