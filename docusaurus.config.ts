@@ -64,13 +64,19 @@ const config: Config = {
       { name: "twitter:card", content: "summary" }, // Small preview with logo
       // { name: "twitter:title", content: "tscircuit Docs" },
       // { name: "twitter:description", content: "Create Electronics with TypeScript and React" },
-      { name: "twitter:image", content: "https://docs.tscircuit.com/logo/logo.png" },
+      {
+        name: "twitter:image",
+        content: "https://docs.tscircuit.com/logo/logo.png",
+      },
 
       // LinkedIn & Open Graph Meta Tags
       { property: "og:type", content: "website" },
       // { property: "og:title", content: "tscircuit Docs" },
       // { property: "og:description", content: "Create Electronics with TypeScript and React" },
-      { property: "og:image", content: "https://docs.tscircuit.com/logo/logo.png" },
+      {
+        property: "og:image",
+        content: "https://docs.tscircuit.com/logo/logo.png",
+      },
       { property: "og:url", content: "https://docs.tscircuit.com/" },
     ],
     navbar: {
