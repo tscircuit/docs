@@ -115,7 +115,7 @@ export default function CircuitPreview({
       : "h-full max-h-[300px]"
 
   const hasMultipleFiles = Object.keys(fsMap).length > 1
-  
+
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
       <div
@@ -196,11 +196,7 @@ export default function CircuitPreview({
         {(view === "code" ||
           shouldSplitCode ||
           (!showTabs && windowSize === "mobile")) && (
-          <div
-            className={tw(
-              `flex flex-col flex-1`,
-            )}
-          >
+          <div className={tw(`flex flex-col flex-1`)}>
             {hasMultipleFiles && fileTabsElm}
             <div
               className={tw(
