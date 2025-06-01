@@ -3,13 +3,15 @@ title: Report an Autorouter Bug
 description: Learn how to report an autorouter bug so that the tscircuit team can fix it.
 ---
 
+import YouTubeEmbed from '../../src/components/YouTubeEmbed';
+
 ## Overview
 
 You can report autorouter bugs by going to `Errors -> Open Autorouter Log -> Report Bug` inside the tscircuit interface.
 
 When you report a bug, your autorouting data is sent to the tscircuit API so that the autorouting developers can debug the issue.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/lXedg8mlP1s?si=FxZ_JWLuqmBinYkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<YouTubeEmbed youtubeId="lXedg8mlP1s" />
 
 ## Simulating your bug with the Autorouting Debugger
 
