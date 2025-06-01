@@ -4,6 +4,8 @@ sidebar_position: 2
 description: JLCPCB has a massive component catalog of 3d models and footprints.
 ---
 
+import YouTubeEmbed from '../../../src/components/YouTubeEmbed';
+
 ## Overview
 
 JLCPCB has a massive component catalog of 3d models and footprints.
@@ -55,14 +57,21 @@ export default () => (
 
 ## CLI Import
 
-To import using the CLI, run `npm install -g easyeda`. This will give you the
-`easyeda` command line tool. You can then run `easyeda convert` as shown below
+To import JLCPCB components using the tsci dev environment, follow these steps:
 
-```
-# Convert a schematic and footprint for JLCPCB part number C46749 (NE555)
-# to tscircuit component
-easyeda convert -i C46749 -o C46749.tsx
-easyeda convert -i C46749 -t tsx
-```
+1. Run `tsci dev` to start the development server
+2. In the tsci dev environment, navigate to "File -> Import"
 
-This will create a `tsx` file that you can import.
+<YouTubeEmbed youtubeId="tFCGAa81KUs" />
+
+After importing, you can use the component in your circuit like this:
+
+```tsx
+import { ComponentName } from "@tsci/imported-component"
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <ComponentName />
+  </board>
+)
+```
