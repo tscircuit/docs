@@ -80,10 +80,10 @@ figure figcaption {
 
 figure img {
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   height: auto;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   margin-left: auto;
   margin-right: auto;
 }
@@ -93,8 +93,9 @@ figure img {
   box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
   margin-top: 3rem;
   margin-bottom: 3rem;
-  max-width: 600px;
-  object-fit: cover;
+  max-width: 800px;
+  width: 100%;
+  object-fit: contain;
   align-self: center;
   display: block;
   margin-left: auto;
@@ -109,6 +110,14 @@ figure img {
   margin-right: auto;
 }
 
+/* General img styling for standalone images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .menu__list {
   font-size: 14px;
@@ -137,15 +146,14 @@ figure img {
   }
 
   .container > iframe,
-  .container > img {
-    max-width: 90vw !important;
-  }
+  .container > img,
+  figure img,
   .img-rounded,
-.img-400 {
-  max-width: 90vw;
-  padding: 0 1rem;
-  box-sizing: border-box;
-}
+  .img-400 {
+    max-width: 90vw !important;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
 }
 
 html,
