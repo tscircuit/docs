@@ -2,17 +2,17 @@
 title: Platform Configuration
 description: >-
   The Platform Configuration allows you to change tscircuit behavior to best
-  suite the platform the tscircuit code is running on.
+  suit the platform the tscircuit code is running on.
 ---
 
 ## Overview
 
-The Platform Configuration allows you to change tscircuit behavior to best suite
+The Platform Configuration allows you to change tscircuit behavior to best suit
 the platform the tscircuit code is running on.
 
 Some use cases:
 
-- Organizations may want to customize the cloud-autorouter to avoid sending sensitive designs outside your company
+- Organizations may want to customize the cloud autorouter to avoid sending sensitive designs outside your company
 - Organizations may want to use their own internal registry for importing circuits instead of [tscircuit.com](https://tscircuit.com)
 - For [autorouting.com](https://autorouting.com), we configure the platform to not perform any autorouting
 
@@ -67,7 +67,7 @@ import myPartsEngine from "./my-parts-engine"
 
 const circuitRunner = new CircuitRunner({
   platform: {
-    partsEngine: getMyPartsEngine,
+    partsEngine: myPartsEngine,
   },
 })
 
