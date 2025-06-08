@@ -75,12 +75,12 @@ figure figcaption {
   font-size: 0.8rem;
   line-height: 1.2rem;
   width: 90%;
-  max-width: 800px;
+  max-width: 600px;
 }
 
 figure img {
   width: 100%;
-  max-width: 800px;
+  max-width: 600px;
   height: auto;
   display: block;
   object-fit: cover;
@@ -93,7 +93,7 @@ figure img {
   box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
   margin-top: 3rem;
   margin-bottom: 3rem;
-  max-width: 800px;
+  max-width: 600px;
   width: 100%;
   object-fit: cover;
   align-self: center;
