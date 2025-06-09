@@ -143,7 +143,6 @@ figure img {
   .img-rounded,
   .img-400 {
     max-width: 90vw;
-    padding: 0 1rem;
     box-sizing: border-box;
   }
 }
