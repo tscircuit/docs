@@ -196,7 +196,7 @@ export default function CircuitPreview({
         {(view === "code" ||
           shouldSplitCode ||
           (!showTabs && windowSize === "mobile")) && (
-          <div className={tw(`flex flex-col flex-1`)}>
+          <div className={tw(`flex flex-col flex-1 basis-1/2`)}>
             {hasMultipleFiles && fileTabsElm}
             <div
               className={tw(
@@ -218,7 +218,7 @@ export default function CircuitPreview({
           view === "runframe") && (
           <div
             className={tw(
-              "flex-1 min-h-[300px] flex-shrink-0 overflow-hidden m-0 p-0",
+              "flex flex-1 basis-1/2 min-h-[300px] overflow-hidden m-0 p-0",
             )}
           >
             {showTabs && shouldSplitCode && tabsElm}
