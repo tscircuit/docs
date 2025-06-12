@@ -196,7 +196,7 @@ export default function CircuitPreview({
         {(view === "code" ||
           shouldSplitCode ||
           (!showTabs && windowSize === "mobile")) && (
-          <div className={tw(`flex flex-col flex-1 basis-1/2`)}>
+          <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
             {hasMultipleFiles && fileTabsElm}
             <div
               className={tw(
@@ -204,7 +204,7 @@ export default function CircuitPreview({
               )}
             >
               <CodeBlock
-                className={tw("w-full rounded-none shadow-none p-0 m-0")}
+                className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
                 language="tsx"
               >
                 {fsMap[currentFile]?.trim() || code?.trim() || ""}
@@ -218,7 +218,7 @@ export default function CircuitPreview({
           view === "runframe") && (
           <div
             className={tw(
-              "flex flex-1 basis-1/2 min-h-[300px] overflow-hidden m-0 p-0",
+              "flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
             )}
           >
             {showTabs && shouldSplitCode && tabsElm}
