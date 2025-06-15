@@ -1,0 +1,36 @@
+---
+title: <solderjumper />
+description: Small pads that can be cut or bridged with solder for configuration options.
+---
+
+## Overview
+
+A `<solderjumper />` is a tiny jumper made from exposed pads on the PCB. These pads can be bridged or cut to change the circuit after manufacturing. While a regular `<jumper />` usually uses a header-style footprint, solder jumpers are often just copper pads separated by a thin gap.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <solderjumper name="SJ1" footprint="solderjumper2_bridged12" bridgedPins={[["1","2"]]} />
+  )
+  `}
+/>
+
+This snippet is based on the tests from [tscircuit/core](https://github.com/tscircuit/core/blob/main/tests/components/normal-components/solderjumper.test.tsx).
+
+If you provide the `bridgedPins` property, tscircuit will create a small trace connecting those pins by default. You can cut the trace to open the connection or solder across the pads to reconnect them.
+
+## Properties
+
+The `<solderjumper />` component extends `<jumper />` with one additional property. From [`@tscircuit/props`](https://github.com/tscircuit/props/blob/main/lib/components/solderjumper.ts):
+
+```ts
+export interface SolderJumperProps extends JumperProps {
+  /** Pins that are bridged with solder by default */
+  bridgedPins?: string[][]
+}
+```
+
+Use solder jumpers when you need a configuration option that can be easily changed with a soldering iron.
