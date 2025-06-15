@@ -1,0 +1,46 @@
+---
+title: <jumper />
+description: A simple connector that typically uses a pinrow footprint but can be used for custom layouts as well.
+---
+
+## Overview
+
+A `<jumper />` represents a small multi-pin connector, commonly a male or female header using a `pinrow` style footprint. You can think of it as a flexible connector that can be placed anywhere on the board much like a `<chip />`.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <jumper name="J1" footprint="pinrow4" />
+    </board>
+  )
+  `}
+/>
+
+The example above is adapted from the [core tests](https://github.com/tscircuit/core/blob/main/tests/components/normal-components/jumper.test.tsx).
+
+## Properties
+
+`<jumper />` shares many of the common component properties such as `pcbX`, `pcbY` and `footprint`. The full TypeScript interface is defined in [`@tscircuit/props`](https://github.com/tscircuit/props/blob/main/lib/components/jumper.ts):
+
+```ts
+export interface JumperProps extends CommonComponentProps {
+  manufacturerPartNumber?: string
+  pinLabels?: Record<number | string, string | string[]>
+  schPinStyle?: SchematicPinStyle
+  schPinSpacing?: number | string
+  schWidth?: number | string
+  schHeight?: number | string
+  schDirection?: "left" | "right"
+  schPortArrangement?: SchematicPortArrangement
+  /** Number of pins on the jumper (2 or 3) */
+  pinCount?: 2 | 3
+  /** Groups of pins that are internally connected */
+  internallyConnectedPins?: string[][]
+}
+```
+
+Jumpers are often placed using footprints such as `pinrow8` or `pinrow6_female_rows2`, but you can also provide a custom `<footprint />` just like with `<chip />`.
