@@ -200,12 +200,12 @@ export default function CircuitPreview({
             {hasMultipleFiles && fileTabsElm}
             <div
               className={tw(
-                `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
+                `flex flex-1 overflow-hidden m-0 p-0 border-r ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
               )}
             >
               <CodeBlock
                 className={tw(
-                  "w-full rounded-none shadow-none p-0 m-0 min-w-0",
+                  "w-full h-full overflow-auto rounded-none shadow-none p-0 m-0 min-w-0",
                 )}
                 language="tsx"
               >
