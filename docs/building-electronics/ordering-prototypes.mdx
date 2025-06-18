@@ -15,7 +15,34 @@ ordering prototypes are [JLCPCB](https://jlcpcb.com) and [PCBWay](https://pcbway
 
 ## Ordering Through tscircuit Platform
 
-The easiest way to order your prototypes is through the tscircuit platform, which handles the entire ordering process for you. Here's how it works:
+The easiest way to order your prototypes is through the tscircuit platform, which handles the entire ordering process for you. Before placing your order, there are two important component properties that affect the ordering process:
+
+### Using `doNotPlace` Prop
+
+Components with the `doNotPlace` prop set to `true` will not be included in the parts selection for ordering. This is useful for components that you plan to solder manually or that are not available through the supplier.
+
+```tsx
+<resistor resistance="10k" name="R1" footprint="0402" doNotPlace />
+```
+
+### Using `supplierPartNumbers` Prop
+
+The `supplierPartNumbers` prop allows you to specify exact part numbers from suppliers, helping to ensure the correct components are selected during ordering. This is particularly useful for specific or critical components.
+
+```tsx
+<capacitor 
+  capacitance="100nF" 
+  supplierPartNumbers={{
+    jlcpcb: "C14663"
+  }}
+  name="C1"
+  footprint="0402"
+/>
+```
+
+### Ordering Steps
+
+Here's how the ordering process works:
 
 ### 1. Get Order Quotes
 
