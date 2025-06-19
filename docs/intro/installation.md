@@ -92,6 +92,18 @@ npm add -D tscircuit
 bun add -D tscircuit
 ```
 
+## TypeScript Configuration
+
+If TypeScript can't find the tscircuit types in your project, add the `types` field to your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["tscircuit"]
+  }
+}
+```
+
 ## Next Steps
 
 Now that you've installed tscircuit, you can start developing your first electronic device!
