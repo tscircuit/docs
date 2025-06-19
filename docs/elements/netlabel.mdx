@@ -1,0 +1,75 @@
+---
+title: <netlabel />
+description: >-
+  The `<netlabel />` element attaches a text label to a net on the schematic.
+  It replaces the old `<netalias />` element.
+---
+
+## Overview
+
+`<netlabel />` places a small label on a schematic net so you can easily
+identify power rails and other connections. It is especially useful in
+conjunction with the `connections` prop of components or modules to
+show where a net connects.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+    export default () => (
+      <board routingDisabled>
+        <chip
+          name="U1"
+          manufacturerPartNumber="I2C_SENSOR"
+          footprint="soic4"
+          pinLabels={{
+            pin1: "SCL",
+            pin2: "SDA",
+            pin3: "VCC",
+            pin4: "GND",
+          }}
+          schPinArrangement={{
+            leftSide: {
+              direction: "top-to-bottom",
+              pins: ["SCL", "SDA", "VCC", "GND"],
+            },
+          }}
+          connections={{
+            SCL: sel.net.SCL,
+            SDA: sel.net.SDA,
+            VCC: sel.net.V3_3,
+            GND: sel.net.GND,
+          }}
+        />
+        <netlabel
+          schX={-2}
+          schY={-1}
+          anchorSide="top"
+          net="GND"
+          connection="U1.GND"
+        />
+        <netlabel
+          schX={-2}
+          schY={0.8}
+          net="VCC"
+          connection="U1.VCC"
+          anchorSide="bottom"
+        />
+      </board>
+    )
+  `}
+/>
+
+## Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `net` | Name of the net that the label represents | `"VCC"` |
+| `connection` | [Port selector](../guides/port-and-net-selectors.md) of the point the label attaches to | `"U1.VCC"` |
+| `anchorSide` | Which side of the connection to place the label. One of `"top"`, `"bottom"`, `"left"`, or `"right"` | `"top"` |
+| `schX`, `schY` | Position of the label on the schematic | `0`, `-1` |
+| `text` | Custom text for the label (defaults to the net name) | `"V3_3"` |
+
+Use `<netlabel />` to clearly mark nets in your schematic, especially for
+power rails or when multiple wires join at a single connection point.
