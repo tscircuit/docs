@@ -1,0 +1,35 @@
+---
+title: <schematictext />
+description: The `<schematictext />` element places text directly on the schematic.
+---
+
+## Overview
+
+`<schematictext />` is a primitive element used to display standalone text on the schematic. It does not appear on the PCB.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <schematictext text="Hello" schX={2} schY={3} color="red" anchor="center" />
+    </board>
+  )
+  `}
+/>
+
+
+## Properties
+
+| Property | Type | Description |
+|---------|------|-------------|
+| `text` | string | The text string to render. |
+| `schX` | length | X coordinate of the text. |
+| `schY` | length | Y coordinate of the text. |
+| `anchor` | enum | Anchor position such as `"center"`, `"left"`, `"right"`, `"top"`, `"bottom"`, or corner positions. Defaults to `"center"`. |
+| `fontSize` | number | Font size in schematic units. Default `1`. |
+| `color` | string | Color of the text, specified as a hex string. Default `"#000000"`. |
+| `schRotation` | angle | Rotation of the text in degrees. Default `0`. |
+

@@ -1,4 +1,4 @@
-import React from "react"
+import type React from "react"
 
 interface YouTubeEmbedProps {
   youtubeId: string
@@ -29,7 +29,7 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ youtubeId }) => {
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
-      ></iframe>
+      />
     </div>
   )
 }
