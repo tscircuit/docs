@@ -14,10 +14,12 @@ show where a net connects.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-The preview below uses the `schematicOnly` prop so that only the schematic is shown.
+The preview below uses `leftView="code"` and `rightView="schematic"` to show the
+schematic alongside the example code.
 
 <CircuitPreview
-  schematicOnly
+  leftView="code"
+  rightView="schematic"
   code={`
     import { sel } from "tscircuit"
     export default () => (
