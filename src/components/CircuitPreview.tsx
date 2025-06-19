@@ -78,6 +78,8 @@ export default function CircuitPreview({
   fsMap = {},
   entrypoint = "index.tsx",
   schematicOnly = false,
+  leftView,
+  rightView,
 }: {
   code?: string
   showTabs?: boolean
@@ -90,6 +92,8 @@ export default function CircuitPreview({
   fsMap?: Record<string, string>
   entrypoint?: string
   schematicOnly?: boolean
+  leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe"
+  rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe"
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -109,9 +113,16 @@ export default function CircuitPreview({
     _hide3DTab = true
   }
 
+  if (leftView || rightView) {
+    _showTabs = false
+    _splitView = true
+    _hidePCBTab = ![leftView, rightView].includes("pcb")
+    _hide3DTab = ![leftView, rightView].includes("3d")
+  }
+
   const [view, setView] = useState<
     "pcb" | "schematic" | "code" | "3d" | "runframe"
-  >(_defaultView)
+  >(rightView ?? _defaultView)
   const currentCode = code || fsMap[entrypoint] || ""
   const pcbUrl = useMemo(() => createSvgUrl(currentCode, "pcb"), [currentCode])
   const schUrl = useMemo(
@@ -196,6 +207,71 @@ export default function CircuitPreview({
       </div>
     </div>
   )
+
+  if (leftView || rightView) {
+    const renderView = (
+      v: "code" | "pcb" | "schematic" | "3d" | "runframe",
+      side: "left" | "right",
+    ) => {
+      const borderCss = side === "left" ? "border-r" : "border-l"
+      if (v === "code") {
+        return (
+          <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
+            {hasMultipleFiles && side === "left" && fileTabsElm}
+            <div
+              className={tw(
+                `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 ${borderCss} ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
+              )}
+            >
+              <CodeBlock
+                className={tw(
+                  "w-full rounded-none shadow-none p-0 m-0 min-w-0",
+                )}
+                language="tsx"
+              >
+                {fsMap[currentFile]?.trim() || code?.trim() || ""}
+              </CodeBlock>
+            </div>
+          </div>
+        )
+      }
+
+      return (
+        <div
+          className={tw(
+            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0`,
+          )}
+        >
+          <img
+            src={v === "pcb" ? pcbUrl : v === "schematic" ? schUrl : threeDUrl}
+            alt={`${v.toUpperCase()} Circuit Preview`}
+            className={tw(
+              `w-full ${tabContentHeightCss} m-0 object-contain ${
+                v === "pcb"
+                  ? "bg-black flex items-center justify-center"
+                  : v === "schematic"
+                    ? "bg-[#F5F1ED]"
+                    : "bg-white object-cover"
+              }`,
+            )}
+          />
+        </div>
+      )
+    }
+
+    return (
+      <div
+        className={tw(
+          `shadow-lg pt-0 pb-0 pl-0 pr-0 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8 overflow-hidden`,
+        )}
+      >
+        <div className={tw(`h-full overflow-hidden flex m-0 p-0`)}>
+          {renderView(leftView || "code", "left")}
+          {renderView(rightView || "schematic", "right")}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
