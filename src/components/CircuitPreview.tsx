@@ -77,6 +77,7 @@ export default function CircuitPreview({
   hide3DTab = false,
   fsMap = {},
   entrypoint = "index.tsx",
+  schematicOnly = false,
 }: {
   code?: string
   showTabs?: boolean
@@ -88,14 +89,29 @@ export default function CircuitPreview({
   hide3DTab?: boolean
   fsMap?: Record<string, string>
   entrypoint?: string
+  schematicOnly?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
   const [currentFile, setCurrentFile] = useState<string>(entrypoint)
 
+  let _showTabs = showTabs
+  let _splitView = splitView
+  let _defaultView = defaultView
+  let _hidePCBTab = hidePCBTab
+  let _hide3DTab = hide3DTab
+
+  if (schematicOnly) {
+    _showTabs = false
+    _splitView = false
+    _defaultView = "schematic"
+    _hidePCBTab = true
+    _hide3DTab = true
+  }
+
   const [view, setView] = useState<
     "pcb" | "schematic" | "code" | "3d" | "runframe"
-  >(defaultView)
+  >(_defaultView)
   const currentCode = code || fsMap[entrypoint] || ""
   const pcbUrl = useMemo(() => createSvgUrl(currentCode, "pcb"), [currentCode])
   const schUrl = useMemo(
@@ -107,10 +123,10 @@ export default function CircuitPreview({
     [currentCode],
   )
 
-  const shouldSplitCode = splitView && windowSize !== "mobile"
+  const shouldSplitCode = _splitView && windowSize !== "mobile"
 
   const tabContentHeightCss =
-    showTabs && windowSize !== "mobile"
+    _showTabs && windowSize !== "mobile"
       ? "h-[calc(100%-46px)]"
       : "h-full max-h-[300px]"
 
@@ -130,7 +146,7 @@ export default function CircuitPreview({
             onClick={() => setView("code")}
           />
         )}
-        {!hidePCBTab && (
+        {!_hidePCBTab && (
           <Tab
             label="PCB"
             active={view === "pcb"}
@@ -144,7 +160,7 @@ export default function CircuitPreview({
             onClick={() => setView("schematic")}
           />
         )}
-        {!hide3DTab && (
+        {!_hide3DTab && (
           <Tab
             label="3D"
             active={view === "3d"}
@@ -187,15 +203,15 @@ export default function CircuitPreview({
         `shadow-lg pt-0 pb-0 pl-0 pr-0 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8 overflow-hidden`,
       )}
     >
-      {showTabs && !shouldSplitCode && tabsElm}
+      {_showTabs && !shouldSplitCode && tabsElm}
       <div
         className={tw(
-          `h-full overflow-hidden flex m-0 p-0 ${!showTabs && windowSize === "mobile" ? "flex-col" : ""}`,
+          `h-full overflow-hidden flex m-0 p-0 ${!_showTabs && windowSize === "mobile" ? "flex-col" : ""}`,
         )}
       >
         {(view === "code" ||
           shouldSplitCode ||
-          (!showTabs && windowSize === "mobile")) && (
+          (!_showTabs && windowSize === "mobile")) && (
           <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
             {hasMultipleFiles && fileTabsElm}
             <div
@@ -223,7 +239,7 @@ export default function CircuitPreview({
               "flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
             )}
           >
-            {showTabs && shouldSplitCode && tabsElm}
+            {_showTabs && shouldSplitCode && tabsElm}
             <img
               src={pcbUrl}
               alt="PCB Circuit Preview"
