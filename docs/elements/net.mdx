@@ -11,7 +11,10 @@ description: >-
 The `<net />` element represents a bunch of traces that are all connected. You
 should use nets for representing power buses such as "V5", "V3_3" and "GND"
 
-When using a `<net />`, you're being less specific than 
+When using a `<net />`, you're being less specific than when you explicitly
+connect ports with `<trace />` elements. A net simply groups together traces
+that share the same name, letting the autorouter handle the actual routing
+between them.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
@@ -44,4 +47,6 @@ source)
 ## Implicit Nets
 
 If you use a net in a [port or net selector](../guides/port-and-net-selectors.md)
-e.g. `"net.V5"` and there is not `<net name="V5" />`, then you
+e.g. `"net.V5"` and there is not `<net name="V5" />`, then you are implicitly
+creating that net. tscircuit treats it exactly as if you had declared
+`<net name="V5" />` in your design.
