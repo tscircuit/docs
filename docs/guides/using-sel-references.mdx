@@ -221,7 +221,7 @@ import { RP2040 } from "./rp2040"
 
 const selU1 = sel.U1(RP2040)
 
-// Not recommended, but works
+// More explicit version for custom scenarios 
 const selSJ1 = sel<"A" | "B" | "C">("SJ1")
 
 selSJ1.A // Returns ".SJ1 > .A"
