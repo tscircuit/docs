@@ -209,6 +209,24 @@ selU2.custompin2 // Returns ".U2 > .custompin2"
 // selU2.doesnotexist // TypeScript error!
 ```
 
+### Dynamic Reference Designators
+
+You can call `sel` as a function to create selectors for any reference designator.
+It's best to assign the resulting selector set to a variable so that you keep
+type safety throughout your code:
+
+```tsx
+import { sel } from "tscircuit"
+import { RP2040 } from "./rp2040"
+
+const selU1 = sel.U1(RP2040)
+
+// More explicit version for custom scenarios 
+const selSJ1 = sel<"A" | "B" | "C">("SJ1")
+
+selSJ1.A // Returns ".SJ1 > .A"
+```
+
 
 So `sel` is a more type-safe, conventional way of writing
 [port selectors](./port-and-net-selectors.md).
