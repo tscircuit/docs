@@ -1,0 +1,32 @@
+---
+title: <breakoutpoint />
+description: >-
+  Specifies a PCB location where a connection inside a breakout should exit.
+---
+
+## Overview
+
+A `<breakoutpoint />` marks the XY coordinate that the autorouter should use when
+connecting a net or pin inside a [`<breakout />`](./breakout.mdx) to the rest of
+the board. Breakout points only exist on the PCB and do not have a schematic
+representation.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <breakout autorouter="auto">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={0} pcbY={0} />
+      <breakoutpoint connection="R1.1" pcbX={5} pcbY={5} />
+    </breakout>
+  </board>
+)
+`} />
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `connection` | Port or net selector inside the breakout that should connect here. |
+| `pcbX` / `pcbY` | Board coordinates of the breakout point. |
