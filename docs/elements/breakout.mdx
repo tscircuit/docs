@@ -1,0 +1,49 @@
+---
+title: <breakout />
+description: >-
+  A breakout is a container that lets you route nets out of a group at explicit points.
+---
+
+## Overview
+
+A `<breakout />` is similar to a [`<group />`](./group.mdx) but is meant for situations where you
+want to guide the autorouter on exactly where connections should exit the group.
+Inside a breakout you can place [`<breakoutpoint />`](./breakoutpoint.mdx) elements
+to define those exit locations.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <breakout autorouter="auto">
+      <resistor
+        name="R1"
+        resistance="1k"
+        footprint="0402"
+        pcbX={0}
+        pcbY={0}
+      />
+      <capacitor
+        name="C1"
+        capacitance="1uF"
+        footprint="0402"
+        pcbX={2}
+        pcbY={0}
+      />
+      <trace from="R1.2" to="C1.1" />
+      <breakoutpoint connection="R1.1" pcbX={5} pcbY={5} />
+    </breakout>
+  </board>
+)
+`} />
+
+## Properties
+
+`<breakout />` accepts all the layout properties of `<group />` plus a few extras:
+
+| Property | Description |
+|----------|-------------|
+| `padding` | Uniform padding around the breakout region. |
+| `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Control padding for each side individually. |
+| `autorouter` | Autorouter configuration inherited by children. |
