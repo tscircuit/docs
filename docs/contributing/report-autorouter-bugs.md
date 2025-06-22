@@ -24,3 +24,8 @@ the following:
 3. Run `bun run bug-report <url-to-your-bug-report>` to download the reproduction. This will output the name of your bug report directory
 4. Run `bun run start` and search for your bug report directory, it will
    appear inside the autorouting debugger.
+
+
+## Helping Contributors solve your autorouting bug
+
+- [Create a high density solving fixture for your problem](https://youtu.be/cANWCNp_ggg)
