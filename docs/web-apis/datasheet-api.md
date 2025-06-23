@@ -27,9 +27,48 @@ POST /datasheets/get { "datasheet_id": "<uuid>" }
     "datasheet_id": "<uuid>",
     "chip_name": "<name>",
     "datasheet_pdf_urls": ["https://..."],
-    "pin_information": { /* ... */ }
+    "pin_information": [ /* pin objects */ ]
   }
 }
+```
+
+### Pin Information Schema
+
+Each entry in `pin_information` describes one pin on the device and has the
+following structure:
+
+```json
+{
+  "pin_number": "1",
+  "name": ["VCC"],
+  "description": "Power supply for the device.",
+  "capabilities": ["power"]
+}
+```
+
+`pin_number` is always a string and may include alphanumeric values (e.g. `"1"`
+or `"A1"`). The `name` array contains all aliases for the pin. `description` is
+a human‑readable explanation of the pin's function and `capabilities` enumerates
+how the pin can be used.
+
+### Example Response Snippet
+
+Below is an excerpt from the RP2040 datasheet entry:
+
+```bash
+$ curl https://api.tscircuit.com/datasheets/get?chip_name=RP2040 | jq '.datasheet.pin_information[:1]'
+[
+  {
+    "name": [
+      "IOVDD"
+    ],
+    "pin_number": "1",
+    "description": "Power supply for digital GPIOs, nominal voltage 1.8V to 3.3V.",
+    "capabilities": [
+      "Power Supply (Digital IO)"
+    ]
+  }
+]
 ```
 
 ## `/datasheets/create`
