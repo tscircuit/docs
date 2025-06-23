@@ -107,9 +107,50 @@ curl -X GET "https://api.tscircuit.com/orders/get?order_id=123e4567-e89b-12d3-a4
   "message": "string"
 }
 ```
-- For endpoints related to order quotes, see the Order Quotes API documentation.
+## Order Quote API
+
+The Order Quote API lets you retrieve pricing quotes for PCB orders. Quotes include component pricing, PCB costs, shipping options, and overall totals.
+
+### Endpoint
+
+#### Get an Order Quote
+`GET /order_quotes/get?order_quote_id={uuid}` or `POST /order_quotes/get`
+
+Request body:
+
+```json
+{
+  "order_quote_id": "string (UUID)"
+}
+```
+
+Response example:
+
+```json
+{
+  "order_quote": {
+    "order_quote_id": "123e4567-e89b-12d3-a456-426614174000",
+    "vendor_name": "jlcpcb",
+    "is_completed": true,
+    "quoted_components": [
+      {
+        "manufacturer_part_number": "CC0603KRX7R9BB101",
+        "quantity": 10,
+        "total_cost": 0.5,
+        "available": true
+      }
+    ],
+    "bare_pcb_cost": 20.0,
+    "shipping_options": [
+      { "carrier": "dhl", "service": "express", "cost": 9.5 }
+    ],
+    "total_cost_without_shipping": 25.0
+  }
+}
+```
+
+Returns `404` if the quote is not found or not accessible.
 
 ## See Also
 
-- [Order Quotes API Documentation](#)
 - [Authentication Guide](#)
