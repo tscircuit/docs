@@ -41,7 +41,6 @@ This endpoint requires an API token. You can print your token with the [`tsci au
 POST /datasheets/create
 {
   "chip_name": "<name>",
-  "datasheet_pdf_urls": ["https://..."]
 }
 ```
 
@@ -50,9 +49,9 @@ POST /datasheets/create
 {
   "datasheet_id": "<uuid>",
   "chip_name": "<name>",
-  "datasheet_pdf_urls": ["https://..."],
+  "datasheet_pdf_urls": null,
   "pin_information": null
 }
 ```
 
-After creation the datasheet will be processed asynchronously to extract pin information.
+After creation the datasheet will be processed asynchronously to find pdf urls and extract pin information.
