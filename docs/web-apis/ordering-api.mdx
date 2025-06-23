@@ -113,6 +113,28 @@ The Order Quote API lets you retrieve pricing quotes for PCB orders. Quotes incl
 
 ### Endpoint
 
+#### Create an Order Quote
+`POST /order_quotes/create`
+
+Creates a new order quote for a PCB package release. Currently only the `jlcpcb` vendor is supported.
+
+Request body:
+
+```json
+{
+  "package_release_id": "string (UUID)",
+  "vendor_name": "jlcpcb"
+}
+```
+
+Response example:
+
+```json
+{
+  "order_quote_id": "string (UUID)"
+}
+```
+
 #### Get an Order Quote
 `GET /order_quotes/get?order_quote_id={uuid}` or `POST /order_quotes/get`
 
