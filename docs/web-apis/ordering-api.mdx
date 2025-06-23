@@ -1,0 +1,115 @@
+---
+title: Ordering API
+description: Public endpoints for creating and retrieving orders through the tscircuit API
+sidebar_position: 3
+---
+
+## Authentication
+
+All ordering endpoints require a valid session. Include your authentication token or session cookie in every request.
+
+### Create an Order
+
+`POST /orders/create`
+
+Creates a new order for a PCB circuit. Provide either a `package_release_id` or the full `circuit_json`. Optionally specify a `customs_category`.
+
+```json
+{
+  "package_release_id": "string (uuid, optional)",
+  "circuit_json": [ /* circuit JSON array, optional */ ],
+  "customs_category": "string (optional)"
+}
+```
+
+Either `package_release_id` or `circuit_json` must be supplied.
+
+**Response**
+
+```json
+{
+  "order": {
+    "order_id": "string (uuid)",
+    "account_id": "string (uuid)",
+    "is_running": false,
+    "is_started": false,
+    "is_finished": false,
+    "error": null,
+    "has_error": false,
+    "created_at": "string (ISO timestamp)",
+    "started_at": "string (ISO timestamp or null)",
+    "completed_at": "string (ISO timestamp or null)",
+    "circuit_json": [ /* circuit JSON array */ ],
+    "customs_category": "string"
+  }
+}
+```
+
+Example request:
+
+```bash
+curl -X POST https://api.tscircuit.com/orders/create \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"package_release_id": "123e4567-e89b-12d3-a456-426614174000"}'
+```
+
+### Get Order Details
+
+`GET /orders/get` or `POST /orders/get`
+
+Fetch details of a specific order.
+
+Request parameters (query or JSON body):
+
+```json
+{
+  "order_id": "string (uuid)"
+}
+```
+
+**Response**
+
+```json
+{
+  "order": {
+    "order_id": "string (uuid)",
+    "account_id": "string (uuid)",
+    "is_running": false,
+    "is_started": false,
+    "is_finished": false,
+    "error": null,
+    "has_error": false,
+    "created_at": "string (ISO timestamp)",
+    "started_at": "string (ISO timestamp or null)",
+    "completed_at": "string (ISO timestamp or null)",
+    "circuit_json": [ /* circuit JSON array */ ],
+    "customs_category": "string"
+  }
+}
+```
+
+Example request:
+
+```bash
+curl -X GET "https://api.tscircuit.com/orders/get?order_id=123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Additional Notes
+
+- Timestamps are returned in ISO-8601 format.
+- Errors follow this structure:
+
+```json
+{
+  "error_code": "string",
+  "message": "string"
+}
+```
+- For endpoints related to order quotes, see the Order Quotes API documentation.
+
+## See Also
+
+- [Order Quotes API Documentation](#)
+- [Authentication Guide](#)
