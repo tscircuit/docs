@@ -209,6 +209,23 @@ selU2.custompin2 // Returns ".U2 > .custompin2"
 // selU2.doesnotexist // TypeScript error!
 ```
 
+### Generic Net Selectors
+
+You can also create custom net selectors using TypeScript generics:
+
+```tsx
+import { sel } from "tscircuit"
+
+// Define custom net names using generics
+const customNets = sel.net<"CUSTOMNET1" | "CUSTOMNET2">()
+
+customNets.CUSTOMNET1 // "net.CUSTOMNET1"
+customNets.CUSTOMNET2 // "net.CUSTOMNET2"
+
+// TypeScript will error on non-existent nets!
+// customNets.DOES_NOT_EXIST // TypeScript error!
+```
+
 ### Dynamic Reference Designators
 
 You can call `sel` as a function to create selectors for any reference designator.
