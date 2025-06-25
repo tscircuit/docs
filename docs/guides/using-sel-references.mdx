@@ -226,6 +226,21 @@ customNets.CUSTOMNET2 // "net.CUSTOMNET2"
 // customNets.DOES_NOT_EXIST // TypeScript error!
 ```
 
+### Collecting Typed Nets
+
+You may want to group your typed nets alongside other reusable selectors:
+
+```tsx
+import { sel } from "tscircuit"
+
+const selectors = {
+  net: sel.net<"GND" | "VCC" | "V5">(),
+  // ...other selectors
+}
+
+selectors.net.GND // "net.GND"
+```
+
 ### Dynamic Reference Designators
 
 You can call `sel` as a function to create selectors for any reference designator.
