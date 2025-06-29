@@ -61,3 +61,31 @@ Capacitors can be configured with these key properties:
 
 Like resistors, tscircuit will automatically select suitable capacitor parts based on your specifications through the [platform parts engine](../guides/platform-configuration.md). For specialized capacitors (e.g., low ESR, high voltage), you may want to specify `supplierPartNumbers` explicitly.
 
+## Schematic Orientation
+
+Polarized capacitors can display their positive and negative pins in different orientations. Use the `schOrientation` property to control the symbol orientation instead of manually setting `schRotation`.
+
+Valid orientation values are:
+
+- `horizontal`
+- `vertical`
+- `pos_left`
+- `pos_right`
+- `pos_top`
+- `pos_bottom`
+- `neg_left`
+- `neg_right`
+- `neg_top`
+- `neg_bottom`
+
+```tsx
+<capacitor
+  name="C1"
+  capacitance="1uF"
+  polarized
+  schOrientation="pos_left"
+  schX={0}
+  schY={0}
+  connections={{ pos: "net.POS", neg: "net.NEG" }}
+/>```
+
