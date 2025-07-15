@@ -37,6 +37,12 @@ Go to https://localhost:3020. You can now see PCB, Schematic and 3D views of you
 
 ![browser](../../static/img/pcb-runframe.png)
 
+### Using the CLI Offline
+
+To use the CLI offline, you need to disable the "Force Latest @tscircuit/eval" option in the file menu. Click on "File" in the top menu, then uncheck the "Force Latest @tscircuit/eval" option:
+
+![Force eval option in file menu](../../static/img/force-eval.png)
+
 ## Pushing to the tscircuit Registry
 
 <!-- TODO -->
