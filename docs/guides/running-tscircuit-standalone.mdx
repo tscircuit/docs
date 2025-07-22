@@ -16,15 +16,10 @@ Here's a minimal **stand-alone** HTML page that renders a resistor inside a boar
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script>
-      /* React & friends sometimes look at process.env.NODE_ENV – define it so they stay quiet */
-      window.process = { env: { NODE_ENV: "production" } }
-    </script>
-
-    <!-- Pull the latest standalone bundle from jsDelivr -->
+    <!-- Pull the latest browser bundle from jsDelivr -->
     <script
       type="module"
-      src="https://cdn.jsdelivr.net/npm/@tscircuit/runframe@0.0.712/dist/standalone.min.js"
+      src="https://cdn.jsdelivr.net/npm/tscircuit@0.0.554/dist/browser.min.js"
     ></script>
 
     <!-- Your tscircuit snippet goes here -->
@@ -47,7 +42,7 @@ When the browser finishes parsing, `standalone.min.js` compiles this TSX and inj
 
 ## Live example
 
-Below is the same snippet executed inside an **actual `<iframe>`** (no special React wrapper is used). The entire HTML page is provided via the `srcDoc` attribute so you can inspect, copy, and modify it as needed:
+Below is the same snippet executed inside an **actual `<iframe>`** (no special React wrapper is used). 
 
 <iframe
   style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
@@ -58,7 +53,7 @@ Below is the same snippet executed inside an **actual `<iframe>`** (no special R
     <script>
       window.process = { env: { NODE_ENV: "production" } }
     </script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@tscircuit/runframe@latest/dist/standalone.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/tscircuit@0.0.554/dist/browser.min.js"></script>
     <script type="tscircuit-tsx">
       export default () => (
         <board width="10mm" height="10mm">
@@ -71,5 +66,3 @@ Below is the same snippet executed inside an **actual `<iframe>`** (no special R
   </body>
 </html>`}
 />
-
-*(If you don't see anything, your browser or an extension may be blocking third-party scripts. Try opening the HTML snippet in a separate tab to verify it renders correctly.)*
