@@ -1,0 +1,67 @@
+---
+title: Running tscircuit with a script tag
+description: Load `tscircuit`'s browser build from a CDN and render a circuit written inside a `<script type="tscircuit-tsx">` block – no build tooling required.
+---
+
+## Overview
+
+The `tscircuit` package ships a single-file distribution (`browser.min.js`) that can be loaded directly in the browser.  
+When this file is present on the page it will look for any `<script>` tags with the special type `tscircuit-tsx`, compile the content on-the-fly, and mount the rendered circuit into the page body.
+
+This makes it possible to embed tscircuit examples in any static HTML page without Webpack, Vite, or a React build step.
+
+Here's a minimal **stand-alone** HTML page that renders a resistor inside a board:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Pull the latest browser bundle from jsDelivr -->
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/tscircuit@0.0.554/dist/browser.min.js"
+    ></script>
+
+    <!-- Your tscircuit snippet goes here -->
+    <script type="tscircuit-tsx">
+      export default () => (
+        <board width="10mm" height="10mm">
+          <resistor name="R1" resistance={1000} footprint={"0402"} />
+        </board>
+      )
+    </script>
+  </head>
+  <body></body>
+</html>
+```
+
+The first script tag downloads the standalone bundle which brings in React, tscircuit, and the on-page compiler.  
+Finally, the second script tag contains the JSX (technically TSX) that defines your circuit.  
+When the browser finishes parsing, `browser.min.js` compiles this TSX and injects the resulting circuit right where the script tag is placed (the default is the end of the `<body>` tag).
+
+## Live example
+
+Below is the same snippet executed inside an **actual `<iframe>`** (no special React wrapper is used). 
+
+<iframe
+  style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
+  srcDoc={`
+  <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script>
+      window.process = { env: { NODE_ENV: "production" } }
+    </script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/tscircuit@0.0.554/dist/browser.min.js"></script>
+    <script type="tscircuit-tsx">
+      export default () => (
+        <board width="10mm" height="10mm">
+          <resistor name="R1" resistance={1000} footprint={"0402"} />
+        </board>
+      )
+    </script>
+  </head>
+  <body>
+  </body>
+</html>`}
+/>
