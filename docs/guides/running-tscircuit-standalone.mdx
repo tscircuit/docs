@@ -1,11 +1,11 @@
 ---
 title: Running tscircuit with a script tag
-description: Load `@tscircuit/runframe`'s standalone build from a CDN and render a circuit written inside a `<script type="tscircuit-tsx">` block – no build tooling required.
+description: Load `tscircuit`'s browser build from a CDN and render a circuit written inside a `<script type="tscircuit-tsx">` block – no build tooling required.
 ---
 
 ## Overview
 
-The `@tscircuit/runframe` package ships a single-file distribution (`standalone.min.js`) that can be loaded directly in the browser.  
+The `scircuit` package ships a single-file distribution (`browser.min.js`) that can be loaded directly in the browser.  
 When this file is present on the page it will look for any `<script>` tags with the special type `tscircuit-tsx`, compile the content on-the-fly, and mount the rendered circuit into the page body.
 
 This makes it possible to embed tscircuit examples in any static HTML page without Webpack, Vite, or a React build step.
@@ -38,7 +38,7 @@ Here's a minimal **stand-alone** HTML page that renders a resistor inside a boar
 The first script tag simply provides a minimal `process.env` shim required by React.  
 The second script tag downloads the standalone bundle which brings in React, tscircuit, and the on-page compiler.  
 Finally, the third script tag contains the JSX (technically TSX) that defines your circuit.  
-When the browser finishes parsing, `standalone.min.js` compiles this TSX and injects the resulting circuit right where the script tag is placed (the default is the end of the `<body>` tag).
+When the browser finishes parsing, `browser.min.js` compiles this TSX and injects the resulting circuit right where the script tag is placed (the default is the end of the `<body>` tag).
 
 ## Live example
 
