@@ -35,9 +35,8 @@ Here's a minimal **stand-alone** HTML page that renders a resistor inside a boar
 </html>
 ```
 
-The first script tag simply provides a minimal `process.env` shim required by React.  
-The second script tag downloads the standalone bundle which brings in React, tscircuit, and the on-page compiler.  
-Finally, the third script tag contains the JSX (technically TSX) that defines your circuit.  
+The first script tag downloads the standalone bundle which brings in React, tscircuit, and the on-page compiler.  
+Finally, the second script tag contains the JSX (technically TSX) that defines your circuit.  
 When the browser finishes parsing, `browser.min.js` compiles this TSX and injects the resulting circuit right where the script tag is placed (the default is the end of the `<body>` tag).
 
 ## Live example
