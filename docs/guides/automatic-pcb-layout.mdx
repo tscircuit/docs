@@ -1,0 +1,103 @@
+---
+title: Automatic PCB Layout
+---
+
+:::warning
+Automatic layout is in beta! We're changing and improving the layout algorithms,
+if it doesn't work for you stay tuned! Many changes are on the way!
+:::
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# Automatic PCB Layout
+
+tscircuit provides three main methods for automatic PCB layout, each suited for different use cases:
+
+- [pcbFlex](#pcbflex-layout) - Lay out components using flexbox
+- [pcbGrid](#pcbgrid-layout) - Lay out components in a grid with changeable cell widths and overlaps
+- [pcbPack](#pcbpack-layout) - Pack components together to minimize space using packing strategies
+
+## pcbGrid Layout
+
+Grid layout arranges components in a structured grid pattern. This is ideal for matrix keyboards, LED grids, or any regular array of components. Components can dynamically span multiple cells using all the conventions
+and patterns of CSS Grid.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideCodeEditor
+  code={`
+export default () => (
+  <board pcbGrid pcbGridGap="1mm" pcbGridColumns={3}>
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <resistor name="R2" resistance="1k" footprint="0402" />
+    <resistor name="R3" resistance="1k" footprint="0402" />
+    <resistor name="R4" resistance="1k" footprint="0402" />
+    <resistor name="R5" resistance="1k" footprint="0402" />
+    <resistor name="R6" resistance="1k" footprint="0402" />
+  </board>
+)
+`}
+/>
+
+### pcbFlex Layout
+
+Flex layout provides automatic spacing and alignment along a single axis, similar to CSS flexbox. Perfect for linear arrangements of components.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideCodeEditor
+  code={`
+export default () => (
+  <board>
+    <group pcbFlex pcbFlexGap="1mm">
+      <resistor name="R1" resistance="1k" footprint="0402" />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" />
+      <group pcbFlex pcbFlexDirection="column" pcbFlexGap="1mm">
+        <resistor name="R2" resistance="10k" footprint="0402" />
+        <capacitor name="C2" capacitance="1uF" footprint="0603" />
+      </group>
+    </group>
+  </board>
+)
+`}
+/>
+
+You can customize the flex layout with additional options:
+
+```tsx
+<group 
+  pcbLayout={{ 
+    flex: true,
+    direction: "column",
+    gap: 2
+  }}
+>
+  <resistor name="R1" resistance="1k" footprint="0402" />
+  <resistor name="R2" resistance="2.2k" footprint="0402" />
+</group>
+```
+
+### pcbPack Layout
+
+Pack layout automatically places components to minimize space while avoiding overlaps. Ideal for dense layouts where space efficiency is crucial.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideCodeEditor
+  code={`
+export default () => (
+  <board pcbPack pcbPackGap="1mm">
+    <resistor name="R1" resistance="1k" footprint="0402"/>
+    <resistor name="R2" resistance="2.2k" footprint="0402" connections={{ pin1: "R1.pin2" }}/>
+    <capacitor name="C1" capacitance="100nF" footprint="0402" connections={{ pin1: "R2.pin2" }}/>
+    <capacitor name="C2" capacitance="10uF" footprint="0402" connections={{ pin1: "C1.pin2" }}/>
+  </board>
+)
+`}
+/>
+
+### Combining Layout Methods
+
+You can mix different layout methods within the same board for complex arrangements:
+
+TODO
