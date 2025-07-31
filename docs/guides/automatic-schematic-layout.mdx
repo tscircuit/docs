@@ -1,0 +1,44 @@
+---
+title: Automatic Schematic Layout
+---
+
+:::warning
+Automatic layout is in beta! We're changing and improving the layout algorithms,
+if it doesn't work for you stay tuned! Many changes are on the way!
+:::
+
+:::info
+Looking to lay out a PCB? Check out the [Automatic PCB Layout](./automatic-pcb-layout) guide.
+:::
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+
+## Automatic Schematic Layout
+
+Automatic schematic layout is turned on by default with the `matchAdapt` algorithm,
+this algorithm looks inside a corpus of schematic templates and matches the current
+schematic to the best matching template, then lays out the remaining components.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board>
+    <resistor
+      resistance="1k"
+      footprint="0402"
+      name="R1"
+      connections={{ pin2: "net.VCC" }}
+    />
+    <capacitor
+      capacitance="1000pF"
+      footprint="0402"
+      name="C1"
+      connections={{ pin2: "net.GND" }}
+    />
+    <chip name="U1" footprint="soic8" connections={{pin1: "R1.pin1", pin4: "C1.pin1" }} />
+  </board>
+)
+`}
+/>
