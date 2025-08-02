@@ -17,6 +17,8 @@ article we'll discuss how to programmatically lay out a board using layout prope
 All position properties default to `mm` but you can pass a string with any distance
 unit. For example, `pcbX="0.1in"` is the same as `pcbX="2.54mm"`.
 
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
 
 ## Manual PCB Layout Properties
 
@@ -29,26 +31,13 @@ its position on the board:
 | `pcbY`   | Set the center Y position of the element | `0` |
 | `pcbRotation` | Set the rotation of the element | `"90deg"` |
 
-Here's an example of moving a resistor with default properties versus custom
+Here's an example of moving a resistor `pcbX` and `pcbY` versus custom
 layout properties:
 
-import CircuitPreview from "@site/src/components/CircuitPreview";
-
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview leftView='code' rightView='pcb' code={`
 
 export default () => (
-    <resistor
-      name="R1"
-      footprint="0805"
-      resistance="1k"
-    />
-)
-
-`} />
-
-<CircuitPreview defaultView="pcb" code={`
-
-export default () => (
+  <board width="10mm" height="10mm">
     <resistor
       name="R1"
       footprint="0805"
@@ -57,6 +46,7 @@ export default () => (
       pcbY="2.5mm"
       pcbRotation="90deg"
     />
+  </board>
 )
 
 `} />
@@ -64,6 +54,7 @@ export default () => (
 :::info
 To see positions and measure distances in the PCB Viewer, you can press "d" on
 your keyboard to toggle measurement mode.
+:::
 
 <figure>
 <img src="/img/pcb-dimension-mode.png" alt="PCB Viewer Measurement Mode" />
@@ -85,22 +76,7 @@ The following properties can be placed on a schematic element to control its pos
 | `schRotation` | Set the rotation of the element | `"90deg"` |
 | `schOrientation` | Orient the symbol based on positive/negative pin direction. Accepts `"horizontal"`, `"vertical"`, `"pos_left"`, `"pos_right"`, `"pos_top"`, `"pos_bottom"`, `"neg_left"`, `"neg_right"`, `"neg_top"`, or `"neg_bottom"`. | `"pos_left"` |
 
-Here's an example of moving a resistor with default properties versus custom
-schematic layout properties:
-
-<CircuitPreview defaultView="schematic" code={`
-
-export default () => (
-    <resistor
-      name="R1"
-      footprint="0805"
-      resistance="1k"
-    />
-)
-
-`} />
-
-<CircuitPreview defaultView="schematic" code={`
+<CircuitPreview leftView="code" rightView="schematic" code={`
 
 export default () => (
     <resistor
