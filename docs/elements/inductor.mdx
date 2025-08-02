@@ -1,0 +1,123 @@
+---
+title: <inductor />
+sidebar_position: 4
+description: >-
+  An `<inductor />` stores electrical energy in a magnetic field when current
+  flows through it. Inductors are commonly used in filters, oscillators, power 
+  supplies, and RF circuits. They oppose changes in current flow and can smooth 
+  out rapid current variations.
+---
+
+## Overview
+
+An `<inductor />` stores electrical energy in a magnetic field when current flows through it. Inductors are commonly used in filters, oscillators, power supplies, and RF circuits. They oppose changes in current flow and can smooth out rapid current variations.
+
+An inductor element has two pins and is non-polar, meaning it doesn't matter which direction you place it (unlike capacitors, inductors work the same way regardless of orientation).
+
+When specifying an inductor, you'll need to provide a footprint string (like `0402`, `0603`, or larger sizes for higher inductance values) and inductance value. Popular inductor types and sizes can be found at [jlcsearch](https://jlcsearch.tscircuit.com/inductors/list).
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+
+  export default () => (
+    <inductor
+      name="L1"
+      footprint="0603"
+      inductance="10μH"
+    />
+  )
+
+  `}
+/>
+
+## Pins
+
+An inductor has the following pins and aliases:
+
+| Pin # | Aliases | Description |
+| ---------- | ------- | ----------- |
+| pin1 | left, 1 | The first terminal of the inductor |
+| pin2 | right, 2 | The second terminal of the inductor |
+
+:::info
+Since inductors are non-polar components, pin1 and pin2 are functionally equivalent and can be connected in either direction.
+:::
+
+## Specifications
+
+Inductors can be configured with these key properties:
+
+- **inductance** - The inductance value specified as a string e.g. `"10μH"`, `"100nH"`, or `"1mH"`
+- **currentRating** - Maximum current the inductor can handle e.g. `"500mA"` or `"2A"`
+- **tolerance** - Inductance tolerance percentage e.g. `"±20%"` or `"±10%"`
+- **dcResistance** - DC resistance of the inductor windings e.g. `"0.1Ω"`
+- **saturationCurrent** - Current at which the inductor begins to saturate e.g. `"800mA"`
+- **selfResonantFrequency** - Frequency at which the inductor becomes capacitive e.g. `"100MHz"`
+
+## Automatic Part Selection
+
+Like resistors and capacitors, tscircuit will automatically select suitable inductor parts based on your specifications through the [platform parts engine](../guides/platform-configuration.md). For specialized inductors (e.g., high-frequency RF inductors, power inductors with specific core materials), you may want to specify `supplierPartNumbers` explicitly.
+
+## Common Use Cases
+
+### Power Supply Filtering
+Inductors are essential in switching power supplies for energy storage and filtering:
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+    export default () => (
+      <board width="20mm" height="15mm">
+        <inductor
+          name="L1"
+          footprint="0805"
+          inductance="22μH"
+          maxCurrentRating="2A"
+          schX={-2}
+          pcbX={-2}
+        />
+        <capacitor
+          name="C1"
+          footprint="0603"
+          capacitance="100μF"
+          schX={2}
+          pcbX={2}
+        />
+        <trace from=".L1 .pin2" to=".C1 .pin1" />
+      </board>
+    )
+  `}
+/>
+
+### RF Circuits
+Small inductors are used in RF circuits for impedance matching and filtering:
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="15mm" height="10mm">
+      <inductor 
+        name="L1" 
+        footprint="0402" 
+        inductance="3.3nH"
+        schX={0}
+      />
+    </board>
+  )
+  `}
+/>
+
+## Footprint Guidelines
+
+Choose inductor footprints based on your power and frequency requirements:
+
+- **0402/0603** - Low-power, high-frequency applications (RF, small signal filtering)
+- **0805/1206** - Medium-power applications (DC-DC converters, general filtering)  
+- **Larger packages** - High-power applications (power supplies, motor drives)
+- **Shielded inductors** - Applications requiring low EMI (switch-mode power supplies)
+
+Larger footprints generally allow for higher inductance values and current ratings, while smaller footprints are better for high-frequency applications.
