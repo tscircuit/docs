@@ -1,0 +1,125 @@
+---
+title: <battery />
+sidebar_position: 4
+description: >-
+  A `<battery />` is a power source that provides electrical energy through 
+  electrochemical reactions. Batteries are essential components that supply 
+  power to electronic circuits and devices. They have a positive and negative 
+  terminal and must be connected with correct polarity.
+---
+
+## Overview
+
+A `<battery />` is a power source that provides electrical energy through electrochemical reactions. Batteries are essential components that supply power to electronic circuits and devices. They have a positive and negative terminal and must be connected with correct polarity.
+
+A battery element has two pins and is polarized, meaning it has a positive terminal (cathode) and a negative terminal (anode). The voltage and capacity of the battery determine how much power it can provide and for how long.
+
+When specifying a battery, you'll need to provide the voltage rating and optionally the capacity. Common battery types include AA, AAA, 9V, coin cells, and lithium-ion batteries.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+
+  export default () => (
+    <battery
+      name="BAT1"
+      capacity="2500mAh"
+    />
+  )
+
+  `}
+/>
+
+## Pins
+
+A battery has the following pins and aliases:
+
+| Pin # | Aliases | Description |
+| ---------- | ------- | ----------- |
+| pin1 | pos, positive, cathode | The positive terminal that provides current |
+| pin2 | neg, negative, anode | The negative terminal that completes the circuit |
+
+:::warning
+Batteries are polarized components! You must connect the positive and negative terminals correctly. Reversing polarity can damage your circuit or the battery itself.
+:::
+
+## Specifications
+
+Batteries can be configured with these key properties:
+
+- **capacity** - The energy storage capacity specified in mAh or Ah e.g. `"2500mAh"`, `"1.2Ah"`
+
+## Common Battery Types
+
+Here are some common battery types and their typical specifications:
+
+| Battery Type | Voltage | Typical Capacity | Chemistry |
+| ------------ | ------- | --------------- | --------- |
+| AA | 1.5V | 2000-3000mAh | Alkaline |
+| AAA | 1.5V | 800-1200mAh | Alkaline |
+| 9V | 9V | 400-600mAh | Alkaline |
+| CR2032 | 3V | 200-250mAh | Lithium coin cell |
+| 18650 | 3.7V | 2500-3500mAh | Lithium-ion |
+
+## Schematic Orientation
+
+Batteries can display their positive and negative terminals in different orientations. Use the `schOrientation` property to control the symbol orientation.
+
+Valid orientation values are:
+
+- `horizontal`
+- `vertical`
+- `pos_left`
+- `pos_right`
+- `pos_top`
+- `pos_bottom`
+- `neg_left`
+- `neg_right`
+- `neg_top`
+- `neg_bottom`
+
+```tsx
+<battery
+  name="BAT1"
+  capacity="2500mAh"
+  schOrientation="pos_left"
+  schX={0}
+  schY={0}
+  connections={{ pos: "net.VCC", neg: "net.GND" }}
+/>
+```
+
+## Usage Examples
+
+### Basic Power Supply
+
+```tsx
+<battery
+  name="BAT1"
+  capacity="2000mAh"
+/>
+```
+
+### High Capacity Battery
+
+```tsx
+<battery
+  name="BAT1"
+  capacity="3000mAh"
+/>
+```
+
+### Small Capacity Battery
+
+```tsx
+<battery
+  name="BAT_RTC"
+  capacity="220mAh"
+/>
+```
+
+:::tip
+When designing battery-powered circuits, consider adding battery monitoring circuitry to track voltage levels and prevent over-discharge, especially for rechargeable batteries.
+:::
