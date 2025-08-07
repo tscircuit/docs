@@ -1,0 +1,77 @@
+---
+title: <fuse />
+description: >-
+  A `<fuse />` is a safety device that protects electrical circuits by 
+  interrupting current flow when it exceeds a predetermined threshold. Fuses
+  are essential for preventing damage to components and circuits from
+  overcurrent conditions.
+---
+
+## Overview
+
+A `<fuse />` is a safety device that protects electrical circuits by interrupting current flow when it exceeds a predetermined threshold. Fuses are essential for preventing damage to components and circuits from overcurrent conditions.
+
+A fuse element has two pins and is typically non-polar, meaning it can be placed in either direction. When the current through the fuse exceeds its current rating, the fuse "blows" or opens the circuit to prevent damage to downstream components.
+
+When specifying a fuse, you'll need to provide the current rating and optionally the voltage rating and footprint. Common fuse types include surface-mount, through-hole, and cartridge fuses.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+
+export default () => (
+    <fuse
+      name="F1"
+      footprint="0603"
+      currentRating="2A"
+      voltageRating="32V"
+    />
+)
+
+  `}
+/>
+
+## Pins
+
+A fuse has the following pins and aliases:
+
+| Pin # | Aliases | Description |
+| ---------- | ------- | ----------- |
+| pin1 | left, in | The input side pin in normal orientation |
+| pin2 | right, out | The output side pin in normal orientation |
+
+## Properties
+
+| Property | Type | Required | Description | Example |
+| -------- | ---- | -------- | ----------- | ------- |
+| `currentRating` | `number \| string` | Yes | The current rating at which the fuse will blow | `"2A"`, `1.5`, `"500mA"` |
+| `voltageRating` | `number \| string` | No | The maximum voltage the fuse can safely interrupt | `"32V"`, `250` |
+| `schShowRatings` | `boolean` | No | Whether to display the ratings on the schematic symbol | `true`, `false` |
+| `schOrientation` | `string` | No | The orientation of the fuse in the schematic | `"left"`, `"right"`, `"up"`, `"down"` |
+
+## Current Ratings
+
+Fuses are available in a wide range of current ratings from microamps to hundreds of amperes. Common current ratings include:
+
+- **Low current**: 100mA, 250mA, 500mA, 1A
+- **Medium current**: 2A, 3A, 5A, 10A
+- **High current**: 15A, 20A, 30A and above
+
+The current rating should be chosen based on the normal operating current of your circuit, typically 1.5-2x the expected current to avoid nuisance blowing.
+
+## Voltage Ratings
+
+The voltage rating indicates the maximum voltage the fuse can safely interrupt when it blows. Common voltage ratings include:
+
+- **Low voltage**: 32V, 63V (for automotive and low-voltage applications)
+- **AC mains**: 125V, 250V (for household and industrial applications)
+- **High voltage**: 600V and above (for industrial and power applications)
+
+## Schematic Display Options
+
+The `schShowRatings` property controls whether the current and voltage ratings are displayed on the schematic symbol. This can be helpful for documentation but may clutter dense schematics.
+
+The `schOrientation` property allows you to control how the fuse is oriented in the schematic layout for better routing and readability.
+
