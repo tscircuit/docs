@@ -39,6 +39,8 @@ Here's a simple example connecting two components:
 | `maxLength` | Maximum length the trace can be (optional) | `"10mm"` |
 | `minLength` | Minimum length the trace must be (optional) | `"5mm"` |
 | `width` | Width of the trace (optional) | `"0.2mm"` |
+| `pcbPath` | Array of points defining a manual PCB path relative to an anchor port | `[{ x: 1, y: 0 }, { x: 1, y: 1 }]` |
+| `pcbPathRelativeTo` | Port selector that `pcbPath` coordinates are relative to (defaults to the `from` port) | `".R1 > .pin2"` |
 
 ## Connecting to Nets
 
@@ -65,7 +67,31 @@ Traces are automatically routed by tscircuit's [autorouting system](./board.mdx#
 
 You can customize the autorouting behavior by setting the `autorouter` property on the parent [`<board />`](./board.mdx) or [`<subcircuit />`](./subcircuit.mdx).
 
-## Length Constraints 
+## Manual PCB Paths
+
+Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port).
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="20mm" height="10mm">
+      <resistor name="R1" resistance="10k" footprint="0402" pcbX={-3} />
+      <resistor name="R2" resistance="10k" footprint="0402" pcbX={3} />
+      <trace
+        from=".R1 > .pin2"
+        to=".R2 > .pin1"
+        pcbPathRelativeTo=".R1 > .pin2"
+        pcbPath={[
+          { x: 1, y: 0 },
+          { x: 1, y: 1 },
+          { x: 4, y: 1 },
+          { x: 4, y: 0 },
+        ]}
+      />
+    </board>
+  )
+`} />
+
+## Length Constraints
 
 Sometimes you need traces to be exactly a certain length, like for high-speed signals. You can use `maxLength` and `minLength`:
 
