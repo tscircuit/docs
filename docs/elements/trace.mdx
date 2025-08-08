@@ -71,15 +71,15 @@ You can customize the autorouting behavior by setting the `autorouter` property 
 
 Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port).
 
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview leftView='code' rightView='pcb' code={`
   export default () => (
     <board width="20mm" height="10mm">
       <resistor name="R1" resistance="10k" footprint="0402" pcbX={-3} />
       <resistor name="R2" resistance="10k" footprint="0402" pcbX={3} />
       <trace
-        from=".R1 > .pin2"
-        to=".R2 > .pin1"
-        pcbPathRelativeTo=".R1 > .pin2"
+        from="R1.pin2"
+        to="R2.pin1"
+        pcbPathRelativeTo="R1.pin2"
         pcbPath={[
           { x: 1, y: 0 },
           { x: 1, y: 1 },
