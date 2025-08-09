@@ -1,0 +1,163 @@
+---
+title: <testpoint />
+description: >-
+  A `<testpoint />` is a designated location on a PCB that provides easy access
+  for testing, debugging, and measuring electrical signals. Test points are
+  essential for troubleshooting circuits and verifying proper operation during
+  development and manufacturing.
+---
+
+## Overview
+
+A `<testpoint />` is a designated location on a PCB that provides easy access for testing, debugging, and measuring electrical signals. Test points are essential for troubleshooting circuits and verifying proper operation during development and manufacturing.
+
+Test points can be implemented as surface-mount pads or through-hole connections, depending on the testing requirements and available board space. They provide a reliable connection point for oscilloscope probes, multimeter leads, and other test equipment.
+
+When designing test points, consider the size and shape based on your testing needs and the type of probes you'll be using.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+
+export default () => (
+    <testpoint
+      name="TP1"
+      footprintVariant="pad"
+      padShape="circle"
+      padDiameter="1mm"
+    />
+)
+
+  `}
+/>
+
+## Pins
+
+A test point has a single connection:
+
+| Pin # | Aliases | Description |
+| ---------- | ------- | ----------- |
+| pin1 | tp, test | The test point connection |
+
+## Properties
+
+| Property | Type | Required | Description | Example |
+| -------- | ---- | -------- | ----------- | ------- |
+| `footprintVariant` | `"pad" \| "through_hole"` | No | Type of test point implementation | `"pad"`, `"through_hole"` |
+| `padShape` | `"rect" \| "circle"` | No | Shape of the test point pad (default: "circle") | `"circle"`, `"rect"` |
+| `padDiameter` | `string \| number` | No | Diameter of circular test point pads | `"1mm"`, `0.5` |
+| `holeDiameter` | `string \| number` | No | Diameter of hole for through-hole test points | `"0.8mm"`, `0.3` |
+| `width` | `string \| number` | No | Width of rectangular test point pads | `"2mm"`, `1.5` |
+| `height` | `string \| number` | No | Height of rectangular test point pads | `"1mm"`, `0.8` |
+
+## Footprint Variants
+
+### Surface Mount Pad (`footprintVariant="pad"`)
+Surface mount test points are implemented as exposed copper pads on the PCB surface. They're compact and suitable for most testing scenarios.
+
+**Advantages:**
+- Minimal board space required
+- No drilling needed during manufacturing
+- Suitable for automated testing
+
+**Use cases:**
+- High-density designs
+- Automated test equipment (ATE)
+- Quick voltage measurements
+
+### Through-Hole (`footprintVariant="through_hole"`)
+Through-hole test points provide a drilled hole that can accommodate test pins or spring-loaded probes more reliably.
+
+**Advantages:**
+- Better probe retention
+- More reliable connection
+- Suitable for repeated testing
+
+**Use cases:**
+- Manual testing and debugging
+- Prototype development
+- Test fixtures requiring secure connections
+
+## Pad Shapes
+
+### Circle (`padShape="circle"`)
+Circular test points are the most common and provide good probe contact from any angle.
+
+```jsx
+<testpoint
+  name="TP1"
+  footprintVariant="pad"
+  padShape="circle"
+  padDiameter="1mm"
+/>
+```
+
+### Rectangle (`padShape="rect"`)
+Rectangular test points can provide more surface area in constrained spaces.
+
+```jsx
+<testpoint
+  name="TP2"
+  footprintVariant="pad"
+  padShape="rect"
+  width="1.5mm"
+  height="0.8mm"
+/>
+```
+
+## Sizing Guidelines
+
+### Pad Diameter/Size
+- **Small**: 0.5mm - 0.8mm (for high-density boards)
+- **Medium**: 1mm - 1.5mm (standard testing)
+- **Large**: 2mm+ (for easy manual probing)
+
+### Hole Diameter (Through-hole)
+- **Standard**: 0.8mm - 1mm
+- **Large probes**: 1.2mm - 1.5mm
+
+## Usage Examples
+
+### Basic Voltage Test Point
+```jsx
+<testpoint name="VCC_TP" />
+```
+
+### Custom Circular Pad
+```jsx
+<testpoint
+  name="SIG_TP"
+  footprintVariant="pad"
+  padShape="circle"
+  padDiameter="1.2mm"
+/>
+```
+
+### Through-hole Test Point
+```jsx
+<testpoint
+  name="DEBUG_TP"
+  footprintVariant="through_hole"
+  holeDiameter="1mm"
+  padDiameter="2mm"
+/>
+```
+
+### Rectangular Test Point
+```jsx
+<testpoint
+  name="COMPACT_TP"
+  footprintVariant="pad"
+  padShape="rect"
+  width="1.5mm"
+  height="0.8mm"
+/>
+```
+## Testing Considerations
+
+- **Probe compatibility**: Choose sizes compatible with your test equipment
+- **Spacing**: Ensure adequate spacing between test points for probe access
+- **Labeling**: Use clear, descriptive names for easy identification
+- **Documentation**: Include test point locations in assembly drawings and test procedures
