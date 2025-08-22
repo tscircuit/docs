@@ -16,10 +16,10 @@ Here's a minimal **stand-alone** HTML page that renders a resistor inside a boar
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Pull the latest browser bundle from jsDelivr -->
+    <!-- Pull the browser bundle from cdnjs -->
     <script
       type="module"
-      src="https://cdn.jsdelivr.net/npm/tscircuit@0.0.554/dist/browser.min.js"
+      src="https://cdnjs.cloudflare.com/ajax/libs/tscircuit/0.0.596/browser.min.js"
     ></script>
 
     <!-- Your tscircuit snippet goes here -->
@@ -39,6 +39,10 @@ The first script tag downloads the standalone bundle which brings in React, tsci
 Finally, the second script tag contains the JSX (technically TSX) that defines your circuit.  
 When the browser finishes parsing, `browser.min.js` compiles this TSX and injects the resulting circuit right where the script tag is placed (the default is the end of the `<body>` tag).
 
+:::tip
+The examples above use version `0.0.596`, but you should check [cdnjs](https://cdnjs.com/libraries/tscircuit) for the latest available version and update the URL accordingly to get the most recent features and bug fixes.
+:::
+
 ## Live example
 
 Below is the same snippet executed inside an **actual `<iframe>`** (no special React wrapper is used). 
@@ -52,7 +56,7 @@ Below is the same snippet executed inside an **actual `<iframe>`** (no special R
     <script>
       window.process = { env: { NODE_ENV: "production" } }
     </script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/tscircuit@0.0.554/dist/browser.min.js"></script>
+    <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/tscircuit/0.0.596/browser.min.js"></script>
     <script type="tscircuit-tsx">
       export default () => (
         <board width="10mm" height="10mm">
