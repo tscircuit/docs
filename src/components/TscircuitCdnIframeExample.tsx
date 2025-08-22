@@ -12,9 +12,6 @@ export default () => {
       srcDoc={`<!DOCTYPE html>
 <html lang="en">
   <head>
-    <script>
-      window.process = { env: { NODE_ENV: "production" } }
-    </script>
     <script type="module" src="${url}"></script>
     <script type="tscircuit-tsx">
       export default () => (
