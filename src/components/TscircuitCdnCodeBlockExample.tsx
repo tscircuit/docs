@@ -1,7 +1,7 @@
 import CodeBlock from "@theme/CodeBlock"
 import { useLatestTscircuitCdnUrl } from "../hooks/use-latest-tscircuit-cdn-url"
 
-export const TscircuitCdnCodeBlockExample = () => {
+export default () => {
   const url = useLatestTscircuitCdnUrl()
 
   if (!url) return null
@@ -26,5 +26,3 @@ export const TscircuitCdnCodeBlockExample = () => {
 </html>`}</CodeBlock>
   )
 }
-
-export default TscircuitCdnCodeBlockExample

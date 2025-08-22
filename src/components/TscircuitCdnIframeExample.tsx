@@ -1,6 +1,6 @@
 import { useLatestTscircuitCdnUrl } from "../hooks/use-latest-tscircuit-cdn-url"
 
-export const TscircuitCdnIframeExample = () => {
+export default () => {
   const url = useLatestTscircuitCdnUrl()
 
   if (!url) return null
@@ -30,5 +30,3 @@ export const TscircuitCdnIframeExample = () => {
     />
   )
 }
-
-export default TscircuitCdnIframeExample
