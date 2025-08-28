@@ -1,0 +1,63 @@
+---
+title: How to use tscircuit with ChatGPT
+description: Preview and iterate on tscircuit designs directly inside ChatGPT using a small CDN bundle and a simple repo convention.
+---
+import CircuitPreviewCdnCodeBlockExample from "@site/src/components/CircuitPreviewCdnCodeBlockExample"
+
+### Why this guide
+
+ChatGPT’s Canvas has restrictions that make it hard to run `@tscircuit/core` or `@tscircuit/runframe` directly. Use `@tscircuit/circuit-preview` instead — a tiny bundle designed for ChatGPT that renders circuits synchronously.
+
+### Quick start (copy–paste into ChatGPT Canvas)
+
+Below is a ready-to-run HTML snippet that renders a simple board.
+
+<CircuitPreviewCdnCodeBlockExample />
+
+:::info
+Example prompt to run this in ChatGPT:
+> Please run this HTML file in a canvas and show a preview.
+:::
+
+
+import pressPreview from "@site/static/img/guides/how-to-use-chatgpt/press-preview.png"
+import finalResult from "@site/static/img/guides/how-to-use-chatgpt/final-result.png"
+
+<div>
+    <p>Click the <strong>Preview</strong> button in the chat to run the code.</p>
+    <img style={{maxHeight: 400}} src={pressPreview} alt="Click the Preview button" />
+    <p>The tscircuit preview appears. You can edit the code and use this sandbox as a playground.</p>
+    <img style={{maxHeight: 400}} src={finalResult} alt="Rendered preview result" />
+</div>
+
+### Repository convention: `HOW_TO_USE_TSCIRCUIT.md`
+
+Add a file named `HOW_TO_USE_TSCIRCUIT.md` at your repo root so ChatGPT knows exactly how to render your circuits in the Canvas. Here’s a ready‑to‑copy template:
+
+```
+To preview circuits in the ChatGPT Canvas, load these scripts and render with JSX.
+
+1) Add these script tags to the HTML:
+
+<script src="https://unpkg.com/@tscircuit/circuit-preview@latest/dist/index.global.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+2) Render a circuit with JSX:
+
+<script type="text/babel">
+  window.tscircuit.render(
+    <board width="10mm" height="10mm">
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+  )
+</script>
+
+3) Optional: Build and inspect Circuit JSON directly:
+
+<script type="text/babel">
+  const { Circuit } = window.tscircuit
+  const circuit = new Circuit()
+  circuit.add(<resistor name="R1" resistance="1k" />)
+  console.log(circuit.getCircuitJson())
+</script>
+```
