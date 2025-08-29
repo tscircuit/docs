@@ -2,41 +2,29 @@
 title: How to use tscircuit with ChatGPT
 description: Preview and iterate on tscircuit designs directly inside ChatGPT using a small CDN bundle and a simple repo convention.
 ---
-import CircuitPreviewCdnCodeBlockExample from "@site/src/components/CircuitPreviewCdnCodeBlockExample"
 
-### Why this guide
+### Configuring ChatGPT
 
-ChatGPT’s Canvas has restrictions that make it hard to run `@tscircuit/core` or `@tscircuit/runframe` directly. Use `@tscircuit/circuit-preview` instead — a tiny bundle designed for ChatGPT that renders circuits synchronously.
-
-### Quick start (copy–paste into ChatGPT Canvas)
-
-Below is a ready-to-run HTML snippet that renders a simple board.
-
-<CircuitPreviewCdnCodeBlockExample />
-
-:::info
-Example prompt to run this in ChatGPT:
-> Please run this HTML file in a canvas and show a preview.
-:::
-
+Add the text below as instructions to a ChatGPT project and ChatGPT will
+know how to render tscircuit code!
 
 import pressPreview from "@site/static/img/guides/how-to-use-chatgpt/press-preview.png"
 import finalResult from "@site/static/img/guides/how-to-use-chatgpt/final-result.png"
+import instructionsImg from "@site/static/img/guides/how-to-use-chatgpt/instructions.png"
 
 <div>
+    <p>Create a project and click "Instructions", then paste in the text block below</p>
+    <img style={{maxHeight: 400}} src={instructionsImg} alt="Paste in Instructions" />
     <p>Click the <strong>Preview</strong> button in the chat to run the code.</p>
     <img style={{maxHeight: 400}} src={pressPreview} alt="Click the Preview button" />
     <p>The tscircuit preview appears. You can edit the code and use this sandbox as a playground.</p>
     <img style={{maxHeight: 400}} src={finalResult} alt="Rendered preview result" />
 </div>
 
-### Repository convention: `HOW_TO_USE_TSCIRCUIT.md`
-
-Add a file named `HOW_TO_USE_TSCIRCUIT.md` in a ChatGPT project and drop in
-the following markdown as either
-
 ```md
-Always create tscircuit code inside of an HTML canvas. Make sure to create a
+Always create tscircuit code inside of a ChatGPT HTML canvas (use a tool)
+
+Make sure to create a
 script tag with from the source "https://unpkg.com/@tscircuit/circuit-preview@latest/dist/index.global.js"
 and a script tag with type="text/babel" that contains the window.tscircuit.render
 function call.
@@ -209,6 +197,4 @@ are optional.
 
 - `<smtpad />` - `portHints`, `pcbX`, `pcbY`, `shape`, `width`, `height`
 - `<platedhole />` - `pcbX`, `pcbY`, `shape`, `width`, `height`
-
-
 ```
