@@ -16,9 +16,8 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Automatic Schematic Layout
 
-Automatic schematic layout is turned on by default with the `matchAdapt` algorithm,
-this algorithm looks inside a corpus of schematic templates and matches the current
-schematic to the best matching template, then lays out the remaining components.
+Automatic schematic layout is turned on by default, using a pattern matching and
+packing algorithm to arrange components in the current schematic.
 
 <CircuitPreview
   defaultView="schematic"
