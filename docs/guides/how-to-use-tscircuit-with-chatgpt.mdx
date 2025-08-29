@@ -32,32 +32,183 @@ import finalResult from "@site/static/img/guides/how-to-use-chatgpt/final-result
 
 ### Repository convention: `HOW_TO_USE_TSCIRCUIT.md`
 
-Add a file named `HOW_TO_USE_TSCIRCUIT.md` at your repo root so ChatGPT knows exactly how to render your circuits in the Canvas. Here’s a ready‑to‑copy template:
+Add a file named `HOW_TO_USE_TSCIRCUIT.md` in a ChatGPT project and drop in
+the following markdown as either
 
-```
-To preview circuits in the ChatGPT Canvas, load these scripts and render with JSX.
+```md
+Always create tscircuit code inside of an HTML canvas. Make sure to create a
+script tag with from the source "https://unpkg.com/@tscircuit/circuit-preview@latest/dist/index.global.js"
+and a script tag with type="text/babel" that contains the window.tscircuit.render
+function call.
 
-1) Add these script tags to the HTML:
+<html>
+  <head>
+    <script src="https://unpkg.com/@tscircuit/circuit-preview@latest/dist/index.global.js"></script>
+    <script type="text/babel">
+      window.tscircuit.render(
+        <board pcbPack>
+          <chip
+            name="U1"
+            footprint="soic8"
+            pinLabels={{
+              pin1: "GND",
+              pin2: "TRIG",
+              pin3: "OUT",
+              pin4: "RESET",
+              pin5: "CTRL",
+              pin6: "THRES",
+              pin7: "DISCH",
+              pin8: "VCC",
+            }}
+            schPinArrangement={{
+              leftSide:  { direction: "top-to-bottom", pins: ["RESET","CTRL","THRES","TRIG"] },
+              rightSide: { direction: "top-to-bottom", pins: ["VCC","OUT","DISCH","GND"] },
+            }}
+          />
+          <resistor  name="R1" resistance="1k"    footprint="0805" />
+          <resistor  name="R2" resistance="10k"   footprint="0805" />
+          <capacitor name="C1" capacitance="10uF" footprint="1206" />
+          <capacitor name="C2" capacitance="0.01uF" footprint="0805" />
+          <led       name="D1" color="red" footprint="led0603" />
+          <resistor  name="R3" resistance="330" footprint="0805" />
+          <trace from="U1.VCC"   to="net.VCC" />
+          <trace from="U1.GND"   to="net.GND" />
+          <trace from="U1.RESET" to="net.VCC" />
+          <trace from="U1.CTRL"  to="C2.pin1" />
+          <trace from="C2.pin2"  to="net.GND" />
+          <trace from="U1.THRES" to="U1.TRIG" />
+          <trace from="net.VCC"  to="R1.pin1" />
+          <trace from="R1.pin2"  to="U1.DISCH" />
+          <trace from="U1.DISCH" to="R2.pin1" />
+          <trace from="R2.pin2"  to="U1.THRES" />
+          <trace from="U1.THRES" to="C1.pin1" />
+          <trace from="C1.pin2"  to="net.GND" />
+          <trace from="U1.OUT"   to="R3.pin1" />
+          <trace from="R3.pin2"  to="D1.pin1" />
+          <trace from="D1.pin2"  to="net.GND" />
+        </board>
+      )
+    </script>
+  </head>
+  <body></body>
+</html>
 
-<script src="https://unpkg.com/@tscircuit/circuit-preview@latest/dist/index.global.js"></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+Here's a quick primer on how to use tscircuit:
 
-2) Render a circuit with JSX:
+## Core `<chip />` props (most-used)
 
-<script type="text/babel">
-  window.tscircuit.render(
-    <board width="10mm" height="10mm">
-      <resistor name="R1" resistance="1k" footprint="0402" />
-    </board>
-  )
-</script>
+* `name`: reference designator (e.g., `"U1"`).
+* `footprint`: **string** (e.g., `"soic8"`/`"0402"`) **or** a `<footprint />` element.
+* `pinLabels`: map pad → pin label (e.g., `{ pin1: "VCC", pin5: "GND" }`).
+* `schPinArrangement`: control schematic sides/order of pins (alias **`schPortArrangement`** is deprecated).
+  Optional styling/box props: `schPinStyle`, `schPinSpacing`, `schWidth`, `schHeight`. ([GitHub][3])
+* Connectivity helpers:
+  `internallyConnectedPins`, `externallyConnectedPins`, and **`connections`** (auto‑traces by pin label)
+* Extras: `pcbPinLabels`, `cadModel`, `noSchematicRepresentation`
 
-3) Optional: Build and inspect Circuit JSON directly:
+---
 
-<script type="text/babel">
-  const { Circuit } = window.tscircuit
-  const circuit = new Circuit()
-  circuit.add(<resistor name="R1" resistance="1k" />)
-  console.log(circuit.getCircuitJson())
-</script>
+## Minimal chip
+
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{ pin1: "VCC", pin2: "DISCH", pin3: "THRES", pin4: "CTRL",
+               pin5: "GND", pin6: "TRIG", pin7: "OUT", pin8: "RESET" }}
+/>
+
+## Arrange pins on schematic (+ style/size)
+
+<chip
+  name="U1" footprint="soic8" pinLabels={{ pin1:"VCC", pin5:"GND", pin7:"OUT", pin8:"RESET" }}
+  schPinArrangement={{
+    leftSide:  { direction: "top-to-bottom",    pins: ["VCC"] },
+    rightSide: { direction: "bottom-to-top",    pins: ["GND","OUT","RESET"] },
+    topSide:   { direction: "left-to-right",    pins: [] },
+    bottomSide:{ direction: "left-to-right",    pins: [] },
+  }}
+  schPinStyle={{ GND: { topMargin: "0.5mm" } }}
+  schPinSpacing={0.75} schWidth="12mm"
+/>
+
+## Custom PCB footprint (inline)
+
+<chip
+  name="U1"
+  footprint={
+    <footprint>
+      <smtpad portHints={["1"]} pcbX="-1mm" pcbY="0" width="1mm" height="0.7mm" />
+      <smtpad portHints={["2"]} pcbX="1mm"  pcbY="0" width="1mm" height="0.7mm" />
+    </footprint>
+  }
+/>
+
+## Internally / externally shorted pins
+
+<chip
+  name="SW1" footprint="pushbutton"
+  internallyConnectedPins={[["pin1","pin4"],["pin2","pin3"]]}
+/>
+
+<chip
+  name="U1" footprint="soic8" pinLabels={{ pin1:"VCC", pin5:"GND", pin6:"TRIG", pin2:"DISCH" }}
+  externallyConnectedPins={[["GND","DISCH"],["TRIG","VCC"]]}
+/>
+
+## Auto‑connect with `connections`
+
+A more condensed alternative to `<trace />`, available on basically all elements
+
+<chip
+  name="U1" footprint="soic8" pinLabels={{ pin1:"VCC", pin5:"GND", pin7:"OUT" }}
+  connections={{ VCC: "net.V5", GND: "net.GND", OUT: "net.SIGNAL" }}
+/>
+
+Use with `sel` for type‑safe selectors (e.g., `OUT: sel.U2(MyReg).VOUT`). ([GitHub][3], [docs.tscircuit.com][4])
+
+## Part selection & PCB labels
+
+<chip
+  name="U1" footprint="soic8"
+  supplierPartNumbers={{ jlcpcb: ["C57759"] }}
+  manufacturerPartNumber="SN74HC14DR"
+  pcbPinLabels={{ "1":"TX", "2":"RX" }}
+/>
+
+## All normal elements and important props
+
+Most elements have a `name` and `footprint` prop. Most properties
+are optional.
+
+- `<board />` - root element
+- `<group />` - group of elements
+- `<chip />` - any generic chip
+- `<resistor />` - `resistance`
+- `<capacitor />` - `capacitance`
+- `<inductor />` - `inductance`
+- `<led />` - `color`
+- `<diode />` - `variant` (standard/schottky/zener/avalanche/photo/tvs)
+- `<trace />` - `from`, `to`
+- `<transistor />` - `type` (npn/pnp/nmos/pmos)
+- `<mosfet />` - `channelType` (n/p), `mosfetMode` (enhancement/depletion)
+- `<connector />` - similar to `<chip />`
+- `<hole />` - `diameter`
+- `<testpoint />` - `padShape` (circle/rect), `padDiameter`, `footprintVariant` (smd/through_hole), `width`, `height`
+- `<via />` - `holeDiameter`, `outerDiameter`
+- `<switch />` - `spdt` (bool), `dpdt` (bool), `spst` (bool), `spdt` (bool), `isNormallyClosed`
+- `<pinheader />` - `pinCount`, `schFacingDirection`, `schPinArrangement`, `gender` (male/female/unpopulated), `showSilkscreenPinLabels`, `holeDiameter`, `connections`, `pinLabels`, `rightAngle`, `doubleRow`
+- `<jumper />` - similar to pinheader but pin count must be 2 or 3
+- `<fuse />` 
+- `<pushbutton />`
+- `<cutout />` - `shape` (rect), `width`, `height`
+- `<crystal />` - `frequency`, `loadCapacitance`, `loadResistance`
+- `<battery />`
+
+
+### Footprint Only Elements
+
+- `<smtpad />` - `portHints`, `pcbX`, `pcbY`, `shape`, `width`, `height`
+- `<platedhole />` - `pcbX`, `pcbY`, `shape`, `width`, `height`
+
+
 ```
