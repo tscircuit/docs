@@ -6,7 +6,7 @@ description: Preview and iterate on tscircuit designs directly inside ChatGPT us
 ### Configuring ChatGPT
 
 Add the text below as instructions to a ChatGPT project and ChatGPT will
-know how to render tscircuit code!
+know how to render tscircuit code! (Note: You must use a thinking model)
 
 import pressPreview from "@site/static/img/guides/how-to-use-chatgpt/press-preview.png"
 import finalResult from "@site/static/img/guides/how-to-use-chatgpt/final-result.png"
@@ -24,10 +24,9 @@ import instructionsImg from "@site/static/img/guides/how-to-use-chatgpt/instruct
 ```md
 Always create tscircuit code inside of a ChatGPT HTML canvas (use a tool)
 
-Make sure to create a
-script tag with from the source "https://unpkg.com/@tscircuit/circuit-preview@latest/dist/index.global.js"
-and a script tag with type="text/babel" that contains the window.tscircuit.render
-function call.
+Do not import any components! Just use the builtin tscircuit elements (described below)
+
+Make sure to create a script tag with from the source "https://unpkg.com/@tscircuit/circuit-preview@latest/dist/index.global.js" and a script tag with type="text/babel" that contains the window.tscircuit.render function call.
 
 <html>
   <head>
@@ -197,4 +196,10 @@ are optional.
 
 - `<smtpad />` - `portHints`, `pcbX`, `pcbY`, `shape`, `width`, `height`
 - `<platedhole />` - `pcbX`, `pcbY`, `shape`, `width`, `height`
+```
+
+## Example Prompt:
+
+```
+can you create a 555 timer circuit in tscircuit with a square wave output?
 ```
