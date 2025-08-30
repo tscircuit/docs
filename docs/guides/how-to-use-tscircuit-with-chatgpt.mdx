@@ -113,28 +113,27 @@ are optional.
 
 - \`<board />\` - root element
 - \`<group />\` - group of elements
-- \`<chip />\` - any generic chip
-- \`<resistor />\` - \`resistance\`
-- \`<capacitor />\` - \`capacitance\`
-- \`<inductor />\` - \`inductance\`
-- \`<led />\` - \`color\`
-- \`<diode />\` - \`variant\` (standard/schottky/zener/avalanche/photo/tvs)
-- \`<trace />\` - \`from\`, \`to\`
-- \`<transistor />\` - \`type\` (npn/pnp/nmos/pmos)
-- \`<mosfet />\` - \`channelType\` (n/p), \`mosfetMode\` (enhancement/depletion)
-- \`<connector />\` - similar to \`<chip />\`
-- \`<hole />\` - \`diameter\`
-- \`<testpoint />\` - \`padShape\` (circle/rect), \`padDiameter\`, \`footprintVariant\` (smd/through_hole), \`width\`, \`height\`
+- \`<chip name="U1" pinLabels={{ pin1: "VCC", ... }} />\` - any generic chip
+- \`<resistor name="R1" resistance="1k" footprint="0402" />\` - \`resistance\`
+- \`<capacitor name="C1" capacitance="100n" footprint="0402" />\` - \`capacitance\`
+- \`<inductor name="L1" inductance="100n" footprint="0402" />\` - \`inductance\`
+- \`<led name="LED1" color="red" />\` - \`color\`
+- \`<diode name="D1" variant="standard" />\` - \`variant\` (standard/schottky/zener/avalanche/photo/tvs)
+- \`<trace from="U1.VCC" to="R1.pin1" />\` - \`from\`, \`to\`
+- \`<transistor name="Q1" type="npn" />\` - \`type\` (npn/pnp/nmos/pmos)
+- \`<mosfet name="M1" channelType="n" mosfetMode="enhancement" />\` - \`channelType\` (n/p), \`mosfetMode\` (enhancement/depletion)
+- \`<hole name="H1" diameter="1mm" />\` - \`diameter\`
+- \`<testpoint name="TP1" />\` - \`padShape\` (circle/rect), \`padDiameter\`, \`footprintVariant\` (smd/through_hole), \`width\`, \`height\`
 - \`<via />\` - \`holeDiameter\`, \`outerDiameter\`
 - \`<switch />\` - \`spdt\` (bool), \`dpdt\` (bool), \`spst\` (bool), \`spdt\` (bool), \`isNormallyClosed\`
-- \`<pinheader />\` - \`pinCount\`, \`schFacingDirection\`, \`schPinArrangement\`, \`gender\` (male/female/unpopulated), \`showSilkscreenPinLabels\`, \`holeDiameter\`, \`connections\`, \`pinLabels\`, \`rightAngle\`, \`doubleRow\`
-- \`<jumper />\` - similar to pinheader but pin count must be 2 or 3
-- \`<fuse />\` 
-- \`<pushbutton />\`
-- \`<cutout />\` - \`shape\` (rect), \`width\`, \`height\`
-- \`<crystal />\` - \`frequency\`, \`loadCapacitance\`, \`loadResistance\`
-- \`<battery />\`
-- \`<potentiometer />\` - \`maxResistance\`, \`pinVariant\` (two_pin/three_pin). Common footprint "pinrow2"/"pinrow3"
+- \`<pinheader />\` - \`pinCount\`, \`schFacingDirection\` (left, up, right, down), \`schPinArrangement\`, \`gender\` (male/female/unpopulated), \`showSilkscreenPinLabels\`, \`holeDiameter\`, \`connections\`, \`pinLabels\`, \`rightAngle\`, \`doubleRow\`
+- \`<jumper name="J1" pinCount={2} pinLabels={{ pin1: "A", pin2: "B" }} />\` - similar to pinheader but pin count must be 2 or 3
+- \`<fuse name="F1" currentRating="1A" voltageRating="250V" />\`
+- \`<pushbutton name="SW1" />\`
+- \`<cutout shape="rect" width="1mm" height="1mm" />\` - \`shape\` (rect), \`width\`, \`height\`
+- \`<crystal name="X1" frequency="10MHz" />\` - \`frequency\`, \`loadCapacitance\`, \`loadResistance\`
+- \`<battery name="BAT1" />\` - \`capacity\`, \`voltage\`
+- \`<potentiometer name="P1" maxResistance="10k" pinVariant="two_pin" />\` - \`maxResistance\`, \`pinVariant\` (two_pin/three_pin). Common footprint "pinrow2"/"pinrow3"
 
 ### Footprint Only Elements
 
@@ -153,8 +152,8 @@ are optional.
 When specifying a selector, use "{component_name}.{pin_name}" or "net.{net_name}"
 
 These are common selectors:
-- "U1.VCC","R1.pin1","C1.pin2","C1.pos","U2.GND"
-- "net.VCC","net.GND","net.GPIO1", "net.BAT_PLUS", "net.BAT_MINUS"
+- "U1.VCC","R1.pin1","C1.pin2","C1.pos","U2.GND", "J1.SOME_PIN_LABEL"
+- Special case Net Selectors: "net.VCC","net.GND","net.GPIO1", "net.BAT_PLUS", "net.BAT_MINUS"
 
 Selectors are used in the \`connections\` prop and the \`from\` and \`to\` props of the \`<trace />\` element.
 
