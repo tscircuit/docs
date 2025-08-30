@@ -32,8 +32,9 @@ async function updateMdxFile() {
     console.log('Reading current MDX file...')
     const mdxContent = fs.readFileSync(MDX_FILE_PATH, 'utf8')
     
-    // Find the markdown code fence and replace its content
-    const codeBlockStart = mdxContent.indexOf('```md\n')
+    // Find the markdown code fence and replace only the primer section
+    const fenceHeader = '```md\n'
+    const codeBlockStart = mdxContent.indexOf(fenceHeader)
     const codeBlockEnd = mdxContent.indexOf('\n```', codeBlockStart)
     
     if (codeBlockStart === -1 || codeBlockEnd === -1) {
@@ -43,11 +44,28 @@ async function updateMdxFile() {
     // Extract the TypeScript content (remove export statement if present)
     const cleanTsContent = tsContent.replace(/^export\s+.*$/gm, '').trim()
     
-    // Replace the content inside the code fence
-    const beforeCodeBlock = mdxContent.substring(0, codeBlockStart + 6) // includes '```md\n'
+    // Identify the primer region in both the fetched content and the existing MDX code fence
+    const primerMarker = "Here's a quick primer on how to use tscircuit:"
+    const tsPrimerStart = cleanTsContent.indexOf(primerMarker)
+    if (tsPrimerStart === -1) {
+      throw new Error('Could not find primer marker in fetched content')
+    }
+    const newPrimerSection = cleanTsContent.substring(tsPrimerStart)
+    
+    const codeBlockBodyStart = codeBlockStart + fenceHeader.length
+    const codeBlockBody = mdxContent.substring(codeBlockBodyStart, codeBlockEnd)
+    const mdxPrimerStart = codeBlockBody.indexOf(primerMarker)
+    if (mdxPrimerStart === -1) {
+      throw new Error('Could not find primer marker in MDX code block')
+    }
+    
+    const preservedIntro = codeBlockBody.substring(0, mdxPrimerStart)
+    const newCodeBlockBody = preservedIntro + newPrimerSection
+    
+    const beforeCodeBlock = mdxContent.substring(0, codeBlockBodyStart)
     const afterCodeBlock = mdxContent.substring(codeBlockEnd)
     
-    const newMdxContent = beforeCodeBlock + cleanTsContent + afterCodeBlock
+    const newMdxContent = beforeCodeBlock + newCodeBlockBody + afterCodeBlock
     
     // Write the updated content back to the file
     console.log('Updating MDX file...')
