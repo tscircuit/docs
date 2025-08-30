@@ -63,7 +63,9 @@ async function updateMdxFile() {
     }
 
     const preservedIntro = codeBlockBody.substring(0, mdxPrimerStart)
-    const newCodeBlockBody = preservedIntro + newPrimerSection
+    // Unescape backticks in the new primer section
+    const unescapedPrimerSection = newPrimerSection.replace(/\\`/g, "`")
+    const newCodeBlockBody = preservedIntro + unescapedPrimerSection
 
     const beforeCodeBlock = mdxContent.substring(0, codeBlockBodyStart)
     const afterCodeBlock = mdxContent.substring(codeBlockEnd)
