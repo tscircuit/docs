@@ -11,7 +11,7 @@ Tscircuit lets you use normal JavaScript expressions to calculate component valu
 Here we pick `R2` so that a divider powered from `vin` produces `vout`. Changing any of the parameters automatically recomputes `R2`.
 
 <CircuitPreview
-  defaultView="schematic"
+  schematicOnly
   code={`
 export default () => {
   const vin = 5
@@ -20,7 +20,7 @@ export default () => {
   const r2 = r1 * (vout / (vin - vout))
   return (
     <board>
-      <voltageSource
+      <voltagesource
         name="V1"
         voltage={vin}
         connections={{ pin1: "net.VCC", pin2: "net.GND" }}
@@ -45,7 +45,7 @@ export default () => {
 The resonant frequency of an LC tank is `f = 1/(2π√(LC))`. Knowing the desired frequency and an inductance, we can compute the required capacitance.
 
 <CircuitPreview
-  defaultView="schematic"
+  schematicOnly
   code={`
 export default () => {
   const f = 1e6 // 1 MHz
