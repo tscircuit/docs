@@ -22,17 +22,17 @@ export default () => {
     <board>
       <voltageSource
         name="V1"
-        voltage={\`\${vin}V\`}
+        voltage={vin}
         connections={{ pin1: "net.VCC", pin2: "net.GND" }}
       />
       <resistor
         name="R1"
-        resistance={\`\${r1} ohm\`}
+        resistance={r1}
         connections={{ pin1: "net.VCC", pin2: "net.OUT" }}
       />
       <resistor
         name="R2"
-        resistance={\`\${r2} ohm\`}
+        resistance={r2}
         connections={{ pin1: "net.OUT", pin2: "net.GND" }}
       />
     </board>
@@ -55,12 +55,12 @@ export default () => {
     <board>
       <inductor
         name="L1"
-        inductance={\`\${L} H\`}
+        inductance={L}
         connections={{ pin1: "net.IN", pin2: "net.OUT" }}
       />
       <capacitor
         name="C1"
-        capacitance={\`\${C} F\`}
+        capacitance={C}
         connections={{ pin1: "net.OUT", pin2: "net.GND" }}
       />
     </board>
