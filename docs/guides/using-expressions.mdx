@@ -19,7 +19,7 @@ export default () => {
   const r1 = 1e3
   const r2 = r1 * (vout / (vin - vout))
   return (
-    <circuit>
+    <board>
       <voltageSource
         name="V1"
         voltage={\`${vin}V\`}
@@ -35,7 +35,7 @@ export default () => {
         resistance={\`${r2} ohm\`}
         connections={{ pin1: "net.OUT", pin2: "net.GND" }}
       />
-    </circuit>
+    </board>
   )
 }
 `} />
@@ -52,7 +52,7 @@ export default () => {
   const L = 10e-6 // 10 µH
   const C = 1 / ((2 * Math.PI * f) ** 2 * L)
   return (
-    <circuit>
+    <board>
       <inductor
         name="L1"
         inductance={\`${L} H\`}
@@ -63,7 +63,7 @@ export default () => {
         capacitance={\`${C} F\`}
         connections={{ pin1: "net.OUT", pin2: "net.GND" }}
       />
-    </circuit>
+    </board>
   )
 }
 `} />
