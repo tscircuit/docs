@@ -1,0 +1,72 @@
+---
+title: Using Expressions for Component Values
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+Tscircuit lets you use normal JavaScript expressions to calculate component values. This is useful when a part's value depends on other parameters, like setting a voltage divider's output or picking the capacitor for an LC resonant circuit.
+
+## Voltage divider
+
+Here we pick `R2` so that a divider powered from `vin` produces `vout`. Changing any of the parameters automatically recomputes `R2`.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => {
+  const vin = 5
+  const vout = 3.3
+  const r1 = 1e3
+  const r2 = r1 * (vout / (vin - vout))
+  return (
+    <circuit>
+      <voltageSource
+        name="V1"
+        voltage={\`${vin}V\`}
+        connections={{ pin1: "net.VCC", pin2: "net.GND" }}
+      />
+      <resistor
+        name="R1"
+        resistance={\`${r1} ohm\`}
+        connections={{ pin1: "net.VCC", pin2: "net.OUT" }}
+      />
+      <resistor
+        name="R2"
+        resistance={\`${r2} ohm\`}
+        connections={{ pin1: "net.OUT", pin2: "net.GND" }}
+      />
+    </circuit>
+  )
+}
+`} />
+
+## LC resonant circuit
+
+The resonant frequency of an LC tank is `f = 1/(2π√(LC))`. Knowing the desired frequency and an inductance, we can compute the required capacitance.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => {
+  const f = 1e6 // 1 MHz
+  const L = 10e-6 // 10 µH
+  const C = 1 / ((2 * Math.PI * f) ** 2 * L)
+  return (
+    <circuit>
+      <inductor
+        name="L1"
+        inductance={\`${L} H\`}
+        connections={{ pin1: "net.IN", pin2: "net.OUT" }}
+      />
+      <capacitor
+        name="C1"
+        capacitance={\`${C} F\`}
+        connections={{ pin1: "net.OUT", pin2: "net.GND" }}
+      />
+    </circuit>
+  )
+}
+`} />
+
+These examples show how expressions make it easy to drive component values from formulas so designs can adapt when requirements change.
+
