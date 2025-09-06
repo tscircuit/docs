@@ -239,7 +239,7 @@ export default function CircuitPreview({
       return (
         <div
           className={tw(
-            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 ${
+            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
               v === "pcb"
                 ? "bg-black"
                 : v === "schematic"
@@ -314,7 +314,7 @@ export default function CircuitPreview({
           view === "runframe") && (
           <div
             className={tw(
-              `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 ${
+              `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
                 view === "pcb"
                   ? "bg-black"
                   : view === "schematic"
