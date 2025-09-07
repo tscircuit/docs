@@ -1,0 +1,9 @@
+{
+  "label": "tscircuit Essentials",
+  "link": {
+    "type": "generated-index",
+    "description": "Learn the essential patterns and elements of tscircuit"
+  },
+  "collapsible": true,
+  "collapsed": true
+}
