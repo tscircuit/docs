@@ -56,6 +56,33 @@ const config: Config = {
         enableInDevelopment: false, // optional
       },
     ],
+    [
+      "@docusaurus/plugin-client-redirects",
+      {
+        redirects: [
+          {
+            to: "/guides/running-tscircuit/programmatically-building-circuits",
+            from: "/guides/programmatically-building-circuits",
+          },
+          {
+            to: "/guides/running-tscircuit/displaying-circuit-json-on-a-webpage",
+            from: "/guides/displaying-circuit-json-on-a-webpage",
+          },
+          {
+            to: "/guides/running-tscircuit/using-tscircuit-without-react",
+            from: "/guides/using-tscircuit-without-react",
+          },
+          {
+            to: "/guides/running-tscircuit/running-tscircuit-inside-an-iframe",
+            from: "/guides/running-tscircuit-inside-an-iframe",
+          },
+          {
+            to: "/guides/running-tscircuit/running-tscircuit-standalone",
+            from: "/guides/running-tscircuit-standalone",
+          },
+        ],
+      },
+    ],
   ],
 
   themeConfig: {
