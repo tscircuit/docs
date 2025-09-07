@@ -9,13 +9,13 @@ description: >-
 ## Overview
 
 Fabrication files are files that can be uploaded to a fabricator or turn-key
-manufacturer to get an entire circuit board made. tscircuit includes three
+manufacturer such as [JLCPCB](https://jlcpcb.com) or [PCBWay](https://pcbway.com) to get an entire circuit board made. tscircuit includes three
 main types of files inside our fabrication files `zip`:
 
 - **Gerbers** These represent each copper layer of the PCB. We also include
   drilling holes and board cutouts
-- **Bill Of Materials CSV**
-- **Pick'n'Place CSV** These
+- **Bill Of Materials CSV** - Contains every component its manufacturer part number (MPN) and supplier part numbers for each supplier
+- **Pick'n'Place CSV** - Contains every component and its position on the board
 
 ## How to get fabrication files
 
