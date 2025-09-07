@@ -80,6 +80,46 @@ const config: Config = {
             to: "/guides/running-tscircuit/running-tscircuit-standalone",
             from: "/guides/running-tscircuit-standalone",
           },
+          {
+            to: "/guides/tscircuit-essentials/automatic-pcb-layout",
+            from: "/guides/automatic-pcb-layout",
+          },
+          {
+            to: "/guides/tscircuit-essentials/automatic-schematic-layout",
+            from: "/guides/automatic-schematic-layout",
+          },
+          {
+            to: "/guides/tscircuit-essentials/configuring-chips",
+            from: "/guides/configuring-chips",
+          },
+          {
+            to: "/guides/tscircuit-essentials/essential-elements",
+            from: "/guides/essential-elements",
+          },
+          {
+            to: "/guides/tscircuit-essentials/layout-properties",
+            from: "/guides/layout-properties",
+          },
+          {
+            to: "/guides/tscircuit-essentials/manual-edits",
+            from: "/guides/manual-edits",
+          },
+          {
+            to: "/guides/tscircuit-essentials/port-and-net-selectors",
+            from: "/guides/port-and-net-selectors",
+          },
+          {
+            to: "/guides/tscircuit-essentials/using-expressions",
+            from: "/guides/using-expressions",
+          },
+          {
+            to: "/guides/tscircuit-essentials/using-sel-references",
+            from: "/guides/using-sel-references",
+          },
+          {
+            to: "/guides/running-tscircuit/platform-configuration",
+            from: "/guides/platform-configuration",
+          },
         ],
       },
     ],
