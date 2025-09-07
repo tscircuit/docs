@@ -4,7 +4,7 @@ title: tscircuit Units
 
 In tscircuit you can specify a unit explicitly with a string e.g. "0.1mm", but
 you can also also specify numbers without units and the unit will be inferred
-from [platform](../guides/platform-configuration.md), [board configuration](../elements/board.mdx), [subcircuit configuration](../elements/subcircuit.mdx)
+from [platform](../guides/running-tscircuit/platform-configuration.md), [board configuration](../elements/board.mdx), [subcircuit configuration](../elements/subcircuit.mdx)
 or the defaults below
 
 ## Default Units
