@@ -17,17 +17,17 @@ get started building electronics!
 
 | Element                                      | Description                                                                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| [`<board />`](../elements/board.mdx)         | The root element of a circuit, defines the size of the board and settings like the autorouting method that should be used |
-| [`<chip />`](../elements/chip.mdx)           | A packaged integrated circuit (IC).                                                                                       |
-| [`<trace />`](../elements/trace.mdx)         | Represents a connection between different chips.                                                                          |
-| [`<led />`](../elements/led.mdx)             | Light emitting diode, a small light often used to represent power or status indicators                                    |
-| [`<resistor />`](../elements/resistor.mdx)   | Resists the flow of electrical current.                                                                                   |
-| [`<capacitor />`](../elements/capacitor.mdx) | Stores electrical charge. Often used to smooth out voltage fluctuations.                                                  |
-| [`<diode />`](../elements/diode.mdx)         | Allows current to flow in one direction.                                                                                  |
+| [`<board />`](../../elements/board.mdx)         | The root element of a circuit, defines the size of the board and settings like the autorouting method that should be used |
+| [`<chip />`](../../elements/chip.mdx)           | A packaged integrated circuit (IC).                                                                                       |
+| [`<trace />`](../../elements/trace.mdx)         | Represents a connection between different chips.                                                                          |
+| [`<led />`](../../elements/led.mdx)             | Light emitting diode, a small light often used to represent power or status indicators                                    |
+| [`<resistor />`](../../elements/resistor.mdx)   | Resists the flow of electrical current.                                                                                   |
+| [`<capacitor />`](../../elements/capacitor.mdx) | Stores electrical charge. Often used to smooth out voltage fluctuations.                                                  |
+| [`<diode />`](../../elements/diode.mdx)         | Allows current to flow in one direction.                                                                                  |
 
 ## The Essential Elements
 
-### [`<board />`](../elements/board.mdx)
+### [`<board />`](../../elements/board.mdx)
 
 The `<board />` element is the root container for your circuit, similar to how `<body />` works in HTML. Every circuit needs a board! You can customize the size using `width` and `height` props, or even create custom board outlines for non-rectangular shapes.
 
@@ -40,7 +40,7 @@ export default () => (
 )`
 } />
 
-### [`<chip />`](../elements/chip.mdx)
+### [`<chip />`](../../elements/chip.mdx)
 
 The `<chip />` element is the most versatile component in tscircuit - it can represent virtually any packaged electronic component. You specify a footprint and pin labels, and can customize how it appears in both schematic and PCB views. Here's a simple example:
 
