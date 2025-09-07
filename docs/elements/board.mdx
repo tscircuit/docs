@@ -37,7 +37,7 @@ used to route any traces within them.
 
 Usually you'll want to use an autorouter preset:
 
-- `autorouter="auto"` - Uses the [platform configuration](../guides/platform-configuration.md). For tscircuit.com this defaults to `sequential-trace`.
+- `autorouter="auto"` - Uses the [platform configuration](../guides/running-tscircuit/platform-configuration.md). For tscircuit.com this defaults to `sequential-trace`.
 - `autorouter="sequential-trace"` - Iterate over each trace and use tscircuit's fast built-in autorouter. This method is fast and deterministic but often fails with over 50 traces.
 - `autorouter="auto-local"` - Use the platform configuration, but only route locally (do not make API calls)
 - `autorouter="auto-cloud"` - Use the platform configuration for 

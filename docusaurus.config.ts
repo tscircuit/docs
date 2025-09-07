@@ -116,6 +116,10 @@ const config: Config = {
             to: "/guides/tscircuit-essentials/using-sel-references",
             from: "/guides/using-sel-references",
           },
+          {
+            to: "/guides/running-tscircuit/platform-configuration",
+            from: "/guides/platform-configuration",
+          },
         ],
       },
     ],
