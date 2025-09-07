@@ -4,9 +4,9 @@ title: Programmatically Building Circuits
 
 This guide is about using tscircuit inside of scripts, APIs or inside the browser. Maybe you want to create a website that allows your users drag'n'drop to create custom electronics and turn their designs into real circuits automatically.
 
-For most users, there is no need to programmatically build circuits, you can use the [command line](../command-line/tsci-dev.md) or the [online editor](../intro/quickstart-web.md) to build and export your circuits into any supported format.
+For most users, there is no need to programmatically build circuits, you can use the [command line](../../command-line/tsci-dev.md) or the [online editor](../../intro/quickstart-web.md) to build and export your circuits into any supported format.
 
-If you're not using Typescript or prefer a "zero-installation" setup, you can fully build your circuits with complex parameters using the [Registry API](../web-apis/the-registry-api.md)
+If you're not using Typescript or prefer a "zero-installation" setup, you can fully build your circuits with complex parameters using the [Registry API](../../web-apis/the-registry-api.md)
 
 ## Using `@tscircuit/core` directly
 
