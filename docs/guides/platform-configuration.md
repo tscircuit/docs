@@ -27,6 +27,9 @@ All of the following features of the platform can be configured:
 - **cloudAutorouterUrl** - The cloud autorouter to use, defaults to a tscircuit cloud service that uses freerouting
 - Disable specific circuit outputs to optimize build times, such as disabling autorouting
 - **footprintLibraryMap** - Configure custom prefixes for loading footprint strings from a server. This is how the `kicad:*` footprint strings are loaded!
+- **printBoardInformationToSilkscreen** - Print the board information to the silkscreen. This includes standard board and platform information like the board name, version etc.
+
+> See the full specification for the [tscircuit platform configuration](https://github.com/tscircuit/props/blob/main/lib/platformConfig.ts)
 
 ### The Default Platform
 
