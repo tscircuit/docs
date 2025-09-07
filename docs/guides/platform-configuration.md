@@ -26,6 +26,7 @@ All of the following features of the platform can be configured:
 - **registryApiUrl** - The registry to use, defaults to `https://registry-api.tscircuit.com`. See [Registry API](../web-apis/the-registry-api.md) for more details
 - **cloudAutorouterUrl** - The cloud autorouter to use, defaults to a tscircuit cloud service that uses freerouting
 - Disable specific circuit outputs to optimize build times, such as disabling autorouting
+- **footprintLibraryMap** - Configure custom prefixes for loading footprint strings from a server. This is how the `kicad:*` footprint strings are loaded!
 
 ### The Default Platform
 

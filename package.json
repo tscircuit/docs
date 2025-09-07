@@ -5,7 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "bunx --bun docusaurus build && bun run build:repomix",
+    "build": "docusaurus build && bun run build:repomix",
     "format": "biome format . --write",
     "build:repomix": "repomix --style xml --include '**/*.md,**/*.mdx' --output ./build/ai.txt && bun run scripts/cleanup-ai-txt.ts",
     "swizzle": "docusaurus swizzle",
