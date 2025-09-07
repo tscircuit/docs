@@ -13,6 +13,8 @@ the platform the tscircuit code is running on.
 Some use cases:
 
 - Organizations may want to customize the cloud autorouter to avoid sending sensitive designs outside your company
+- Organizations may want to introduce custom footprint strings
+  using a prefix like `footprint="my-company:*"`
 - Organizations may want to use their own internal registry for importing circuits instead of [tscircuit.com](https://tscircuit.com)
 - For [autorouting.com](https://autorouting.com), we configure the platform to not perform any autorouting
 
@@ -24,6 +26,10 @@ All of the following features of the platform can be configured:
 - **registryApiUrl** - The registry to use, defaults to `https://registry-api.tscircuit.com`. See [Registry API](../web-apis/the-registry-api.md) for more details
 - **cloudAutorouterUrl** - The cloud autorouter to use, defaults to a tscircuit cloud service that uses freerouting
 - Disable specific circuit outputs to optimize build times, such as disabling autorouting
+- **footprintLibraryMap** - Configure custom prefixes for loading footprint strings from a server. This is how the `kicad:*` footprint strings are loaded!
+- **printBoardInformationToSilkscreen** - Print the board information to the silkscreen. This includes standard board and platform information like the board name, version etc.
+
+> See the full specification for the [tscircuit platform configuration](https://github.com/tscircuit/props/blob/main/lib/platformConfig.ts)
 
 ### The Default Platform
 
