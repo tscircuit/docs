@@ -239,21 +239,19 @@ export default function CircuitPreview({
       return (
         <div
           className={tw(
-            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
-              v === "pcb"
-                ? "bg-black"
-                : v === "schematic"
-                  ? "bg-[#F5F1ED]"
-                  : "bg-white"
-            }`,
+            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0`,
           )}
         >
           <img
             src={v === "pcb" ? pcbUrl : v === "schematic" ? schUrl : threeDUrl}
             alt={`${v.toUpperCase()} Circuit Preview`}
             className={tw(
-              `w-full ${tabContentHeightCss} m-0 block ${
-                v === "3d" ? "object-cover" : "object-contain"
+              `w-full ${tabContentHeightCss} m-0 object-contain ${
+                v === "pcb"
+                  ? "bg-black flex items-center justify-center"
+                  : v === "schematic"
+                    ? "bg-[#F5F1ED]"
+                    : "bg-white object-cover"
               }`,
             )}
           />
@@ -314,15 +312,7 @@ export default function CircuitPreview({
           view === "runframe") && (
           <div
             className={tw(
-              `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
-                view === "pcb"
-                  ? "bg-black"
-                  : view === "schematic"
-                    ? "bg-[#F5F1ED]"
-                    : view === "3d"
-                      ? "bg-white"
-                      : ""
-              }`,
+              "flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
             )}
           >
             {_showTabs && shouldSplitCode && tabsElm}
@@ -330,21 +320,21 @@ export default function CircuitPreview({
               src={pcbUrl}
               alt="PCB Circuit Preview"
               className={tw(
-                `w-full ${tabContentHeightCss} m-0 block object-contain ${view !== "pcb" ? "hidden" : ""}`,
+                `w-full ${tabContentHeightCss} m-0 object-contain bg-black flex items-center justify-center ${view !== "pcb" ? "hidden" : ""}`,
               )}
             />
             <img
               src={schUrl}
               alt="Schematic Circuit Preview"
               className={tw(
-                `w-full ${tabContentHeightCss} m-0 block object-contain ${view !== "schematic" ? "hidden" : ""}`,
+                `w-full ${tabContentHeightCss} m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
               )}
             />
             <img
               src={threeDUrl}
               alt="3D Circuit Preview"
               className={tw(
-                `w-full ${tabContentHeightCss} m-0 block object-cover ${view !== "3d" ? "hidden" : ""}`,
+                `w-full ${tabContentHeightCss} m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
               )}
             />
             {showRunFrame && view === "runframe" && (
