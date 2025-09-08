@@ -132,8 +132,17 @@ figure img {
 }
 
 /* Add space below sidebar to prevent footer overlap */
+.theme-doc-sidebar-container {
+  z-index: 1;
+}
+
 .theme-doc-sidebar-menu {
   padding-bottom: 3rem;
+}
+
+.footer {
+  position: relative;
+  z-index: 0;
 }
 
 @media (max-width: 768px) {
