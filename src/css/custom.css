@@ -131,6 +131,11 @@ figure img {
   padding-bottom: 3px;
 }
 
+/* Add space below sidebar to prevent footer overlap */
+.theme-doc-sidebar-menu {
+  padding-bottom: 3rem;
+}
+
 @media (max-width: 768px) {
   iframe {
     max-width: 90vw;
