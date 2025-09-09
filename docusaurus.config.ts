@@ -126,6 +126,11 @@ const config: Config = {
   ],
 
   themeConfig: {
+    docs: {
+      sidebar: {
+        hideable: true,
+      },
+    },
     metadata: [
       // Twitter Meta Tags
       { name: "twitter:card", content: "summary" }, // Small preview with logo
