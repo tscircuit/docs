@@ -15,7 +15,7 @@ import { TscircuitIframe } from "../../src/components/TscircuitIframe" // Assumi
 
 This tutorial guides you through creating a custom mechanical keyboard PCB using tscircuit. We'll cover setting up your environment, understanding the core components, building a key matrix, creating a simple 4-key keyboard, and finally scaling up to a standard 60% layout using data from Keyboard Layout Editor.
 
-We'll be using a Raspberry Pi Pico as the microcontroller, Kailh Choc-style key switches, and standard diodes for the matrix.
+We'll be using a Raspberry Pi Pico as the microcontroller, Cherry MX-style key switches, and standard diodes for the matrix.
 
 <TscircuitIframe defaultActiveTab="cad" code={`
 import { PICO } from "@tsci/seveibar.PICO";
@@ -121,7 +121,7 @@ import BrowserPreviewImage from "../../static/img/pcb-runframe.png";
 A keyboard PCB primarily consists of three types of components:
 
 1.  **Microcontroller:** The "brain" that scans the keys and communicates with the computer. We'll use a Raspberry Pi Pico.
-2.  **Key Switches:** The physical buttons you press. We'll use a generic Kailh Choc footprint component.
+2.  **Key Switches:** The physical buttons you press. We'll use a generic Cherry MX footprint component.
 3.  **Diodes:** Prevent "ghosting" (incorrect key press readings) in the matrix.
 
 Let's import these into our project.
@@ -148,7 +148,7 @@ export default () => (
 );
 `} />
 
-### Hot-Swappable Key Switch (Kailh Choc Style)
+### Hot-Swappable Key Switch (Cherry MX Style)
 
 We import a `Key` component, representing a single switch with its footprint. This
 component is comprised of a couple different footprints and 3d models, but when
