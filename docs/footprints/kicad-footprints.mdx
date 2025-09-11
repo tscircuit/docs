@@ -1,0 +1,30 @@
+---
+title: KiCad Footprints
+description: Use KiCad's footprint libraries by referencing them with the `kicad:` prefix
+---
+
+## Overview
+
+tscircuit can load PCB footprints directly from KiCad's footprint libraries. Any element that accepts a `footprint` property can reference a KiCad footprint by using the `kicad:` prefix followed by the path inside the library.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" code={`export default () => (
+  <board width="10mm" height="10mm">
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="kicad:Resistor_SMD/R_0402_1005Metric"
+      pcbX={0}
+    />
+  </board>
+)`} />
+
+
+### Footprint string format
+
+The text after `kicad:` follows the same convention as KiCad's `.pretty` directories: `<Library>/<FootprintName>`. tscircuit retrieves the associated `.kicad_mod` file on demand and uses it for PCB generation.
+
+### Official KiCad footprint libraries
+
+You can browse the official KiCad footprint libraries to discover valid `<Library>/<FootprintName>` values to use with the `kicad:` prefix. See: [KiCad Footprints (GitLab)](https://gitlab.com/kicad/libraries/kicad-footprints).
