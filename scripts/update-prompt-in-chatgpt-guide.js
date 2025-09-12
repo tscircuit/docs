@@ -44,8 +44,16 @@ async function updateMdxFile() {
       throw new Error("Could not find markdown code block in MDX file")
     }
 
-    // Extract the TypeScript content (remove export statement if present)
-    const cleanTsContent = tsContent.replace(/^export\s+.*$/gm, "").trim()
+    // Extract the TypeScript content inside the template literal
+    const tsMatch = tsContent.match(
+      /export const [^=]*=`([\s\S]*?)`\s*\.trim\(\)\s*$/,
+    )
+    if (!tsMatch) {
+      throw new Error(
+        "Could not extract template literal from fetched tscircuit syntax file",
+      )
+    }
+    const cleanTsContent = tsMatch[1].trim()
 
     // Identify the primer region in both the fetched content and the existing MDX code fence
     const primerMarker = "Here's a quick primer on how to use tscircuit:"
