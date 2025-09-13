@@ -8,6 +8,10 @@ description: You can import KiCad components or projects into tscircuit.
 
 You can import KiCad components or projects into tscircuit.
 
+:::tip
+If you're trying to use a footprint from KiCad's standard libraries, you can skip manual importing and reference it directly with the `kicad:` prefix (e.g. `kicad:Resistor_SMD/R_0402_1005Metric`). See [KiCad Footprints](/footprints/kicad-footprints) for more details.
+:::
+
 To import from KiCad, you should understand the different file formats KiCad
 uses:
 
