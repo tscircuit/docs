@@ -51,6 +51,7 @@ A test point has a single connection:
 | `holeDiameter` | `string \| number` | No | Diameter of hole for through-hole test points | `"0.8mm"`, `0.3` |
 | `width` | `string \| number` | No | Width of rectangular test point pads | `"2mm"`, `1.5` |
 | `height` | `string \| number` | No | Height of rectangular test point pads | `"1mm"`, `0.8` |
+| `layer` | `"top" \| "bottom"` | No | PCB layer where the test point is placed (default: "top") | `"bottom"` |
 
 ## Footprint Variants
 
@@ -123,6 +124,11 @@ Rectangular test points can provide more surface area in constrained spaces.
 ### Basic Voltage Test Point
 ```jsx
 <testpoint name="VCC_TP" />
+```
+
+### Bottom Layer Test Point
+```jsx
+<testpoint name="GND_TP" layer="bottom" />
 ```
 
 ### Custom Circular Pad
