@@ -34,23 +34,58 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## SMT Pad Shapes
 
-There are 3 main types of smtpads:
+There are 4 main types of smtpads:
 
-- `rect` - A rectangular pad
-- `circle` - A circular pad
-- `pill` - A pill-shaped pad
+- `rect` - A rectangular pad  
+- `circle` - A circular pad  
+- `pill` - A pill-shaped pad  
+- `polygon` - A custom polygon-shaped pad defined by a list of points  
 
-Each smtpad shape has different properties
+Each smtpad shape has different properties.
 
 ## Properties
 
-| Property    | Shape        | Description                                                    |
-| ----------- | ------------ | -------------------------------------------------------------- |
-| width       | rect, pill   | The width of the pad                                           |
-| height      | rect, pill   | The height of the pad                                          |
-| radius      | circle, pill | The radius of the pad (for circle) or corner radius (for pill) |
-| ccwRotation | rect         | Counter-clockwise rotation angle in degrees                    |
-| portHints   | all          | Array of port names that this pad connects to                  |
-| pcbX        | all          | X position of the pad center on the PCB                        |
-| pcbY        | all          | Y position of the pad center on the PCB                        |
-| layer       | all          | Which layer the pad is on ("top" or "bottom")                  |
+| Property    | Shape        | Description                                                                 |
+| ----------- | ------------ | --------------------------------------------------------------------------- |
+| width       | rect, pill   | The width of the pad                                                        |
+| height      | rect, pill   | The height of the pad                                                       |
+| radius      | circle, pill | The radius of the pad (for circle) or corner radius (for pill)              |
+| points      | polygon      | An array of `{ x, y }` coordinates describing the polygon vertices          |
+| ccwRotation | rect         | Counter-clockwise rotation angle in degrees                                 |
+| portHints   | all          | Array of port names that this pad connects to                               |
+| pcbX        | all          | X position of the pad center on the PCB                                     |
+| pcbY        | all          | Y position of the pad center on the PCB                                     |
+| layer       | all          | Which layer the pad is on (`"top"` or `"bottom"`)                           |
+
+## Example: Polygon Pad
+
+Here’s an example of using a **polygon smtpad** 
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <smtpad 
+            pcbX="0mm"
+            pcbY="0mm"
+            shape="polygon" 
+            layer="top" 
+            portHints={["pin1"]} 
+            points={[ 
+              { x: -2, y:  2 }, 
+              { x:  1, y:  2 }, 
+              { x:  2, y:  1 }, 
+              { x:  2, y: -1 }, 
+              { x:  1, y: -2 }, 
+              { x: -2, y: -2 }, 
+            ]} 
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
