@@ -191,3 +191,9 @@ body {
     transform: translate(100%, 100%) rotate(30deg);
   }
 }
+
+[class*="codeBlockContent_"],
+[class*="codeBlockContent_"] pre,
+[class*="codeBlockContent_"] pre code {
+  height: 100%;
+}
