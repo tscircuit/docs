@@ -45,7 +45,7 @@ export default () => (
   <board width="10mm" height="10mm" pcbRelative>
     {gridCells.map((cell) => (
       <led
-        name={`LED${cell.index}`}
+        name={'LED' + cell.index}
         footprint="0402"
         schX={cell.center.x}
         schY={cell.center.y}
@@ -70,7 +70,7 @@ export default () => (
 | `ySpacing` | Vertical spacing between cells when `height` is not provided. | `1` |
 | `offsetX` | Horizontal offset applied to every cell. | `0` |
 | `offsetY` | Vertical offset applied to every cell. | `0` |
-| `yDirection` | Orientation of the Y axis (`"cartesian"` for positive-up or `"up-is-negative"` for positive-down). | `"cartesian"` |
+| `yDirection` | Sets positive Y direction: `"cartesian"` keeps positive-up, `"up-is-negative"` flips it. | `"cartesian"` |
 | `centered` | Centers the grid around the origin when `true`. | `true` |
 
 ## Grid Cell Data
