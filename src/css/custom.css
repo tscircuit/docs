@@ -21,15 +21,31 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .github-icon { filter: invert(1); }
-.github-icon { opacity: 0.6; }
+[data-theme="dark"] .github-icon {
+  filter: invert(1);
+}
+.github-icon {
+  opacity: 0.6;
+}
 
-button { all: unset; cursor: pointer; }
-button:disabled { cursor: not-allowed; opacity: 0.6; }
+button {
+  all: unset;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
-div { border-width: 0; border-style: solid; box-sizing: border-box; }
+div {
+  border-width: 0;
+  border-style: solid;
+  box-sizing: border-box;
+}
 
-.theme-code-block { font-size: 12px; }
+.theme-code-block {
+  font-size: 12px;
+}
 
 figure {
   display: flex;
@@ -77,8 +93,14 @@ figure img {
   margin-right: auto;
 }
 
-.menu__list { font-size: 14px; }
-.menu__caret { width: 14px; height: 14px; opacity: 0.5; }
+.menu__list {
+  font-size: 14px;
+}
+.menu__caret {
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+}
 .theme-doc-sidebar-menu .menu__list-item {
   margin: 0;
   padding-top: 1px;
@@ -90,13 +112,23 @@ figure img {
 }
 
 @media (max-width: 768px) {
-  iframe { max-width: 90vw; }
+  iframe {
+    max-width: 90vw;
+  }
   .container > iframe,
-  .container > img { max-width: 90vw !important; }
-  .img-rounded, .img-400 { max-width: 90vw; }
+  .container > img {
+    max-width: 90vw !important;
+  }
+  .img-rounded,
+  .img-400 {
+    max-width: 90vw;
+  }
 }
 
-html, body { overflow-x: hidden !important; }
+html,
+body {
+  overflow-x: hidden !important;
+}
 
 .skeleton-container {
   width: 100%;
@@ -113,7 +145,10 @@ html, body { overflow-x: hidden !important; }
 .skeleton-container::after {
   content: "";
   position: absolute;
-  top: -50%; left: -50%; right: -50%; bottom: -50%;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
@@ -125,8 +160,12 @@ html, body { overflow-x: hidden !important; }
   z-index: 1;
 }
 @keyframes shimmer {
-  0%   { transform: translate(-100%, -100%) rotate(30deg); }
-  100% { transform: translate(100%, 100%) rotate(30deg); }
+  0% {
+    transform: translate(-100%, -100%) rotate(30deg);
+  }
+  100% {
+    transform: translate(100%, 100%) rotate(30deg);
+  }
 }
 
 /* -------------------------------------------------- */
