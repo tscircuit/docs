@@ -56,6 +56,22 @@ div {
 
 .theme-code-block {
   font-size: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.theme-code-block > div {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.theme-code-block pre {
+  height: 100%;
+  overflow: auto;
+  margin: 0;
 }
 
 figure {
@@ -138,7 +154,7 @@ figure img {
 
   .container > iframe,
   .container > img {
-    max-width: 90vw !important;
+    max-width: 90vw;
   }
   .img-rounded,
   .img-400 {
@@ -149,7 +165,7 @@ figure img {
 
 html,
 body {
-  overflow-x: hidden !important;
+  overflow-x: hidden;
 }
 
 .skeleton-container {
