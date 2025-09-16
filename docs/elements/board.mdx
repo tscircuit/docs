@@ -116,17 +116,13 @@ export default () => (
 
 ### Offseting the board origin
 
-When you supply an `outline`, the `width` and `height` props still define the
-board's rectangular bounding box and the coordinate system used by `pcbX` and
-`pcbY`. If you would like the origin `(0, 0)` to line up with a different part
-of your custom outline, provide `outlineOffsetX` and `outlineOffsetY` in tandem
-with `width` and `height`. The offsets shift the outline relative to the
-bounding box (measured in millimeters), letting you keep intuitive coordinates
-for parts while still rendering the outline exactly where you want it.
+`width` and `height` set the board's bounding box (and thus the `pcbX`/`pcbY`
+coordinate system) even when you're using a custom outline. Add
+`outlineOffsetX` and `outlineOffsetY`—measured in millimeters—to slide that
+outline relative to the bounding box so `(0, 0)` lands where you expect.
 
-For example, this board keeps the origin at the lower-left corner by defining a
-40&nbsp;mm by 30&nbsp;mm bounding box and shifting the outline half the width and
-height back toward negative space:
+In this example the outline is shifted half the board's width and height so the
+origin stays at the lower-left corner while the shape itself is centered:
 
 <CircuitPreview defaultView="pcb" code={`
 
@@ -134,12 +130,6 @@ export default () => (
   <board
     width="40mm"
     height="30mm"
-    outline={[
-      { x: 0, y: 0 },
-      { x: 40, y: 0 },
-      { x: 40, y: 30 },
-      { x: 0, y: 30 },
-    ]}
     outlineOffsetX={-20}
     outlineOffsetY={-15}
   >
@@ -149,7 +139,7 @@ export default () => (
 )
 
 `}
-/>
+/> 
 
 ## Flexible PCBs
 
