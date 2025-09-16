@@ -1,0 +1,57 @@
+---
+title: <fabricationnotetext />
+description: The `<fabricationnotetext />` element adds fabrication layer callouts and build notes for assemblers.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<fabricationnotetext />` lets you drop short build notes directly onto the PCB fabrication layer. These notes are useful for communicating assembly instructions such as "do not populate" or "install on second pass" to your manufacturer. Fabrication notes are only exported with fabrication outputs—they do not appear on the silkscreen or schematic.
+
+## Basic Usage
+
+Below is a simple board with a fabrication note reminding the assembler about a special assembly step. The note is positioned by its PCB coordinates and can be aligned using `anchorAlignment` to point at a specific area of the board.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+  export default () => (
+    <board width="24mm" height="18mm">
+      <resistor name="R1" resistance="10k" footprint="0402" pcbX={-5} pcbY={0} />
+      <led name="D1" footprint="0603" pcbX={5} pcbY={0} />
+      <fabricationnotetext
+        text="Install connector last"
+        pcbX={0}
+        pcbY={6}
+        fontSize="1.6mm"
+        anchorAlignment="top_left"
+        color="#d97706"
+      />
+    </board>
+  )
+  `}
+/>
+
+## Properties
+
+| Property | Type | Description |
+|---------|------|-------------|
+| `text` | string | Message to display on the fabrication drawing. |
+| `pcbX` | length | X coordinate of the note, measured in PCB units (defaults to `0`). |
+| `pcbY` | length | Y coordinate of the note, measured in PCB units (defaults to `0`). |
+| `anchorAlignment` | enum | Alignment of the anchor point relative to the text. Options: `"center"`, `"top_left"`, `"top_right"`, `"bottom_left"`, `"bottom_right"`. Defaults to `"center"`. |
+| `fontSize` | length | Height of the rendered text. Defaults to `1mm` if not provided. |
+| `font` | enum | Currently `"tscircuit2024"`. Optional—rarely needs to be changed. |
+| `color` | string | Optional hex color to highlight the note in previews. |
+| `pcbRelative` | boolean | When `true`, `pcbX`/`pcbY` are relative to the parent group instead of the board origin. |
+| `relative` | boolean | Similar to `pcbRelative`, but also applies to schematic coordinates when used inside groups. |
+
+## Tips
+
+- Keep fabrication notes concise so they remain legible when exported to Gerbers or assembly drawings.
+- Use distinct `anchorAlignment` values to align the note with the area or component it refers to.
+- Combine fabrication notes with [`<group />`](./group.mdx) to move related callouts together when laying out subassemblies.
+- Fabrication notes are separate from silkscreen text—they will not print on the final PCB silkscreen layer.
