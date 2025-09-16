@@ -118,8 +118,10 @@ export default () => (
 
 `width` and `height` set the board's bounding box (and thus the `pcbX`/`pcbY`
 coordinate system) even when you're using a custom outline. Add
-`outlineOffsetX` and `outlineOffsetY`—measured in millimeters—to slide that
-outline relative to the bounding box so `(0, 0)` lands where you expect.
+`outlineOffsetX` and `outlineOffsetY`—measured in millimeters, whether passed as
+numbers or strings like `"5mm"`—to slide that outline relative to the bounding
+box so `(0, 0)` lands where you expect. Positive offsets push the outline toward
+increasing `pcbX`/`pcbY` coordinates.
 
 In this example the outline is shifted half the board's width and height so the
 origin stays at the lower-left corner while the shape itself is centered:
@@ -130,8 +132,8 @@ export default () => (
   <board
     width="40mm"
     height="30mm"
-    outlineOffsetX={-20}
-    outlineOffsetY={-15}
+    outlineOffsetX="20mm"
+    outlineOffsetY="15mm"
   >
     <chip name="U1" footprint="qfn32" pcbX={5} pcbY={5} />
     <resistor name="R1" footprint="0402" resistance="1k" pcbX={10} pcbY={12} />
