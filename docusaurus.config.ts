@@ -9,6 +9,10 @@ const config: Config = {
   tagline: "Create Electronics with Typescript and React",
   favicon: "logo/ts.svg",
 
+  markdown: {
+    mermaid: true,
+  },
+  themes: ["@docusaurus/theme-mermaid"],
   // Set the production url of your site here
   url: "https://docs.tscircuit.com",
   // Set the /<baseUrl>/ pathname under which your site is served
