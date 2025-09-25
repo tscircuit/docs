@@ -88,8 +88,7 @@ const PolygonSmtpads = (props: { name: string }) => {
 Use the custom electrode on a board and add a dedicated touch controller. The snippet below lays out the electrode, an AT42QT1010 controller, and an LED with minimal routing.
 
 <TscircuitIframe defaultView="pcb" code={`
-import { AT42QT1010 } from "@tsci/library.atmel.AT42QT1010"
-import { Led0603 } from "@tsci/library.passives"
+
 
 const PolygonSmtpads = (props) => (
   <chip
@@ -125,18 +124,7 @@ const PolygonSmtpads = (props) => (
 
 export default () => (
   <board width={16} height={10}>
-    <PolygonSmtpads name="PAD1" pcbX={-10} pcbY={0} />
-    <AT42QT1010 name="U1" pcbX={0} pcbY={0} />
-    <Led0603 name="D1" pcbX={8} pcbY={-1} rotation={90} />
-    <resistor name="R1" footprint="0603" pcbX={8} pcbY={2} />
-
-    <trace from={".PAD1 .sense"} to=".U1 .SNSK" />
-    <trace from=".U1 .SNS" to=".PAD1 .sense" />
-    <trace from=".U1 .OUT" to=".R1 .pad2" />
-    <trace from=".R1 .pad1" to=".D1 .A" />
-    <trace from=".D1 .C" to="net.GND" />
-    <trace from=".U1 .GND" to="net.GND" />
-    <trace from=".U1 .VDD" to="net.V3V3" />
+    <PolygonSmtpads name="PAD1" pcbX={0} pcbY={0} />
   </board>
 )
 `}/>
