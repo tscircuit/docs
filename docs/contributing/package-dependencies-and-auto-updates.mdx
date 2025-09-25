@@ -15,47 +15,54 @@ The following diagram shows how packages in the tscircuit ecosystem depend on an
 flowchart TD
 
     %% Core to Eval
-    core[tscircuit/core] -->|merge| eval[tscircuit/eval]
+    core[tscircuit/core] --> eval[tscircuit/eval]
 
     %% Eval to Runframe
-    eval -->|merge| runframe[tscircuit/runframe]
+    eval --> runframe[tscircuit/runframe]
 
     %% 3D Viewer to Runframe
-    viewer3d[tscircuit/3d-viewer] -->|merge| runframe
+    viewer3d[tscircuit/3d-viewer] --> runframe
 
     %% PCB Viewer to Runframe
-    pcbviewer[tscircuit/pcb-viewer] -->|merge| runframe
+    pcbviewer[tscircuit/pcb-viewer] --> runframe
 
     %% Schematic Viewer to Runframe
-    schemaviewer[tscircuit/schematic-viewer] -->|merge| runframe
+    schemaviewer[tscircuit/schematic-viewer] --> runframe
 
     %% Runframe to CLI
-    runframe -->|merge| cli[tscircuit/cli]
+    runframe --> cli[tscircuit/cli]
 
     %% CLI to Tscircuit
-    cli -->|merge| tscircuit[tscircuit/tscircuit]
+    cli --> tscircuit[tscircuit/tscircuit]
 
     %% Tscircuit to web services
-    tscircuit -->|merge| svg[tscircuit/svg.tscircuit.com]
-    tscircuit -->|merge| usercode[tscircuit/usercode.tscircuit.com]
+    tscircuit --> svg[tscircuit/svg.tscircuit.com]
+    tscircuit --> usercode[tscircuit/usercode.tscircuit.com]
 ```
 
 ## Workflow Implementation
 
-The auto-update system consists of two main components:
+The auto-update system consists of coordinated workflows across multiple repositories. Here's how it works in detail:
 
-### 1. PR Creation Workflow
-- Located in each upstream repository (e.g., `tscircuit/core`)
-- Triggers when code is merged to main branch
-- Creates a pull request in downstream repositories with dependency updates
-- Uses `@tscircuitbot` to automate the process
+### Example: `tscircuit/core` to `tscircuit/eval` Update Flow
 
-### 2. Auto-Merge Workflow
-- Located in each downstream repository (e.g., `tscircuit/eval`)
-- Close all the old PR's created by the `@tscircuitbot` which failed to update the dependency
-- Automatically merges PRs created by `@tscircuitbot`
-- **Requires all tests to pass before merging**
-- Prevents broken code from propagating through the dependency chain
+**Step 1: Publish and Trigger (Upstream Repository)**
+When a PR is merged to `tscircuit/core`, the [`bun-pver-release.yml`](https://github.com/tscircuit/plop/blob/main/template-files/bun-pver-release.yml) workflow:
+- Builds and publishes the new package version to npm using `pver release`
+- Triggers a `workflow_dispatch` event to downstream repositories like `tscircuit/eval`
+
+**Step 2: Update Dependencies (Downstream Repository)**
+The [`update-package.yml`](https://github.com/tscircuit/plop/blob/main/template-files/update-package.yml) workflow in `tscircuit/eval`:
+- Receives the dispatch with package names to update (e.g., `@tscircuit/core`)
+- Runs `bun update --latest` for each specified package
+- Closes any existing update PRs from `@tscircuitbot` to avoid conflicts
+- Creates a new PR with the updated dependencies and enables auto-merge
+
+**Step 3: Auto-Merge Process**
+After the PR is created:
+- All CI tests and checks must pass
+- If tests pass, the PR automatically merges
+- The merge triggers the next workflow in the chain (eval → runframe)
 
 ## Key Design Principles
 
@@ -65,22 +72,7 @@ The workflow is carefully designed to avoid circular dependencies:
 - Each package has a clear position in the dependency hierarchy
 - No package updates its own dependencies' dependencies
 
-### Ploppable Workflow
-The workflow is implemented as a standardized template via [tscircuit/plop](https://github.com/tscircuit/plop):
-- Same workflow file works across all repositories
-- Only minor customization needed (repository names)
-- No fragile per-test configuration required
-- Easy to maintain and deploy to new packages
-
 ### Test-Gated Merging
-- Auto-merge only occurs when all tests pass
+- Auto-merge only occurs when all tests and CI checks pass
 - Broken builds are prevented from propagating
 - Manual intervention required if tests fail
-
-## Troubleshooting
-
-If the auto-update workflow fails:
-
-1. **Check Test Status**: Ensure all tests pass in the target repository
-2. **Review PR**: Check the auto-generated pull request for any conflicts
-3. **Manual Intervention**: If auto-merge fails, manually review and merge the PR
