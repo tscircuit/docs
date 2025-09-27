@@ -1,0 +1,58 @@
+---
+title: Building a Capacitive Touch Sensor
+description: Learn how to design, route, and test a single-button capacitive touch sensor that uses polygon pads and a touch controller.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+Capacitive touch sensors replace mechanical buttons with copper shapes that detect when a finger changes their electric field. In this tutorial you will:
+
+- Draw a capacitive electrode using `polygon` surface-mount pads.
+- Connect the electrode to a capacitive touch controller.
+- Route the traces, ground reference, and LED indicator for feedback.
+- Simulate the PCB stackup with `tscircuit` before ordering the board.
+
+The finished design exposes a responsive touch pad that lights an LED when it is activated.
+
+<TscircuitIframe defaultView="pcb" code={`
+
+const PolygonSmtpads = (props) => (
+  <chip
+    {...props}
+    footprint={
+      <footprint>
+        <smtpad shape="polygon" layer="top" portHints={["sense"]} points={[
+          { x: -4.5, y: 2 },
+          { x: -2.2, y: 2 },
+          { x: -0.4, y: 0 },
+          { x: -2.2, y: -2 },
+          { x: -4.5, y: -2 },
+        ]} />
+        <smtpad shape="polygon" layer="top" portHints={["sense"]} points={[
+          { x: -1.8, y: 2 },
+          { x: 1.8, y: 2 },
+          { x: 3.6, y: 0 },
+          { x: 1.8, y: -2 },
+          { x: -1.8, y: -2 },
+          { x: 0, y: 0 },
+        ]} />
+        <smtpad shape="polygon" layer="top" portHints={["sense"]} points={[
+          { x: 2.2, y: 2 },
+          { x: 6, y: 2 },
+          { x: 6, y: -2 },
+          { x: 2.2, y: -2 },
+          { x: 4, y: 0 },
+        ]} />
+      </footprint>
+    }
+  />
+)
+
+export default () => (
+  <board width={16} height={10}>
+    <PolygonSmtpads name="PAD1" pcbX={0} pcbY={0} />
+  </board>
+)
+`}/>
