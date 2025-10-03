@@ -1,0 +1,34 @@
+---
+title: Pinout SVG
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+You can generate a pinout diagram for your board. This is useful for creating reference diagrams for modules or development boards.
+
+To include a pin in the pinout diagram, you need to add the `pinAttributes` prop to your component and set `includeInBoardPinout: true` for the desired pins.
+
+Here is an example using a Raspberry Pi Pico W component. We enable all pins to be included in the pinout.
+
+<CircuitPreview
+  showPinoutTab={true}
+  defaultView="pinout"
+  fsMap={{
+    "index.tsx": `
+import { PICO_W } from "@tsci/ShiboSoftwareDev.pico-w"
+
+export default () => {
+  const pinAttributes: any = {}
+  for (let i = 1; i <= 46; i++) {
+    pinAttributes[\`pin\${i}\`] = { includeInBoardPinout: true }
+  }
+
+  return (
+    <board>
+      <PICO_W name="U1" pcbRotation="-90deg" pinAttributes={pinAttributes} />
+    </board>
+  )
+}
+`
+  }}
+/>
