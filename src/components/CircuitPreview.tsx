@@ -75,6 +75,7 @@ export default function CircuitPreview({
   hideSchematicTab = false,
   hidePCBTab = false,
   hide3DTab = false,
+  showPinoutTab = false,
   fsMap = {},
   entrypoint = "index.tsx",
   schematicOnly = false,
@@ -83,17 +84,18 @@ export default function CircuitPreview({
 }: {
   code?: string
   showTabs?: boolean
-  defaultView?: "code" | "pcb" | "schematic"
+  defaultView?: "code" | "pcb" | "schematic" | "pinout"
   splitView?: boolean
   showRunFrame?: boolean
   hideSchematicTab?: boolean
   hidePCBTab?: boolean
   hide3DTab?: boolean
+  showPinoutTab?: boolean
   fsMap?: Record<string, string>
   entrypoint?: string
   schematicOnly?: boolean
-  leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe"
-  rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe"
+  leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
+  rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -121,12 +123,16 @@ export default function CircuitPreview({
   }
 
   const [view, setView] = useState<
-    "pcb" | "schematic" | "code" | "3d" | "runframe"
+    "pcb" | "schematic" | "code" | "3d" | "runframe" | "pinout"
   >(rightView ?? _defaultView)
   const currentCode = code || fsMap[entrypoint] || ""
   const pcbUrl = useMemo(() => createSvgUrl(currentCode, "pcb"), [currentCode])
   const schUrl = useMemo(
     () => createSvgUrl(currentCode, "schematic"),
+    [currentCode],
+  )
+  const pinoutUrl = useMemo(
+    () => createSvgUrl(currentCode, "pinout"),
     [currentCode],
   )
   const threeDUrl = useMemo(
@@ -171,6 +177,13 @@ export default function CircuitPreview({
             onClick={() => setView("schematic")}
           />
         )}
+        {showPinoutTab && (
+          <Tab
+            label="Pinout"
+            active={view === "pinout"}
+            onClick={() => setView("pinout")}
+          />
+        )}
         {!_hide3DTab && (
           <Tab
             label="3D"
@@ -210,7 +223,7 @@ export default function CircuitPreview({
 
   if (leftView || rightView) {
     const renderView = (
-      v: "code" | "pcb" | "schematic" | "3d" | "runframe",
+      v: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout",
       side: "left" | "right",
     ) => {
       const borderCss = side === "left" ? "border-r" : "border-l"
@@ -249,7 +262,15 @@ export default function CircuitPreview({
           )}
         >
           <img
-            src={v === "pcb" ? pcbUrl : v === "schematic" ? schUrl : threeDUrl}
+            src={
+              v === "pcb"
+                ? pcbUrl
+                : v === "schematic"
+                  ? schUrl
+                  : v === "pinout"
+                    ? pinoutUrl
+                    : threeDUrl
+            }
             alt={`${v.toUpperCase()} Circuit Preview`}
             className={tw(
               `w-full ${tabContentHeightCss} m-0 object-contain ${
@@ -257,7 +278,9 @@ export default function CircuitPreview({
                   ? "bg-black flex items-center justify-center"
                   : v === "schematic"
                     ? "bg-[#F5F1ED]"
-                    : "bg-white object-cover"
+                    : v === "pinout"
+                      ? "bg-white"
+                      : "bg-white object-cover"
               }`,
             )}
           />
@@ -315,7 +338,8 @@ export default function CircuitPreview({
         {(view === "pcb" ||
           view === "schematic" ||
           view === "3d" ||
-          view === "runframe") && (
+          view === "runframe" ||
+          view === "pinout") && (
           <div
             className={tw(
               "flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
@@ -334,6 +358,13 @@ export default function CircuitPreview({
               alt="Schematic Circuit Preview"
               className={tw(
                 `w-full ${tabContentHeightCss} m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
+              )}
+            />
+            <img
+              src={pinoutUrl}
+              alt="Pinout Circuit Preview"
+              className={tw(
+                `w-full ${tabContentHeightCss} m-0 object-contain bg-white ${view !== "pinout" ? "hidden" : ""}`,
               )}
             />
             <img
