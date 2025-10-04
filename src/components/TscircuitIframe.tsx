@@ -9,6 +9,7 @@ export interface TscircuitIframeProps {
 export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [shouldLoadIframe, setShouldLoadIframe] = useState(false)
 
   let additionalProps = {}
 
@@ -26,6 +27,27 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
       entrypoint: runFrameProps.entrypoint,
     }
   }
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const enableIframe = () => {
+      setShouldLoadIframe(true)
+    }
+
+    if (document.readyState === "complete") {
+      enableIframe()
+      return
+    }
+
+    window.addEventListener("load", enableIframe, { once: true })
+
+    return () => {
+      window.removeEventListener("load", enableIframe)
+    }
+  }, [])
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -55,27 +77,30 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
           </div>
         </div>
       )}
-      <iframe
-        ref={iframeRef}
-        src="https://runframe.tscircuit.com/iframe.html"
-        title="tscircuit code runner and preview"
-        frameBorder="0"
-        scrolling="no"
-        style={{
-          overflow: "hidden",
-          width: "100%",
-          height: 600,
-          border: "none",
-          padding: 0,
-          margin: 0,
-          boxSizing: "border-box",
-          display: isLoading ? "none" : "block",
-        }}
-        onLoad={() => {
-          // The iframe is loaded, but we'll only hide the skeleton
-          // when we receive the "runframe_ready_to_receive" message
-        }}
-      />
+      {shouldLoadIframe && (
+        <iframe
+          ref={iframeRef}
+          src="https://runframe.tscircuit.com/iframe.html"
+          title="tscircuit code runner and preview"
+          frameBorder="0"
+          scrolling="no"
+          loading="lazy"
+          style={{
+            overflow: "hidden",
+            width: "100%",
+            height: 600,
+            border: "none",
+            padding: 0,
+            margin: 0,
+            boxSizing: "border-box",
+            display: isLoading ? "none" : "block",
+          }}
+          onLoad={() => {
+            // The iframe is loaded, but we'll only hide the skeleton
+            // when we receive the "runframe_ready_to_receive" message
+          }}
+        />
+      )}
     </div>
   )
 }
