@@ -229,7 +229,7 @@ export default function CircuitPreview({
       const borderCss = side === "left" ? "border-r" : "border-l"
       if (v === "code") {
         return (
-          <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
+          <div className={tw(`flex flex-col flex-1 w-1/2 min-w-0`)}>
             {hasMultipleFiles && side === "left" && fileTabsElm}
             <div
               className={tw(
@@ -252,7 +252,7 @@ export default function CircuitPreview({
       return (
         <div
           className={tw(
-            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
+            `flex-1 w-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
               v === "pcb"
                 ? "bg-black"
                 : v === "schematic"
@@ -317,7 +317,7 @@ export default function CircuitPreview({
         {(view === "code" ||
           shouldSplitCode ||
           (!_showTabs && windowSize === "mobile")) && (
-          <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
+          <div className={tw(`flex flex-col flex-1 w-1/2 min-w-0`)}>
             {hasMultipleFiles && fileTabsElm}
             <div
               className={tw(
@@ -342,7 +342,7 @@ export default function CircuitPreview({
           view === "pinout") && (
           <div
             className={tw(
-              "flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
+              "flex-1 w-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
             )}
           >
             {_showTabs && shouldSplitCode && tabsElm}
