@@ -9,6 +9,7 @@ export interface TscircuitIframeProps {
 export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   let additionalProps = {}
 
@@ -41,17 +42,35 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
       }
     }
 
+    // Set a timeout fallback to hide loading after 10 seconds if message never comes
+    const timeoutId = setTimeout(() => {
+      setIsLoading(false)
+    }, 10000)
+
     window.addEventListener("message", handleMessage)
-    return () => window.removeEventListener("message", handleMessage)
+    return () => {
+      window.removeEventListener("message", handleMessage)
+      clearTimeout(timeoutId)
+    }
   }, [])
 
   return (
     <div>
-      {isLoading && (
+      {isLoading && !hasError && (
         <div className="skeleton-container">
           <div>
             <div className="skeleton-header" />
             <div className="skeleton-body" />
+          </div>
+        </div>
+      )}
+      {hasError && (
+        <div className="skeleton-container">
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <p>Unable to load the interactive circuit preview.</p>
+            <p style={{ fontSize: "14px", opacity: 0.7 }}>
+              The circuit can still be viewed in the code editor above.
+            </p>
           </div>
         </div>
       )}
@@ -69,11 +88,21 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
           padding: 0,
           margin: 0,
           boxSizing: "border-box",
-          display: isLoading ? "none" : "block",
+          display: isLoading || hasError ? "none" : "block",
         }}
         onLoad={() => {
           // The iframe is loaded, but we'll only hide the skeleton
           // when we receive the "runframe_ready_to_receive" message
+          // Set a fallback timeout in case the message never comes
+          setTimeout(() => {
+            if (isLoading) {
+              setIsLoading(false)
+            }
+          }, 5000)
+        }}
+        onError={() => {
+          setHasError(true)
+          setIsLoading(false)
         }}
       />
     </div>

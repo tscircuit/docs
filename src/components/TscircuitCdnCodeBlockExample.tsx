@@ -4,7 +4,15 @@ import { useLatestTscircuitCdnUrl } from "../hooks/use-latest-tscircuit-cdn-url"
 export default () => {
   const url = useLatestTscircuitCdnUrl()
 
-  if (!url) return null
+  if (!url) {
+    return (
+      <div className="skeleton-container">
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          Loading CDN URL...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <CodeBlock language="html">{`<!DOCTYPE html>

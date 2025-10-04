@@ -4,7 +4,15 @@ import { useLatestCircuitPreviewCdnUrl } from "../hooks/use-latest-circuit-previ
 export default () => {
   const url = useLatestCircuitPreviewCdnUrl()
 
-  if (!url) return null
+  if (!url) {
+    return (
+      <div className="skeleton-container">
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          Loading circuit preview CDN URL...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <CodeBlock language="html">{`<!DOCTYPE html>
