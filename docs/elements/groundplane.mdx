@@ -1,0 +1,82 @@
+---
+title: <copperpour />
+description: >-
+  The `<copperpour />` element (also known as a groundplane) fills large areas of a layer
+  with copper tied to a specific net, helping with return paths, shielding, and
+  thermal performance.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<copperpour />` element lets you quickly create a copper pour (groundplane) that
+is connected to a specific net. Groundplanes improve signal integrity by giving
+high-frequency and return currents a short path, reduce electromagnetic
+interference, and act as a thermal sink for heat-producing components.
+
+A copper pour automatically flows around component keep-outs and pads while
+maintaining a clearance gap that you control.
+
+## Basic Usage
+
+Add a copper pour to any board by connecting it to a net—most commonly
+`net.GND`. The example below shows a top-layer pour surrounding a chip, with a
+few traces stitching components back to ground.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="30mm" height="20mm">
+      <chip name="U1" footprint="soic8" pcbX={-6} pcbY={0} />
+      <resistor name="R1" resistance="10k" footprint="0402" pcbX={6} pcbY={4} />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={6} pcbY={-4} />
+      <trace from=".R1 > .pin2" to="net.GND" />
+      <trace from=".C1 > .pin2" to="net.GND" />
+      <trace from=".U1 > .pin4" to="net.GND" />
+      <copperpour connectsTo="net.GND" layer="top" clearance="0.3mm" />
+    </board>
+  )
+`} />
+
+## Copper Pour Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `connectsTo` | Net that the pour is tied to. Often `net.GND` or `net.VCC`. | `"net.GND"` |
+| `layer` | PCB layer for the pour (`"top"`, `"bottom"`, or an inner layer name). | `"top"` |
+| `clearance` | Minimum distance kept between the pour and other copper. | `"0.3mm"` |
+| `thermalRelief` | Configure spoke width/count when attaching to pads. | `{ spokeWidth: "0.3mm", spokeCount: 4 }` |
+| `outline` | Optional polygon describing a custom pour boundary. | `[{ x: -10, y: -8 }, { x: 10, y: -8 }, ...]` |
+
+## Creating Pours on Multiple Layers
+
+You can add separate pours for different layers to create stitched groundplanes
+or dedicated power planes.
+
+<CircuitPreview leftView="pcb" rightView="schematic" code={`
+  export default () => (
+    <board width="28mm" height="18mm">
+      <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
+      <trace from=".U1 > .pin8" to="net.GND" />
+      <trace from=".U1 > .pin24" to="net.GND" />
+      <copperpour connectsTo="net.GND" layer="top" clearance="0.25mm" />
+      <copperpour connectsTo="net.GND" layer="bottom" clearance="0.25mm" />
+    </board>
+  )
+`} />
+
+Use vias tied to the same net to stitch pours between layers and further reduce
+impedance.
+
+## Tips for Effective Groundplanes
+
+- Keep sensitive signal traces short and route them over solid groundplane
+  areas when possible.
+- Use consistent clearances—tight enough to maximize copper, but wide enough to
+  satisfy fabrication rules.
+- Add stitching vias between pours on different layers to reduce loop area.
+- Consider splitting pours if you need isolated analog and digital ground
+  regions, connecting them at a single point.
+
+`<copperpour />` makes it easy to drop in broad ground coverage with sensible
+defaults, while still giving you the control needed for detailed PCB layout.
