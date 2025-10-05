@@ -13,6 +13,7 @@ const config: Config = {
     mermaid: true,
   },
   themes: ["@docusaurus/theme-mermaid"],
+  clientModules: ["./src/client-modules/react-dom-compat"],
   // Set the production url of your site here
   url: "https://docs.tscircuit.com",
   // Set the /<baseUrl>/ pathname under which your site is served
