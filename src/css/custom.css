@@ -144,7 +144,7 @@ figure img {
   height: 0.75rem;
   background-size: 0.75rem 0.75rem;
   background-repeat: no-repeat;
-  transform: rotate(0deg);
+  transform: rotate(-90deg);
 }
 
 .menu__list-item--collapsed .menu__link--sublist:after,
