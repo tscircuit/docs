@@ -116,6 +116,7 @@ figure img {
   border-radius: 12px;
 }
 
+.media-frame,
 .markdown p:has(> img:only-child),
 .markdown p:has(> a:only-child > img:only-child),
 .markdown li:has(> img:only-child),
@@ -141,6 +142,13 @@ figure img {
   overflow: hidden;
 }
 
+.media-frame {
+  display: block;
+  width: 100%;
+}
+
+.media-frame > img,
+.media-frame > iframe,
 .markdown p > img:only-child,
 .markdown p > a:only-child > img:only-child,
 .markdown li > img:only-child,
@@ -273,6 +281,7 @@ figure img {
     box-sizing: border-box;
   }
 
+  .media-frame,
   .markdown p:has(> img:only-child),
   .markdown p:has(> a:only-child > img:only-child),
   .markdown li:has(> img:only-child),
