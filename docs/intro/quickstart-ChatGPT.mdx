@@ -14,12 +14,22 @@ import finalResult from "@site/static/img/guides/how-to-use-chatgpt/final-result
 import instructionsImg from "@site/static/img/guides/how-to-use-chatgpt/instructions.png"
 
 <div>
-    <p>Create a project and click "Instructions", then paste in the text block below</p>
-    <img style={{maxHeight: 400}} src={instructionsImg} alt="Paste in Instructions" />
-    <p>Click the <strong>Preview</strong> button in the chat to run the code.</p>
-    <img style={{maxHeight: 400}} src={pressPreview} alt="Click the Preview button" />
-    <p>The tscircuit preview appears. You can edit the code and use this sandbox as a playground.</p>
-    <img style={{maxHeight: 400}} src={finalResult} alt="Rendered preview result" />
+  <p>Create a project and click "Instructions", then paste in the text block below</p>
+  <div className="media-frame">
+    <img
+      style={{ maxHeight: 400 }}
+      src={instructionsImg}
+      alt="Paste in Instructions"
+    />
+  </div>
+  <p>Click the <strong>Preview</strong> button in the chat to run the code.</p>
+  <div className="media-frame">
+    <img style={{ maxHeight: 400 }} src={pressPreview} alt="Click the Preview button" />
+  </div>
+  <p>The tscircuit preview appears. You can edit the code and use this sandbox as a playground.</p>
+  <div className="media-frame">
+    <img style={{ maxHeight: 400 }} src={finalResult} alt="Rendered preview result" />
+  </div>
 </div>
 
 ## Copy this to your ChatGPT project instructions!
