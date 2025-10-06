@@ -15,6 +15,7 @@
   --ifm-color-primary-lightest: #6aa4f6;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-menu-link-sublist-icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.6)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 5 16 12 9 19'/></svg>");
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -131,9 +132,24 @@ figure img {
 }
 
 .menu__caret {
-  width: 14px;
-  height: 14px;
-  opacity: 0.5;
+  width: 12px;
+  height: 12px;
+  opacity: 0.6;
+}
+
+.menu__link--sublist-caret:after,
+.menu__caret:before {
+  min-width: 0.75rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background-size: 0.75rem 0.75rem;
+  background-repeat: no-repeat;
+  transform: rotate(0deg);
+}
+
+.menu__list-item--collapsed .menu__link--sublist:after,
+.menu__list-item--collapsed .menu__caret:before {
+  transform: rotate(90deg);
 }
 
 .theme-doc-sidebar-menu .menu__list-item {
