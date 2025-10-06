@@ -86,38 +86,42 @@ figure {
   flex-direction: column;
   align-items: center;
   margin: 3rem auto 2rem;
-  max-width: 100%;
-  padding: 0 1rem;
+  max-width: 760px;
+  width: 100%;
+  padding: 0.75rem;
   box-sizing: border-box;
+  background: var(--media-container-bg);
+  border: 1px solid var(--media-container-border);
+  border-radius: 16px;
+  box-shadow: var(--media-container-shadow);
 }
 
 figure figcaption {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   opacity: 0.8;
   text-align: center;
-  font-size: 0.8rem;
-  line-height: 1.2rem;
+  font-size: 0.85rem;
+  line-height: 1.35rem;
   width: 90%;
   max-width: 600px;
 }
 
 figure img {
-  width: 100%;
-  max-width: 600px;
-  height: auto;
   display: block;
-  object-fit: cover;
+  width: auto;
+  max-width: 100%;
+  height: auto;
   margin-left: auto;
   margin-right: auto;
+  border-radius: 12px;
 }
 
-.markdown p > img:only-child,
-.markdown p > a:only-child > img:only-child,
-.markdown li > img:only-child,
-.markdown li > a:only-child > img:only-child,
-.markdown figure > img,
-.markdown div:not([class]) > img:only-child,
-.markdown div:not([class]) > a:only-child > img:only-child,
+.markdown p:has(> img:only-child),
+.markdown p:has(> a:only-child > img:only-child),
+.markdown li:has(> img:only-child),
+.markdown li:has(> a:only-child > img:only-child),
+.markdown div:not([class]):has(> img:only-child),
+.markdown div:not([class]):has(> a:only-child > img:only-child),
 .markdown p > iframe:only-child:not(.youtube-embed__iframe),
 .markdown li > iframe:only-child:not(.youtube-embed__iframe),
 .markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
@@ -144,8 +148,13 @@ figure img {
 .markdown figure > img,
 .markdown div:not([class]) > img:only-child,
 .markdown div:not([class]) > a:only-child > img:only-child {
+  display: block;
+  width: auto;
+  max-width: 100%;
   height: auto;
-  background: var(--media-container-bg);
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 12px;
 }
 
 .markdown p > iframe:only-child:not(.youtube-embed__iframe),
@@ -264,13 +273,13 @@ figure img {
     box-sizing: border-box;
   }
 
-  .markdown p > img:only-child,
-  .markdown p > a:only-child > img:only-child,
-  .markdown li > img:only-child,
-  .markdown li > a:only-child > img:only-child,
-  .markdown figure > img,
-  .markdown div:not([class]) > img:only-child,
-  .markdown div:not([class]) > a:only-child > img:only-child,
+  .markdown p:has(> img:only-child),
+  .markdown p:has(> a:only-child > img:only-child),
+  .markdown li:has(> img:only-child),
+  .markdown li:has(> a:only-child > img:only-child),
+  .markdown div:not([class]):has(> img:only-child),
+  .markdown div:not([class]):has(> a:only-child > img:only-child),
+  figure,
   .markdown p > iframe:only-child:not(.youtube-embed__iframe),
   .markdown li > iframe:only-child:not(.youtube-embed__iframe),
   .markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
