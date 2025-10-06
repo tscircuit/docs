@@ -1,0 +1,66 @@
+---
+title: Building a Static Site with `tsci build --site`
+---
+
+`tsci build --site` packages your tscircuit project into a static website that anyone can browse without running a server. The command evaluates your circuits, exports the generated assets into a `dist/site/` folder, and wires them up to the tscircuit RunFrame viewer so visitors can flip between PCB, schematic, and 3D previews right in the browser.
+
+The [Common tscircuit gallery](https://common.tscircuit.com/) is an example of a site generated with this workflow.
+
+## Prerequisites
+
+Before building a site, make sure you have:
+
+- A tscircuit project with one or more `*.circuit.tsx` files or another supported entrypoint.
+- The tscircuit CLI installed (`npm install -g tsci`, `bunx tsci`, or `npx tsci`).
+- Any dependencies that your circuits import (registry components, local packages, etc.).
+
+## Building the site
+
+Run the build command from the root of your project:
+
+```bash
+npx tsci build --site
+```
+
+The CLI resolves your entrypoint, evaluates every circuit, and then writes a static site to `dist/site/` alongside the usual `dist/circuit.json` outputs. The generated folder contains:
+
+- `index.html` – a ready-to-host viewer.
+- `lib/…/circuit.json` – one JSON file per design so the viewer can lazy load each project.
+- Supporting JavaScript, CSS, and WebAssembly bundles for the RunFrame UI.
+
+You can inspect the result locally with any static file server, for example:
+
+```bash
+npx serve dist/site
+```
+
+Opening `http://localhost:3000` (or the port reported by your static server) shows the same interactive viewer experience used at common.tscircuit.com.
+
+## Customizing the catalog
+
+The site automatically lists every circuit that `tsci build` evaluates. If you already use a `tscircuit.config.json` file, the same settings shape the static catalog: `mainEntrypoint` lets you pick a custom starting file, and the existing include/exclude patterns limit which `*.circuit.tsx` sources are exported.
+
+When you add extra documentation or screenshots, keep them in a public asset folder (for example `public/`), then point to them from your circuits. Static assets referenced at build time are copied into `dist/site/` so they ship with the site bundle.
+
+## Deploying to Vercel
+
+Vercel can host the generated site without any special adapters:
+
+1. Push your project to GitHub or GitLab.
+2. Create a new Vercel project that points to the repository.
+3. Set the **Build Command** to `npx tsci build --site` (or `bunx tsci build --site` if you prefer Bun).
+4. Set the **Output Directory** to `dist/site`.
+5. Trigger a deploy – Vercel runs the build, uploads the static folder, and serves it on your chosen domain.
+
+For preview deployments, Vercel repeats these steps on every pull request so reviewers can browse the circuits before merging.
+
+## Deploying elsewhere
+
+Because the output is plain HTML/JS/CSS, you can host it almost anywhere:
+
+- **GitHub Pages** – run `npx tsci build --site` in CI and publish the `dist/site/` folder to `gh-pages`.
+- **Netlify** – configure the build command and output directory just like Vercel.
+- **S3/CloudFront or static buckets** – upload the generated files with `aws s3 sync dist/site s3://your-bucket`.
+
+Once deployed, the site stays fast and inexpensive to serve because no server-side rendering or API proxy is required—the viewer fetches the prebuilt `circuit.json` files directly from storage.
+
