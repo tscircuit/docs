@@ -55,12 +55,8 @@ button:disabled {
   opacity: 0.6;
 }
 
-.navbar__title {
-  font-size: 1.05rem;
-}
-
-.navbar__link {
-  font-size: 0.95rem;
+.navbar__items--left .navbar__link {
+  font-size: 0.9rem;
 }
 
 .navbar__items svg,
