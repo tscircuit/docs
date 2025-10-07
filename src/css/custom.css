@@ -351,9 +351,8 @@ body {
   }
 }
 
-
 .menu__link--sublist {
-  font-weight: 600; 
+  font-weight: 600;
 }
 
 .menu__list .menu__list-item:not(:first-child) {
@@ -361,131 +360,129 @@ body {
 }
 
 .menu__link[href="/category/intro"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
-  margin-right: 10px; 
-  background-image: url('/icons/circle-play.svg'); 
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+  background-image: url("/icons/circle-play.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 
 .menu__link[href="/category/tutorials"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/book-marked.svg'); 
+  background-image: url("/icons/book-marked.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 .menu__link[href="/category/building-electronics"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/cpu.svg'); 
+  background-image: url("/icons/cpu.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 .menu__link[href="/category/guides"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/library-big.svg'); 
+  background-image: url("/icons/library-big.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 .menu__link[href="/category/built-in-elements"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/blocks.svg'); 
+  background-image: url("/icons/blocks.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 .menu__link[href="/category/command-line-interface"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/square-terminal.svg'); 
+  background-image: url("/icons/square-terminal.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 .menu__link[href="/category/footprints"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/footprints.svg'); 
+  background-image: url("/icons/footprints.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 .menu__link[href="/category/contributing"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/heart-handshake.svg'); 
+  background-image: url("/icons/heart-handshake.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 
 .menu__link[href="/category/web-apis"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/chevrons-left-right-ellipsis.svg'); 
+  background-image: url("/icons/chevrons-left-right-ellipsis.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 
 .menu__link[href="/category/advanced"]::before {
-  content: '';
+  content: "";
   display: inline-block;
-  width: 16px; 
-  height: 16px; 
+  width: 16px;
+  height: 16px;
   margin-right: 10px;
-  background-image: url('/icons/cog.svg'); 
+  background-image: url("/icons/cog.svg");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
 }
 
-
-html[data-theme='dark'] .menu__link[href^="/category/"]::before {
+html[data-theme="dark"] .menu__link[href^="/category/"]::before {
   filter: invert(1);
 }
 
-
 .navbar__title {
-  font-size: 1.1rem; 
+  font-size: 1.1rem;
 }
 
 .navbar__items .navbar__item {
-  font-size: 0.9rem; 
+  font-size: 0.9rem;
 }
 
 .toggle_vylO.colorModeToggle_DEke {
@@ -513,13 +510,11 @@ html[data-theme='dark'] .menu__link[href^="/category/"]::before {
   cursor: pointer;
   background: none;
   transition: transform 0.2s ease;
-  
 }
 
 .toggle_vylO.colorModeToggle_DEke > button:active {
   transform: scale(0.95);
 }
-
 
 .navbar__items--right > a {
   display: flex;
@@ -529,14 +524,12 @@ html[data-theme='dark'] .menu__link[href^="/category/"]::before {
   text-decoration: none;
   color: inherit;
   transition: background-color 0.2s ease;
-
 }
 .navbar__items--right {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding-right: 10px;
-  
 }
 .navbar__items--right > a:hover {
   background-color: rgba(0, 0, 0, 0.05);
@@ -549,7 +542,7 @@ html[data-theme='dark'] .menu__link[href^="/category/"]::before {
   }
 }
 
-.navbar-sidebar__close{
+.navbar-sidebar__close {
   width: 16px;
   padding: 10px;
 }
@@ -558,21 +551,20 @@ html[data-theme='dark'] .menu__link[href^="/category/"]::before {
   padding: 10px;
 }
 .col.col--3 {
-  display: none ;
+  display: none;
 }
 .docItemCol_VOVn {
-  max-width: 980px; 
-  margin: 0 auto;  
+  max-width: 980px;
+  margin: 0 auto;
   float: none;
   margin-top: 17px;
   text-align: justify;
 }
-.generatedIndexPage_vN6x{
-  max-width: 980px; 
-  margin: 0 auto;  
+.generatedIndexPage_vN6x {
+  max-width: 980px;
+  margin: 0 auto;
   float: none;
-  margin-top: 17px;    
-
+  margin-top: 17px;
 }
 
 .breadcrumbs__item {
@@ -584,19 +576,17 @@ html[data-theme='dark'] .menu__link[href^="/category/"]::before {
 }
 
 .breadcrumbs__item a {
-  pointer-events: none; 
+  pointer-events: none;
   text-decoration: none;
-  color: rgb(0, 149, 255);
+  color: rgb(0, 124, 212);
   cursor: default;
   font-weight: bold;
   font-size: 1rem;
   margin-bottom: 0;
-  
 }
 .breadcrumbs__item--active span.breadcrumbs__link {
-    display: none;
+  display: none;
 }
 .breadcrumbs__item::after {
   content: none !important;
 }
-

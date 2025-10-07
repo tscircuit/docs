@@ -173,7 +173,7 @@ const config: Config = {
           label: "Use Online",
           position: "left",
         },
-        
+
         {
           href: "https://discord.com/invite/V7FGE5ZCbA",
           position: "right",
