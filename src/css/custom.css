@@ -570,7 +570,7 @@ article header h1 {
 
 /* Force center all documentation content */
 .col:not(.col--3) {
-  max-width: 900px !important;
+  max-width: 1000px !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
