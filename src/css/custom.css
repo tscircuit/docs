@@ -352,7 +352,7 @@ body {
 }
 
 /* Sidebar section styling - add icons and bold text */
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link {
+.theme-doc-sidebar-item-category > .menu__list-item-collapsible > .menu__link {
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -360,7 +360,9 @@ body {
 }
 
 /* Add icons before sidebar category titles (parent items only) */
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link::before {
   font-size: 16px;
   display: inline-block;
   flex-shrink: 0;
@@ -371,61 +373,109 @@ body {
 }
 
 /* Remove icons from nested/child items */
-.menu__list .menu__list .theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link::before {
+.menu__list
+  .menu__list
+  .theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link::before {
   content: none;
   display: none;
 }
 
 /* Specific icons for each parent section */
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="intro"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/intro"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="intro"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/intro"]::before {
   content: "📝";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="tutorial"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/tutorial"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="tutorial"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/tutorial"]::before {
   content: "📚";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="building-electronics"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/building-electronics"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="building-electronics"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/building-electronics"]::before {
   content: "⚡";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="guide"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/guide"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="guide"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/guide"]::before {
   content: "📖";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="built-in-elements"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/built-in-elements"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="built-in-elements"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/built-in-elements"]::before {
   content: "🧩";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="command-line"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/command-line"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="cli"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="command-line"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/command-line"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="cli"]::before {
   content: "⌨️";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="footprint"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/footprint"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="footprint"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/footprint"]::before {
   content: "👣";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="contributing"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/contributing"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="contributing"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/contributing"]::before {
   content: "🤝";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="web-api"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/web-api"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="api"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="web-api"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/web-api"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="api"]::before {
   content: "🌐";
 }
 
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="advanced"]::before,
-.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/advanced"]::before {
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="advanced"]::before,
+.theme-doc-sidebar-item-category
+  > .menu__list-item-collapsible
+  > .menu__link[href*="/category/advanced"]::before {
   content: "⚙️";
 }
 
@@ -453,7 +503,7 @@ body {
   opacity: 0.8;
   transition: opacity 0.2s;
 }
-.toggle_vylO{
+.toggle_vylO {
   margin-bottom: 4px !important;
 }
 
