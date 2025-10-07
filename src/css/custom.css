@@ -350,3 +350,169 @@ body {
     transform: translate(100%, 100%) rotate(30deg);
   }
 }
+
+/* Sidebar section styling - add icons and bold text */
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Add icons before sidebar category titles (parent items only) */
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link::before {
+  font-size: 16px;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  filter: grayscale(1);
+  /* opacity: 0.8; */
+}
+
+/* Remove icons from nested/child items */
+.menu__list .menu__list .theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link::before {
+  content: none;
+  display: none;
+}
+
+/* Specific icons for each parent section */
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="intro"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/intro"]::before {
+  content: "📝";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="tutorial"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/tutorial"]::before {
+  content: "📚";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="building-electronics"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/building-electronics"]::before {
+  content: "⚡";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="guide"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/guide"]::before {
+  content: "📖";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="built-in-elements"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/built-in-elements"]::before {
+  content: "🧩";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="command-line"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/command-line"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="cli"]::before {
+  content: "⌨️";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="footprint"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/footprint"]::before {
+  content: "👣";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="contributing"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/contributing"]::before {
+  content: "🤝";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="web-api"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/web-api"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="api"]::before {
+  content: "🌐";
+}
+
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="advanced"]::before,
+.theme-doc-sidebar-item-category>.menu__list-item-collapsible>.menu__link[href*="/category/advanced"]::before {
+  content: "⚙️";
+}
+
+/* Add margin above sections (except first) */
+.theme-doc-sidebar-item-category:not(:first-child) {
+  margin-top: 14px;
+}
+
+/* Make header text smaller */
+.navbar__item {
+  font-size: 0.9rem;
+}
+
+.navbar__brand {
+  font-size: 1.1rem;
+}
+
+/* Make header icons smaller */
+
+.header-github-link img,
+.header-discord-link img {
+  height: 18px !important;
+  width: 18px !important;
+  margin-bottom: -2px !important;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.toggle_vylO{
+  margin-bottom: 4px !important;
+}
+
+.toggleButton_gllP svg {
+  width: 22px;
+  height: 22px;
+}
+
+.DocSearch-Button-Container svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Add section subtitle at top of docs */
+.theme-doc-breadcrumbs {
+  margin-bottom: 1.5rem;
+}
+
+.theme-doc-breadcrumbs::after {
+  content: attr(description);
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-600);
+  margin-top: 0.5rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Center docs content and hide right sidebar (TOC) */
+.col.col--3 {
+  display: none !important;
+}
+
+.tableOfContents_bqdL,
+.theme-doc-toc-desktop {
+  display: none !important;
+}
+
+.docMainContainer_TBSr .container .row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.col.docItemCol_VOVn {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  flex: 1 1 auto;
+}
+
+.docItemContainer_Djhp {
+  max-width: 900px;
+  width: 100%;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  margin: 0 auto;
+}
+
+.generatedIndexPage_vN6x {
+  margin: 0 auto;
+}
