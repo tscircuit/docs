@@ -173,11 +173,7 @@ const config: Config = {
           label: "Use Online",
           position: "left",
         },
-        {
-          href: "https://github.com/tscircuit/tscircuit/issues/new?template=Blank+issue",
-          position: "right",
-          label: "File Issue",
-        },
+        
         {
           href: "https://discord.com/invite/V7FGE5ZCbA",
           position: "right",
