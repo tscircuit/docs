@@ -477,9 +477,9 @@ figure img {
   .markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
-    max-width: 100%;
-    margin: 1.5rem auto;
-    padding: 0.5rem;
+     margin-left: auto;
+  margin-right: auto;
+  max-width: 1200px;
   }
 
   .youtube-embed__container {
@@ -563,4 +563,26 @@ body {
       rgba(0, 0, 0, 0) 0%
     );
   }
+}
+.container {
+  margin: 0 auto;
+  max-width: 1400px; /* Adjust max-width as needed */
+  padding: 0 var(--ifm-spacing-horizontal);
+  width: 100%;
+}
+
+/* Center the markdown content */
+.markdown {
+  margin: 0 auto;
+  max-width: 1200px; /* Adjust max-width as needed */
+}
+/* Ensure media content is centered */
+.media-frame,
+.markdown p:has(> img:only-child),
+.markdown p:has(> a:only-child > img:only-child),
+.markdown div:not([class]):has(> img:only-child),
+.markdown div:not([class]):has(> a:only-child > img:only-child) {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1200px; /* Adjust max-width as needed */
 }
