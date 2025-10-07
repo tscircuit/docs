@@ -1,0 +1,223 @@
+---
+title: Generating Circuit Boards with AI
+sidebar_position: 1
+description: Learn how to use AI assistants like Claude to help design and generate circuit boards in tscircuit
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+AI assistants like Claude can help you design and generate circuit boards more quickly by understanding your requirements, searching for components, and writing tscircuit code. This guide walks you through setting up your project for AI-assisted circuit design.
+
+## Step 1: Choose Your Form Factor
+
+Before generating a circuit with AI, you'll typically want to start with a specific form factor or template. Common form factors include:
+
+- **Arduino Shield** - A PCB designed to stack on top of Arduino boards
+- **Raspberry Pi Hat** - A PCB designed to connect to Raspberry Pi GPIO headers
+- **MicroMod Module** - SparkFun's modular prototyping standard
+- **Custom Board** - Define your own dimensions and shape
+
+Many of these templates are available via `@tscircuit/common`, making it easy to get started with a compatible board layout.
+
+### Example: Using an Arduino Shield Template
+
+Here's how you can start with an Arduino Shield form factor:
+
+<CircuitPreview defaultView="pcb" code={`
+import { ArduinoShield } from "@tscircuit/common"
+
+export default () => (
+  <ArduinoShield>
+    <resistor name="R1" resistance="10k" footprint="0805" />
+    <led name="LED1" color="red" footprint="led0603" />
+    <trace from="R1.pin1" to="LED1.pin1" />
+    <trace from="R1.pin2" to="LED1.pin2" />
+  </ArduinoShield>
+)
+`} />
+
+The `ArduinoShield` component automatically includes the correct mounting holes, header connectors, and board dimensions to fit standard Arduino boards.
+
+## Step 2: Configure Your AI Assistant
+
+To help AI assistants understand how to work with tscircuit, you'll need to provide them with:
+
+1. **tscircuit Syntax Primer** - Documentation on how to use tscircuit elements
+2. **tscircuit CLI Primer** - Information about available command-line tools
+3. **Project Context** - Information about what you're building
+
+We recommend creating an `AGENTS.md` file in your project root that contains all this information. You can download our template below:
+
+<a href="/static/templates/AGENTS.md" download="AGENTS.md" style={{display: 'inline-block', padding: '8px 16px', background: '#007bff', color: 'white', textDecoration: 'none', borderRadius: '4px', marginTop: '8px'}}>
+  Download AGENTS.md Template
+</a>
+
+### What to Include in AGENTS.md
+
+Your `AGENTS.md` file should contain:
+
+#### 1. Project Description
+
+Describe what you're building, including:
+- The purpose of the circuit
+- Target form factor (Arduino Shield, Raspberry Pi Hat, etc.)
+- Key requirements or constraints
+- Expected functionality
+
+Example:
+```markdown
+# Project: LED Matrix Controller Shield
+
+This is an Arduino Shield that controls an 8x8 LED matrix display.
+
+## Requirements
+- Compatible with Arduino Uno
+- Drive an 8x8 LED matrix (common cathode)
+- Include current limiting resistors for each LED
+- Add a reset button
+- Power from Arduino 5V pin
+```
+
+#### 2. tscircuit Syntax Primer
+
+Link to the [tscircuit syntax documentation](/docs/intro/quickstart-ChatGPT#copy-this-to-your-chatgpt-project-instructions) or include key syntax examples. The AI needs to understand:
+
+- Core elements (`<board />`, `<chip />`, `<resistor />`, `<capacitor />`, etc.)
+- How to specify connections with `<trace />`
+- Pin labeling and selector syntax
+- Common footprints
+
+#### 3. tscircuit CLI Primer
+
+Include information about the command-line tools available:
+
+```markdown
+## tscircuit CLI Commands
+
+The AI can use these commands to help build the circuit:
+
+### tsci search [query]
+Search for footprints and components across the tscircuit ecosystem.
+
+Example:
+```bash
+tsci search "usb-c connector"
+```
+
+Returns footprints from KiCad libraries and published packages from the tscircuit registry.
+
+### tsci import [component]
+Import a component from the registry into your project.
+
+Example:
+```bash
+tsci import seveibar/usb-c-connector
+```
+
+### tsci dev
+Start the development server to preview your circuit in real-time.
+
+### tsci build
+Build your circuit and generate fabrication files.
+
+### tsci export [format]
+Export your circuit to various formats (gerber, svg, png, circuit-json).
+```
+
+## Step 3: How AI Assists with Circuit Design
+
+Once configured, AI assistants can help you by:
+
+### Searching for Components
+
+When you ask for a specific component, the AI can use `tsci search` to find suitable parts:
+
+```bash
+$ tsci search "555 timer"
+Found 5 footprint(s) from KiCad:
+ 1. Package_SO/SOIC-8_3.9x4.9mm_P1.27mm
+ 2. Package_DIP/DIP-8_W7.62mm
+ ...
+
+Found 3 package(s) in the tscircuit registry:
+1. johndoe/555-timer-circuit (v1.0.2) - Complete 555 timer circuit
+...
+```
+
+### Importing Components
+
+The AI can import pre-built components from the registry:
+
+```bash
+$ tsci import seveibar/usb-c-connector
+```
+
+This adds the component to your project dependencies, making it available to import in your circuit files.
+
+### Writing Circuit Code
+
+The AI can generate tscircuit code based on your requirements, using the correct syntax for:
+- Component placement
+- Trace routing
+- Pin configurations
+- Footprint selection
+
+### Iterating on Designs
+
+As you provide feedback, the AI can:
+- Adjust component values
+- Add or remove parts
+- Reorganize layouts
+- Fix connection errors
+
+## Example Workflow
+
+Here's a typical workflow for AI-assisted circuit design:
+
+1. **Define your goal**: "I want to create an Arduino Shield that reads temperature from a sensor and displays it on an LCD"
+
+2. **AI searches for components**:
+   ```bash
+   tsci search "temperature sensor"
+   tsci search "16x2 LCD"
+   ```
+
+3. **AI generates initial circuit**:
+   ```tsx
+   import { ArduinoShield } from "@tscircuit/common"
+
+   export default () => (
+     <ArduinoShield>
+       <chip
+         name="U1"
+         footprint="soic8"
+         pinLabels={{
+           pin1: "VCC",
+           pin2: "SCL",
+           pin3: "SDA",
+           pin4: "GND"
+         }}
+       />
+       {/* ... rest of circuit ... */}
+     </ArduinoShield>
+   )
+   ```
+
+4. **Preview and iterate**: Run `tsci dev` to see the design, then ask the AI to make adjustments
+
+5. **Export fabrication files**: When ready, use `tsci export gerber` to generate files for manufacturing
+
+## Tips for Working with AI
+
+- **Be specific**: Describe exactly what you want, including component types and values
+- **Provide context**: Reference your form factor and any physical constraints
+- **Iterate gradually**: Make changes in small steps rather than redesigning everything at once
+- **Verify connections**: Always check that all components are properly connected
+- **Review footprints**: Confirm that selected footprints match your manufacturing requirements
+
+## Next Steps
+
+- Learn more about [essential tscircuit elements](/docs/guides/tscircuit-essentials/essential-elements)
+- Explore [automatic PCB layout](/docs/guides/tscircuit-essentials/automatic-pcb-layout)
+- Read about [configuring chips](/docs/guides/tscircuit-essentials/configuring-chips)
+- Check out the [tscircuit CLI commands](/docs/command-line/tsci-dev)
