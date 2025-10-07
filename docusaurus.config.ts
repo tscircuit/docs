@@ -174,21 +174,16 @@ const config: Config = {
           position: "left",
         },
         {
-          href: "https://github.com/tscircuit/tscircuit/issues/new?template=Blank+issue",
-          position: "right",
-          label: "File Issue",
-        },
-        {
           href: "https://discord.com/invite/V7FGE5ZCbA",
           position: "right",
           className: "header-discord-link",
-          html: '<img src="/img/discord.svg" alt="Discord" style="height: 22px; width: 22px; margin-bottom: -4px;" class="github-icon" />',
+          html: '<img src="/img/discord.svg" alt="Discord" style="height: 18px; width: 18px; margin-bottom: -4px;" class="github-icon" />',
         },
         {
           href: "https://github.com/tscircuit/tscircuit",
           position: "right",
           className: "header-github-link",
-          html: '<img src="/img/github.svg" alt="GitHub" style="height: 22px; width: 22px; margin-bottom: -4px; margin-right: 6px;" class="github-icon" />',
+          html: '<img src="/img/github.svg" alt="GitHub" style="height: 18px; width: 18px; margin-bottom: -4px; margin-right: 6px;" class="github-icon" />',
         },
       ],
     },
