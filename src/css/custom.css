@@ -234,6 +234,11 @@ figure img {
   font-size: 14px;
 }
 
+/* Make top navbar links smaller */
+.navbar__link {
+  font-size: 14px;
+}
+
 /* Sidebar section styling - only for top-level categories */
 .theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible {
   margin-left: 12px;
