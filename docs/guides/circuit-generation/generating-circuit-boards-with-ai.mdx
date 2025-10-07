@@ -42,87 +42,13 @@ The `ArduinoShield` component automatically includes the correct mounting holes,
 
 To help AI assistants understand how to work with tscircuit, you'll need to provide them with:
 
-1. **tscircuit Syntax Primer** - Documentation on how to use tscircuit elements
-2. **tscircuit CLI Primer** - Information about available command-line tools
-3. **Project Context** - Information about what you're building
+1. **Project Context** - Information about what you're building
+2. **tscircuit Syntax Primer** - Documentation on how to use tscircuit elements
+3. **tscircuit CLI Primer** - Information about available command-line tools, this will allow your tool to search
 
 We recommend creating an `AGENTS.md` file in your project root that contains all this information. You can download our template below:
 
-<a href="/static/templates/AGENTS.md" download="AGENTS.md" style={{display: 'inline-block', padding: '8px 16px', background: '#007bff', color: 'white', textDecoration: 'none', borderRadius: '4px', marginTop: '8px'}}>
-  Download AGENTS.md Template
-</a>
-
-### What to Include in AGENTS.md
-
-Your `AGENTS.md` file should contain:
-
-#### 1. Project Description
-
-Describe what you're building, including:
-- The purpose of the circuit
-- Target form factor (Arduino Shield, Raspberry Pi Hat, etc.)
-- Key requirements or constraints
-- Expected functionality
-
-Example:
-```markdown
-# Project: LED Matrix Controller Shield
-
-This is an Arduino Shield that controls an 8x8 LED matrix display.
-
-## Requirements
-- Compatible with Arduino Uno
-- Drive an 8x8 LED matrix (common cathode)
-- Include current limiting resistors for each LED
-- Add a reset button
-- Power from Arduino 5V pin
-```
-
-#### 2. tscircuit Syntax Primer
-
-Link to the [tscircuit syntax documentation](/docs/intro/quickstart-ChatGPT#copy-this-to-your-chatgpt-project-instructions) or include key syntax examples. The AI needs to understand:
-
-- Core elements (`<board />`, `<chip />`, `<resistor />`, `<capacitor />`, etc.)
-- How to specify connections with `<trace />`
-- Pin labeling and selector syntax
-- Common footprints
-
-#### 3. tscircuit CLI Primer
-
-Include information about the command-line tools available:
-
-```markdown
-## tscircuit CLI Commands
-
-The AI can use these commands to help build the circuit:
-
-### tsci search [query]
-Search for footprints and components across the tscircuit ecosystem.
-
-Example:
-```bash
-tsci search "usb-c connector"
-```
-
-Returns footprints from KiCad libraries and published packages from the tscircuit registry.
-
-### tsci import [component]
-Import a component from the registry into your project.
-
-Example:
-```bash
-tsci import seveibar/usb-c-connector
-```
-
-### tsci dev
-Start the development server to preview your circuit in real-time.
-
-### tsci build
-Build your circuit and generate fabrication files.
-
-### tsci export [format]
-Export your circuit to various formats (gerber, svg, png, circuit-json).
-```
+TODO add AGENTS.md template download link here!
 
 ## Step 3: How AI Assists with Circuit Design
 
