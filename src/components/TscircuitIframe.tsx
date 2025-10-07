@@ -10,10 +10,11 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  let additionalProps = {}
+  let additionalProps: Record<string, any> = { isWebEmbedded: true }
 
   if (runFrameProps.code) {
     additionalProps = {
+      ...additionalProps,
       fsMap: {
         "index.tsx": runFrameProps.code,
       },
@@ -22,6 +23,7 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
 
   if (runFrameProps.fsMap) {
     additionalProps = {
+      ...additionalProps,
       fsMap: runFrameProps.fsMap,
       entrypoint: runFrameProps.entrypoint,
     }
@@ -55,21 +57,16 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
           </div>
         </div>
       )}
+
       <iframe
         ref={iframeRef}
         src="https://runframe.tscircuit.com/iframe.html"
         title="tscircuit code runner and preview"
         frameBorder="0"
         scrolling="no"
+        className="tscircuit-iframe"
         style={{
-          overflow: "hidden",
-          width: "100%",
-          height: 600,
-          border: "none",
-          padding: 0,
-          margin: 0,
-          boxSizing: "border-box",
-          display: isLoading ? "none" : "block",
+          opacity: isLoading ? 0 : 1,
         }}
         onLoad={() => {
           // The iframe is loaded, but we'll only hide the skeleton
