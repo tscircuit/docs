@@ -576,18 +576,18 @@ article header h1 {
 }
 
 /* Force section overview to center */
-.generatedIndexPage_vN6x {
+.generatedIndexPage {
   max-width: 980px;
   margin: 0 auto;
   float: none;
 }
 
-.generatedIndexPage_vN6x .row .col--6 {
+.generatedIndexPage .row .col--6 {
   flex: 0 0 calc(50% - 0.75rem) !important;
   max-width: calc(50% - 0.75rem) !important;
 }
 
-.generatedIndexPage_vN6x .row {
+.generatedIndexPage .row {
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 1.5rem !important;
