@@ -575,6 +575,26 @@ article header h1 {
   margin-right: auto !important;
 }
 
+/* Force section overview to center */
+.generatedIndexPage_vN6x {
+  max-width: 980px;
+  margin: 0 auto;
+  float: none;
+}
+
+.generatedIndexPage_vN6x .row .col--6 {
+  flex: 0 0 calc(50% - 0.75rem) !important;
+  max-width: calc(50% - 0.75rem) !important;
+}
+
+.generatedIndexPage_vN6x .row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 1.5rem !important;
+  justify-content: center !important;
+}
+
+
 article,
 .markdown {
   max-width: 100% !important;
@@ -610,5 +630,12 @@ article,
       rgba(255, 255, 255, 1) 8%,
       rgba(0, 0, 0, 0) 0%
     );
+  }
+}
+
+@media (max-width: 768px) {
+  .generatedIndexPage_vN6x .row .col--6 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
   }
 }
