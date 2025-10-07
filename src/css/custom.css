@@ -522,6 +522,7 @@ article header h1 {
   height: 600px;
   background: #ededf1;
   display: flex;
+  border-radius: 0.5rem;
   align-items: center;
   justify-content: center;
   border: 1px solid #d0d8e8;
@@ -543,7 +544,7 @@ article header h1 {
     rgba(197, 197, 198, 0.4) 50%,
     rgba(255, 255, 255, 0) 100%
   );
-  animation: shimmer 2.5s infinite;
+  animation: shimmer 1.5s infinite;
   transform: rotate(30deg);
   z-index: 1;
 }
@@ -557,6 +558,7 @@ article header h1 {
   }
 }
 
+/* Hide table of contents sidebar */
 .col.col--3 {
   display: none !important;
 }
@@ -566,8 +568,9 @@ article header h1 {
   display: none !important;
 }
 
+/* Force center all documentation content */
 .col:not(.col--3) {
-  max-width: 1000px !important;
+  max-width: 900px !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -577,4 +580,35 @@ article,
   max-width: 100% !important;
   padding-left: 2rem !important;
   padding-right: 2rem !important;
+}
+
+.tscircuit-iframe {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  scrollbar-color: yellow;
+  border-radius: 0.5rem;
+  transition: opacity 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .tscircuit-iframe {
+    height: 600px;
+    background: transparent;
+  }
+}
+
+@media (min-width: 769px) {
+  .tscircuit-iframe {
+    height: 43rem;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 1) 8%,
+      rgba(0, 0, 0, 0) 0%
+    );
+  }
 }
