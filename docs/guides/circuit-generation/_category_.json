@@ -1,0 +1,10 @@
+{
+  "label": "Circuit Generation",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Learn how to generate circuits with AI assistance"
+  },
+  "collapsible": true,
+  "collapsed": false
+}
