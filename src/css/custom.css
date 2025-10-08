@@ -575,19 +575,19 @@ article header h1 {
   margin-right: auto !important;
 }
 
-/* Force section overview to center */
-.generatedIndexPage {
+/* Force section overview to center - using stable attribute selector */
+[class*="generatedIndexPage"] {
   max-width: 980px;
   margin: 0 auto;
   float: none;
 }
 
-.generatedIndexPage .row .col--6 {
+[class*="generatedIndexPage"] .row .col--6 {
   flex: 0 0 calc(50% - 0.75rem) !important;
   max-width: calc(50% - 0.75rem) !important;
 }
 
-.generatedIndexPage .row {
+[class*="generatedIndexPage"] .row {
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 1.5rem !important;
@@ -633,7 +633,7 @@ article,
 }
 
 @media (max-width: 768px) {
-  .generatedIndexPage_vN6x .row .col--6 {
+  [class*="generatedIndexPage"] .row .col--6 {
     flex: 0 0 100% !important;
     max-width: 100% !important;
   }
