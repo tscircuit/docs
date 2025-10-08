@@ -448,6 +448,7 @@ figure img {
 .menu__list-item .menu__link {
   padding-top: 5px;
   padding-bottom: 5px;
+  padding-left: 20px;
 }
 
 @media (max-width: 768px) {
