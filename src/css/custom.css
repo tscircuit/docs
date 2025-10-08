@@ -248,13 +248,13 @@ figure img {
   > .menu__list-item-collapsible
   > .menu__link {
   font-weight: 600;
-  color: #000000;
+  color: #181c1a;
 }
 [data-theme="dark"]
   .theme-doc-sidebar-item-category-level-1
   > .menu__list-item-collapsible
   > .menu__link {
-  color: #ffffff;
+  color: #cbd5e0;
 }
 
 /* Add icons to top-level sidebar sections only */
@@ -518,7 +518,8 @@ body {
 article header h1 {
   text-align: left !important;
   font-size: 2rem !important;
-  font-weight: 650 !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 0.8px currentColor;
 }
 
 article h2 {
@@ -529,6 +530,7 @@ article h2 {
 article h3 {
   font-size: 1.25rem !important;
   font-weight: 600 !important;
+  text-shadow: 0 0 0.5px currentColor;
 }
 
 article h4 {
