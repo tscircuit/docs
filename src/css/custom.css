@@ -515,6 +515,23 @@ body {
 
 article header h1 {
   text-align: left !important;
+  font-size: 2rem !important;
+  font-weight: 650 !important;
+}
+
+article h2 {
+  font-size: 1.5rem !important;
+  font-weight: 630 !important;
+}
+
+article h3 {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+}
+
+article h4 {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
 }
 
 .skeleton-container {
