@@ -502,11 +502,12 @@ body {
   line-height: 1.2;
   text-align: left;
   white-space: nowrap;
-  max-width: 900px;
+  max-width: 970px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 2rem;
+  padding-left: 4rem;
   padding-right: 2rem;
+  box-sizing: border-box;
 }
 
 [data-theme="dark"] .doc-section-subtitle {
