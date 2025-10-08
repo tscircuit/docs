@@ -263,10 +263,12 @@ figure img {
   > .menu__link::before {
   content: "";
   display: inline-block;
-  width: 18px;
-  height: 18px;
-  margin-right: 12px;
-  vertical-align: middle;
+  width: 14px;
+  height: 14px;
+  margin-right: 10px;
+  vertical-align: baseline;
+  position: relative;
+  top: 1px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
