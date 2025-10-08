@@ -488,6 +488,64 @@ figure img {
   }
 }
 
+button[aria-label*="dark"] svg,
+button[aria-label*="light"] svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Make Content Center */
+.col.col--3 {
+  display: none !important;
+}
+
+.docMainContainer_TBSr .container .row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.docItemContainer_Djhp,
+.generatedIndexPage_vN6x,
+.docIndexPage {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+.theme-doc-toc-desktop,
+.theme-doc-toc-mobile {
+  display: none !important;
+}
+
+.doc-subtitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ifm-color-primary);
+  line-height: 20px;
+  margin: 0;
+  padding-bottom: 8px;
+  text-align: left;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 998px) and (max-width: 1548px) {
+  .doc-subtitle {
+    margin-left: 13%;
+    margin-right: auto;
+  }
+}
+
+[data-theme="dark"] .doc-section-subtitle {
+  color: var(--ifm-color-primary-lighter);
+}
+
 html,
 body {
   overflow-x: hidden;
