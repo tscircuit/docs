@@ -4,8 +4,12 @@
  * work well for content-centric websites.
  */
 
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap");
+
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: "Google Sans", system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: "Google Sans", system-ui, -apple-system, sans-serif;
   --ifm-color-primary: #1877f2;
   --ifm-color-primary-dark: #166bda;
   --ifm-color-primary-darker: #1564ce;
@@ -526,25 +530,31 @@ body {
 
 article header h1 {
   text-align: left !important;
-  font-size: 2rem !important;
+  font-size: 1.9rem !important;
   font-weight: 600 !important;
   text-shadow: 0 0 0.8px currentColor;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.6rem !important;
 }
 
 article h2 {
   font-size: 1.5rem !important;
   font-weight: 630 !important;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.8rem !important;
 }
 
 article h3 {
   font-size: 1.25rem !important;
   font-weight: 600 !important;
   text-shadow: 0 0 0.5px currentColor;
+  letter-spacing: -0.025em;
 }
 
 article h4 {
   font-size: 1.1rem !important;
   font-weight: 600 !important;
+  letter-spacing: -0.025em;
 }
 
 .skeleton-container {
