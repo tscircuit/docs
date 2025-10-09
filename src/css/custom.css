@@ -557,6 +557,10 @@ article h4 {
   letter-spacing: -0.025em;
 }
 
+.markdown > p:first-of-type {
+  margin-bottom: 2rem !important;
+}
+
 .skeleton-container {
   width: 100%;
   height: 600px;
