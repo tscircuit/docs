@@ -76,6 +76,7 @@ export default function CircuitPreview({
   hidePCBTab = false,
   hide3DTab = false,
   showPinoutTab = false,
+  browser3dView = true,
   fsMap = {},
   entrypoint = "index.tsx",
   schematicOnly = false,
@@ -94,6 +95,7 @@ export default function CircuitPreview({
   fsMap?: Record<string, string>
   entrypoint?: string
   schematicOnly?: boolean
+  browser3dView?: boolean
   leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
 }) {

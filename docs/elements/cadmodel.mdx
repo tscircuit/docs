@@ -4,4 +4,23 @@ description: >-
   A CAD model is a 3D model of a component that can be used in a CAD assembly.
 ---
 
-This page is coming soon!
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  code={`
+  export default () => (
+    <board>
+      <chip
+        name="U1"
+        footprint="soic8"
+        cadModel={{
+          glbUrl: "https://modelcdn.tscircuit.com/jscad_models/soic8.glb",
+        }}
+      />
+    </board>
+  )
+  `}
+/>
