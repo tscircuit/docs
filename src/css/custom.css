@@ -501,6 +501,7 @@ body {
   font-weight: 700;
   color: var(--ifm-color-primary);
   margin-bottom: 0.5rem;
+  margin-top: 1.8rem;
   line-height: 1.2;
   text-align: left;
   white-space: nowrap;
