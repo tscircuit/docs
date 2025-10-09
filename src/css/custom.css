@@ -243,6 +243,51 @@ figure img {
   font-size: 14px;
 }
 
+.navbar__brand {
+  margin-right: 0rem !important;
+}
+
+.navbar__items--right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.navbar__items--right .navbar__item {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.header-discord-link,
+.header-github-link {
+  padding: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+.header-github-link img,
+.header-discord-link img {
+  margin: 0 !important;
+  display: block;
+}
+
+/* Ensure theme toggle aligns with icons */
+.navbar__items--right > div,
+.navbar__items--right button {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+/* Hide GitHub and Discord icons on mobile */
+@media (max-width: 770px) {
+  .navbar__item.header-icon-link {
+    display: none !important;
+  }
+}
 /* Sidebar section styling - only for top-level categories */
 .theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible {
   margin-left: 12px;
@@ -264,15 +309,20 @@ figure img {
 /* Add icons to top-level sidebar sections only */
 .theme-doc-sidebar-item-category-level-1
   > .menu__list-item-collapsible
+  > .menu__link {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.theme-doc-sidebar-item-category-level-1
+  > .menu__list-item-collapsible
   > .menu__link::before {
   content: "";
   display: inline-block;
+  flex-shrink: 0;
   width: 14px;
   height: 14px;
   margin-right: 10px;
-  vertical-align: baseline;
-  position: relative;
-  top: 1px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
