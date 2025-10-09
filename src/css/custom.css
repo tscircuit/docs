@@ -1020,3 +1020,7 @@ article,
 .menu__list-item-collapsible > button:hover {
   background: transparent;
 }
+
+button[aria-label="Scroll back to top"] {
+  transform: rotate(-90deg);
+}
