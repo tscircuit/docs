@@ -470,11 +470,8 @@ figure img {
 }
 
 /* Add spacing only between top-level category sections */
-.theme-doc-sidebar-item-category-level-1:not(:first-child) {
+.theme-doc-sidebar-item-category-level-1 {
   margin-top: 1rem !important;
-}
-.theme-doc-sidebar-item-category-level-1:first-child {
-  margin-top: 2rem !important;
 }
 
 .menu__list-item .menu__link {
