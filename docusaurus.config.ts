@@ -43,6 +43,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/", // Serve docs at root
           editUrl: "https://github.com/tscircuit/docs/tree/main/",
+          breadcrumbs: false,
         },
         theme: {
           customCss: "./src/css/custom.css",
