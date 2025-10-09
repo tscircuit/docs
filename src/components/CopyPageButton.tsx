@@ -45,6 +45,28 @@ export default function CopyPageButton() {
     return `# ${title}\n\n${content}`
   }
 
+  const constructUrl = () => {
+    const url = new URL(window.location.href)
+    let path = url.pathname
+
+    // If it's root path, return just origin with trailing slash
+    if (path === "/" || path === "") {
+      return url.origin + "/"
+    }
+
+    // Remove trailing slash if present
+    if (path.endsWith("/")) {
+      path = path.slice(0, -1)
+    }
+
+    // Add .md extension if not already present
+    if (!path.endsWith(".md")) {
+      path = path + ".md"
+    }
+
+    return `${url.origin}${path}`
+  }
+
   const handleCopyPage = async () => {
     const markdown = getPageContentAsMarkdown()
     try {
@@ -60,8 +82,8 @@ export default function CopyPageButton() {
   }
 
   const handleOpenInChatGPT = () => {
-    const currentUrl = window.location.href
-    const prompt = `Read from ${currentUrl} so I can ask questions about it.`
+    const formattedUrl = constructUrl()
+    const prompt = `Read from ${formattedUrl} so I can ask questions about it.`
     const encodedPrompt = encodeURIComponent(prompt)
     window.open(
       `https://chat.openai.com/?q=${encodedPrompt}`,
@@ -72,11 +94,11 @@ export default function CopyPageButton() {
   }
 
   const handleOpenInClaude = () => {
-    const currentUrl = window.location.href
-    const prompt = `Read from ${currentUrl} so I can ask questions about it.`
+    const formattedUrl = constructUrl()
+    const prompt = `Read from ${formattedUrl} so I can ask questions about it.`
     const encodedPrompt = encodeURIComponent(prompt)
     window.open(
-      `https://claude.ai/new?prompt=${encodedPrompt}`,
+      `https://claude.ai/new?q=${encodedPrompt}`,
       "_blank",
       "noopener,noreferrer",
     )
