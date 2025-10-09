@@ -503,7 +503,7 @@ body {
 .doc-section-subtitle {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--ifm-color-primary);
+  color: #6aa4f6;
   margin-bottom: 0.5rem;
   margin-top: 1.8rem;
   line-height: 1.2;
@@ -525,7 +525,7 @@ body {
 }
 
 [data-theme="dark"] .doc-section-subtitle {
-  color: var(--ifm-color-primary-lighter);
+  color: #8bb2ff;
 }
 
 article header h1 {
