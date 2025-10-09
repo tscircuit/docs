@@ -1068,3 +1068,10 @@ article,
     padding: 0.375rem;
   }
 }
+
+@media (max-width: 768px) {
+  [class*="generatedIndexPage"] .row .col--6 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}
