@@ -1,0 +1,30 @@
+.docItemContainer header + *,
+.docItemContainer article > *:first-child {
+  margin-top: 0;
+}
+
+.docItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+  min-height: 32px;
+}
+
+.docItemHeader > nav {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .docItemHeader {
+    align-items: flex-start;
+  }
+}
+
+@media (min-width: 997px) {
+  .docItemCol {
+    max-width: 75% !important;
+  }
+}
