@@ -60,10 +60,11 @@ export default function CopyPageButton() {
   }
 
   const handleOpenInChatGPT = () => {
-    const markdown = getPageContentAsMarkdown()
-    const encodedContent = encodeURIComponent(markdown)
+    const currentUrl = window.location.href
+    const prompt = `Read from ${currentUrl} so I can ask questions about it.`
+    const encodedPrompt = encodeURIComponent(prompt)
     window.open(
-      `https://chat.openai.com/?q=${encodedContent}`,
+      `https://chat.openai.com/?q=${encodedPrompt}`,
       "_blank",
       "noopener,noreferrer",
     )
