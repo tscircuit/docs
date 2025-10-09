@@ -1019,3 +1019,7 @@ article,
     max-width: 100% !important;
   }
 }
+
+.menu__list-item-collapsible > button:hover {
+  background: transparent;
+}
