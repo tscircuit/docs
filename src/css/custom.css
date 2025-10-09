@@ -678,15 +678,15 @@ article h4 {
 }
 
 [class*="generatedIndexPage"] .row .col--6 {
-  flex: 0 0 calc(50% - 0.75rem) !important;
-  max-width: calc(50% - 0.75rem) !important;
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
 }
 
 [class*="generatedIndexPage"] .row {
   display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 1.5rem !important;
-  justify-content: center !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  align-items: stretch !important;
 }
 
 article,
