@@ -238,6 +238,15 @@ figure img {
   font-size: 14px;
 }
 
+/* Remove left padding from nested menu lists */
+.menu__list .menu__list {
+  padding-left: 0 !important;
+}
+
+.navbar-sidebar__item {
+  padding: 1rem;
+}
+
 /* Make top navbar links smaller */
 .navbar__link {
   font-size: 14px;
@@ -290,7 +299,15 @@ figure img {
 }
 /* Sidebar section styling - only for top-level categories */
 .theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible {
-  margin-left: 12px;
+  margin-left: 0;
+}
+
+/* Add 8px padding to each top-level section and its dropdown contents */
+@media (min-width: 1000px) {
+  .theme-doc-sidebar-item-category-level-1 {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 .theme-doc-sidebar-item-category-level-1
@@ -502,7 +519,15 @@ figure img {
 .menu__list-item .menu__link {
   padding-top: 5px;
   padding-bottom: 5px;
-  padding-left: 20px;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Ensure hover and active states maintain padding */
+.menu__link:hover,
+.menu__link--active {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 
 @media (max-width: 768px) {
