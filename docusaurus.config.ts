@@ -43,6 +43,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/", // Serve docs at root
           editUrl: "https://github.com/tscircuit/docs/tree/main/",
+          breadcrumbs: false,
         },
         theme: {
           customCss: "./src/css/custom.css",
@@ -177,13 +178,13 @@ const config: Config = {
         {
           href: "https://discord.com/invite/V7FGE5ZCbA",
           position: "right",
-          className: "header-discord-link",
+          className: "header-discord-link header-icon-link",
           html: '<img src="/img/discord.svg" alt="Discord" style="height: 18px; width: 18px; margin-bottom: -4px;" class="github-icon" />',
         },
         {
           href: "https://github.com/tscircuit/tscircuit",
           position: "right",
-          className: "header-github-link",
+          className: "header-github-link header-icon-link",
           html: '<img src="/img/github.svg" alt="GitHub" style="height: 18px; width: 18px; margin-bottom: -4px; margin-right: 6px;" class="github-icon" />',
         },
       ],
