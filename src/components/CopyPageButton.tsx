@@ -72,10 +72,11 @@ export default function CopyPageButton() {
   }
 
   const handleOpenInClaude = () => {
-    const markdown = getPageContentAsMarkdown()
-    const encodedContent = encodeURIComponent(markdown)
+    const currentUrl = window.location.href
+    const prompt = `Read from ${currentUrl} so I can ask questions about it.`
+    const encodedPrompt = encodeURIComponent(prompt)
     window.open(
-      `https://claude.ai/new?q=${encodedContent}`,
+      `https://claude.ai/new?prompt=${encodedPrompt}`,
       "_blank",
       "noopener,noreferrer",
     )
