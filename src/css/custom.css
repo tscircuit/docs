@@ -586,7 +586,8 @@ article h4 {
 }
 
 .table-of-contents,
-.theme-doc-toc-desktop {
+.theme-doc-toc-desktop,
+.theme-doc-toc-mobile {
   display: none !important;
 }
 
