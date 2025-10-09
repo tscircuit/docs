@@ -782,6 +782,7 @@ article,
 .copy-page-button-container {
   position: relative;
   display: inline-block;
+  margin-right: 2rem;
 }
 
 .copy-page-button-wrapper {

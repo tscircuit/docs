@@ -23,6 +23,27 @@
   }
 }
 
+.docItemWithButton {
+  position: relative;
+}
+
+.docItemWithButton :global(.copy-page-button-container) {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.docItemWithButton :global(.markdown) > :global(h1):first-child {
+  padding-right: 180px;
+}
+
+@media (max-width: 768px) {
+  .docItemWithButton :global(.markdown) > :global(h1):first-child {
+    padding-right: 60px;
+  }
+}
+
 @media (min-width: 997px) {
   .docItemCol {
     max-width: 75% !important;

@@ -50,13 +50,13 @@ export default function DocItemLayout({ children }: Props): ReactNode {
         <DocVersionBanner />
         <div className={styles.docItemContainer}>
           <article>
-            <div className={styles.docItemHeader}>
-              <DocBreadcrumbs />
-              <CopyPageButton />
-            </div>
+            <DocBreadcrumbs />
             <DocVersionBadge />
             {docTOC.mobile}
-            <DocItemContent>{children}</DocItemContent>
+            <div className={styles.docItemWithButton}>
+              <CopyPageButton />
+              <DocItemContent>{children}</DocItemContent>
+            </div>
             <DocItemFooter />
           </article>
           <DocItemPaginator />
