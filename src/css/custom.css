@@ -252,6 +252,12 @@ figure img {
   font-size: 14px;
 }
 
+/* Reduce navbar toggle button SVG size */
+.navbar__toggle svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
 .navbar__brand {
   margin-right: 0rem !important;
 }
