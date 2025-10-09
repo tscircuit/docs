@@ -4,8 +4,12 @@
  * work well for content-centric websites.
  */
 
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap");
+
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: "Google Sans", system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: "Google Sans", system-ui, -apple-system, sans-serif;
   --ifm-color-primary: #1877f2;
   --ifm-color-primary-dark: #166bda;
   --ifm-color-primary-darker: #1564ce;
@@ -15,6 +19,10 @@
   --ifm-color-primary-lightest: #6aa4f6;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-menu-link-sublist-icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.6)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 5 16 12 9 19'/></svg>");
+  --media-container-bg: #f4f6fb;
+  --media-container-border: rgba(13, 39, 80, 0.08);
+  --media-container-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -27,6 +35,9 @@
   --ifm-color-primary-lighter: #6296ff;
   --ifm-color-primary-lightest: #8bb2ff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --media-container-bg: rgba(255, 255, 255, 0.07);
+  --media-container-border: rgba(255, 255, 255, 0.12);
+  --media-container-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* GitHub icon theming */
@@ -79,29 +90,126 @@ figure {
   flex-direction: column;
   align-items: center;
   margin: 3rem auto 2rem;
-  max-width: 100%;
-  padding: 0 1rem;
+  max-width: 760px;
+  width: 100%;
+  padding: 0.75rem;
   box-sizing: border-box;
+  background: var(--media-container-bg);
+  border: 1px solid var(--media-container-border);
+  border-radius: 16px;
+  box-shadow: var(--media-container-shadow);
 }
 
 figure figcaption {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   opacity: 0.8;
   text-align: center;
-  font-size: 0.8rem;
-  line-height: 1.2rem;
+  font-size: 0.85rem;
+  line-height: 1.35rem;
   width: 90%;
   max-width: 600px;
 }
 
 figure img {
-  width: 100%;
-  max-width: 600px;
-  height: auto;
   display: block;
-  object-fit: cover;
+  width: auto;
+  max-width: 100%;
+  height: auto;
   margin-left: auto;
   margin-right: auto;
+  border-radius: 12px;
+}
+
+.media-frame,
+.markdown p:has(> img:only-child),
+.markdown p:has(> a:only-child > img:only-child),
+.markdown li:has(> img:only-child),
+.markdown li:has(> a:only-child > img:only-child),
+.markdown div:not([class]):has(> img:only-child),
+.markdown div:not([class]):has(> a:only-child > img:only-child),
+.markdown p > iframe:only-child:not(.youtube-embed__iframe),
+.markdown li > iframe:only-child:not(.youtube-embed__iframe),
+.markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  margin: 2rem auto;
+  padding: 0.75rem;
+  border-radius: 16px;
+  box-sizing: border-box;
+  background: var(--media-container-bg);
+  border: 1px solid var(--media-container-border);
+  box-shadow: var(--media-container-shadow);
+  overflow: hidden;
+}
+
+.media-frame {
+  display: block;
+  width: 100%;
+}
+
+.media-frame > img,
+.media-frame > iframe,
+.markdown p > img:only-child,
+.markdown p > a:only-child > img:only-child,
+.markdown li > img:only-child,
+.markdown li > a:only-child > img:only-child,
+.markdown figure > img,
+.markdown div:not([class]) > img:only-child,
+.markdown div:not([class]) > a:only-child > img:only-child {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 12px;
+}
+
+.markdown p > iframe:only-child:not(.youtube-embed__iframe),
+.markdown li > iframe:only-child:not(.youtube-embed__iframe),
+.markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
+  border: none;
+  background: var(--media-container-bg);
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+}
+
+.youtube-embed__container {
+  background: var(--media-container-bg);
+  border: 1px solid var(--media-container-border);
+  border-radius: 16px;
+  box-shadow: var(--media-container-shadow);
+  padding: 0.75rem;
+  margin: 2rem auto;
+  max-width: 760px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.youtube-embed__frame {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--media-container-bg);
+}
+
+.youtube-embed__iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 12px;
 }
 
 .img-rounded {
@@ -130,10 +238,289 @@ figure img {
   font-size: 14px;
 }
 
-.menu__caret {
+/* Remove left padding from nested menu lists */
+.menu__list .menu__list {
+  padding-left: 0 !important;
+}
+
+.navbar-sidebar__item {
+  padding: 1rem;
+}
+
+/* Make top navbar links smaller */
+.navbar__link {
+  font-size: 14px;
+}
+
+/* Reduce navbar toggle button SVG size */
+.navbar__toggle svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Reduce navbar close button SVG size */
+.navbar-sidebar__close svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* Reduce theme toggle button SVG size */
+.toggleButton_gllP svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.navbar__brand {
+  margin-right: 0rem !important;
+}
+
+.navbar__items--right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.navbar__items--right .navbar__item {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.header-discord-link,
+.header-github-link {
+  padding: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+.header-github-link img,
+.header-discord-link img {
+  margin: 0 !important;
+  display: block;
+}
+
+/* Ensure theme toggle aligns with icons */
+.navbar__items--right > div,
+.navbar__items--right button {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+/* Hide GitHub and Discord icons on mobile */
+@media (max-width: 770px) {
+  .navbar__item.header-icon-link {
+    display: none !important;
+  }
+}
+/* Sidebar section styling - only for top-level categories */
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible {
+  margin-left: 0;
+}
+
+/* Add 8px padding to each top-level section and its dropdown contents */
+@media (min-width: 1000px) {
+  .theme-doc-sidebar-item-category-level-1 {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+.theme-doc-sidebar-item-category-level-1
+  > .menu__list-item-collapsible
+  > .menu__link {
+  font-weight: 600;
+  color: #181c1a;
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1
+  > .menu__list-item-collapsible
+  > .menu__link {
+  color: #cbd5e0;
+}
+
+/* Add icons to top-level sidebar sections only */
+.theme-doc-sidebar-item-category-level-1
+  > .menu__list-item-collapsible
+  > .menu__link {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.theme-doc-sidebar-item-category-level-1
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  content: "";
+  display: inline-block;
+  flex-shrink: 0;
   width: 14px;
   height: 14px;
-  opacity: 0.5;
+  margin-right: 10px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.8;
+}
+
+/* Icon for Intro section */
+.theme-doc-sidebar-item-category-level-1:nth-child(1)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E");
+}
+
+/* Icon for Command Line section */
+.theme-doc-sidebar-item-category-level-1:nth-child(2)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'/%3E%3Cline x1='12' y1='19' x2='20' y2='19'/%3E%3C/svg%3E");
+}
+
+/* Icon for Guides section */
+.theme-doc-sidebar-item-category-level-1:nth-child(3)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'/%3E%3Cpath d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/%3E%3C/svg%3E");
+}
+
+/* Icon for Tutorials section */
+.theme-doc-sidebar-item-category-level-1:nth-child(4)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/%3E%3C/svg%3E");
+}
+
+/* Icon for Built-in Elements section */
+.theme-doc-sidebar-item-category-level-1:nth-child(5)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7'/%3E%3Crect x='14' y='3' width='7' height='7'/%3E%3Crect x='14' y='14' width='7' height='7'/%3E%3Crect x='3' y='14' width='7' height='7'/%3E%3C/svg%3E");
+}
+
+/* Icon for Footprints section */
+.theme-doc-sidebar-item-category-level-1:nth-child(6)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'/%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'/%3E%3C/svg%3E");
+}
+
+/* Icon for Advanced section */
+.theme-doc-sidebar-item-category-level-1:nth-child(7)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 1v6m0 6v6m8.66-15.66l-4.24 4.24m-4.24 4.24l-4.24 4.24M23 12h-6m-6 0H1m20.66 8.66l-4.24-4.24m-4.24-4.24l-4.24-4.24'/%3E%3C/svg%3E");
+}
+
+/* Icon for Web APIs section */
+.theme-doc-sidebar-item-category-level-1:nth-child(8)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E");
+}
+
+/* Icon for Building Electronics section */
+.theme-doc-sidebar-item-category-level-1:nth-child(9)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='6' width='20' height='12' rx='2'/%3E%3Cpath d='M12 12h.01'/%3E%3Cpath d='M17 12h.01'/%3E%3Cpath d='M7 12h.01'/%3E%3C/svg%3E");
+}
+
+/* Icon for Contributing section */
+.theme-doc-sidebar-item-category-level-1:nth-child(10)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='8.5' cy='7' r='4'/%3E%3Cpolyline points='17 11 19 13 23 9'/%3E%3C/svg%3E");
+}
+
+/* Dark mode adjustments for top-level icons only */
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  filter: brightness(1.2);
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(1)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(2)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'/%3E%3Cline x1='12' y1='19' x2='20' y2='19'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(3)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'/%3E%3Cpath d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(4)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(5)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7'/%3E%3Crect x='14' y='3' width='7' height='7'/%3E%3Crect x='14' y='14' width='7' height='7'/%3E%3Crect x='3' y='14' width='7' height='7'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(6)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'/%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(7)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 1v6m0 6v6m8.66-15.66l-4.24 4.24m-4.24 4.24l-4.24 4.24M23 12h-6m-6 0H1m20.66 8.66l-4.24-4.24m-4.24-4.24l-4.24-4.24'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(8)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(9)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='6' width='20' height='12' rx='2'/%3E%3Cpath d='M12 12h.01'/%3E%3Cpath d='M17 12h.01'/%3E%3Cpath d='M7 12h.01'/%3E%3C/svg%3E");
+}
+[data-theme="dark"]
+  .theme-doc-sidebar-item-category-level-1:nth-child(10)
+  > .menu__list-item-collapsible
+  > .menu__link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='8.5' cy='7' r='4'/%3E%3Cpolyline points='17 11 19 13 23 9'/%3E%3C/svg%3E");
+}
+
+.menu__caret {
+  width: 12px;
+  height: 12px;
+  opacity: 0.6;
+}
+
+.menu__link--sublist-caret:after,
+.menu__caret:before {
+  min-width: 0.75rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background-size: 0.75rem 0.75rem;
+  background-repeat: no-repeat;
+  transform: rotate(-90deg);
+}
+
+.menu__list-item--collapsed .menu__link--sublist:after,
+.menu__list-item--collapsed .menu__caret:before {
+  transform: rotate(90deg);
 }
 
 .theme-doc-sidebar-menu .menu__list-item {
@@ -142,9 +529,23 @@ figure img {
   padding-bottom: 1px;
 }
 
+/* Add spacing only between top-level category sections */
+.theme-doc-sidebar-item-category-level-1:not(:first-child) {
+  margin-top: 2rem !important;
+}
+
 .menu__list-item .menu__link {
-  padding-top: 3px;
-  padding-bottom: 3px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Ensure hover and active states maintain padding */
+.menu__link:hover,
+.menu__link--active {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 
 @media (max-width: 768px) {
@@ -161,6 +562,30 @@ figure img {
     max-width: 90vw;
     box-sizing: border-box;
   }
+
+  .media-frame,
+  .markdown p:has(> img:only-child),
+  .markdown p:has(> a:only-child > img:only-child),
+  .markdown li:has(> img:only-child),
+  .markdown li:has(> a:only-child > img:only-child),
+  .markdown div:not([class]):has(> img:only-child),
+  .markdown div:not([class]):has(> a:only-child > img:only-child),
+  figure,
+  .markdown p > iframe:only-child:not(.youtube-embed__iframe),
+  .markdown li > iframe:only-child:not(.youtube-embed__iframe),
+  .markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
+  .markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
+  .markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
+  .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
+    max-width: 100%;
+    margin: 1.5rem auto;
+    padding: 0.5rem;
+  }
+
+  .youtube-embed__container {
+    padding: 0.5rem;
+    margin: 1.5rem auto;
+  }
 }
 
 html,
@@ -168,11 +593,73 @@ body {
   overflow-x: hidden;
 }
 
+.doc-section-subtitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ifm-color-primary-light);
+  margin-bottom: 0.5rem;
+  margin-top: 1.8rem;
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+  max-width: 970px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 4rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .doc-section-subtitle {
+    padding-left: 2rem;
+    padding-right: 1rem;
+  }
+}
+
+[data-theme="dark"] .doc-section-subtitle {
+  color: var(--ifm-color-primary-lightest);
+}
+
+article header h1 {
+  text-align: left !important;
+  font-size: 1.9rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 0.1px currentColor;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.6rem !important;
+}
+
+article h2 {
+  font-size: 1.5rem !important;
+  font-weight: 630 !important;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.8rem !important;
+}
+
+article h3 {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 0.1px currentColor;
+  letter-spacing: -0.025em;
+}
+
+article h4 {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em;
+}
+
+.markdown > p:first-of-type {
+  margin-bottom: 2rem !important;
+}
+
 .skeleton-container {
   width: 100%;
   height: 600px;
   background: #ededf1;
   display: flex;
+  border-radius: 0.5rem;
   align-items: center;
   justify-content: center;
   border: 1px solid #d0d8e8;
@@ -194,7 +681,7 @@ body {
     rgba(197, 197, 198, 0.4) 50%,
     rgba(255, 255, 255, 0) 100%
   );
-  animation: shimmer 2.5s infinite;
+  animation: shimmer 1.5s infinite;
   transform: rotate(30deg);
   z-index: 1;
 }
@@ -205,5 +692,95 @@ body {
   }
   100% {
     transform: translate(100%, 100%) rotate(30deg);
+  }
+}
+
+/* Hide table of contents sidebar */
+.col.col--3 {
+  display: none !important;
+}
+
+.table-of-contents,
+.theme-doc-toc-desktop,
+.theme-doc-toc-mobile {
+  display: none !important;
+}
+
+/* Force center all documentation content */
+.col:not(.col--3) {
+  max-width: 1000px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Force section overview to center - using stable attribute selector */
+[class*="generatedIndexPage"] {
+  max-width: 980px;
+  margin: 0 auto;
+  float: none;
+}
+
+[class*="generatedIndexPage"] .row .col--6 {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+}
+
+[class*="generatedIndexPage"] .row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  align-items: stretch !important;
+}
+
+article,
+.markdown {
+  max-width: 100% !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+@media (max-width: 768px) {
+  article,
+  .markdown {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+}
+
+.tscircuit-iframe {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  scrollbar-color: yellow;
+  border-radius: 0.5rem;
+  transition: opacity 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .tscircuit-iframe {
+    height: 600px;
+    background: transparent;
+  }
+}
+
+@media (min-width: 769px) {
+  .tscircuit-iframe {
+    height: 43rem;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 1) 8%,
+      rgba(0, 0, 0, 0) 0%
+    );
+  }
+}
+
+@media (max-width: 768px) {
+  [class*="generatedIndexPage"] .row .col--6 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
   }
 }

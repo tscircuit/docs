@@ -9,6 +9,10 @@ const config: Config = {
   tagline: "Create Electronics with Typescript and React",
   favicon: "logo/ts.svg",
 
+  markdown: {
+    mermaid: true,
+  },
+  themes: ["@docusaurus/theme-mermaid"],
   // Set the production url of your site here
   url: "https://docs.tscircuit.com",
   // Set the /<baseUrl>/ pathname under which your site is served
@@ -39,6 +43,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/", // Serve docs at root
           editUrl: "https://github.com/tscircuit/docs/tree/main/",
+          breadcrumbs: false,
         },
         theme: {
           customCss: "./src/css/custom.css",
@@ -169,22 +174,18 @@ const config: Config = {
           label: "Use Online",
           position: "left",
         },
-        {
-          href: "https://github.com/tscircuit/tscircuit/issues/new?template=Blank+issue",
-          position: "right",
-          label: "File Issue",
-        },
+
         {
           href: "https://discord.com/invite/V7FGE5ZCbA",
           position: "right",
-          className: "header-discord-link",
-          html: '<img src="/img/discord.svg" alt="Discord" style="height: 22px; width: 22px; margin-bottom: -4px;" class="github-icon" />',
+          className: "header-discord-link header-icon-link",
+          html: '<img src="/img/discord.svg" alt="Discord" style="height: 18px; width: 18px; margin-bottom: -4px;" class="github-icon" />',
         },
         {
           href: "https://github.com/tscircuit/tscircuit",
           position: "right",
-          className: "header-github-link",
-          html: '<img src="/img/github.svg" alt="GitHub" style="height: 22px; width: 22px; margin-bottom: -4px; margin-right: 6px;" class="github-icon" />',
+          className: "header-github-link header-icon-link",
+          html: '<img src="/img/github.svg" alt="GitHub" style="height: 18px; width: 18px; margin-bottom: -4px; margin-right: 6px;" class="github-icon" />',
         },
       ],
     },
