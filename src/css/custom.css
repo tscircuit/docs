@@ -4,8 +4,12 @@
  * work well for content-centric websites.
  */
 
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap");
+
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: "Google Sans", system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: "Google Sans", system-ui, -apple-system, sans-serif;
   --ifm-color-primary: #1877f2;
   --ifm-color-primary-dark: #166bda;
   --ifm-color-primary-darker: #1564ce;
@@ -234,39 +238,126 @@ figure img {
   font-size: 14px;
 }
 
+/* Remove left padding from nested menu lists */
+.menu__list .menu__list {
+  padding-left: 0 !important;
+}
+
+.navbar-sidebar__item {
+  padding: 1rem;
+}
+
 /* Make top navbar links smaller */
 .navbar__link {
   font-size: 14px;
 }
 
+/* Reduce navbar toggle button SVG size */
+.navbar__toggle svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Reduce navbar close button SVG size */
+.navbar-sidebar__close svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* Reduce theme toggle button SVG size */
+.toggleButton_gllP svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.navbar__brand {
+  margin-right: 0rem !important;
+}
+
+.navbar__items--right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.navbar__items--right .navbar__item {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.header-discord-link,
+.header-github-link {
+  padding: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+.header-github-link img,
+.header-discord-link img {
+  margin: 0 !important;
+  display: block;
+}
+
+/* Ensure theme toggle aligns with icons */
+.navbar__items--right > div,
+.navbar__items--right button {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+/* Hide GitHub and Discord icons on mobile */
+@media (max-width: 770px) {
+  .navbar__item.header-icon-link {
+    display: none !important;
+  }
+}
 /* Sidebar section styling - only for top-level categories */
 .theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible {
-  margin-left: 12px;
+  margin-left: 0;
+}
+
+/* Add 8px padding to each top-level section and its dropdown contents */
+@media (min-width: 1000px) {
+  .theme-doc-sidebar-item-category-level-1 {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 .theme-doc-sidebar-item-category-level-1
   > .menu__list-item-collapsible
   > .menu__link {
   font-weight: 600;
-  color: #000000;
+  color: #181c1a;
 }
 [data-theme="dark"]
   .theme-doc-sidebar-item-category-level-1
   > .menu__list-item-collapsible
   > .menu__link {
-  color: #ffffff;
+  color: #cbd5e0;
 }
 
 /* Add icons to top-level sidebar sections only */
 .theme-doc-sidebar-item-category-level-1
   > .menu__list-item-collapsible
+  > .menu__link {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.theme-doc-sidebar-item-category-level-1
+  > .menu__list-item-collapsible
   > .menu__link::before {
   content: "";
   display: inline-block;
-  width: 18px;
-  height: 18px;
-  margin-right: 12px;
-  vertical-align: middle;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-right: 10px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -446,6 +537,15 @@ figure img {
 .menu__list-item .menu__link {
   padding-top: 5px;
   padding-bottom: 5px;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Ensure hover and active states maintain padding */
+.menu__link:hover,
+.menu__link--active {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 
 @media (max-width: 768px) {
@@ -493,6 +593,67 @@ body {
   overflow-x: hidden;
 }
 
+.doc-section-subtitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ifm-color-primary-light);
+  margin-bottom: 0.5rem;
+  margin-top: 1.8rem;
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+  max-width: 970px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 4rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .doc-section-subtitle {
+    padding-left: 2rem;
+    padding-right: 1rem;
+  }
+}
+
+[data-theme="dark"] .doc-section-subtitle {
+  color: var(--ifm-color-primary-lightest);
+}
+
+article header h1 {
+  text-align: left !important;
+  font-size: 1.9rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 0.1px currentColor;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.6rem !important;
+}
+
+article h2 {
+  font-size: 1.5rem !important;
+  font-weight: 630 !important;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.8rem !important;
+}
+
+article h3 {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 0.1px currentColor;
+  letter-spacing: -0.025em;
+}
+
+article h4 {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em;
+}
+
+.markdown > p:first-of-type {
+  margin-bottom: 2rem !important;
+}
+
 .skeleton-container {
   width: 100%;
   height: 600px;
@@ -534,6 +695,58 @@ body {
   }
 }
 
+/* Hide table of contents sidebar */
+.col.col--3 {
+  display: none !important;
+}
+
+.table-of-contents,
+.theme-doc-toc-desktop,
+.theme-doc-toc-mobile {
+  display: none !important;
+}
+
+/* Force center all documentation content */
+.col:not(.col--3) {
+  max-width: 1000px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Force section overview to center - using stable attribute selector */
+[class*="generatedIndexPage"] {
+  max-width: 980px;
+  margin: 0 auto;
+  float: none;
+}
+
+[class*="generatedIndexPage"] .row .col--6 {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+}
+
+[class*="generatedIndexPage"] .row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  align-items: stretch !important;
+}
+
+article,
+.markdown {
+  max-width: 100% !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+@media (max-width: 768px) {
+  article,
+  .markdown {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+}
+
 .tscircuit-iframe {
   display: block;
   width: 100%;
@@ -562,5 +775,12 @@ body {
       rgba(255, 255, 255, 1) 8%,
       rgba(0, 0, 0, 0) 0%
     );
+  }
+}
+
+@media (max-width: 768px) {
+  [class*="generatedIndexPage"] .row .col--6 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
   }
 }
