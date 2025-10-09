@@ -258,6 +258,18 @@ figure img {
   height: 20px !important;
 }
 
+/* Reduce navbar close button SVG size */
+.navbar-sidebar__close svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* Reduce theme toggle button SVG size */
+.toggleButton_gllP svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
 .navbar__brand {
   margin-right: 0rem !important;
 }
