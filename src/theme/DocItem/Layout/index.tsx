@@ -55,15 +55,6 @@ export default function DocItemLayout({ children }: Props): ReactNode {
           <article>
             <DocBreadcrumbs />
             <DocVersionBadge />
-            {/* We render our own custom header with the title and the button.
-            We'll hide the one inside DocItemContent with CSS. */}
-
-            {/* {!hideTitle && ( */}
-            {/* // <header className="doc-page-header"> */}
-            {/* <h1 className={styles.docTitle}>{title}</h1> */}
-            {/* </header> */}
-            {/* )} */}
-
             {docTOC.mobile}
             <DocItemContent>
               <CopyPageButton />
