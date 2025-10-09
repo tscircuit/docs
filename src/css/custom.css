@@ -532,7 +532,7 @@ article header h1 {
   text-align: left !important;
   font-size: 1.9rem !important;
   font-weight: 600 !important;
-  text-shadow: 0 0 0.8px currentColor;
+  text-shadow: 0 0 0.1px currentColor;
   letter-spacing: -0.025em;
   margin-bottom: 0.6rem !important;
 }
@@ -547,7 +547,7 @@ article h2 {
 article h3 {
   font-size: 1.25rem !important;
   font-weight: 600 !important;
-  text-shadow: 0 0 0.5px currentColor;
+  text-shadow: 0 0 0.1px currentColor;
   letter-spacing: -0.025em;
 }
 
