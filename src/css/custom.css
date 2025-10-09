@@ -512,6 +512,13 @@ body {
   box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+  .doc-section-subtitle {
+    padding-left: 2rem;
+    padding-right: 1rem;
+  }
+}
+
 [data-theme="dark"] .doc-section-subtitle {
   color: var(--ifm-color-primary-lighter);
 }
@@ -622,6 +629,14 @@ article,
   max-width: 100% !important;
   padding-left: 2rem !important;
   padding-right: 2rem !important;
+}
+
+@media (max-width: 768px) {
+  article,
+  .markdown {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
 }
 
 .tscircuit-iframe {
