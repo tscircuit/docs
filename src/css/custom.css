@@ -598,13 +598,13 @@ body {
 }
 
 .copy-page-button.dark {
-  color: #d1d5db;
-  border-color: #374151;
+  color: var(--ifm-color-emphasis-800);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .copy-page-button.dark:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: #4b5563;
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .copy-page-button svg {
@@ -648,10 +648,9 @@ body {
 }
 
 .copy-page-dropdown.dark {
-  background: #1f2937;
-  border-color: #374151;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px
-    rgba(0, 0, 0, 0.2);
+  background: #1b1b1d;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes dropdownFadeIn {
@@ -749,8 +748,8 @@ body {
 }
 
 .copy-page-dropdown.dark .copy-page-icon-wrapper {
-  border-color: #374151;
-  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: #2a2a2c;
 }
 
 .copy-page-dropdown-item:hover .copy-page-icon-wrapper {
@@ -758,8 +757,8 @@ body {
 }
 
 [data-theme="dark"] .copy-page-dropdown-item:hover .copy-page-icon-wrapper {
-  border-color: #4b5563;
-  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: #3a3a3c;
 }
 
 .copy-page-icon-wrapper svg {
