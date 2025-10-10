@@ -69,14 +69,14 @@ You can use `positionOffset` and `rotationOffset` to reposition the model.
   browser3dView={false}
   fsMap={{
     "index.tsx": `
-import soic8ModelUrl from "./jscad_models/soic8.glb"
+import dip4ModelUrl from "./models/dip4.glb"
 
 export default () => (
   <board>
     <chip
       name="U1"
-      footprint="soic8"
-      cadModel={<cadmodel modelUrl={soic8ModelUrl} />}
+      footprint="dip4"
+      cadModel={<cadmodel modelUrl={dip4ModelUrl} />}
     />
   </board>
 )
