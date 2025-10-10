@@ -84,6 +84,7 @@ export default function CircuitPreview({
   fsMap = {},
   entrypoint = "index.tsx",
   schematicOnly = false,
+  projectBaseUrl = undefined,
   leftView,
   rightView,
 }: {
@@ -102,6 +103,7 @@ export default function CircuitPreview({
   browser3dView?: boolean
   leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
+  projectBaseUrl?: string
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -145,9 +147,36 @@ export default function CircuitPreview({
     if (browser3dView) {
       return createPngUrl(currentCode, "3d")
     }
+
+    // If fsMap is provided, use fs_map parameter instead of code
+    if (Object.keys(fsMap).length > 0) {
+      const fsMapJson = JSON.stringify(fsMap)
+      // Use browser-compatible base64 encoding
+      const encodedFsMap = btoa(
+        encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
+          String.fromCharCode(Number.parseInt(p1, 16)),
+        ),
+      )
+
+      // Construct the URL step by step for clarity
+      const baseUrl = "https://svg.tscircuit.com/"
+      const params: Record<string, string> = {
+        svg_type: "3d",
+        format: "png",
+        png_width: "800",
+        png_height: "600",
+        fs_map: encodeURIComponent(encodedFsMap),
+        project_base_url: encodeURIComponent(projectBaseUrl),
+      }
+      const queryString = Object.entries(params)
+        .map(([key, value]) => `${key}=${value}`)
+        .join("&")
+      return `${baseUrl}?${queryString}`
+    }
+
     const encodedCode = getCompressedBase64SnippetString(currentCode)
     return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodeURIComponent(encodedCode)}`
-  }, [currentCode, browser3dView])
+  }, [currentCode, browser3dView, fsMap, entrypoint])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
