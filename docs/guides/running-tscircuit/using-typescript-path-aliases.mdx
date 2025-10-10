@@ -42,9 +42,15 @@ Here's a complete example showing how to set up and use path aliases in a tscirc
 }`,
     'index.circuit.tsx': `import { resistance, resistorName } from "@components/values"
 
-  circuit.add(
+circuit.add(
   <board width="10mm" height="10mm">
-    <resistor resistance={resistance} name={resistorName} footprint="0402" schX={3} pcbX={3}/>
+    <resistor
+      resistance={resistance}
+      name={resistorName}
+      footprint="0402"
+      schX={3}
+      pcbX={3}
+    />
     <capacitor
       capacitance="1000pF"
       footprint="0402"
@@ -52,16 +58,14 @@ Here's a complete example showing how to set up and use path aliases in a tscirc
       schX={-3}
       pcbX={-3}
     />
+    <trace from=".R11 > .pin1" to=".C1 > .pin1" />
   </board>
 )`,
-    'src/components/values.ts': `
-    export const resistorName = "Rpaths"
-  export const resistance = "1k"
-    `
+    'src/components/values.ts': `export const resistorName = "R11"
+export const resistance = "1k"
+`
   }}
   entrypoint="index.circuit.tsx"
-  leftView="code"
-  rightView="pcb"
 />
 
 ## How It Works
