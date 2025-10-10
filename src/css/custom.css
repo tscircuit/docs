@@ -120,14 +120,7 @@ figure img {
   border-radius: 12px;
 }
 
-
-.media-frame,
-.markdown p:has(> img:only-child),
-.markdown p:has(> a:only-child > img:only-child),
-.markdown li:has(> img:only-child),
-.markdown li:has(> a:only-child > img:only-child),
-.markdown div:not([class]):has(> img:only-child),
-.markdown div:not([class]):has(> a:only-child > img:only-child) {
+.media-frame {
   display: block;
   width: 100%;
   max-width: 760px;
@@ -141,40 +134,8 @@ figure img {
   overflow: visible;
 }
 
-.media-frame:has(> iframe),
-.markdown p:has(> iframe:only-child:not(.youtube-embed__iframe)),
-.markdown li:has(> iframe:only-child:not(.youtube-embed__iframe)),
-.markdown p:has(> a:only-child > iframe:only-child:not(.youtube-embed__iframe)),
-.markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
-.markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
-.markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
-  display: block;
-  width: 100%;
-  max-width: 760px;
-  margin: 2rem auto;
-  padding: 0.75rem;
-  border-radius: 16px;
-  box-sizing: border-box;
-  background: var(--media-container-bg);
-  border: 1px solid var(--media-container-border);
-  box-shadow: var(--media-container-shadow);
-  overflow: hidden;
-}
-
-.media-frame {
-  display: block;
-  width: 100%;
-}
-
 .media-frame > img,
-.media-frame > iframe,
-.markdown p > img:only-child,
-.markdown p > a:only-child > img:only-child,
-.markdown li > img:only-child,
-.markdown li > a:only-child > img:only-child,
-.markdown figure > img,
-.markdown div:not([class]) > img:only-child,
-.markdown div:not([class]) > a:only-child > img:only-child {
+.media-frame > a:only-child > img {
   display: block;
   width: auto;
   max-width: 100%;
@@ -182,16 +143,93 @@ figure img {
   margin-left: auto;
   margin-right: auto;
   border-radius: 12px;
+  box-shadow: none;
 }
 
-.markdown p > iframe:only-child:not(.youtube-embed__iframe),
-.markdown li > iframe:only-child:not(.youtube-embed__iframe),
-.markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
+.media-frame > iframe,
+.media-frame > a:only-child > iframe {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 12px;
+}
+
+.markdown :is(p, li, div:not([class])) > img:only-child {
+  display: block;
+  width: auto;
+  max-width: min(760px, 100%);
+  margin: 2rem auto;
+  box-sizing: border-box;
+}
+
+.markdown :is(p, li, div:not([class])) > a:only-child {
+  display: block;
+  width: fit-content;
+  max-width: 760px;
+  margin: 2rem auto;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  text-align: center;
+}
+
+.markdown :is(p, li, div:not([class])) > a:only-child > img:only-child {
+  display: block;
+  width: auto;
+  max-width: min(760px, 100%);
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.markdown :is(figure) > img:only-child,
+.markdown :is(figure) > a:only-child > img:only-child {
+  display: block;
+  width: auto;
+  max-width: min(760px, 100%);
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.markdown
+  :is(p, li, div:not([class]))
+  > iframe:only-child:not(.youtube-embed__iframe),
+.markdown
+  :is(p, li, div:not([class]))
+  > a:only-child
+  > iframe:only-child:not(.youtube-embed__iframe),
 .markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
 .markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
 .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
-  border: none;
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  margin: 2rem auto;
+  border-radius: 16px;
   background: var(--media-container-bg);
+  border: 1px solid var(--media-container-border);
+  box-shadow: var(--media-container-shadow);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.markdown
+  :is(p, li, div:not([class]))
+  > iframe:only-child:not(.youtube-embed__iframe),
+.markdown
+  :is(p, li, div:not([class]))
+  > a:only-child
+  > iframe:only-child:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
+.markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
   aspect-ratio: 16 / 9;
   height: auto !important;
 }
@@ -519,17 +557,15 @@ figure img {
   }
 
   .media-frame,
-  .markdown p:has(> img:only-child),
-  .markdown p:has(> a:only-child > img:only-child),
-  .markdown li:has(> img:only-child),
-  .markdown li:has(> a:only-child > img:only-child),
-  .markdown div:not([class]):has(> img:only-child),
-  .markdown div:not([class]):has(> a:only-child > img:only-child),
   figure,
-  .media-frame:has(> iframe),
-  .markdown p > iframe:only-child:not(.youtube-embed__iframe),
-  .markdown li > iframe:only-child:not(.youtube-embed__iframe),
-  .markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
+  .markdown :is(p, li, div:not([class])) > :is(img:only-child, a:only-child),
+  .markdown
+    :is(p, li, div:not([class]))
+    > iframe:only-child:not(.youtube-embed__iframe),
+  .markdown
+    :is(p, li, div:not([class]))
+    > a:only-child
+    > iframe:only-child:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
@@ -538,10 +574,13 @@ figure img {
     padding: 0;
   }
 
-  .media-frame:has(> iframe),
-  .markdown p:has(> iframe:only-child:not(.youtube-embed__iframe)),
-  .markdown li:has(> iframe:only-child:not(.youtube-embed__iframe)),
-  .markdown p:has(> a:only-child > iframe:only-child:not(.youtube-embed__iframe)),
+  .markdown
+    :is(p, li, div:not([class]))
+    > iframe:only-child:not(.youtube-embed__iframe),
+  .markdown
+    :is(p, li, div:not([class]))
+    > a:only-child
+    > iframe:only-child:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
   .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
