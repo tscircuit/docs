@@ -3,44 +3,38 @@
   margin-top: 0;
 }
 
-.docItemHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  gap: 1rem;
-  min-height: 32px;
-}
-
-.docItemHeader > nav {
-  flex: 1;
-  min-width: 0;
-}
-
-@media (max-width: 768px) {
-  .docItemHeader {
-    align-items: flex-start;
-  }
-}
-
 .docItemWithButton {
   position: relative;
 }
 
-.docItemWithButton :global(.copy-page-button-container) {
+.contentHeader {
+  position: relative;
+  z-index: 10;
+}
+
+.contentHeader :global(.copy-page-button-container) {
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 1;
 }
 
 .docItemWithButton :global(.markdown) > :global(h1):first-child {
   padding-right: 180px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 500px) {
+  .contentHeader {
+    position: static;
+    margin-bottom: 1rem;
+  }
+
+  .contentHeader :global(.copy-page-button-container) {
+    position: relative;
+  }
+
   .docItemWithButton :global(.markdown) > :global(h1):first-child {
-    padding-right: 60px;
+    padding-right: 0;
+    margin-bottom: 0.75rem;
   }
 }
 

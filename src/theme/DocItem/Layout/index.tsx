@@ -54,8 +54,12 @@ export default function DocItemLayout({ children }: Props): ReactNode {
             <DocVersionBadge />
             {docTOC.mobile}
             <div className={styles.docItemWithButton}>
-              <CopyPageButton />
-              <DocItemContent>{children}</DocItemContent>
+              <DocItemContent>
+                <div className={styles.contentHeader}>
+                  <CopyPageButton />
+                </div>
+                {children}
+              </DocItemContent>
             </div>
             <DocItemFooter />
           </article>
