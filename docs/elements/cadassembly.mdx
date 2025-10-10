@@ -5,4 +5,37 @@ description: >-
   a component.
 ---
 
-This page is coming soon!
+A CAD assembly is used to put together the 3D models of a component when multiple
+models are used or "fit into" models in a particular way.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip
+        name="J1"
+        cadModel={
+          <cadassembly>
+            <cadmodel
+              positionOffset={{ x: 0, y: -4, z: 0 }}
+              rotationOffset={{ x: 0, y: 0, z: 0 }}
+              modelUrl="https://modelcdn.tscircuit.com/jscad_models/pinrow4.glb"
+            />
+            <cadmodel
+              positionOffset={{ x: 0, y: 4, z: 0 }}
+              rotationOffset={{ x: 0, y: 0, z: 0 }}
+              modelUrl="https://modelcdn.tscircuit.com/jscad_models/pinrow4.glb"
+            />
+          </cadassembly>
+        }
+      />
+    </board>
+  )
+  `}
+/>
