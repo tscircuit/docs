@@ -726,7 +726,7 @@ article,
   flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 500px) {
   .copy-page-button-container {
     margin-right: 0;
     margin-left: 0.9rem;
