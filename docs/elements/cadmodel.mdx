@@ -1,0 +1,79 @@
+---
+title: <cadmodel />
+description: >-
+  A CAD model is a 3D model of a component that can be used in a CAD assembly.
+---
+
+The `<cadmodel />` element is used to display a 3D model of a component, it is
+usually part of a [`<cadassembly />`](./cadassembly.mdx) or [`<chip />`](./chip.mdx).
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board>
+      <chip
+        name="U1"
+        footprint="soic8"
+        cadModel={
+          <cadmodel
+            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+          />
+        }
+      />
+    </board>
+  )
+  `}
+/>
+
+## Repositioning the Model
+
+You can use `positionOffset` and `rotationOffset` to reposition the model.
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board>
+      <chip
+        name="U1"
+        footprint="soic8"
+        cadModel={
+          <cadmodel
+            positionOffset={{ x: -2, y: 0, z: 0 }}
+            rotationOffset={{ x: 0, y: 0, z: 45 }}
+            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+          />
+        }
+      />
+    </board>
+  )
+  `}
+/>
+
+## Providing a STEP model
+
+You can provide a STEP model to the `<cadmodel />` element by setting the `stepFileUrl`.
+When providing a STEP model, the STEP model will be used when exporting to STEP to
+preserve the exact geometry of the model.
+
+> **Example coming soon!**
+
+
+## Supported File Formats
+
+The following model file formats are supported:
+
+- GLB
+- GLTF
+- OBJ
+- STEP
+- STL
