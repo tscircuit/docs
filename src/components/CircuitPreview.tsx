@@ -84,7 +84,6 @@ export default function CircuitPreview({
   fsMap = {},
   entrypoint = "index.tsx",
   schematicOnly = false,
-  projectBaseUrl = "https://docs.tscircuit.com/",
   leftView,
   rightView,
 }: {
@@ -103,7 +102,6 @@ export default function CircuitPreview({
   browser3dView?: boolean
   leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
-  projectBaseUrl?: string
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -134,49 +132,42 @@ export default function CircuitPreview({
     "pcb" | "schematic" | "code" | "3d" | "runframe" | "pinout"
   >(rightView ?? _defaultView)
   const currentCode = code || fsMap[entrypoint] || ""
-  const pcbUrl = useMemo(() => createSvgUrl(currentCode, "pcb"), [currentCode])
+  const hasMultipleFiles = Object.keys(fsMap).length > 0
+
+  // Use fsMap if available, otherwise use code string
+  const snippetOrFsMap = hasMultipleFiles ? fsMap : currentCode
+  const svgUrlOptions = hasMultipleFiles ? { entrypoint } : {}
+
+  const pcbUrl = useMemo(
+    () => createSvgUrl(snippetOrFsMap, "pcb", svgUrlOptions),
+    [snippetOrFsMap, entrypoint, hasMultipleFiles],
+  )
   const schUrl = useMemo(
-    () => createSvgUrl(currentCode, "schematic"),
-    [currentCode],
+    () => createSvgUrl(snippetOrFsMap, "schematic", svgUrlOptions),
+    [snippetOrFsMap, entrypoint, hasMultipleFiles],
   )
   const pinoutUrl = useMemo(
-    () => createSvgUrl(currentCode, "pinout"),
-    [currentCode],
+    () => createSvgUrl(snippetOrFsMap, "pinout", svgUrlOptions),
+    [snippetOrFsMap, entrypoint, hasMultipleFiles],
   )
   const threeDUrl = useMemo(() => {
+    if (hasMultipleFiles) {
+      return createSvgUrl(fsMap, "3d", {
+        entrypoint,
+        format: "png",
+        pngWidth: 800,
+        pngHeight: 600,
+      })
+    }
     if (browser3dView) {
       return createPngUrl(currentCode, "3d")
     }
-
-    // If fsMap is provided, use fs_map parameter instead of code
-    if (Object.keys(fsMap).length > 0) {
-      const fsMapJson = JSON.stringify(fsMap)
-      // Use browser-compatible base64 encoding
-      const encodedFsMap = btoa(
-        encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
-          String.fromCharCode(Number.parseInt(p1, 16)),
-        ),
-      )
-
-      // Construct the URL step by step for clarity
-      const baseUrl = "https://svg.tscircuit.com/"
-      const params: Record<string, string> = {
-        svg_type: "3d",
-        format: "png",
-        png_width: "800",
-        png_height: "600",
-        fs_map: encodeURIComponent(encodedFsMap),
-        project_base_url: encodeURIComponent(projectBaseUrl),
-      }
-      const queryString = Object.entries(params)
-        .map(([key, value]) => `${key}=${value}`)
-        .join("&")
-      return `${baseUrl}?${queryString}`
-    }
-
-    const encodedCode = getCompressedBase64SnippetString(currentCode)
-    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodeURIComponent(encodedCode)}`
-  }, [currentCode, browser3dView, fsMap, entrypoint])
+    return createSvgUrl(currentCode, "3d", {
+      format: "png",
+      pngWidth: 800,
+      pngHeight: 600,
+    })
+  }, [fsMap, currentCode, entrypoint, hasMultipleFiles, browser3dView])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
@@ -184,8 +175,6 @@ export default function CircuitPreview({
     _showTabs && windowSize !== "mobile"
       ? "h-[calc(100%-46px)]"
       : "h-full max-h-[300px]"
-
-  const hasMultipleFiles = Object.keys(fsMap).length > 1
 
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
