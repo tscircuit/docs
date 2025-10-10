@@ -238,11 +238,6 @@ figure img {
   font-size: 14px;
 }
 
-/* Remove left padding from nested menu lists */
-.menu__list .menu__list {
-  padding-left: 0 !important;
-}
-
 .navbar-sidebar__item {
   padding: 1rem;
 }
