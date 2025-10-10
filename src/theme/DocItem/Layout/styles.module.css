@@ -38,7 +38,7 @@
   padding-right: 180px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 500px) {
   .docItemWithButton {
     display: flex;
     flex-direction: column;

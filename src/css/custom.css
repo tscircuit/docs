@@ -857,12 +857,10 @@ article,
   box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 500px) {
   .copy-page-dropdown {
     left: 0;
     right: auto;
-    width: calc(100vw - 2rem);
-    max-width: 20rem;
   }
 }
 
