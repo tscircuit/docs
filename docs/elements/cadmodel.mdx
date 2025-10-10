@@ -67,22 +67,9 @@ You can use `positionOffset` and `rotationOffset` to reposition the model.
   hidePCBTab
   hideSchematicTab
   browser3dView={false}
-  code={`
-  export default () => (
-    <board>
-      <chip
-        name="U1"
-        footprint="soic8"
-        cadModel={
-          <cadmodel modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb" />
-        }
-      />
-    </board>
-  )
-  `}
   fsMap={{
     "index.tsx": `
-import soic8ModelUrl from "./models/soic8.glb"
+import soic8ModelUrl from "./jscad_models/soic8.glb"
 
 export default () => (
   <board>
@@ -94,11 +81,7 @@ export default () => (
   </board>
 )
 `,
-    "models/soic8.glb": `// Your local binary .glb file lives here.
-// During bundling, the importer uploads it to the model CDN and
-// rewrites this module to export the CDN URL string automatically.
-export default "https://modelcdn.tscircuit.com/jscad_models/soic8.glb";
-`,
+"./models/dip4.glb": `__STATIC_ASSET__`
   }}
 />
 
