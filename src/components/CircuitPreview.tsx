@@ -84,7 +84,7 @@ export default function CircuitPreview({
   fsMap = {},
   entrypoint = "index.tsx",
   schematicOnly = false,
-  projectBaseUrl = undefined,
+  projectBaseUrl = "https://docs.tscircuit.com/",
   leftView,
   rightView,
 }: {
