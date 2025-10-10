@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react"
+import TurndownService from "turndown"
 import { tw } from "@site/src/tw"
 import { useColorMode } from "../hooks/use-color-mode"
 
@@ -32,17 +33,31 @@ export default function CopyPageButton() {
     const article = document.querySelector("article")
     if (!article) return ""
 
-    // Get title
-    const title =
-      document.querySelector("h1")?.textContent || document.title || ""
+    // Find the markdown container
+    const markdownContainer = article.querySelector(".markdown")
+    if (!markdownContainer) return ""
 
-    // Get the content as text
-    let content = article.innerText || article.textContent || ""
+    // Remove unwanted elements before conversion
+    const tempContainer = document.createElement("div")
+    tempContainer.innerHTML = markdownContainer.innerHTML
 
-    // Clean up the content
-    content = content.trim()
+    // Remove copy buttons, navigation, and other UI elements
+    const elementsToRemove = tempContainer.querySelectorAll(
+      ".copy-page-button-container, nav, button, .theme-admonition, [role='button']",
+    )
+    elementsToRemove.forEach((el) => el.remove())
 
-    return `# ${title}\n\n${content}`
+    // Initialize Turndown
+    const turndownService = new TurndownService({
+      headingStyle: "atx",
+      codeBlockStyle: "fenced",
+      bulletListMarker: "-",
+    })
+
+    // Convert HTML to Markdown
+    const markdown = turndownService.turndown(tempContainer.innerHTML)
+
+    return markdown.trim()
   }
 
   const constructUrl = () => {
