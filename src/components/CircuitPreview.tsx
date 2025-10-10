@@ -1,4 +1,8 @@
-import { createSvgUrl, createPngUrl } from "@tscircuit/create-snippet-url"
+import {
+  createSvgUrl,
+  createPngUrl,
+  getCompressedBase64SnippetString,
+} from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
 import { useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
@@ -76,6 +80,7 @@ export default function CircuitPreview({
   hidePCBTab = false,
   hide3DTab = false,
   showPinoutTab = false,
+  browser3dView = true,
   fsMap = {},
   entrypoint = "index.tsx",
   schematicOnly = false,
@@ -94,6 +99,7 @@ export default function CircuitPreview({
   fsMap?: Record<string, string>
   entrypoint?: string
   schematicOnly?: boolean
+  browser3dView?: boolean
   leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
 }) {
@@ -135,10 +141,13 @@ export default function CircuitPreview({
     () => createSvgUrl(currentCode, "pinout"),
     [currentCode],
   )
-  const threeDUrl = useMemo(
-    () => createPngUrl(currentCode, "3d"),
-    [currentCode],
-  )
+  const threeDUrl = useMemo(() => {
+    if (browser3dView) {
+      return createPngUrl(currentCode, "3d")
+    }
+    const encodedCode = getCompressedBase64SnippetString(currentCode)
+    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodeURIComponent(encodedCode)}`
+  }, [currentCode, browser3dView])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
