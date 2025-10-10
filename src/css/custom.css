@@ -92,12 +92,12 @@ figure {
   margin: 3rem auto 2rem;
   max-width: 760px;
   width: 100%;
-  padding: 0.75rem;
   box-sizing: border-box;
-  background: var(--media-container-bg);
-  border: 1px solid var(--media-container-border);
-  border-radius: 16px;
-  box-shadow: var(--media-container-shadow);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 figure figcaption {
@@ -120,16 +120,31 @@ figure img {
   border-radius: 12px;
 }
 
+
 .media-frame,
 .markdown p:has(> img:only-child),
 .markdown p:has(> a:only-child > img:only-child),
 .markdown li:has(> img:only-child),
 .markdown li:has(> a:only-child > img:only-child),
 .markdown div:not([class]):has(> img:only-child),
-.markdown div:not([class]):has(> a:only-child > img:only-child),
-.markdown p > iframe:only-child:not(.youtube-embed__iframe),
-.markdown li > iframe:only-child:not(.youtube-embed__iframe),
-.markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
+.markdown div:not([class]):has(> a:only-child > img:only-child) {
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  margin: 2rem auto;
+  padding: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+  background: none;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.media-frame:has(> iframe),
+.markdown p:has(> iframe:only-child:not(.youtube-embed__iframe)),
+.markdown li:has(> iframe:only-child:not(.youtube-embed__iframe)),
+.markdown p:has(> a:only-child > iframe:only-child:not(.youtube-embed__iframe)),
 .markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
 .markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
 .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
@@ -511,6 +526,7 @@ figure img {
   .markdown div:not([class]):has(> img:only-child),
   .markdown div:not([class]):has(> a:only-child > img:only-child),
   figure,
+  .media-frame:has(> iframe),
   .markdown p > iframe:only-child:not(.youtube-embed__iframe),
   .markdown li > iframe:only-child:not(.youtube-embed__iframe),
   .markdown p > a:only-child > iframe:only-child:not(.youtube-embed__iframe),
@@ -519,6 +535,16 @@ figure img {
   .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
     max-width: 100%;
     margin: 1.5rem auto;
+    padding: 0;
+  }
+
+  .media-frame:has(> iframe),
+  .markdown p:has(> iframe:only-child:not(.youtube-embed__iframe)),
+  .markdown li:has(> iframe:only-child:not(.youtube-embed__iframe)),
+  .markdown p:has(> a:only-child > iframe:only-child:not(.youtube-embed__iframe)),
+  .markdown iframe[src*="youtube.com"]:not(.youtube-embed__iframe),
+  .markdown iframe[src*="youtube-nocookie.com"]:not(.youtube-embed__iframe),
+  .markdown iframe[src*="youtu.be"]:not(.youtube-embed__iframe) {
     padding: 0.5rem;
   }
 
