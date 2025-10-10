@@ -857,6 +857,15 @@ article,
   box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+  .copy-page-dropdown {
+    left: 0;
+    right: auto;
+    width: calc(100vw - 2rem);
+    max-width: 20rem;
+  }
+}
+
 .copy-page-dropdown.light {
   background: #ffffff;
   border-color: #e5e7eb;

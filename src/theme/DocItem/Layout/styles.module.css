@@ -43,16 +43,17 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.5rem;
   }
 
   .docItemWithButton :global(.copy-page-button-container) {
-    position: static;
+    position: relative;
     align-self: flex-start;
   }
 
   .docItemWithButton :global(.markdown) > :global(h1):first-child {
     padding-right: 0;
+    margin-bottom: 0;
   }
 }
 
