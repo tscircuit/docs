@@ -721,8 +721,16 @@ article,
 /* Copy Page Button Styles - Mintlify Design */
 .copy-page-button-container {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
   margin-right: 2rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .copy-page-button-container {
+    margin-right: 0;
+    margin-left: 0.9rem;
+  }
 }
 
 .copy-page-button-wrapper {
@@ -1002,11 +1010,11 @@ article,
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .copy-page-button-text {
-    display: none;
+    display: inline-block;
   }
 
   .copy-page-button-main {
-    padding: 0.375rem;
+    padding: 0.375rem 0.625rem;
   }
 }
 

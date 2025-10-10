@@ -32,15 +32,40 @@ export default function CopyPageButton() {
     const article = document.querySelector("article")
     if (!article) return ""
 
+    // Clone the article to avoid modifying the actual DOM
+    const articleClone = article.cloneNode(true) as HTMLElement
+
+    // Remove unwanted elements
+    const selectorsToRemove = [
+      ".copy-page-button-container",
+      ".theme-edit-this-page",
+      ".theme-last-updated",
+      ".pagination-nav",
+      'nav[aria-label="Docs pages"]',
+      ".theme-doc-version-badge",
+      ".theme-doc-version-banner",
+      ".tocCollapsible_node_modules-\\@docusaurus-theme-classic-lib-theme-TOC-styles-module",
+      ".theme-doc-breadcrumbs",
+    ]
+
+    selectorsToRemove.forEach((selector) => {
+      const elements = articleClone.querySelectorAll(selector)
+      elements.forEach((el) => el.remove())
+    })
+
     // Get title
     const title =
       document.querySelector("h1")?.textContent || document.title || ""
 
     // Get the content as text
-    let content = article.innerText || article.textContent || ""
+    let content = articleClone.innerText || articleClone.textContent || ""
 
-    // Clean up the content
-    content = content.trim()
+    // Clean up the content - remove extra whitespace
+    content = content
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .join("\n\n")
 
     return `# ${title}\n\n${content}`
   }

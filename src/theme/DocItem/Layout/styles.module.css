@@ -39,8 +39,20 @@
 }
 
 @media (max-width: 768px) {
+  .docItemWithButton {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .docItemWithButton :global(.copy-page-button-container) {
+    position: static;
+    align-self: flex-start;
+  }
+
   .docItemWithButton :global(.markdown) > :global(h1):first-child {
-    padding-right: 60px;
+    padding-right: 0;
   }
 }
 
