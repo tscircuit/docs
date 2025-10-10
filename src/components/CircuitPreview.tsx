@@ -134,16 +134,39 @@ export default function CircuitPreview({
     "pcb" | "schematic" | "code" | "3d" | "runframe" | "pinout"
   >(rightView ?? _defaultView)
   const currentCode = code || fsMap[entrypoint] || ""
-  const pcbUrl = useMemo(() => createSvgUrl(currentCode, "pcb"), [currentCode])
+  const hasMultipleFiles = Object.keys(fsMap).length > 0
+
+  const createMultiFileSvgUrl = (
+    svgType: "pcb" | "schematic" | "3d" | "pinout",
+  ) => {
+    if (hasMultipleFiles) {
+      const fsMapEncoded = getCompressedBase64SnippetString(
+        JSON.stringify(fsMap),
+      )
+      return `https://svg.tscircuit.com/?svg_type=${svgType}&fs_map=${encodeURIComponent(fsMapEncoded)}&entrypoint=${encodeURIComponent(entrypoint)}`
+    }
+    return createSvgUrl(currentCode, svgType)
+  }
+
+  const pcbUrl = useMemo(
+    () => createMultiFileSvgUrl("pcb"),
+    [fsMap, entrypoint, currentCode],
+  )
   const schUrl = useMemo(
-    () => createSvgUrl(currentCode, "schematic"),
-    [currentCode],
+    () => createMultiFileSvgUrl("schematic"),
+    [fsMap, entrypoint, currentCode],
   )
   const pinoutUrl = useMemo(
-    () => createSvgUrl(currentCode, "pinout"),
-    [currentCode],
+    () => createMultiFileSvgUrl("pinout"),
+    [fsMap, entrypoint, currentCode],
   )
   const threeDUrl = useMemo(() => {
+    if (hasMultipleFiles) {
+      const fsMapEncoded = getCompressedBase64SnippetString(
+        JSON.stringify(fsMap),
+      )
+      return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&fs_map=${encodeURIComponent(fsMapEncoded)}&entrypoint=${encodeURIComponent(entrypoint)}`
+    }
     if (browser3dView) {
       return createPngUrl(currentCode, "3d")
     }
@@ -184,8 +207,6 @@ export default function CircuitPreview({
     _showTabs && windowSize !== "mobile"
       ? "h-[calc(100%-46px)]"
       : "h-full max-h-[300px]"
-
-  const hasMultipleFiles = Object.keys(fsMap).length > 1
 
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
