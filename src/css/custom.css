@@ -601,7 +601,7 @@ article h4 {
 }
 
 .markdown > p:first-of-type {
-  margin-bottom: 2rem !important;
+  margin-top: 2rem !important;
 }
 
 .skeleton-container {
