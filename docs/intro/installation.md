@@ -1,6 +1,7 @@
 ---
 title: Installation
 sidebar_position: 2
+description: Install tscircuit CLI globally or per-project to start building electronic circuits with TypeScript.
 ---
 
 ## Dependencies

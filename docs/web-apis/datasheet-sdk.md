@@ -1,6 +1,7 @@
 ---
 title: Retrieve datasheets with the SDK
 sidebar_position: 5
+description: Use the @tscircuit/api SDK to programmatically retrieve and process component datasheets with pin information.
 ---
 
 The [`@tscircuit/api`](https://github.com/tscircuit/api) package provides a

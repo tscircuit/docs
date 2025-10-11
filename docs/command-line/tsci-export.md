@@ -1,5 +1,6 @@
 ---
 title: tsci export
+description: Export tscircuit files to various formats including SVG schematics, PCB layouts, and fabrication files.
 ---
 
 import ImageWithCaption from "../../src/components/ImageWithCaption"

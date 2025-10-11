@@ -79,11 +79,22 @@ function CardLayout({
           className={clsx("text--truncate", styles.cardDescription)}
           title={description}
         >
-          {description}
+          {parseInlineMarkdown(description)}
         </p>
       )}
     </CardContainer>
   )
+}
+
+function parseInlineMarkdown(text: string): ReactNode[] {
+  // Convert inline code (backticks) to <code> elements
+  const parts = text.split(/(`[^`]+`)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={i}>{part.slice(1, -1)}</code>
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>
+  })
 }
 
 function NestedItem({
@@ -95,11 +106,15 @@ function NestedItem({
     return (
       <li>
         <Link to={item.href} className={styles.nestedLink}>
-          <span className={styles.nestedTitle}>{item.label}</span>
+          <span className={styles.nestedTitle}>
+            {parseInlineMarkdown(item.label)}
+          </span>
           {description && (
             <>
               <span className={styles.nestedColon}>: </span>
-              <span className={styles.nestedDescription}>{description}</span>
+              <span className={styles.nestedDescription}>
+                {parseInlineMarkdown(description)}
+              </span>
             </>
           )}
         </Link>
@@ -110,12 +125,14 @@ function NestedItem({
     return subHref ? (
       <li>
         <Link to={subHref} className={styles.nestedLink}>
-          <span className={styles.nestedTitle}>{item.label}</span>
+          <span className={styles.nestedTitle}>
+            {parseInlineMarkdown(item.label)}
+          </span>
           {item.description && (
             <>
               <span className={styles.nestedColon}>: </span>
               <span className={styles.nestedDescription}>
-                {item.description}
+                {parseInlineMarkdown(item.description)}
               </span>
             </>
           )}
@@ -148,7 +165,7 @@ function CardCategory({ item }: { item: PropSidebarItemCategory }): ReactNode {
           className={clsx("text--truncate", styles.cardDescription)}
           title={item.description}
         >
-          {item.description}
+          {parseInlineMarkdown(item.description)}
         </p>
       )}
       {item.items.length > 0 && (

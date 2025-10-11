@@ -1,6 +1,7 @@
 ---
 title: Overview of Projects
 sidebar_position: 2
+description: Explore the key tscircuit repositories including core libraries, tools, and web components that power the ecosystem.
 ---
 
 | Repo                                                                          | Description                                                                                    | Open Issues                                                                                                                                 |

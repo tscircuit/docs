@@ -1,5 +1,6 @@
 ---
 title: The Contributor Handbook
+description: Essential patterns and guidelines for contributing to tscircuit, including development tools and coding standards.
 ---
 
 We have some important patterns that make contributing to
