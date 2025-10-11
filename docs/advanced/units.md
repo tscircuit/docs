@@ -1,5 +1,6 @@
 ---
 title: tscircuit Units
+description: Understanding default units in tscircuit for length, electrical properties, and other measurements.
 ---
 
 In tscircuit you can specify a unit explicitly with a string e.g. "0.1mm", but
