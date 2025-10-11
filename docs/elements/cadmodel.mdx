@@ -85,6 +85,13 @@ export default () => (
   }}
 />
 
+:::tip
+The same pattern works for `.gltf` files as well—just import the `.gltf`
+asset instead of the `.glb`. The preview automatically resolves these
+relative paths against the site you are running, so local assets work both in
+development and after deployment.
+:::
+
 ## Providing a STEP model
 
 You can provide a STEP model to the `<cadmodel />` element by setting the `stepFileUrl`.

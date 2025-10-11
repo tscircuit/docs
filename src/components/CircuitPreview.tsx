@@ -5,6 +5,7 @@ import {
 } from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
 import { useMemo, useState } from "react"
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext"
 import { useColorMode } from "../hooks/use-color-mode"
 import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
@@ -85,7 +86,7 @@ export default function CircuitPreview({
   entrypoint = undefined,
   mainComponentPath = undefined,
   schematicOnly = false,
-  projectBaseUrl = "https://docs.tscircuit.com/",
+  projectBaseUrl,
   leftView,
   rightView,
 }: {
@@ -107,6 +108,7 @@ export default function CircuitPreview({
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   projectBaseUrl?: string
 }) {
+  const { siteConfig } = useDocusaurusContext()
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
   const [currentFile, setCurrentFile] = useState<string>(
@@ -141,6 +143,20 @@ export default function CircuitPreview({
   const fsMapOrCode = hasMultipleFiles
     ? fsMap || code
     : code || Object.values(fsMap ?? {})[0]
+  const resolvedProjectBaseUrl = useMemo(() => {
+    if (projectBaseUrl) {
+      return projectBaseUrl
+    }
+
+    const defaultBase = siteConfig?.baseUrl ?? "/"
+
+    if (typeof window !== "undefined") {
+      return new URL(defaultBase, window.location.origin).href
+    }
+
+    return new URL(defaultBase, "https://docs.tscircuit.com").href
+  }, [projectBaseUrl, siteConfig?.baseUrl])
+
   const pcbUrl = useMemo(() => createSvgUrl(fsMapOrCode, "pcb"), [fsMapOrCode])
   const schUrl = useMemo(
     () => createSvgUrl(fsMapOrCode, "schematic"),
@@ -173,7 +189,7 @@ export default function CircuitPreview({
         png_width: "800",
         png_height: "600",
         fs_map: encodeURIComponent(encodedFsMap),
-        project_base_url: encodeURIComponent(projectBaseUrl),
+        project_base_url: encodeURIComponent(resolvedProjectBaseUrl),
       }
       const queryString = Object.entries(params)
         .map(([key, value]) => `${key}=${value}`)
@@ -185,7 +201,7 @@ export default function CircuitPreview({
       getCompressedBase64SnippetString(code),
     )
     return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodedCode}`
-  }, [code, browser3dView, fsMap])
+  }, [code, browser3dView, fsMap, resolvedProjectBaseUrl])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
