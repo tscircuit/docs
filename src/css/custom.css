@@ -660,16 +660,73 @@ article h4 {
   float: none;
 }
 
-[class*="generatedIndexPage"] .row .col--6 {
-  flex: 0 0 100% !important;
-  max-width: 100% !important;
+/* Style overview pages as bullet point list */
+[class*="generatedIndexPage"] .row {
+  display: block !important;
+  list-style: none !important;
+  padding: 1rem 0 0 2rem !important;
 }
 
-[class*="generatedIndexPage"] .row {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 1rem !important;
-  align-items: stretch !important;
+[class*="generatedIndexPage"] .col {
+  display: list-item !important;
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  margin-left: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0 !important;
+  color: #9ca3af !important;
+  cursor: pointer !important;
+}
+
+[data-theme="dark"] [class*="generatedIndexPage"] .col {
+  color: #6b7280 !important;
+}
+
+[class*="generatedIndexPage"] article,
+[class*="generatedIndexPage"] .card,
+[class*="generatedIndexPage"] .item {
+  all: unset !important;
+  display: inline !important;
+}
+
+[class*="generatedIndexPage"] a {
+  all: unset !important;
+  display: inline !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+}
+
+/* Style title inline with light blue color */
+[class*="generatedIndexPage"] .cardTitle_rnsV,
+[class*="generatedIndexPage"] h2 {
+  all: unset !important;
+  display: inline !important;
+  font-weight: 600 !important;
+  color: var(--ifm-color-primary) !important;
+  font-size: 1rem !important;
+}
+
+[data-theme="dark"] [class*="generatedIndexPage"] h2 {
+  color: var(--ifm-color-primary-lightest) !important;
+}
+
+[class*="generatedIndexPage"] h2::before {
+  content: "" !important;
+}
+
+/* Display description inline after heading */
+[class*="generatedIndexPage"] p {
+  all: unset !important;
+  display: inline !important;
+  color: var(--ifm-font-color-base) !important;
+  font-size: 1rem !important;
+}
+
+/* Add colon separator between heading and description */
+[class*="generatedIndexPage"] h2::after {
+  content: ": " !important;
+  font-weight: normal !important;
+  color: var(--ifm-font-color-base) !important;
 }
 
 article,
