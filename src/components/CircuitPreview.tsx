@@ -53,7 +53,7 @@ const FileTab = ({
     <button
       type="button"
       className={tw(
-        `px-3 py-1 text-sm font-mono rounded-md ${
+        `px-3 py-1 text-xs font-mono rounded-md ${
           !isDarkTheme
             ? active
               ? "bg-slate-100 text-slate-950"

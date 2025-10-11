@@ -47,7 +47,7 @@ export default () => (
     <MyComponent name="U1" />
   </board>
 )`,
-  "components/MyComponent.tsx": `export const MyComponent = (props: any) => (
+  "src/components/MyComponent.tsx": `export const MyComponent = (props: any) => (
     <chip footprint="soic8" {...props} />
   )
 `,
@@ -58,7 +58,7 @@ export default () => (
 
 1. **baseUrl**: Set to `"."` to define the root directory for module resolution
 2. **paths**: Maps alias patterns to actual file paths
-   - `"@utils/*"` maps to `"./src/utils/*"`
+   - `"@components/*"` maps to `"./src/components/*"`
    - The `*` wildcard matches any file or subdirectory
 
 3. **Import**: Use the alias in your imports
