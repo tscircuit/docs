@@ -25,3 +25,16 @@
 .cardDescription {
   font-size: 0.8rem;
 }
+
+.nestedList {
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+  list-style-type: circle;
+  font-weight: 400;
+  color: var(--ifm-color-emphasis-900);
+}
+
+.nestedList a {
+  color: var(--ifm-link-color);
+  font-weight: 400;
+}

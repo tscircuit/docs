@@ -88,20 +88,52 @@ function CardLayout({
 
 function CardCategory({ item }: { item: PropSidebarItemCategory }): ReactNode {
   const href = findFirstSidebarItemLink(item)
-  const categoryItemsPlural = useCategoryItemsPlural()
 
   // Unexpected: categories that don't have a link have been filtered upfront
   if (!href) {
     return null
   }
 
+  // Render nested items as a list
+  const nestedItems = item.items.map((subItem) => {
+    if (subItem.type === "link") {
+      return (
+        <li key={subItem.href}>
+          <Link to={subItem.href}>{subItem.label}</Link>
+        </li>
+      )
+    } else if (subItem.type === "category") {
+      const subHref = findFirstSidebarItemLink(subItem)
+      return subHref ? (
+        <li key={subHref}>
+          <Link to={subHref}>{subItem.label}</Link>
+        </li>
+      ) : null
+    }
+    return null
+  })
+
   return (
-    <CardLayout
-      className={item.className}
-      href={href}
-      title={item.label}
-      description={item.description ?? categoryItemsPlural(item.items.length)}
-    />
+    <CardContainer href={href} className={item.className}>
+      <Heading
+        as="h2"
+        className={clsx("text--truncate", styles.cardTitle)}
+        title={item.label}
+      >
+        {item.label}
+      </Heading>
+      {item.description && (
+        <p
+          className={clsx("text--truncate", styles.cardDescription)}
+          title={item.description}
+        >
+          {item.description}
+        </p>
+      )}
+      {item.items.length > 0 && (
+        <ul className={styles.nestedList}>{nestedItems}</ul>
+      )}
+    </CardContainer>
   )
 }
 
