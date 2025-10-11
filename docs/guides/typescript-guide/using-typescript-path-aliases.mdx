@@ -40,39 +40,25 @@ Here's a complete example showing how to set up and use path aliases in a tscirc
     }
   }
 }`,
-    'index.circuit.tsx': `import { resistance, resistorName } from "@components/values"
+    'index.tsx': `import { MyComponent } from "@components/MyComponent"
 
-circuit.add(
-  <board width="10mm" height="10mm">
-    <resistor
-      resistance={resistance}
-      name={resistorName}
-      footprint="0402"
-      schX={3}
-      pcbX={3}
-    />
-    <capacitor
-      capacitance="1000pF"
-      footprint="0402"
-      name="C1"
-      schX={-3}
-      pcbX={-3}
-    />
-    <trace from=".R11 > .pin1" to=".C1 > .pin1" />
+export default () => (
+  <board>
+    <MyComponent name="U1" />
   </board>
 )`,
-    'src/components/values.ts': `export const resistorName = "R11"
-export const resistance = "1k"
-`
+  "src/components/MyComponent.tsx": `export const MyComponent = (props: any) => (
+    <chip footprint="soic8" {...props} />
+  )
+`,
   }}
-  entrypoint="index.circuit.tsx"
 />
 
 ## How It Works
 
 1. **baseUrl**: Set to `"."` to define the root directory for module resolution
 2. **paths**: Maps alias patterns to actual file paths
-   - `"@utils/*"` maps to `"./src/utils/*"`
+   - `"@components/*"` maps to `"./src/components/*"`
    - The `*` wildcard matches any file or subdirectory
 
 3. **Import**: Use the alias in your imports
