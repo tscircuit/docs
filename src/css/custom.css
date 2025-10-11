@@ -481,21 +481,19 @@ figure img {
   padding-right: 16px !important;
 }
 
-.theme-doc-sidebar-item-link-level-3 .menu__link {
+/* Level 3 indentation - more specific selector */
+.theme-doc-sidebar-item-link-level-3 .menu__link,
+.theme-doc-sidebar-item-link-level-3 .menu__link:hover,
+.theme-doc-sidebar-item-link-level-3 .menu__link--active,
+.theme-doc-sidebar-item-link-level-3 .menu__link.menu__link--active {
   padding-left: 28px !important;
-}
-
-/* Ensure hover and active states maintain padding */
-.menu__link:hover,
-.menu__link--active {
-  padding-left: 16px !important;
   padding-right: 16px !important;
 }
 
-/* Preserve level-3 indentation on hover/active */
-.menu__link--level-3,
-.menu__link--level-3:hover,
-.menu__link--level-3.menu__link--active {
+/* Ensure all level-3 links maintain indentation regardless of state */
+.menu__link.menu__link--level-3,
+.menu__link.menu__link--level-3:hover,
+.menu__link.menu__link--level-3.menu__link--active {
   padding-left: 28px !important;
   padding-right: 16px !important;
 }
