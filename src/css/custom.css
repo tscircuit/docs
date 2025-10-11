@@ -481,6 +481,10 @@ figure img {
   padding-right: 16px !important;
 }
 
+.theme-doc-sidebar-item-link-level-3 .menu__link {
+  padding-left: 28px !important;
+}
+
 /* Ensure hover and active states maintain padding */
 .menu__link:hover,
 .menu__link--active {
