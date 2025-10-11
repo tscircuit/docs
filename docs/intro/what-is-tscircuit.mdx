@@ -24,27 +24,44 @@ flashlight that we make in [this tutorial](../tutorials/building-a-simple-usb-fl
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview defaultView="3d" code={`
-import { usePushButton } from "@tsci/seveibar.push-button"
-import { useUsbC } from "@tsci/seveibar.smd-usb-c"
+import { PushButton } from "@tsci/seveibar.push-button"
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
-  const USBCPort = useUsbC("USBC")
-  const Button = usePushButton("SW1")
   return (
     <board width="12mm" height="30mm">
-      <USBCPort
-        GND1="net.GND"
-        GND2="net.GND"
-        VBUS1="net.VBUS"
-        VBUS2="net.VBUS"
-        pcbY={-10}
-        schX={-4}
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        pcbY={-10.5}
       />
-      <led name="LED" color="red" footprint="0603" pcbY={12} schY={2} />
-      <Button pcbY={0} pin2=".R1 > .pos" pin3="net.VBUS" schY={-2} />
+      <led
+        name="LED"
+        supplierPartNumbers={{
+          jlcpcb: ["965799"],
+        }}
+        color="red"
+        footprint="0603"
+        pcbY={12}
+      />
+      <pushbutton
+        name="SW1"
+        pcbRotation="90deg"
+        footprint="pushbutton_id1.3mm_od2mm"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        supplierPartNumbers={{
+          jlcpcb: ["C110153"],
+        }}
+      />
       <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
-      <trace from=".R1 .neg" to=".LED .pos" />
-      <trace from=".LED .neg" to="net.GND" />
+
+      <trace from="R1.neg" to="LED.pos" />
+      <trace from="LED.neg" to="net.GND" />
     </board>
   )
 }
