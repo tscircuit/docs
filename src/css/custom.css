@@ -664,7 +664,7 @@ article h4 {
 [class*="generatedIndexPage"] .row {
   display: block !important;
   list-style: none !important;
-  padding: 1rem 0 0 2rem !important;
+  padding: 1rem 0 2rem 2rem !important;
 }
 
 [class*="generatedIndexPage"] .col {
@@ -727,6 +727,62 @@ article h4 {
   content: ": " !important;
   font-weight: normal !important;
   color: var(--ifm-font-color-base) !important;
+}
+
+/* Exclude pagination navigation from bullet list styling - use higher specificity */
+nav.pagination-nav,
+[class*="generatedIndexPage"] nav.pagination-nav {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: var(--ifm-spacing-horizontal) !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+nav.pagination-nav .pagination-nav__link,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__link {
+  display: block !important;
+  line-height: var(--ifm-heading-line-height) !important;
+  padding: var(--ifm-global-spacing) !important;
+  border: 1px solid var(--ifm-color-emphasis-300) !important;
+  border-radius: var(--ifm-pagination-nav-border-radius) !important;
+  text-decoration: none !important;
+  transition: border-color var(--ifm-transition-fast)
+    var(--ifm-transition-timing-default) !important;
+  cursor: pointer !important;
+}
+
+nav.pagination-nav .pagination-nav__link--next {
+  text-align: right !important;
+  grid-column: 2 / 3 !important;
+}
+
+nav.pagination-nav .pagination-nav__link:hover,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary) !important;
+  text-decoration: none !important;
+}
+
+nav.pagination-nav .pagination-nav__sublabel,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__sublabel {
+  display: block !important;
+  color: var(--ifm-color-content-secondary) !important;
+  font-size: var(--ifm-h5-font-size) !important;
+  font-weight: var(--ifm-font-weight-semibold) !important;
+  margin-bottom: 0.25rem !important;
+}
+
+nav.pagination-nav .pagination-nav__label,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__label {
+  display: block !important;
+  color: var(--ifm-link-color) !important;
+  font-size: var(--ifm-h4-font-size) !important;
+  font-weight: var(--ifm-heading-font-weight) !important;
+  word-break: break-word !important;
+}
+
+nav.pagination-nav .pagination-nav__link *:last-child {
+  margin-bottom: 0 !important;
 }
 
 article,
