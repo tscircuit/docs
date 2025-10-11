@@ -732,6 +732,16 @@ article h4 {
   font-size: 1rem !important;
 }
 
+/* Allow inline code styling in overview pages */
+[class*="generatedIndexPage"] p code {
+  all: revert !important;
+  background: var(--ifm-code-background) !important;
+  border-radius: 3px !important;
+  font-family: var(--ifm-font-family-monospace) !important;
+  padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal) !important;
+  font-size: 0.9em !important;
+}
+
 /* Add colon separator between heading and description */
 [class*="generatedIndexPage"] h2::after {
   content: ": " !important;
