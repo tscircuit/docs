@@ -145,6 +145,61 @@ export default () => (
 `}
 /> 
 
+
+### Board Anchor Properties
+
+You can control the board's position and alignment using anchor properties:
+
+- `boardAnchorPosition`: Moves the board's anchor point to the specified coordinates
+- `boardAnchorAlignment`: Sets which part of the board the anchor point refers to
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+   <board 
+      width="10mm" 
+      height="10mm"
+      boardAnchorPosition={{x:0, y:0}} 
+      boardAnchorAlignment="bottom_left"
+    >
+    <resistor resistance="1k" footprint="0402" name="R1" pcbX={2} pcbY={2} />
+
+    <fabricationnotetext text="(5,5)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={5} pcbY={5} />
+    <fabricationnotetext text="(10,10)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={10} pcbY={10} />
+    <fabricationnotetext text="(0,0)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={0} pcbY={0} />
+
+    </board>
+  )
+`}/>
+
+#### Try Different Alignments
+
+```jsx
+// This moves the board's center to position (1,2)
+<board 
+  boardAnchorPosition={{x:1, y:2}} 
+  boardAnchorAlignment="center"  // Try changing this to other values
+  width="10mm" 
+  height="10mm"
+>
+  <resistor resistance="1k" footprint="0402" name="R1" />
+</board>
+```
+
+#### How Anchoring Works
+- The `boardAnchorAlignment` determines which point on the board is considered the anchor point
+- The `boardAnchorPosition` moves that anchor point to the specified (x,y) coordinates
+
+**Example Alignments**:
+- `"center"` - Board is centered on the anchor point
+- `"top_left"` - Top-left corner is at the anchor point
+- `"top_right"` - Top-right corner is at the anchor point
+- `"bottom_left"` - Bottom-left corner is at the anchor point
+- `"bottom_right"` - Bottom-right corner is at the anchor point
+- `"center_left"` - Middle of the left edge is at the anchor point
+- `"center_right"` - Middle of the right edge is at the anchor point
+- `"top_center"` - Top center point is at the anchor point
+- `"bottom_center"` - Bottom center point is at the anchor point
+
 ## Flexible PCBs
 
 :::info
