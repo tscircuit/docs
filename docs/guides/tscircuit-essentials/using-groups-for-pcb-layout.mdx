@@ -1,0 +1,43 @@
+---
+title: Using Groups for PCB Layout
+description: >-
+  Groups can help you break up your layout problem into smaller, more manageable
+  and reusable parts.
+---
+
+`<group />` elements allow you to move chips together, keep chips
+contained within a a smaller area, or apply different layout engines and
+techniques for different areas of your board.
+
+tscircuit `<group />` elements are a lot like HTML `<div />` elements. They can
+contain other elements for the purpose of applying different layout engines,
+like flexbox or grid, or to move multiple elements at once.
+
+In tscircuit, we have two main main types of positioning modes:
+
+- `relative` position. In this mode, your position is relative to your "container"
+  or parent element. You can set `pcbX` or `pcbY`, or even set constraints like
+  "I should be 1mm away from some other element"
+- `pack` layout. In this layout mode, things are packed together with a strategy
+  you specify. By default, we pack to minimize trace distance using a pack order
+  from largest to smallest.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Relative Positioning
+
+> TODO coming soon!
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board>
+      <group pcbX={4}>
+        <resistor pcbX={2} name="R1" resistance="1k" footprint="0402" />
+      </group>
+    </board>
+  )
+`} />
+
+## Automatic Packing
+
+> TODO coming soon!
