@@ -1,0 +1,225 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  position: relative;
+}
+
+.breadcrumbs {
+  margin-bottom: -0.5rem;
+}
+
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  border-radius: 16px;
+  padding: clamp(2rem, 5vw, 3rem);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-color-emphasis-0);
+  box-shadow: 0 12px 30px -24px rgba(15, 23, 42, 0.4);
+  margin: 1rem 0 2.5rem;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 54rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.heroTitle {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.heroSubtitle {
+  margin: 0;
+  max-width: 48ch;
+  font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+  color: var(--ifm-color-emphasis-700);
+}
+
+.heroMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-weight: 600;
+}
+
+.heroMetaHighlight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-primary);
+  font-size: 1.1rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.heroMetaLabel {
+  font-size: 1.05rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.heroActions {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.heroActions :global(.pagination-nav) {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+}
+
+.heroActions :global(.pagination-nav__item) {
+  flex: 1;
+}
+
+.heroActions :global(.pagination-nav__link) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 10px;
+  box-shadow: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.heroActions :global(.pagination-nav__link:hover) {
+  border-color: var(--ifm-color-primary-light);
+  box-shadow: 0 6px 16px -12px rgba(15, 23, 42, 0.35);
+}
+
+.heroActions :global(.pagination-nav__sublabel) {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.heroActions :global(.pagination-nav__label) {
+  font-size: 0.95rem;
+  color: var(--ifm-font-color-base);
+}
+
+.cardListWrapper {
+  position: relative;
+}
+
+.cardList {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-auto-rows: minmax(280px, auto);
+  gap: 1.75rem;
+  padding: 0;
+  margin: 0;
+  align-items: stretch;
+}
+
+.cardList :global(.col) {
+  margin: 0 !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.cardList :global(.docCardListItem) {
+  margin: 0;
+  display: flex;
+  height: 100%;
+}
+
+.cardList :global(.docCardListItem > *) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 997px) {
+  .cardList {
+    grid-template-columns: repeat(3, minmax(350px, 1fr));
+    grid-auto-rows: minmax(280px, auto);
+  }
+}
+
+@media (max-width: 996px) {
+  .hero {
+    border-radius: 14px;
+    padding: 2.5rem;
+  }
+
+  .heroMetaHighlight {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.15rem;
+  }
+
+  .cardList {
+    grid-template-columns: repeat(2, minmax(350px, 1fr));
+    grid-auto-rows: minmax(280px, auto);
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    gap: 2rem;
+  }
+
+  .hero {
+    padding: 2rem;
+  }
+
+  .cardList {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(260px, auto);
+    gap: 1.25rem;
+  }
+
+  .heroActions {
+    padding-top: 1rem;
+  }
+}
+
+:global(html[data-theme='dark']) .hero {
+  border-color: var(--ifm-color-emphasis-300);
+  background: var(--ifm-background-surface-color);
+  box-shadow: 0 12px 32px -28px rgba(0, 0, 0, 0.9);
+}
+
+:global(html[data-theme='dark']) .heroMetaHighlight {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: var(--ifm-color-primary-lightest);
+}
+
+:global(html[data-theme='dark']) .heroMetaLabel {
+  color: var(--ifm-color-emphasis-500);
+}
+
+:global(html[data-theme='dark']) .heroActions {
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+:global(html[data-theme='dark']) .heroActions :global(.pagination-nav__link) {
+  border-color: var(--ifm-color-emphasis-300);
+}
