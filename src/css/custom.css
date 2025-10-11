@@ -665,9 +665,19 @@ article h4 {
 
 /* Force section overview to center - using stable attribute selector */
 [class*="generatedIndexPage"] {
-  max-width: 980px;
+  max-width: 100% !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
   margin: 0 auto;
   float: none;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  [class*="generatedIndexPage"] {
+    padding-left: 1.8rem !important;
+    padding-right: 1.8rem !important;
+  }
 }
 
 /* Style overview pages as bullet point list */
@@ -690,6 +700,17 @@ article h4 {
 
 [data-theme="dark"] [class*="generatedIndexPage"] .col {
   color: #6b7280 !important;
+}
+
+[class*="generatedIndexPage"] header {
+  margin-top: 3.5rem !important;
+}
+
+[class*="generatedIndexPage"] header h1 {
+  font-size: 1.9rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 0.1px currentColor;
+  letter-spacing: -0.025em;
 }
 
 [class*="generatedIndexPage"] article,
