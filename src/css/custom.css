@@ -492,6 +492,14 @@ figure img {
   padding-right: 16px !important;
 }
 
+/* Preserve level-3 indentation on hover/active */
+.menu__link--level-3,
+.menu__link--level-3:hover,
+.menu__link--level-3.menu__link--active {
+  padding-left: 28px !important;
+  padding-right: 16px !important;
+}
+
 @media (max-width: 768px) {
   iframe {
     max-width: 90vw;
