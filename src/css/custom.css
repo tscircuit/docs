@@ -672,16 +672,129 @@ article h4 {
   float: none;
 }
 
-[class*="generatedIndexPage"] .row .col--6 {
-  flex: 0 0 100% !important;
-  max-width: 100% !important;
+/* Style overview pages as bullet point list */
+[class*="generatedIndexPage"] .row {
+  display: block !important;
+  list-style: none !important;
+  padding: 1rem 0 2rem 2rem !important;
 }
 
-[class*="generatedIndexPage"] .row {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 1rem !important;
-  align-items: stretch !important;
+[class*="generatedIndexPage"] .col {
+  display: list-item !important;
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  margin-left: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0 !important;
+  color: #9ca3af !important;
+  cursor: pointer !important;
+}
+
+[data-theme="dark"] [class*="generatedIndexPage"] .col {
+  color: #6b7280 !important;
+}
+
+[class*="generatedIndexPage"] article,
+[class*="generatedIndexPage"] .card,
+[class*="generatedIndexPage"] .item {
+  all: unset !important;
+  display: inline !important;
+}
+
+[class*="generatedIndexPage"] a {
+  all: unset !important;
+  display: inline !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+}
+
+/* Style title inline with light blue color */
+[class*="generatedIndexPage"] .cardTitle_rnsV,
+[class*="generatedIndexPage"] h2 {
+  all: unset !important;
+  display: inline !important;
+  font-weight: 600 !important;
+  color: var(--ifm-color-primary) !important;
+  font-size: 1rem !important;
+}
+
+[data-theme="dark"] [class*="generatedIndexPage"] h2 {
+  color: var(--ifm-color-primary-lightest) !important;
+}
+
+[class*="generatedIndexPage"] h2::before {
+  content: "" !important;
+}
+
+/* Display description inline after heading */
+[class*="generatedIndexPage"] p {
+  all: unset !important;
+  display: inline !important;
+  color: var(--ifm-font-color-base) !important;
+  font-size: 1rem !important;
+}
+
+/* Add colon separator between heading and description */
+[class*="generatedIndexPage"] h2::after {
+  content: ": " !important;
+  font-weight: normal !important;
+  color: var(--ifm-font-color-base) !important;
+}
+
+/* Exclude pagination navigation from bullet list styling - use higher specificity */
+nav.pagination-nav,
+[class*="generatedIndexPage"] nav.pagination-nav {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: var(--ifm-spacing-horizontal) !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+nav.pagination-nav .pagination-nav__link,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__link {
+  display: block !important;
+  line-height: var(--ifm-heading-line-height) !important;
+  padding: var(--ifm-global-spacing) !important;
+  border: 1px solid var(--ifm-color-emphasis-300) !important;
+  border-radius: var(--ifm-pagination-nav-border-radius) !important;
+  text-decoration: none !important;
+  transition: border-color var(--ifm-transition-fast)
+    var(--ifm-transition-timing-default) !important;
+  cursor: pointer !important;
+}
+
+nav.pagination-nav .pagination-nav__link--next {
+  text-align: right !important;
+  grid-column: 2 / 3 !important;
+}
+
+nav.pagination-nav .pagination-nav__link:hover,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary) !important;
+  text-decoration: none !important;
+}
+
+nav.pagination-nav .pagination-nav__sublabel,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__sublabel {
+  display: block !important;
+  color: var(--ifm-color-content-secondary) !important;
+  font-size: var(--ifm-h5-font-size) !important;
+  font-weight: var(--ifm-font-weight-semibold) !important;
+  margin-bottom: 0.25rem !important;
+}
+
+nav.pagination-nav .pagination-nav__label,
+[class*="generatedIndexPage"] nav.pagination-nav .pagination-nav__label {
+  display: block !important;
+  color: var(--ifm-link-color) !important;
+  font-size: var(--ifm-h4-font-size) !important;
+  font-weight: var(--ifm-heading-font-weight) !important;
+  word-break: break-word !important;
+}
+
+nav.pagination-nav .pagination-nav__link *:last-child {
+  margin-bottom: 0 !important;
 }
 
 article,
