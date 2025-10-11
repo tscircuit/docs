@@ -27,7 +27,7 @@
 }
 
 .nestedList {
-  margin-top: 0.5rem;
+  margin-top: 0;
   padding-left: 1.5rem;
   list-style-type: circle;
   font-weight: 400;
@@ -37,4 +37,26 @@
 .nestedList a {
   color: var(--ifm-link-color);
   font-weight: 400;
+}
+
+.nestedLink {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nestedTitle {
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+.nestedColon {
+  color: var(--ifm-font-color-base);
+}
+
+.nestedDescription {
+  color: var(--ifm-font-color-base);
+}
+
+.nestedLink:hover .nestedTitle {
+  color: var(--ifm-color-primary-dark);
 }

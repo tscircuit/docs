@@ -86,6 +86,46 @@ function CardLayout({
   )
 }
 
+function NestedItem({
+  item,
+}: { item: PropSidebarItemLink | PropSidebarItemCategory }) {
+  if (item.type === "link") {
+    const doc = useDocById(item.docId ?? undefined)
+    const description = item.description ?? doc?.description
+    return (
+      <li>
+        <Link to={item.href} className={styles.nestedLink}>
+          <span className={styles.nestedTitle}>{item.label}</span>
+          {description && (
+            <>
+              <span className={styles.nestedColon}>: </span>
+              <span className={styles.nestedDescription}>{description}</span>
+            </>
+          )}
+        </Link>
+      </li>
+    )
+  } else if (item.type === "category") {
+    const subHref = findFirstSidebarItemLink(item)
+    return subHref ? (
+      <li>
+        <Link to={subHref} className={styles.nestedLink}>
+          <span className={styles.nestedTitle}>{item.label}</span>
+          {item.description && (
+            <>
+              <span className={styles.nestedColon}>: </span>
+              <span className={styles.nestedDescription}>
+                {item.description}
+              </span>
+            </>
+          )}
+        </Link>
+      </li>
+    ) : null
+  }
+  return null
+}
+
 function CardCategory({ item }: { item: PropSidebarItemCategory }): ReactNode {
   const href = findFirstSidebarItemLink(item)
 
@@ -93,25 +133,6 @@ function CardCategory({ item }: { item: PropSidebarItemCategory }): ReactNode {
   if (!href) {
     return null
   }
-
-  // Render nested items as a list
-  const nestedItems = item.items.map((subItem) => {
-    if (subItem.type === "link") {
-      return (
-        <li key={subItem.href}>
-          <Link to={subItem.href}>{subItem.label}</Link>
-        </li>
-      )
-    } else if (subItem.type === "category") {
-      const subHref = findFirstSidebarItemLink(subItem)
-      return subHref ? (
-        <li key={subHref}>
-          <Link to={subHref}>{subItem.label}</Link>
-        </li>
-      ) : null
-    }
-    return null
-  })
 
   return (
     <CardContainer href={href} className={item.className}>
@@ -131,7 +152,11 @@ function CardCategory({ item }: { item: PropSidebarItemCategory }): ReactNode {
         </p>
       )}
       {item.items.length > 0 && (
-        <ul className={styles.nestedList}>{nestedItems}</ul>
+        <ul className={styles.nestedList}>
+          {item.items.map((subItem, index) => (
+            <NestedItem key={index} item={subItem as any} />
+          ))}
+        </ul>
       )}
     </CardContainer>
   )
