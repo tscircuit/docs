@@ -5,6 +5,22 @@ description: Configure your tscircuit project settings
 
 The `tscircuit.config.json` file is a project-level configuration file that allows you to customize settings for your tscircuit project. This file should be placed in the root of your project directory and is automatically created when you run `tsci init`.
 
+## Example
+
+```json
+{
+  "mainEntrypoint": "lib/circuits/main-board.tsx",
+  "ignoredFiles": [
+    "dist",
+    "build",
+    "coverage",
+    "*.log",
+    ".DS_Store",
+    "temp"
+  ]
+}
+```
+
 ## Configuration Options
 
 ### mainEntrypoint
@@ -77,18 +93,4 @@ Specifies paths or directory names that should be ignored when the dev server sy
 
 **Note:** By default, the system already ignores `.git` directories, `node_modules`, and certain special files like `manual-edits.json`.
 
-## Complete Example
 
-```json
-{
-  "mainEntrypoint": "lib/circuits/main-board.tsx",
-  "ignoredFiles": [
-    "dist",
-    "build",
-    "coverage",
-    "*.log",
-    ".DS_Store",
-    "temp"
-  ]
-}
-```
