@@ -1,0 +1,350 @@
+---
+title: Using Parts Engine
+description: >-
+  Learn how to use the tscircuit parts engine to automatically find and match
+  supplier part numbers (like JLCPCB) for your components based on their
+  specifications and footprints.
+---
+
+## Overview
+
+The `@tscircuit/parts-engine` is a powerful tool that automatically finds suitable supplier part numbers for your components. It currently supports JLCPCB parts and can match components based on their specifications (resistance, capacitance, etc.) and footprint requirements.
+
+This is particularly useful when you want to:
+- Automatically source parts for manufacturing
+- Find JLCPCB part numbers (C-numbers) for your components
+- Match components with available inventory from suppliers
+- Ensure your components are available for PCB assembly
+
+## Installation
+
+```bash
+npm install @tscircuit/parts-engine
+# or
+bun add @tscircuit/parts-engine
+# or
+yarn add @tscircuit/parts-engine
+```
+
+## Basic Usage
+
+The parts engine exports a `jlcPartsEngine` object that implements the `PartsEngine` interface. You can use it to find parts based on component specifications:
+
+```typescript
+import { jlcPartsEngine } from "@tscircuit/parts-engine"
+
+// Find a resistor part
+const resistorParts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_resistor",
+    resistance: "10k",
+  },
+  footprinterString: "0402",
+})
+
+console.log(resistorParts.jlcpcb) // ["C1234", "C5678", "C9012"]
+```
+
+## Supported Components
+
+The parts engine currently supports the following component types:
+
+### Resistors
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_resistor",
+    resistance: "10k", // e.g., "1k", "10k", "100k"
+  },
+  footprinterString: "0402", // SMD package size
+})
+```
+
+### Capacitors
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_capacitor",
+    capacitance: "100nF", // e.g., "100nF", "10uF", "1uF"
+  },
+  footprinterString: "0603",
+})
+```
+
+### Pin Headers
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_pin_header",
+    pin_count: 8,
+    gender: "male", // or "female"
+  },
+  footprinterString: "pinrow_1x8_p2.54mm",
+})
+```
+
+### Potentiometers
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_potentiometer",
+    max_resistance: "10k",
+  },
+  footprinterString: "pot_trim_3296",
+})
+```
+
+### Diodes
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_diode",
+  },
+  footprinterString: "SOD-123",
+})
+```
+
+### Inductors
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_inductor",
+    inductance: "10uH",
+  },
+  footprinterString: "0805",
+})
+```
+
+### Transistors
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_transistor",
+    transistor_type: "npn", // or "pnp"
+  },
+  footprinterString: "SOT-23",
+})
+```
+
+### MOSFETs
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_mosfet",
+    mosfet_mode: "enhancement", // or "depletion"
+    channel_type: "n-channel", // or "p-channel"
+  },
+  footprinterString: "SOT-23",
+})
+```
+
+### Crystals
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_crystal",
+    frequency: "16MHz",
+    load_capacitance: "18pF",
+  },
+  footprinterString: "HC49",
+})
+```
+
+### Resonators
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_resonator",
+    frequency: "16MHz",
+  },
+  footprinterString: "resonator_3.2x1.3mm",
+})
+```
+
+## Understanding the Response
+
+The `findPart` method returns a `SupplierPartNumbers` object that contains arrays of part numbers from different suppliers:
+
+```typescript
+{
+  jlcpcb: ["C1234", "C5678", "C9012"]
+}
+```
+
+- The array contains up to 3 part numbers
+- Parts are sorted with "basic parts" first (JLCPCB's basic assembly parts are preferred)
+- Each part number is prefixed with "C" (JLCPCB's part numbering system)
+
+## Footprint String Format
+
+The parts engine accepts footprint strings in several formats:
+
+### Generic Footprinter Strings
+Standard package names like:
+- `"0402"`, `"0603"`, `"0805"`, `"1206"` (SMD resistors/capacitors)
+- `"SOT-23"`, `"SOT-223"`, `"SOD-123"` (transistors/diodes)
+- `"SOIC8"`, `"TSSOP16"`, `"QFN32"` (ICs)
+
+### KiCad Footprints
+The engine also supports KiCad footprint strings (prefixed with `kicad:`):
+
+```typescript
+const parts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_resistor",
+    resistance: "10k",
+  },
+  footprinterString: "kicad:Resistor_SMD:R_0402_1005Metric",
+})
+```
+
+The engine will automatically convert KiCad footprints to JLCPCB-compatible package names.
+
+## Caching
+
+The parts engine includes built-in caching to improve performance:
+
+```typescript
+import { jlcPartsEngine, cache } from "@tscircuit/parts-engine"
+
+// The cache is automatically used
+const parts1 = await jlcPartsEngine.findPart({...})
+const parts2 = await jlcPartsEngine.findPart({...}) // Uses cache if same params
+
+// Clear the cache if needed
+cache.clear()
+```
+
+This prevents redundant API calls to the JLCPCB parts search API.
+
+## Integration with tscircuit
+
+While the parts engine can be used standalone, it's designed to integrate seamlessly with tscircuit components. When you define components in your circuit, the parts engine can automatically suggest appropriate supplier part numbers for manufacturing:
+
+```typescript
+import { jlcPartsEngine } from "@tscircuit/parts-engine"
+
+// Your circuit definition
+const MyCircuit = () => (
+  <board width="50mm" height="50mm">
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+    />
+    <capacitor
+      name="C1"
+      capacitance="100nF"
+      footprint="0603"
+    />
+  </board>
+)
+
+// Find parts for manufacturing
+const resistorParts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_resistor",
+    resistance: "10k",
+  },
+  footprinterString: "0402",
+})
+
+const capacitorParts = await jlcPartsEngine.findPart({
+  sourceComponent: {
+    type: "source_component",
+    ftype: "simple_capacitor",
+    capacitance: "100nF",
+  },
+  footprinterString: "0603",
+})
+```
+
+## Advanced: Custom Parts Engine
+
+You can create your own parts engine by implementing the `PartsEngine` interface:
+
+```typescript
+import type { PartsEngine, SupplierPartNumbers } from "@tscircuit/props"
+
+const myCustomPartsEngine: PartsEngine = {
+  findPart: async ({ sourceComponent, footprinterString }) => {
+    // Your custom logic here
+    return {
+      jlcpcb: ["C1234"],
+      digikey: ["DK1234"],
+      // Add other suppliers as needed
+    }
+  }
+}
+```
+
+## API Reference
+
+### `jlcPartsEngine.findPart(options)`
+
+Finds supplier part numbers for a component.
+
+**Parameters:**
+- `options.sourceComponent` - The component specification (type, ftype, and component-specific properties)
+- `options.footprinterString` - The footprint/package string (optional)
+
+**Returns:**
+- `Promise<SupplierPartNumbers>` - An object with supplier names as keys and arrays of part numbers as values
+
+### `cache`
+
+A `Map` object that stores cached API responses. You can clear it with `cache.clear()`.
+
+## Tips and Best Practices
+
+1. **Use Standard Footprints**: Stick to common package sizes like 0402, 0603, 0805 for better part availability
+2. **Check Multiple Parts**: The engine returns up to 3 parts - review them to choose the best fit for your needs
+3. **Basic Parts First**: The results prioritize JLCPCB basic parts (included in assembly without extra cost)
+4. **Cache Awareness**: The same query will use cached results, which is faster but might not reflect inventory changes
+5. **Footprint Matching**: Ensure your footprint string matches the actual component package you intend to use
+
+## Troubleshooting
+
+### No Parts Returned
+
+If `findPart` returns an empty array:
+- Check that the component specifications match available parts
+- Verify the footprint string is correct and commonly used
+- Try a different package size or component value
+- Clear the cache and try again
+
+### Incorrect Parts
+
+If the returned parts don't match your needs:
+- Be more specific with component parameters (e.g., voltage rating for capacitors)
+- Use a more specific footprint string
+- Consider using the JLCPCB website directly to verify part availability
+
+## Related Resources
+
+- [JLCPCB Parts Library](https://jlcpcb.com/parts)
+- [tscircuit Props Types](https://github.com/tscircuit/props)
+- [Circuit JSON Format](https://github.com/tscircuit/circuit-json)
