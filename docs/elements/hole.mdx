@@ -22,3 +22,218 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
     <hole diameter="3mm" x={10} y={10} />
   )`}
 />
+
+## Usage
+
+### Basic Circular Holes
+
+Circular holes are fully supported and commonly used for mounting:
+
+```tsx
+<hole diameter="3mm" pcbX={5} pcbY={5} />
+// or use x, y instead of pcbX, pcbY
+<hole diameter="3mm" x={5} y={5} />
+```
+
+You can also use `radius` instead of `diameter`:
+
+```tsx
+<hole radius="1.5mm" x={5} y={5} />
+```
+
+### Mounting Holes Example
+
+```tsx
+<board width="50mm" height="50mm">
+  {/* Corner mounting holes */}
+  <hole diameter="3mm" x={-20} y={20} />
+  <hole diameter="3mm" x={20} y={20} />
+  <hole diameter="3mm" x={-20} y={-20} />
+  <hole diameter="3mm" x={20} y={-20} />
+</board>
+```
+
+### Holes in Footprints
+
+```tsx
+<chip
+  name="U1"
+  footprint={
+    <footprint>
+      <hole diameter="2.5mm" x={0} y={0} />
+      <smtpad portHints={["1"]} x={-2} y={0} shape="rect" width="1mm" height="1mm" />
+      <smtpad portHints={["2"]} x={2} y={0} shape="rect" width="1mm" height="1mm" />
+    </footprint>
+  }
+/>
+```
+
+## Pill-Shaped (Oval) Holes
+
+The component props accept pill shape parameters, but the implementation currently only creates circular holes:
+
+```tsx
+// Props exist but not yet fully implemented
+<hole shape="pill" width="2mm" height="4mm" x={0} y={0} />
+```
+
+**Status**: The `getPcbSize()` method recognizes pill shapes, but `doInitialPcbPrimitiveRender()` only creates circular holes. This feature needs implementation to be fully functional.
+
+## Properties
+
+### HoleProps
+
+```typescript
+interface HoleProps {
+  name?: string
+  
+  // For circular holes (currently supported)
+  diameter?: Distance  // Diameter of the circular hole
+  radius?: Distance    // Radius of the circular hole (alternative to diameter)
+  
+  // For pill-shaped holes (props exist but not yet implemented)
+  shape?: "circle" | "pill"  // Default is "circle"
+  width?: Distance    // Width of the pill/oval hole
+  height?: Distance   // Height of the pill/oval hole
+  
+  // Position
+  pcbX?: number | string  // X position on the PCB (or use x as alias)
+  pcbY?: number | string  // Y position on the PCB (or use y as alias)
+  x?: number | string     // Alternative to pcbX
+  y?: number | string     // Alternative to pcbY
+}
+```
+
+:::info
+While the `shape`, `width`, and `height` props are accepted by the component, the implementation currently only creates circular holes regardless of the shape specified.
+:::
+
+## Circuit JSON Output
+
+### Circular Hole (Currently Supported)
+
+```json
+{
+  "type": "pcb_hole",
+  "pcb_hole_id": "pcb_hole_0",
+  "hole_shape": "circle",
+  "hole_diameter": 3,
+  "x": 5,
+  "y": 5
+}
+```
+
+### Pill-Shaped Hole (Specification Exists, Implementation Pending)
+
+The Circuit JSON specification supports pill-shaped holes:
+
+```json
+{
+  "type": "pcb_hole",
+  "pcb_hole_id": "pcb_hole_0",
+  "hole_shape": "oval",
+  "hole_width": 2,
+  "hole_height": 4,
+  "x": 0,
+  "y": 0
+}
+```
+
+However, the `<hole />` component does not yet generate this output. To implement pill-shaped holes, the `doInitialPcbPrimitiveRender()` method in `Hole.ts` needs to be updated to check for `props.shape === "pill"` and insert holes with `hole_shape: "oval"` instead of always creating circular holes.
+
+## Examples
+
+### Mounting Holes in a PCB
+
+```tsx
+<board width="50mm" height="50mm">
+  {/* Corner mounting holes */}
+  <hole diameter="3mm" x={-20} y={20} />
+  <hole diameter="3mm" x={20} y={20} />
+  <hole diameter="3mm" x={-20} y={-20} />
+  <hole diameter="3mm" x={20} y={-20} />
+</board>
+```
+
+### In a Footprint
+
+```tsx
+<chip
+  name="U1"
+  footprint={
+    <footprint>
+      {/* Component mounting hole */}
+      <hole diameter="2.5mm" x={0} y={0} />
+      
+      {/* SMT pads */}
+      <smtpad portHints={["1"]} x={-2} y={0} shape="rect" width="1mm" height="1mm" />
+      <smtpad portHints={["2"]} x={2} y={0} shape="rect" width="1mm" height="1mm" />
+    </footprint>
+  }
+/>
+```
+
+## Difference from PlatedHole
+
+The `<hole />` component creates **non-plated holes** (no copper pad or plating). If you need plated through-holes with copper pads, use the `<platedhole />` component instead.
+
+### Use `<hole />` for:
+- Mounting screw holes
+- Alignment pin holes
+- Mechanical clearance holes
+- Ventilation holes
+
+### Use `<platedhole />` for:
+- Through-hole component pins
+- Vias
+- Test points
+- Any hole that needs electrical connectivity
+
+## Rotation
+
+**Rotation is NOT supported** for basic `pcb_hole` at the Circuit JSON specification level. The `PcbHoleOval` and `PcbHoleCircleOrSquare` interfaces do not include rotation properties.
+
+- ❌ `<hole />` does NOT support rotation (even for pill shapes)
+- ✅ `<platedhole />` DOES support rotation via the `pcbRotation` prop
+
+For holes that need specific orientation:
+- Use `<platedhole shape="pill" pcbRotation={45} />` for rotatable oval holes with pads
+- For basic holes, adjust component positioning or board design
+
+## Implementation Notes
+
+### What Needs to be Implemented for Pill Shape Support
+
+To fully support pill-shaped holes, the `doInitialPcbPrimitiveRender()` method in `lib/components/primitive-components/Hole.ts` needs to:
+
+1. Check if `props.shape === "pill"`
+2. If pill shape:
+   - Insert with `hole_shape: "oval"`
+   - Use `hole_width: props.width` and `hole_height: props.height`
+3. If circular (default):
+   - Continue using `hole_shape: "circle"` and `hole_diameter: props.diameter`
+
+Example implementation needed:
+
+```typescript
+const isPill = props.shape === "pill"
+
+if (isPill) {
+  const inserted_hole = db.pcb_hole.insert({
+    hole_shape: "oval",
+    hole_width: props.width,
+    hole_height: props.height,
+    x: position.x,
+    y: position.y,
+    // ... other properties
+  })
+} else {
+  // existing circular hole implementation
+}
+```
+
+## See Also
+
+- [PlatedHole Component](../footprints/platedhole) - For through-holes with copper pads
+- [Footprint Component](./footprint) - Using holes within footprints
+- [Board Component](./board) - PCB board configuration
