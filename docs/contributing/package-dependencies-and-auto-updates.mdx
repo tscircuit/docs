@@ -44,6 +44,15 @@ flowchart TD
 
 The auto-update system consists of coordinated workflows across multiple repositories. Here's how it works in detail:
 
+## Adding Dependencies to the Automerge Pipeline
+
+If dependencies frequently need to be updated and are relatively stable, they can be added to the automerge pipeline. To add a new dependency, follow this process:
+
+1. Propose a change to the Mermaid diagram in [this doc on GitHub](https://github.com/tscircuit/docs/blob/main/docs/contributing/package-dependencies-and-auto-updates.mdx) to include the new package relationship.
+2. Add a workflow dispatch from the [`bun-pver-release.yml` file](https://github.com/tscircuit/plop/blob/main/template-files/bun-pver-release.yml) for the repository that should trigger updates in downstream packages.
+3. Use [`@tscircuit/plop`](https://github.com/tscircuit/plop) to add the [`update-package.yml`](https://github.com/tscircuit/plop/blob/main/template-files/update-package.yml) workflow to the target repository that should receive automated updates.
+4. Monitor the automerge pipeline to confirm it correctly opens and closes PRs as updates are released.
+
 ### Example: `tscircuit/core` to `tscircuit/eval` Update Flow
 
 **Step 1: Publish and Trigger (Upstream Repository)**
