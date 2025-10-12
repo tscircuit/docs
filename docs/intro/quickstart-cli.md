@@ -19,7 +19,7 @@ other local development tool!
 
 ## Install the tscircuit CLI
 
-You can install the tscircuit CLI by running `npm install -g @tscircuit/cli`.
+You can install the tscircuit CLI by running `npm install -g tscircuit`.
 
 ## Create a new Project
 
