@@ -1,0 +1,95 @@
+---
+title: tscircuit.config.json
+description: Configure your tscircuit project settings
+---
+
+The `tscircuit.config.json` file is a project-level configuration file that allows you to customize settings for your tscircuit project. This file should be placed in the root of your project directory and is automatically created when you run `tsci init`.
+
+## Configuration Options
+
+### mainEntrypoint
+
+**Type:** `string` (optional)
+
+Specifies the main entry point file for your tscircuit project.
+
+**Use Cases:**
+
+- **Explicit Entry Point Definition:** When you have multiple `.tsx` files in your project and want to explicitly define which one should be used as the main component file
+- **Non-Standard Project Structure:** If your main circuit file is not in a standard location (like `index.tsx`, `main.tsx`, etc.)
+- **CI/CD and Build Processes:** Ensures consistent behavior across different environments by explicitly specifying which file to build/develop
+
+**Example:**
+
+```json
+{
+  "mainEntrypoint": "index.tsx"
+}
+```
+
+**How It Works:**
+
+- Used by the dev server when running `tsci dev`
+- Used by the eval system to determine which file to execute
+- Takes precedence over auto-detection
+- When not specified, the system will attempt to auto-detect common entry point files like:
+  - `index.tsx`, `index.ts`, `index.circuit.tsx`
+  - `main.tsx`, `main.circuit.tsx`
+  - Files in `lib/` or `src/` directories with these names
+
+**Setting via CLI:**
+
+```bash
+tsci config set mainEntrypoint "path/to/your/file.tsx"
+```
+
+### ignoredFiles
+
+**Type:** `array of strings` (optional)
+
+Specifies paths or directory names that should be ignored when the dev server syncs files to the file server.
+
+**Use Cases:**
+
+- **Exclude Build Artifacts:** Ignore generated files, build outputs, or temporary files from being watched and synced
+- **Performance Optimization:** Reduce file watching overhead by excluding large directories that don't need to be synced
+- **Prevent Unnecessary Syncs:** Avoid syncing files that are not part of your circuit design (e.g., documentation, test fixtures, local configuration)
+
+**Example:**
+
+```json
+{
+  "ignoredFiles": [
+    "dist",
+    "build",
+    ".git",
+    "*.log",
+    "temp"
+  ]
+}
+```
+
+**How It Works:**
+
+- Used by the dev server and eval system to filter files when watching for changes
+- Applied during filesystem watching operations
+- Prevents ignored files from being uploaded to the file server
+- Patterns can be file names, directory names, or glob patterns
+
+**Note:** By default, the system already ignores `.git` directories, `node_modules`, and certain special files like `manual-edits.json`.
+
+## Complete Example
+
+```json
+{
+  "mainEntrypoint": "lib/circuits/main-board.tsx",
+  "ignoredFiles": [
+    "dist",
+    "build",
+    "coverage",
+    "*.log",
+    ".DS_Store",
+    "temp"
+  ]
+}
+```
