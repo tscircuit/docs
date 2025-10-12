@@ -1,0 +1,115 @@
+---
+title: <schematicrect />
+description: >-
+  Draw rectangles and boxes within custom schematic symbols.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<schematicrect />` element is a primitive drawing component used within `<symbol />` to create rectangular shapes in custom schematic representations. It's useful for creating box outlines, filled backgrounds, or any rectangular visual elements in your component symbols.
+
+:::note
+`<schematicrect />` can only be used inside a `<symbol />` element.
+:::
+
+## Basic Rectangle
+
+Here's a simple example of a chip with a rectangular symbol:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2}
+            height={1.5}
+            isFilled={false}
+          />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Filled Rectangle
+
+You can create filled rectangles with custom colors:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2.5}
+            height={1.8}
+            isFilled={true}
+            fillColor="#e0f0ff"
+            color="#0066cc"
+            strokeWidth={0.05}
+          />
+          <port name="in" direction="left" schX={-1.25} schY={0} />
+          <port name="out" direction="right" schX={1.25} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Rotated Rectangle
+
+Rectangles can be rotated to create angled elements:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2}
+            height={0.5}
+            rotation={45}
+            isFilled={false}
+            strokeWidth={0.04}
+          />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| schX | distance | No | - | X position of the rectangle center in schematic coordinates |
+| schY | distance | No | - | Y position of the rectangle center in schematic coordinates |
+| width | distance | Yes | - | Width of the rectangle |
+| height | distance | Yes | - | Height of the rectangle |
+| rotation | rotation | No | 0 | Rotation angle of the rectangle in degrees |
+| strokeWidth | distance | No | - | Width of the rectangle outline stroke |
+| color | string | No | "#000000" | Color of the rectangle outline |
+| isFilled | boolean | No | false | Whether the rectangle is filled with color |
+| fillColor | string | No | - | Fill color of the rectangle (only applies when isFilled is true) |

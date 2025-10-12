@@ -1,0 +1,82 @@
+---
+title: <schematiccircle />
+description: >-
+  Draw circles within custom schematic symbols.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<schematiccircle />` element is a primitive drawing component used within `<symbol />` to create circular shapes in custom schematic representations. It's useful for creating round elements, dots, or any circular visual components in your component symbols.
+
+:::note
+`<schematiccircle />` can only be used inside a `<symbol />` element.
+:::
+
+## Basic Circle
+
+Here's a simple example of a chip with a circular symbol:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematiccircle
+            center={{ x: 0, y: 0 }}
+            radius={1}
+            isFilled={false}
+          />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Multiple Circles
+
+You can combine multiple circles to create more complex symbols:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematiccircle
+            center={{ x: 0, y: 0 }}
+            radius={1}
+            isFilled={false}
+            strokeWidth={0.04}
+          />
+          <schematiccircle
+            center={{ x: 0, y: 0 }}
+            radius={0.3}
+            isFilled={true}
+          />
+          <port name="in" direction="left" schX={-1} schY={0} />
+          <port name="out" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| center | point | Yes | - | Center point of the circle with x and y coordinates (e.g., `{ x: 0, y: 0 }`) |
+| radius | distance | Yes | - | Radius of the circle |
+| strokeWidth | distance | No | - | Width of the circle outline stroke |
+| color | string | No | "#000000" | Color of the circle outline |
+| isFilled | boolean | No | false | Whether the circle is filled with color |
+| fillColor | string | No | - | Fill color of the circle (only applies when isFilled is true) |

@@ -1,0 +1,114 @@
+---
+title: <schematicline />
+description: >-
+  Draw straight lines within custom schematic symbols.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<schematicline />` element is a primitive drawing component used within `<symbol />` to create straight line segments in custom schematic representations. It's useful for creating borders, dividers, connection indicators, or any linear visual elements in your component symbols.
+
+:::note
+`<schematicline />` can only be used inside a `<symbol />` element.
+:::
+
+## Basic Line
+
+Here's a simple example of a chip with line elements in the symbol:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2}
+            height={1.5}
+            isFilled={false}
+          />
+          <schematicline x1={-1} y1={0} x2={1} y2={0} strokeWidth={0.04} />
+          <port name="in" direction="left" schX={-1} schY={0} />
+          <port name="out" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Dashed Line
+
+You can create dashed lines for visual separation:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2}
+            height={1.5}
+            isFilled={false}
+          />
+          <schematicline
+            x1={0}
+            y1={-0.75}
+            x2={0}
+            y2={0.75}
+            isDashed={true}
+            strokeWidth={0.03}
+          />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Cross Pattern
+
+You can combine multiple lines to create patterns:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicline x1={-0.8} y1={-0.8} x2={0.8} y2={0.8} strokeWidth={0.05} />
+          <schematicline x1={-0.8} y1={0.8} x2={0.8} y2={-0.8} strokeWidth={0.05} />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| x1 | distance | Yes | - | X coordinate of the line start point |
+| y1 | distance | Yes | - | Y coordinate of the line start point |
+| x2 | distance | Yes | - | X coordinate of the line end point |
+| y2 | distance | Yes | - | Y coordinate of the line end point |
+| strokeWidth | distance | No | - | Width of the line stroke |
+| color | string | No | "#000000" | Color of the line |
+| isDashed | boolean | No | false | Whether the line is drawn with dashes |
+
