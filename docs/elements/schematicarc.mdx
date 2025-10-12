@@ -1,0 +1,181 @@
+---
+title: <schematicarc />
+description: >-
+  Draw circular arcs within custom schematic symbols.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<schematicarc />` element is a primitive drawing component used within `<symbol />` to create circular arc segments in custom schematic representations. It's useful for creating curved elements, partial circles, or any arc-based visual components in your component symbols.
+
+:::note
+`<schematicarc />` can only be used inside a `<symbol />` element.
+:::
+
+## Basic Arc
+
+Here's a simple example of a chip with an arc symbol (semicircle):
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicarc
+            center={{ x: 0, y: 0 }}
+            radius={1}
+            startAngleDegrees={0}
+            endAngleDegrees={180}
+            strokeWidth={0.05}
+          />
+          <schematicline x1={-1} y1={0} x2={1} y2={0} strokeWidth={0.05} />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Quarter Circle Arc
+
+You can create quarter circle arcs for rounded corners:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicarc
+            center={{ x: 0, y: 0 }}
+            radius={1.2}
+            startAngleDegrees={0}
+            endAngleDegrees={90}
+            strokeWidth={0.05}
+          />
+          <port name="in" direction="left" schX={-0.5} schY={0} />
+          <port name="out" direction="right" schX={0.5} schY={0.5} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Clockwise Arc
+
+By default, arcs are drawn counterclockwise. You can specify clockwise direction:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicarc
+            center={{ x: 0, y: 0 }}
+            radius={0.8}
+            startAngleDegrees={0}
+            endAngleDegrees={270}
+            direction="clockwise"
+            strokeWidth={0.05}
+          />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Dashed Arc
+
+Arcs can be drawn with dashes:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicarc
+            center={{ x: 0, y: 0 }}
+            radius={1}
+            startAngleDegrees={45}
+            endAngleDegrees={315}
+            isDashed={true}
+            strokeWidth={0.04}
+          />
+          <port name="pin1" direction="left" schX={-1} schY={0} />
+          <port name="pin2" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Multiple Arcs
+
+Combine multiple arcs to create complex curved symbols:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicarc
+            center={{ x: 0, y: 0 }}
+            radius={1}
+            startAngleDegrees={0}
+            endAngleDegrees={180}
+            strokeWidth={0.05}
+          />
+          <schematicarc
+            center={{ x: 0, y: 0 }}
+            radius={0.6}
+            startAngleDegrees={180}
+            endAngleDegrees={360}
+            strokeWidth={0.05}
+          />
+          <port name="in" direction="left" schX={-1} schY={0} />
+          <port name="out" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| center | point | Yes | - | Center point of the arc with x and y coordinates (e.g., `{ x: 0, y: 0 }`) |
+| radius | distance | Yes | - | Radius of the arc |
+| startAngleDegrees | rotation | Yes | - | Starting angle in degrees (0° is to the right, increases counterclockwise) |
+| endAngleDegrees | rotation | Yes | - | Ending angle in degrees |
+| direction | "clockwise" \| "counterclockwise" | No | "counterclockwise" | Direction to draw the arc from start to end angle |
+| strokeWidth | distance | No | - | Width of the arc line stroke |
+| color | string | No | "#000000" | Color of the arc |
+| isDashed | boolean | No | false | Whether the arc is drawn with dashes |
+
+## Angle Reference
+
+Angles in `<schematicarc />` follow the standard mathematical convention:
+- 0° points to the right (positive X axis)
+- 90° points up (positive Y axis)
+- 180° points to the left (negative X axis)
+- 270° points down (negative Y axis)
