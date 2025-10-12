@@ -53,10 +53,6 @@ const formatCodeForDisplay = (rawCode?: string) => {
       continue
     }
 
-    if (/^[\t ]/.test(lines[i])) {
-      continue
-    }
-
     lines[i] = `${indentation}${lines[i]}`
   }
 
