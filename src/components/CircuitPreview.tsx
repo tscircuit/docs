@@ -10,6 +10,59 @@ import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "./TscircuitIframe"
 
+const formatCodeForDisplay = (rawCode?: string) => {
+  const trimmed = rawCode?.trim() ?? ""
+
+  if (!trimmed) {
+    return ""
+  }
+
+  const lines = trimmed.split("\n")
+  const exportLineIndex = lines.findIndex((line) =>
+    /^export default\b.*\(/.test(line.trim()),
+  )
+
+  if (exportLineIndex === -1) {
+    return trimmed
+  }
+
+  let closingLineIndex = lines.length - 1
+  for (let i = lines.length - 1; i > exportLineIndex; i -= 1) {
+    const trimmedLine = lines[i].trim()
+    if (trimmedLine === ")" || trimmedLine === ");") {
+      closingLineIndex = i
+      break
+    }
+  }
+
+  const needsIndentation = lines
+    .slice(exportLineIndex + 1, closingLineIndex)
+    .some((line) => line.trim().length > 0 && !/^[\t ]/.test(line))
+
+  if (!needsIndentation) {
+    return trimmed
+  }
+
+  const indentation = "  "
+  for (let i = exportLineIndex + 1; i < lines.length; i += 1) {
+    if (i === closingLineIndex) {
+      continue
+    }
+
+    if (lines[i].trim().length === 0) {
+      continue
+    }
+
+    if (/^[\t ]/.test(lines[i])) {
+      continue
+    }
+
+    lines[i] = `${indentation}${lines[i]}`
+  }
+
+  return lines.join("\n")
+}
+
 const Tab = ({
   label,
   active,
@@ -141,6 +194,10 @@ export default function CircuitPreview({
   const fsMapOrCode = hasMultipleFiles
     ? fsMap || code
     : code || Object.values(fsMap ?? {})[0]
+  const displayCode = useMemo(
+    () => formatCodeForDisplay(fsMap?.[currentFile] ?? code),
+    [code, currentFile, fsMap],
+  )
   const pcbUrl = useMemo(() => createSvgUrl(fsMapOrCode, "pcb"), [fsMapOrCode])
   const schUrl = useMemo(
     () => createSvgUrl(fsMapOrCode, "schematic"),
@@ -287,7 +344,7 @@ export default function CircuitPreview({
                 )}
                 language="tsx"
               >
-                {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
+                {displayCode}
               </CodeBlock>
             </div>
           </div>
@@ -375,7 +432,7 @@ export default function CircuitPreview({
                 )}
                 language="tsx"
               >
-                {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
+                {displayCode}
               </CodeBlock>
             </div>
           </div>
