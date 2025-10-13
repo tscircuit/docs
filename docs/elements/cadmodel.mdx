@@ -69,14 +69,13 @@ You can use `positionOffset` and `rotationOffset` to reposition the model.
   browser3dView={false}
   fsMap={{
     "index.tsx": `
-import dip4ModelUrl from "./models/dip4.glb"
 
 export default () => (
   <board>
     <chip
       name="U1"
       footprint="dip4"
-      cadModel={<cadmodel modelUrl={dip4ModelUrl} />}
+      cadModel={<cadmodel modelUrl="https://docs.tscircuit.com/models/dip4.glb" />}
     />
   </board>
 )
