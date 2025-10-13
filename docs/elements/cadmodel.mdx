@@ -61,29 +61,74 @@ You can use `positionOffset` and `rotationOffset` to reposition the model.
 
 ## Importing local GLB models
 
+You can reference local GLB models in your project by placing them in your public assets folder and referencing them with a relative URL.
+
 <CircuitPreview
   splitView
   defaultView='3d'
   hidePCBTab
   hideSchematicTab
   browser3dView={false}
-  fsMap={{
-    "index.tsx": `
-import dip4ModelUrl from "./models/dip4.glb"
-
+  code={`
 export default () => (
   <board>
     <chip
       name="U1"
       footprint="dip4"
-      cadModel={<cadmodel modelUrl={dip4ModelUrl} />}
+      cadModel={
+        <cadmodel 
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/dip4.glb" 
+        />
+      }
     />
   </board>
 )
-`,
-"./models/dip4.glb": `__STATIC_ASSET__`
-  }}
+  `}
 />
+
+### Using local GLB files in your project
+
+When working on your own project locally, you can use local GLB files by:
+
+1. **Place your GLB file in your public directory:**
+   ```
+   your-project/
+   ├── public/
+   │   └── models/
+   │       └── my-component.glb
+   └── src/
+       └── index.tsx
+   ```
+
+2. **Reference it using a relative URL:**
+   ```tsx
+   export default () => (
+     <board>
+       <chip
+         name="U1"
+         footprint="dip4"
+         cadModel={
+           <cadmodel modelUrl="./models/my-component.glb" />
+         }
+       />
+     </board>
+   )
+   ```
+
+3. **Or import it as a static asset:**
+   ```tsx
+   import myComponentModel from "../public/models/my-component.glb"
+   
+   export default () => (
+     <board>
+       <chip
+         name="U1"
+         footprint="dip4"
+         cadModel={<cadmodel modelUrl={myComponentModel} />}
+       />
+     </board>
+   )
+   ```
 
 ## Providing a STEP model
 
