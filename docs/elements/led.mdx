@@ -30,6 +30,24 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | `color`          | `red`         | The color of the LED. `red` LEDs are most common.                |
 | `forwardVoltage` | `1.6V`        | The voltage drop across the LED when forward current is applied. |
 
+### Color Example
+
+Here's an example showing how to use different LED colors in a board layout:
+
+<CircuitPreview
+  browser3dView={false}
+  defaultView="3d"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <led name="D1" footprint="0805" color="blue" pcbY={2} />
+      <led name="D2" footprint="0805" color="green"/>
+      <led name="D3" footprint="0805" color="red" pcbY={-2}/>
+    </board>
+  )
+`}
+/>
+
 ### Common LED Footprints
 
 The following represent the most common footprints for LEDs based on [jlcsearch](https://jlcsearch.tscircuit.com),
