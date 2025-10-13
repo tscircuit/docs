@@ -665,9 +665,56 @@ article h4 {
 
 /* Force section overview to center - using stable attribute selector */
 [class*="generatedIndexPage"] {
-  max-width: 980px;
+  max-width: 100% !important;
   margin: 0 auto;
   float: none;
+  box-sizing: border-box;
+}
+
+@media (min-width: 997px) {
+  [class*="generatedIndexPage"] {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  div[class*="generatedIndexPage"] {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .col [class*="generatedIndexPage"],
+  .col--9 [class*="generatedIndexPage"] {
+    max-width: 100% !important;
+  }
+}
+
+@media (min-width: 768px) {
+  [class*="generatedIndexPage"] {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+  }
+}
+
+@media (min-width: 1320px) {
+  :is(
+      html body main,
+      html body,
+      body,
+      div,
+      article
+    )[class*="generatedIndexPage"] {
+    max-width: 1000px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 1000px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  [class*="generatedIndexPage"] {
+    padding-left: 1.8rem !important;
+    padding-right: 1.8rem !important;
+  }
 }
 
 /* Style overview pages as bullet point list */
@@ -690,6 +737,17 @@ article h4 {
 
 [data-theme="dark"] [class*="generatedIndexPage"] .col {
   color: #6b7280 !important;
+}
+
+[class*="generatedIndexPage"] header {
+  margin-top: 3.5rem !important;
+}
+
+[class*="generatedIndexPage"] header h1 {
+  font-size: 1.9rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 0.1px currentColor;
+  letter-spacing: -0.025em;
 }
 
 [class*="generatedIndexPage"] article,
@@ -1140,6 +1198,11 @@ article,
     left: 0;
     max-width: calc(100vw - 2rem);
   }
+}
+
+[class*="generatedIndexPage"] .row .col--6 {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
 }
 
 @media (max-width: 768px) {
