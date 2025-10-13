@@ -14,7 +14,11 @@ const Tab = ({
   label,
   active,
   onClick,
-}: { label: string; active: boolean; onClick: () => void }) => {
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) => {
   const { isDarkTheme } = useColorMode()
 
   return (
@@ -157,28 +161,25 @@ export default function CircuitPreview({
 
     // If fsMap is provided, use fs_map parameter instead of code
     if (fsMap) {
-      const fsMapJson = JSON.stringify(fsMap)
-      // Use browser-compatible base64 encoding
-      const encodedFsMap = btoa(
-        encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
-          String.fromCharCode(Number.parseInt(p1, 16)),
-        ),
-      )
-
-      // Construct the URL step by step for clarity
-      const baseUrl = "https://svg.tscircuit.com/"
-      const params: Record<string, string> = {
-        svg_type: "3d",
-        format: "png",
-        png_width: "800",
-        png_height: "600",
-        fs_map: encodeURIComponent(encodedFsMap),
-        project_base_url: encodeURIComponent(projectBaseUrl),
+      let code = fsMap["index.tsx"]
+      const importMatch = code.match(/import\s+(\w+)\s+from\s+["'](.+)["']/)
+      if (importMatch) {
+        const importVar = importMatch[1]
+        const importPath = importMatch[2]
+        const modelUrl = fsMap[importPath]
+        code = code
+          .replace(/import\s+.*from\s+["'].*["'];?\n?/, "")
+          .replace(
+            new RegExp(`modelUrl\\s*=\\s*\\{\\s*${importVar}\\s*\\}`, "g"),
+            `modelUrl="${modelUrl}"`,
+          )
+          .trim()
       }
-      const queryString = Object.entries(params)
-        .map(([key, value]) => `${key}=${value}`)
-        .join("&")
-      return `${baseUrl}?${queryString}`
+      // Send as code= not fs_map=
+      const encodedCode = encodeURIComponent(
+        getCompressedBase64SnippetString(code),
+      )
+      return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodedCode}`
     }
 
     const encodedCode = encodeURIComponent(
