@@ -155,30 +155,28 @@ export default function CircuitPreview({
       return createPngUrl(fsMapOrCode, "3d")
     }
 
+    function detectEntrypoint(fsMap: Record<string, string>): string {
+      if (fsMap["index.tsx"]) return "index.tsx"
+      if (fsMap["main.tsx"]) return "main.tsx"
+      // prefer a top-level .tsx file
+      const tsxRoot = Object.keys(fsMap).find(
+        (k) => k.endsWith(".tsx") && !k.includes("/"),
+      )
+      if (tsxRoot) return tsxRoot
+      return Object.keys(fsMap)[0]
+    }
+
     // If fsMap is provided, use fs_map parameter instead of code
     if (fsMap) {
-      const fsMapJson = JSON.stringify(fsMap)
-      // Use browser-compatible base64 encoding
-      const encodedFsMap = btoa(
-        encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
-          String.fromCharCode(Number.parseInt(p1, 16)),
-        ),
-      )
+      const entrypoint = detectEntrypoint(fsMap)
 
-      // Construct the URL step by step for clarity
-      const baseUrl = "https://svg.tscircuit.com/"
-      const params: Record<string, string> = {
-        svg_type: "3d",
+      return createSvgUrl(fsMap, "3d", {
         format: "png",
-        png_width: "800",
-        png_height: "600",
-        fs_map: encodeURIComponent(encodedFsMap),
-        project_base_url: encodeURIComponent(projectBaseUrl),
-      }
-      const queryString = Object.entries(params)
-        .map(([key, value]) => `${key}=${value}`)
-        .join("&")
-      return `${baseUrl}?${queryString}`
+        pngWidth: 800,
+        pngHeight: 600,
+        entrypoint,
+        // projectBaseUrl
+      })
     }
 
     const encodedCode = encodeURIComponent(
