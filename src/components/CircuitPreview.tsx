@@ -173,6 +173,9 @@ export default function CircuitPreview({
         png_width: "800",
         png_height: "600",
         fs_map: encodeURIComponent(encodedFsMap),
+        main_component_path: mainComponentPath
+          ? encodeURIComponent(mainComponentPath)
+          : undefined,
         project_base_url: encodeURIComponent(projectBaseUrl),
       }
       const queryString = Object.entries(params)
