@@ -32,6 +32,22 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 Generally you'll use the `width` and `height` properties to define the size of
 the board.
 
+### Rounding Board Corners with `borderRadius`
+
+To soften sharp corners on a rectangular board, set the optional `borderRadius`
+prop. You can pass the radius as either a number—interpreted in millimeters—or
+as a string like `"2mm"`. The radius is applied uniformly to all four corners.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="20mm" height="15mm" borderRadius="3mm">
+      <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={5} pcbY={3} />
+      <resistor name="R2" resistance="10k" footprint="0402" pcbX={-5} pcbY={-3} />
+    </board>
+  )
+`} />
+
 ### Setting the `autorouter`
 
 Boards or [subcircuits](./subcircuit.mdx) can specify what autorouter should be
