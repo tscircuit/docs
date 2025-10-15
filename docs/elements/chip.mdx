@@ -298,14 +298,20 @@ places a second chip inside its body. Because the outer chip has
 `obstructsWithinBounds` prop remains `true`—can safely occupy the same PCB
 area.
 
-<CircuitPreview splitView defaultView="pcb" code={`
+<CircuitPreview
+  splitView
+  defaultView="3d"
+  hideSchematicTab
+  browser3d={false}
+  browser3dView={false}
+  code={`
 
 export default () => (
   <board width="50mm" height="30mm">
     <chip
       name="Module"
-      pcbX="25mm"
-      pcbY="15mm"
+      pcbX={0}
+      pcbY={0}
       obstructsWithinBounds={false}
       footprint={
         <footprint>
@@ -355,8 +361,8 @@ export default () => (
     />
     <chip
       name="Sensor"
-      pcbX="25mm"
-      pcbY="15mm"
+      pcbX={0}
+      pcbY={0}
       obstructsWithinBounds={true}
       footprint="0402"
     />
