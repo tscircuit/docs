@@ -181,6 +181,17 @@ figure img {
   height: auto !important;
 }
 
+/* Make markdown table content slightly smaller for better fit */
+.markdown table {
+  font-size: 0.9rem;
+}
+
+.markdown table th,
+.markdown table td {
+  font-size: inherit;
+  line-height: 1.4;
+}
+
 .youtube-embed__container {
   background: var(--media-container-bg);
   border: 1px solid var(--media-container-border);
