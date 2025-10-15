@@ -3,8 +3,6 @@ title: <group />
 description: A group is the basic container element that can contain other elements.
 ---
 
-## Overview
-
 A group is the basic container element that can contain other elements.
 
 By default, a group doesn't have any effect on the circuit.
@@ -34,7 +32,6 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | Prop | Type | Description |
 | --- | --- | --- |
 | `name` | `string` | Optional identifier for the group element. |
-| `key` | `any` | Custom React key if you are rendering groups dynamically. |
 | `children` | `any` | Elements that will be rendered inside the group. |
 | `schTitle` | `string` | Title displayed above the group in the schematic view. |
 | `showAsSchematicBox` | `boolean` | When true, renders the group as a single schematic box. |
@@ -61,7 +58,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
       <group pcbGrid pcbGridCols={2} pcbGridGap="1mm">
         <resistor name="R1" resistance="1k" footprint="0402" />
         <capacitor name="C1" capacitance="10uF" footprint="0402" />
-        <led name="LED1" color="red" footprint="led0603" />
+        <led name="LED1" color="red" footprint="0603" />
         <chip name="U1" footprint="soic8" />
       </group>
     </board>
