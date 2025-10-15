@@ -284,6 +284,93 @@ export default () => (
 
 For more information about custom footprints, check out the [<footprint /> element](./footprint.mdx)
 
+### `obstructsWithinBounds`
+
+By default, `<chip />` components occupy all of the PCB area inside their
+footprint's bounding box, which prevents other components from being placed
+inside that region. Set `obstructsWithinBounds={false}` to indicate that the
+component leaves usable room within its outline (for example, when you are
+representing a tall module that allows other chips to sit underneath).
+
+The example below manually constructs a footprint for a module-style chip and
+places a second chip inside its body. Because the outer chip has
+`obstructsWithinBounds={false}`, the inner chip—whose own
+`obstructsWithinBounds` prop remains `true`—can safely occupy the same PCB
+area.
+
+<CircuitPreview
+  splitView
+  defaultView="3d"
+  hideSchematicTab
+  browser3d={false}
+  browser3dView={false}
+  code={`
+
+export default () => (
+  <board width="50mm" height="30mm">
+    <chip
+      name="Module"
+      pcbX={0}
+      pcbY={0}
+      obstructsWithinBounds={false}
+      footprint={
+        <footprint>
+          <smtpad
+            portHints={["VIN"]}
+            pcbX="-8mm"
+            pcbY="4mm"
+            width="2mm"
+            height="2mm"
+            shape="rect"
+          />
+          <smtpad
+            portHints={["GND"]}
+            pcbX="8mm"
+            pcbY="4mm"
+            width="2mm"
+            height="2mm"
+            shape="rect"
+          />
+          <smtpad
+            portHints={["SCL"]}
+            pcbX="-8mm"
+            pcbY="-4mm"
+            width="2mm"
+            height="2mm"
+            shape="rect"
+          />
+          <smtpad
+            portHints={["SDA"]}
+            pcbX="8mm"
+            pcbY="-4mm"
+            width="2mm"
+            height="2mm"
+            shape="rect"
+          />
+          <silkscreenpath
+            route={[
+              { x: -12, y: -6 },
+              { x: 12, y: -6 },
+              { x: 12, y: 6 },
+              { x: -12, y: 6 },
+              { x: -12, y: -6 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+    <chip
+      name="Sensor"
+      pcbX={0}
+      pcbY={0}
+      obstructsWithinBounds={true}
+      footprint="0402"
+    />
+  </board>
+)
+`}
+/>
+
 ### Internally Connected Pins
 
 Some chips, such as a standard 4 pin pushbutton, have pins that are internally
