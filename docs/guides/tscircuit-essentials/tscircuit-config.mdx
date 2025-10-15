@@ -93,4 +93,27 @@ Specifies paths or directory names that should be ignored when the dev server sy
 
 **Note:** By default, the system already ignores `.git` directories, `node_modules`, and certain special files like `manual-edits.json`.
 
+### includeBoardFiles
+
+**Type:** `array of file paths or glob strings` (optional)
+
+Defines which board source files `tsci build` evaluates automatically. Each entry can be a specific path or a glob that resolves to `.circuit.tsx` files. When omitted, tscircuit builds every board that matches the default pattern `['**/*.circuit.tsx']`.
+
+**Use Cases:**
+
+- **Build a subset of boards:** Focus CI or preview builds on a curated list of boards without reorganizing your project tree.
+
+**Example:**
+
+```json
+{
+  "includeBoardFiles": [
+    "boards/main-board.circuit.tsx",
+    "modules/**/*.board.tsx"
+  ]
+}
+```
+
+**Note:** Paths and globs are resolved relative to the project root, just like `mainEntrypoint`.
+
 
