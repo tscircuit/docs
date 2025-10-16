@@ -48,6 +48,34 @@ as a string like `"2mm"`. The radius is applied uniformly to all four corners.
   )
 `} />
 
+### Configuring the Layer Stack with `layers`
+
+You can set the `layers` prop to add additional inner layers to your circuit
+board. If you specify `layers={4}`, the `"inner1"` and `"inner2"` layers are
+added automatically and available for routing, while omitting the prop keeps the
+default two-layer stackup.
+
+The following example enables a four-layer board and shows traces connecting
+components across that stackup:
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board
+      width="32mm"
+      height="20mm"
+      layers={4}
+    >
+      <chip name="U1" footprint="soic8" pcbX={-6} pcbY={0} />
+      <chip name="U2" footprint="soic8" pcbX={6} pcbY={0} rotation={180} />
+
+      <trace from=".U1 > .pin1" to=".U2 > .pin5" />
+      <trace from=".U1 > .pin2" to=".U2 > .pin6" />
+      <trace from=".U1 > .pin3" to=".U2 > .pin7" />
+      <trace from=".U1 > .pin4" to=".U2 > .pin8" />
+    </board>
+  )
+`} />
+
 ### Setting the `autorouter`
 
 Boards or [subcircuits](./subcircuit.mdx) can specify what autorouter should be
