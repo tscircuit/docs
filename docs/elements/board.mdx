@@ -50,20 +50,13 @@ as a string like `"2mm"`. The radius is applied uniformly to all four corners.
 
 ### Configuring the Layer Stack with `layers`
 
-Printed circuit boards can have more than just the default top and bottom
-signal layers. Set the optional `layers` prop on `<board />` to describe the
-stackup. In the most common case you can pass a number such as `layers={4}` or
-`layers={2}` to let tscircuit generate the standard layer names for you. For
-advanced use cases, provide an array of layer names (`"top"`, `"inner1"` –
-`"inner6"`, and `"bottom"`) or an array of objects like `{ name: "inner1" }` to
-customize the order explicitly.
+You can set the `layers` prop to add additional inner layers to your circuit
+board. If you specify `layers={4}`, the `"inner1"` and `"inner2"` layers are
+added automatically and available for routing, while omitting the prop keeps the
+default two-layer stackup.
 
-- The order of the array is the order in the stackup from top to bottom.
-- When omitted, tscircuit assumes a two-layer board of `["top", "bottom"]`.
-- Autorouters respect the configured layers when planning traces and vias.
-
-The following example enables a four-layer stackup and shows traces connecting
-components across that board:
+The following example enables a four-layer board and shows traces connecting
+components across that stackup:
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
