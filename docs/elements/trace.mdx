@@ -69,7 +69,7 @@ You can customize the autorouting behavior by setting the `autorouter` property 
 
 ## Manual PCB Paths
 
-Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port).
+Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port). Entries in `pcbPath` can mix coordinate objects with [port selectors](../guides/tscircuit-essentials/port-and-net-selectors.md) so you can anchor the path to specific component pins.
 
 <CircuitPreview leftView='code' rightView='pcb' code={`
   export default () => (
@@ -80,12 +80,7 @@ Sometimes you may want to manually specify the exact path a trace should take on
         from="R1.pin2"
         to="R2.pin1"
         pcbPathRelativeTo="R1.pin2"
-        pcbPath={[
-          { x: 1, y: 0 },
-          { x: 1, y: 1 },
-          { x: 4, y: 1 },
-          { x: 4, y: 0 },
-        ]}
+        pcbPath={["R1.pin2", { x: 0, y: 4 }, "R2.pin1"]}
       />
     </board>
   )
