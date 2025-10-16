@@ -181,15 +181,55 @@ figure img {
   height: auto !important;
 }
 
-/* Make markdown table content slightly smaller for better fit */
+/* Responsive table styling for better mobile and desktop readability */
 .markdown table {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .markdown table th,
 .markdown table td {
   font-size: inherit;
-  line-height: 1.4;
+  line-height: 1.5;
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+}
+
+.markdown table th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.markdown table td {
+  word-break: break-word;
+}
+
+/* Reduce table font size on mobile for better fit */
+@media (max-width: 768px) {
+  .markdown table {
+    font-size: 0.75rem;
+  }
+
+  .markdown table th,
+  .markdown table td {
+    padding: 0.4rem 0.5rem;
+    line-height: 1.4;
+  }
+}
+
+/* Very small screens - extra compact */
+@media (max-width: 480px) {
+  .markdown table {
+    font-size: 0.7rem;
+  }
+
+  .markdown table th,
+  .markdown table td {
+    padding: 0.35rem 0.4rem;
+  }
 }
 
 .youtube-embed__container {
