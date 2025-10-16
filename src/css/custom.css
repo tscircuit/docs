@@ -266,6 +266,18 @@ figure img {
   background-color: transparent !important;
 }
 
+/* Even smaller on mobile for better readability */
+@media (max-width: 768px) {
+  .markdown table {
+    font-size: 0.75rem;
+  }
+
+  .markdown table th,
+  .markdown table td {
+    padding: 0.375rem 0.5rem;
+  }
+}
+
 .youtube-embed__container {
   background: var(--media-container-bg);
   border: 1px solid var(--media-container-border);
