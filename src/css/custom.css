@@ -203,6 +203,7 @@ figure img {
   font-size: inherit;
   line-height: inherit;
   padding: 0.5rem 0.75rem;
+  vertical-align: initial;
 }
 
 .markdown table th:first-child,
@@ -263,18 +264,6 @@ figure img {
 [data-theme="dark"] .markdown table thead {
   border-bottom-color: rgba(255, 255, 255, 0.06) !important;
   background-color: transparent !important;
-}
-
-/* Even smaller on mobile for better readability */
-@media (max-width: 768px) {
-  .markdown table {
-    font-size: 0.75rem;
-  }
-
-  .markdown table th,
-  .markdown table td {
-    padding: 0.375rem 0.5rem;
-  }
 }
 
 .youtube-embed__container {
