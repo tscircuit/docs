@@ -253,17 +253,6 @@ figure img {
   }
 }
 
-/* Add blur effect to backdrop when sidebar is open */
-.navbar-sidebar__backdrop {
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(8px);
-  background-color: rgba(0, 0, 0, 0.3) !important;
-}
-
-[data-theme="dark"] .navbar-sidebar__backdrop {
-  background-color: rgba(0, 0, 0, 0.5) !important;
-}
-
 /* Make top navbar links smaller */
 .navbar__link {
   font-size: 14px;
