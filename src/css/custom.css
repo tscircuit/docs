@@ -205,6 +205,11 @@ figure img {
   padding: 0.5rem 0.75rem;
 }
 
+.markdown table th:first-child,
+.markdown table td:first-child {
+  padding-left: 0;
+}
+
 .markdown table thead th {
   color: var(--ifm-font-color-base);
   font-weight: 600;
@@ -238,7 +243,7 @@ figure img {
 
 [data-theme="dark"] .markdown table tbody tr {
   border-bottom-color: rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
+  color: var(--ifm-font-color-base);
 }
 
 .markdown table thead {
