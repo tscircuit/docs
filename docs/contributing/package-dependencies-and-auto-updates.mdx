@@ -17,6 +17,9 @@ flowchart TD
     %% Core to Eval
     core[tscircuit/core] --> eval[tscircuit/eval]
 
+    %% Website to Eval
+    website[tscircuit.com] --> eval
+
     %% Eval to Runframe
     eval --> runframe[tscircuit/runframe]
 
