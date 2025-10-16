@@ -258,6 +258,12 @@ figure img {
   padding: 1rem;
 }
 
+@media (max-width: 996px) {
+  :root {
+    --ifm-navbar-sidebar-width: 23.125rem;
+  }
+}
+
 /* Make top navbar links smaller */
 .navbar__link {
   font-size: 14px;
