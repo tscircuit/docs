@@ -184,12 +184,62 @@ figure img {
 /* Make markdown table content slightly smaller for better fit */
 .markdown table {
   font-size: 0.9rem;
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
 }
 
 .markdown table th,
 .markdown table td {
   font-size: inherit;
   line-height: 1.4;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ifm-table-border-color);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.markdown table th {
+  background-color: var(--ifm-table-head-background);
+  font-weight: 600;
+  color: var(--ifm-table-head-color);
+}
+
+.markdown table tr:nth-child(even) {
+  background-color: var(--ifm-table-stripe-background);
+}
+
+/* Desktop table styling */
+@media (min-width: 768px) {
+  .markdown table {
+    display: table;
+    font-size: 0.875rem;
+    overflow-x: visible;
+  }
+
+  .markdown table th,
+  .markdown table td {
+    white-space: normal;
+    min-width: 120px;
+  }
+}
+
+/* Mobile table adjustments */
+@media (max-width: 767px) {
+  .markdown table {
+    font-size: 0.8rem;
+  }
+
+  .markdown table th,
+  .markdown table td {
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+  }
 }
 
 .youtube-embed__container {
