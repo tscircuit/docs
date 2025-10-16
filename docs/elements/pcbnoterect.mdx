@@ -1,0 +1,123 @@
+---
+title: <pcbnoterect />
+description: Draw rectangles on your PCB to highlight areas, create visual boundaries, and organize board sections.
+---
+
+## Overview
+
+The `<pcbnoterect />` element draws rectangles on the PCB. It's useful for highlighting specific areas, creating visual boundaries, marking keep-out zones, or organizing sections of your board layout.
+
+Rectangles can be outlined, filled, or both, with customizable colors and stroke styles.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <pcbnoterect
+      pcbX={0}
+      pcbY={0}
+      width={10}
+      height={6}
+      strokeWidth={0.3}
+      color="#ff0000"
+    />
+  </board>
+)
+`}
+/>
+
+## Basic Examples
+
+### Simple Outlined Rectangle
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="25mm" height="25mm">
+    <pcbnoterect
+      pcbX={0}
+      pcbY={0}
+      width={12}
+      height={8}
+      strokeWidth={0.4}
+      color="#0000ff"
+    />
+  </board>
+)
+`}
+/>
+
+### Filled Rectangle
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="25mm" height="25mm">
+    <pcbnoterect
+      pcbX={0}
+      pcbY={0}
+      width={12}
+      height={8}
+      strokeWidth={0.3}
+      color="#00ff00"
+      isFilled
+    />
+  </board>
+)
+`}
+/>
+
+### Dashed Border Rectangle
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <pcbnoterect
+      pcbX={0}
+      pcbY={0}
+      width={20}
+      height={15}
+      strokeWidth={0.3}
+      color="#ff00ff"
+      isStrokeDashed
+    />
+    <pcbnotetext
+      pcbX={0}
+      pcbY={0}
+      text="Keep Out Zone"
+      fontSize={1.2}
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| pcbX | distance | Yes | - | X coordinate of the rectangle center |
+| pcbY | distance | Yes | - | Y coordinate of the rectangle center |
+| width | distance | Yes | - | Width of the rectangle in mm |
+| height | distance | Yes | - | Height of the rectangle in mm |
+| strokeWidth | distance | No | 0.1 | Width of the rectangle border in mm |
+| color | string | No | - | Rectangle color as hex string (e.g., "#ff0000") |
+| isFilled | boolean | No | false | Whether the rectangle is filled with color |
+| hasStroke | boolean | No | true | Whether the rectangle has a border |
+| isStrokeDashed | boolean | No | false | Whether the border is drawn with dashes |
+| layer | string | No | - | PCB layer to place rectangle on |

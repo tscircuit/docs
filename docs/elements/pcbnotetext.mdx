@@ -1,0 +1,134 @@
+---
+title: <pcbnotetext />
+description: Add text annotations and labels to your PCB layout.
+---
+
+## Overview
+
+The `<pcbnotetext />` element places text annotations directly on the PCB. It's useful for adding labels, version numbers, copyright notices, or any other textual information to your board.
+
+Unlike schematic text, PCB note text appears on the physical board and can be printed on any layer.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <pcbnotetext
+      pcbX={0}
+      pcbY={0}
+      text="Hello PCB"
+      fontSize={1.5}
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+## Basic Examples
+
+### Simple Label
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <pcbnotetext
+      pcbX={0}
+      pcbY={5}
+      text="v1.0"
+      fontSize={1}
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+### Colored Text with Different Alignments
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="30mm">
+    <pcbnotetext
+      pcbX={0}
+      pcbY={8}
+      text="Top Left"
+      fontSize={1.2}
+      anchorAlignment="top_left"
+      color="#ff0000"
+    />
+    <pcbnotetext
+      pcbX={0}
+      pcbY={0}
+      text="Center"
+      fontSize={1.2}
+      anchorAlignment="center"
+      color="#00ff00"
+    />
+    <pcbnotetext
+      pcbX={0}
+      pcbY={-8}
+      text="Bottom Right"
+      fontSize={1.2}
+      anchorAlignment="bottom_right"
+      color="#0000ff"
+    />
+  </board>
+)
+`}
+/>
+
+### Version and Copyright Info
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="40mm" height="30mm">
+    <pcbnotetext
+      pcbX={-15}
+      pcbY={-12}
+      text="© 2024 Your Company"
+      fontSize={0.8}
+      anchorAlignment="bottom_left"
+    />
+    <pcbnotetext
+      pcbX={15}
+      pcbY={-12}
+      text="Rev 1.2"
+      fontSize={0.8}
+      anchorAlignment="bottom_right"
+    />
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| text | string | Yes | - | The text content to display |
+| pcbX | distance | Yes | - | X coordinate on the PCB |
+| pcbY | distance | Yes | - | Y coordinate on the PCB |
+| fontSize | distance | No | 1 | Font size in mm |
+| anchorAlignment | enum | No | "center" | Text alignment relative to anchor position. Options: "center", "top_left", "top_right", "bottom_left", "bottom_right" |
+| color | string | No | - | Text color as hex string (e.g., "#ff0000") |
+| font | string | No | "tscircuit2024" | Font family (currently only "tscircuit2024" is supported) |
+| layer | string | No | - | PCB layer to place text on |
+

@@ -1,0 +1,101 @@
+---
+title: <pcbnoteline />
+description: Draw straight lines on your PCB for annotations, guides, and visual indicators.
+---
+
+## Overview
+
+The `<pcbnoteline />` element draws straight lines on the PCB. It's useful for creating visual guides, marking boundaries, connecting annotations, or highlighting specific areas of your board.
+
+Lines can be solid or dashed, and can be customized with different colors and stroke widths.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <pcbnoteline
+      x1={-5}
+      y1={0}
+      x2={5}
+      y2={0}
+      strokeWidth={0.5}
+      color="#ff0000"
+    />
+  </board>
+)
+`}
+/>
+
+## Basic Examples
+
+### Simple Horizontal and Vertical Lines
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="25mm" height="25mm">
+    <pcbnoteline
+      x1={-8}
+      y1={0}
+      x2={8}
+      y2={0}
+      strokeWidth={0.3}
+      color="#0000ff"
+    />
+    <pcbnoteline
+      x1={0}
+      y1={-8}
+      x2={0}
+      y2={8}
+      strokeWidth={0.3}
+      color="#00ff00"
+    />
+  </board>
+)
+`}
+/>
+
+### Creating a Border Frame
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <pcbnoteline x1={-12} y1={-10} x2={12} y2={-10} strokeWidth={0.3} color="#000000" />
+    <pcbnoteline x1={12} y1={-10} x2={12} y2={10} strokeWidth={0.3} color="#000000" />
+    <pcbnoteline x1={12} y1={10} x2={-12} y2={10} strokeWidth={0.3} color="#000000" />
+    <pcbnoteline x1={-12} y1={10} x2={-12} y2={-10} strokeWidth={0.3} color="#000000" />
+    <pcbnotetext
+      pcbX={0}
+      pcbY={0}
+      text="Keep Out"
+      fontSize={1.5}
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| x1 | distance | Yes | - | X coordinate of the line start point |
+| y1 | distance | Yes | - | Y coordinate of the line start point |
+| x2 | distance | Yes | - | X coordinate of the line end point |
+| y2 | distance | Yes | - | Y coordinate of the line end point |
+| strokeWidth | distance | No | 0.1 | Width of the line stroke in mm |
+| color | string | No | - | Line color as hex string (e.g., "#ff0000") |
+| isDashed | boolean | No | false | Whether the line is drawn with dashes |
