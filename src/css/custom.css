@@ -181,15 +181,101 @@ figure img {
   height: auto !important;
 }
 
-/* Make markdown table content slightly smaller for better fit */
+/* Make markdown table content smaller and more responsive */
 .markdown table {
-  font-size: 0.9rem;
+  width: 100%;
+  table-layout: auto;
+  text-align: start;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  display: block;
+  overflow: auto;
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
+  border-top: none !important;
 }
 
 .markdown table th,
 .markdown table td {
   font-size: inherit;
-  line-height: 1.4;
+  line-height: inherit;
+  padding: 0.5rem 0.75rem;
+  vertical-align: initial;
+}
+
+.markdown table th:first-child,
+.markdown table td:first-child {
+  padding-left: 0;
+}
+
+.markdown table thead th {
+  color: var(--ifm-font-color-base);
+  font-weight: 600;
+  vertical-align: bottom;
+  padding-inline-end: 0.5714286em;
+  padding-bottom: 0.5714286em;
+  padding-top: 0;
+  background-color: transparent !important;
+  text-align: left;
+}
+
+.markdown table tbody tr,
+.markdown table thead tr {
+  background-color: transparent !important;
+}
+
+.markdown table th,
+.markdown table td {
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  background-color: transparent !important;
+  text-align: left;
+}
+
+.markdown table tbody tr {
+  border-bottom-width: 1px;
+  border-bottom-color: #e5e7eb;
+  color: #374151;
+}
+
+[data-theme="dark"] .markdown table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  color: var(--ifm-font-color-base);
+}
+
+.markdown table thead {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-top: none !important;
+  background-color: transparent !important;
+}
+
+.markdown table thead th {
+  border-top: none !important;
+}
+
+.markdown table thead tr {
+  border-top: none !important;
+}
+
+[data-theme="dark"] .markdown table thead {
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  background-color: transparent !important;
+}
+
+/* Even smaller on mobile for better readability */
+@media (max-width: 768px) {
+  .markdown table {
+    font-size: 0.75rem;
+  }
+
+  .markdown table th,
+  .markdown table td {
+    padding: 0.375rem 0.5rem;
+  }
 }
 
 .youtube-embed__container {
