@@ -30,9 +30,10 @@ its position on the board:
 | `pcbX`   | Set the center X position of the element | `0` |
 | `pcbY`   | Set the center Y position of the element | `0` |
 | `pcbRotation` | Set the rotation of the element | `"90deg"` |
+| `layer` | Place the element on the top (default) or bottom copper layer | `"bottom"` |
 
 Here's an example of moving a resistor `pcbX` and `pcbY` versus custom
-layout properties:
+layout properties, while also placing it on the bottom copper layer with `layer="bottom"`:
 
 <CircuitPreview leftView='code' rightView='pcb' code={`
 
@@ -45,6 +46,7 @@ export default () => (
       pcbX="3mm"
       pcbY="2.5mm"
       pcbRotation="90deg"
+      layer="bottom"
     />
   </board>
 )
