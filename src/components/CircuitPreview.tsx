@@ -14,21 +14,25 @@ const Tab = ({
   label,
   active,
   onClick,
-}: { label: string; active: boolean; onClick: () => void }) => {
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) => {
   const { isDarkTheme } = useColorMode()
 
   return (
     <button
       type="button"
       className={tw(
-        `px-3 py-1 text-sm font-semibold rounded-md ${
+        `px-3 py-1 text-sm font-semibold rounded-md transition-colors ${
           !isDarkTheme
             ? active
-              ? "bg-white text-slate-950 shadow-sm"
-              : "bg-none text-slate-500"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             : active
-              ? "bg-slate-700"
-              : "bg-slate-800"
+              ? "bg-blue-600 text-white"
+              : "bg-transparent text-slate-400 hover:text-slate-100 hover:bg-slate-700"
         }`,
       )}
       onClick={onClick}
@@ -53,14 +57,14 @@ const FileTab = ({
     <button
       type="button"
       className={tw(
-        `px-3 py-1 text-xs font-mono rounded-md ${
+        `px-3 py-1 text-xs font-mono rounded-md transition-colors ${
           !isDarkTheme
             ? active
-              ? "bg-slate-100 text-slate-950"
-              : "text-slate-500 hover:text-slate-700"
+              ? "bg-blue-50 text-blue-700 border border-blue-200"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
             : active
-              ? "text-white"
-              : "text-slate-400 hover:text-slate-200"
+              ? "bg-slate-700 text-blue-400 border border-slate-600"
+              : "text-slate-400 hover:text-slate-200 hover:bg-slate-700"
         }`,
       )}
       onClick={onClick}
@@ -201,7 +205,7 @@ export default function CircuitPreview({
     <div className={tw("flex justify-end px-2")}>
       <div
         className={tw(
-          `flex-inline justify-end gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-100" : "bg-slate-800"} p-1 gap-2`,
+          `flex-inline justify-end gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-50" : "bg-transparent"} p-1 gap-2`,
         )}
       >
         {!shouldSplitCode && (
@@ -254,7 +258,7 @@ export default function CircuitPreview({
     <div className={tw("flex justify-start px-2")}>
       <div
         className={tw(
-          `flex-inline justify-start gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-white" : "bg-slate-800"} p-1 gap-2`,
+          `flex-inline justify-start gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-50" : "bg-transparent"} p-1 gap-2`,
         )}
       >
         {Object.keys(fsMap ?? {}).map((filename) => (
