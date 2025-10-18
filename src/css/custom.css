@@ -206,6 +206,29 @@ figure img {
   vertical-align: initial;
 }
 
+/* Style inline code elements within table cells */
+.markdown table td code,
+.markdown table th code {
+  font-family: "Geist Mono", "Menlo", "Monaco", "Lucida Console",
+    "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono",
+    "Courier New", monospace !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+  font-variant-ligatures: none !important;
+  overflow-wrap: break-word !important;
+  border-radius: 0.375rem !important;
+  background-color: rgba(243, 244, 246, 0.5) !important;
+  padding: 0.125rem 0.5rem !important;
+  font-size: 0.875em !important;
+  border: none !important;
+}
+
+[data-theme="dark"] .markdown table td code,
+[data-theme="dark"] .markdown table th code {
+  color: #f9fafb !important;
+  background-color: rgba(55, 65, 81, 0.5) !important;
+}
+
 .markdown table th:first-child,
 .markdown table td:first-child {
   padding-left: 0;

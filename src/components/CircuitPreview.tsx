@@ -193,9 +193,7 @@ export default function CircuitPreview({
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
   const tabContentHeightCss =
-    _showTabs && windowSize !== "mobile"
-      ? "h-[calc(100%-46px)]"
-      : "h-full max-h-[300px]"
+    _showTabs && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
 
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
@@ -300,7 +298,7 @@ export default function CircuitPreview({
       return (
         <div
           className={tw(
-            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
+            `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
               v === "pcb"
                 ? "bg-black"
                 : v === "schematic"
@@ -390,7 +388,13 @@ export default function CircuitPreview({
           view === "pinout") && (
           <div
             className={tw(
-              "flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
+              `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
+                view === "pcb"
+                  ? "bg-black"
+                  : view === "schematic"
+                    ? "bg-[#F5F1ED]"
+                    : "bg-white"
+              }`,
             )}
           >
             {_showTabs && shouldSplitCode && tabsElm}
