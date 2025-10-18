@@ -1,0 +1,126 @@
+---
+title: <pcbnotepath />
+description: Draw complex paths and polylines on your PCB using multiple connected points.
+---
+
+## Overview
+
+The `<pcbnotepath />` element draws complex paths made up of multiple connected line segments on the PCB. It's useful for creating custom shapes, arrows, measurement indicators, or any annotation that requires multiple connected points.
+
+Unlike `<pcbnoteline />` which draws a single straight line, `<pcbnotepath />` allows you to define a series of points that are connected in sequence.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <pcbnotepath
+      strokeWidth={0.3}
+      color="#ff0000"
+      route={[
+        { x: -5, y: 0 },
+        { x: 0, y: 5 },
+        { x: 5, y: 0 },
+      ]}
+    />
+  </board>
+)
+`}
+/>
+
+## Basic Examples
+
+### Simple Zigzag Path
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <pcbnotepath
+      strokeWidth={0.4}
+      color="#0000ff"
+      route={[
+        { x: -10, y: -5 },
+        { x: -5, y: 5 },
+        { x: 0, y: -5 },
+        { x: 5, y: 5 },
+        { x: 10, y: -5 },
+      ]}
+    />
+  </board>
+)
+`}
+/>
+
+### Arrow Shape
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <pcbnotepath
+      strokeWidth={0.4}
+      color="#ff6600"
+      route={[
+        { x: -8, y: 0 },
+        { x: 4, y: 0 },
+        { x: 4, y: 3 },
+        { x: 8, y: 0 },
+        { x: 4, y: -3 },
+        { x: 4, y: 0 },
+      ]}
+    />
+  </board>
+)
+`}
+/>
+
+### Star Pattern
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="30mm">
+    <pcbnotepath
+      strokeWidth={0.3}
+      color="#ffcc00"
+      route={[
+        { x: 0, y: 8 },
+        { x: 2, y: 2 },
+        { x: 8, y: 2 },
+        { x: 3, y: -2 },
+        { x: 5, y: -8 },
+        { x: 0, y: -4 },
+        { x: -5, y: -8 },
+        { x: -3, y: -2 },
+        { x: -8, y: 2 },
+        { x: -2, y: 2 },
+        { x: 0, y: 8 },
+      ]}
+    />
+  </board>
+)
+`}
+/>
+
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| route | array | Yes | - | Array of points defining the path. Each point is an object with `x` and `y` coordinates |
+| strokeWidth | distance | No | 0.1 | Width of the path stroke in mm |
+| color | string | No | - | Path color as hex string (e.g., "#ff0000") |
