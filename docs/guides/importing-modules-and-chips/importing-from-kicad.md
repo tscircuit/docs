@@ -33,6 +33,30 @@ when that's available!
 Currently the easiest way to import KiCad components is to go to [kicad-component.tscircuit.com](https://kicad-component.tscircuit.com/)
 and upload your `kicad_mod` and/or `kicad_sym` file.
 
+### Converting a `.kicad_mod` file to TSX
+
+The converter site generates ready-to-use TSX that you can paste directly into a
+tscircuit project. The basic workflow looks like this:
+
+1. Visit [kicad-component.tscircuit.com](https://kicad-component.tscircuit.com/)
+   and drag your `.kicad_mod` file (or click the upload button) onto the
+   drop-zone.
+2. Wait for the converter to parse the footprint. The preview tab shows the
+   rendered footprint so you can verify pad positions, drill sizes, and
+   reference text before exporting.
+3. Switch to the **TSX** tab and copy the generated component definition. The
+   snippet includes a `<module />` wrapper with `<pcbVia />`, `<pcbSmtpad />`,
+   and other primitives that mirror the original footprint.
+4. Paste the TSX into a file such as `src/components/MyFootprint.tsx`, export
+   the module, and reference it inside your board (e.g. `<MyFootprint
+   name="U1" />`).
+5. If the footprint has named pads, the converter also provides a `pinLabels`
+   object; update names as needed to match your schematic conventions.
+
+When you update the KiCad source file later, you can re-upload it to the
+converter to receive an updated TSX snippet. This keeps your tscircuit modules
+in sync with the authoritative KiCad footprint.
+
 ### Importing KiCad Components using the CLI
 
 Using tscircuit's [open-source KiCad component converter](https://github.com/tscircuit/kicad-component-converter),
