@@ -1,0 +1,145 @@
+---
+title: Using React Context to Avoid Prop-Drilling
+---
+
+React Context is a powerful tool for sharing data across deeply nested components without having to pass props through every level of the tree. When building TypeScript-powered circuit design tools, context lets you centralize configuration and provide well-typed data to any component that needs it.
+
+## When to Reach for Context
+
+Use context when multiple components need the same piece of state or configuration. Common examples in tscircuit projects include:
+
+- Design-wide metadata such as board dimensions or authoring info
+- User preferences like measurement units or default footprints
+- Shared services (e.g., logger, analytics, or websocket clients)
+
+By colocating these values in a context provider, you avoid repetitive prop threading and keep your component interfaces focused on their primary responsibilities.
+
+## A Typed Context for Board Settings
+
+The following example shares board-level configuration with any component that needs it. The `BoardSettings` interface ensures every consumer receives a strongly typed object.
+
+```tsx
+import { ReactNode, createContext, useContext, useMemo } from "react"
+
+type BoardSettings = {
+  boardName: string
+  boardSize: { width: number; height: number }
+  defaultFootprints: {
+    resistor: string
+    capacitor: string
+  }
+}
+
+const BoardSettingsContext = createContext<BoardSettings | null>(null)
+
+export const BoardSettingsProvider = ({
+  children,
+  value,
+}: {
+  children: ReactNode
+  value: BoardSettings
+}) => {
+  const memoizedValue = useMemo(() => value, [value])
+
+  return (
+    <BoardSettingsContext.Provider value={memoizedValue}>
+      {children}
+    </BoardSettingsContext.Provider>
+  )
+}
+
+export const useBoardSettings = () => {
+  const context = useContext(BoardSettingsContext)
+
+  if (!context) {
+    throw new Error("useBoardSettings must be used within a BoardSettingsProvider")
+  }
+
+  return context
+}
+```
+
+### Why memoize the value?
+
+Passing a memoized value prevents unnecessary re-renders of components consuming the context. This becomes important when the provider sits high in your component tree and wraps many children.
+
+## Consuming the Context
+
+Components can now read the shared configuration without receiving it through props.
+
+```tsx
+const ResistorList = ({ names }: { names: string[] }) => {
+  const {
+    defaultFootprints: { resistor },
+  } = useBoardSettings()
+
+  return (
+    <group>
+      {names.map((name) => (
+        <resistor key={name} name={name} footprint={resistor} resistance="1k" />
+      ))}
+    </group>
+  )
+}
+
+const DecouplingCapacitor = ({ name }: { name: string }) => {
+  const {
+    defaultFootprints: { capacitor },
+  } = useBoardSettings()
+
+  return <capacitor name={name} capacitance="10n" footprint={capacitor} />
+}
+```
+
+The components above use the shared default footprints without adding extra props to every layer above them.
+
+## Putting It All Together
+
+Wrap the portion of your circuit tree that needs access to the context with the provider. Any component rendered inside the provider can call `useBoardSettings()`.
+
+```tsx
+export const InstrumentPanel = () => (
+  <BoardSettingsProvider
+    value={{
+      boardName: "Instrumentation Panel",
+      boardSize: { width: 50, height: 40 },
+      defaultFootprints: {
+        resistor: "0402",
+        capacitor: "0603",
+      },
+    }}
+  >
+    <board width="50mm" height="40mm" name="InstrumentPanel">
+      <group name="InputStage">
+        <ResistorList names={["R1", "R2", "R3"]} />
+        <DecouplingCapacitor name="C1" />
+      </group>
+    </board>
+  </BoardSettingsProvider>
+)
+```
+
+Because every component inside the provider shares the same context, you can introduce additional consumers (for example, status displays or documentation overlays) without modifying intermediate components.
+
+## Testing Context Consumers
+
+When unit testing components that depend on the context, render them with the provider to supply the necessary data. Libraries like [`@testing-library/react`](https://testing-library.com/docs/react-testing-library/intro/) make this pattern straightforward:
+
+```tsx
+render(
+  <BoardSettingsProvider value={mockSettings}>
+    <ResistorList names={["R10"]} />
+  </BoardSettingsProvider>
+)
+```
+
+This keeps tests realistic while preserving the benefits of type safety.
+
+## Key Takeaways
+
+- Define a context value type that captures the shared configuration.
+- Export both the provider and a custom hook that validates usage.
+- Memoize the context value to avoid unnecessary renders.
+- Wrap only the subtree that needs the shared data, keeping providers focused and intentional.
+
+With these patterns, React Context becomes a reliable way to manage shared state in your TypeScript tscircuit projects without the noise of prop drilling.
