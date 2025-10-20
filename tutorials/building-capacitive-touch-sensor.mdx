@@ -1,0 +1,52 @@
+---
+title: Building a Capacitive Touch Sensor
+description: Learn how to design, route, and test a single-button capacitive touch sensor that uses polygon pads and a touch controller.
+---
+
+## Overview
+
+Capacitive touch sensors replace mechanical buttons with copper shapes that detect when a finger changes their electric field. In this tutorial you will:
+
+- Draw a capacitive electrode using `polygon` surface-mount pads.
+- Connect the electrode to a capacitive touch controller.
+- Route the traces, ground reference, and LED indicator for feedback.
+- Simulate the PCB stackup with `tscircuit` before ordering the board.
+
+The finished design exposes a responsive touch pad that lights an LED when it is activated.
+
+<CircuitPreview
+  defaultView="pcb"
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board width="20mm" height="20mm">
+      <chip name="U1" footprint={
+          <footprint>
+        <smtpad shape="polygon" layer="top" portHints={["pin1"]} points={[
+          { x: -4.5, y: 2 },
+          { x: -2.2, y: 2 },
+          { x: -0.4, y: 0 },
+          { x: -2.2, y: -2 },
+          { x: -4.5, y: -2 },
+        ]} />
+        <smtpad shape="polygon" layer="top" portHints={["pin2"]} points={[
+          { x: -1.8, y: 2 },
+          { x: 1.8, y: 2 },
+          { x: 3.6, y: 0 },
+          { x: 1.8, y: -2 },
+          { x: -1.8, y: -2 },
+          { x: 0, y: 0 },
+        ]} />
+        <smtpad shape="polygon" layer="top" portHints={["pin3"]} points={[
+          { x: 2.2, y: 2 },
+          { x: 6, y: 2 },
+          { x: 6, y: -2 },
+          { x: 2.2, y: -2 },
+          { x: 4, y: 0 },
+        ]} />
+      </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
