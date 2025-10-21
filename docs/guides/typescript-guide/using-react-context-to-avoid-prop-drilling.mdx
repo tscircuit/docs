@@ -192,27 +192,27 @@ const DecouplingCapacitor = ({ name }: { name: string }) => {
     defaultFootprints: { capacitor },
   } = useBoardSettings()
 
-  return (
-    <capacitor name={name} capacitance="10n" footprint={capacitor} />
-  )
+  return <capacitor name={name} capacitance="10n" footprint={capacitor} />
 }
 
-export default () => (
-  <BoardSettingsProvider
-    value={{
-      boardName: "Instrumentation Panel",
-      boardSize: { width: 50, height: 40 },
-      defaultFootprints: {
-        resistor: "0402",
-        capacitor: "0603",
-      },
-    }}
-  >
-    <board width="50mm" height="40mm" name="InstrumentPanel">
-      <ResistorList names={["R1", "R2", "R3"]} />
-      <DecouplingCapacitor name="C1" />
-    </board>
-  </BoardSettingsProvider>
-)
+export default function InstrumentPanel() {
+  return (
+    <BoardSettingsProvider
+      value={{
+        boardName: "Instrumentation Panel",
+        boardSize: { width: 50, height: 40 },
+        defaultFootprints: {
+          resistor: "0402",
+          capacitor: "0603",
+        },
+      }}
+    >
+      <board width="50mm" height="40mm" name="InstrumentPanel">
+        <ResistorList names={["R1", "R2", "R3"]} />
+        <DecouplingCapacitor name="C1" />
+      </board>
+    </BoardSettingsProvider>
+  )
+}
 `}
 />
