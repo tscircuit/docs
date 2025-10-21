@@ -12,7 +12,6 @@ Use context when multiple components need the same piece of state or configurati
 
 - Design-wide metadata such as board dimensions or authoring info
 - User preferences like measurement units or default footprints
-- Shared services (e.g., logger, analytics, or websocket clients)
 
 By colocating these values in a context provider, you avoid repetitive prop threading and keep your component interfaces focused on their primary responsibilities.
 
@@ -21,7 +20,7 @@ By colocating these values in a context provider, you avoid repetitive prop thre
 The following example shares board-level configuration with any component that needs it. The `BoardSettings` interface ensures every consumer receives a strongly typed object.
 
 ```tsx
-import { ReactNode, createContext, useContext, useMemo } from "react"
+import { ReactNode, createContext, useContext } from "react"
 
 type BoardSettings = {
   boardName: string
@@ -40,15 +39,11 @@ export const BoardSettingsProvider = ({
 }: {
   children: ReactNode
   value: BoardSettings
-}) => {
-  const memoizedValue = useMemo(() => value, [value])
-
-  return (
-    <BoardSettingsContext.Provider value={memoizedValue}>
-      {children}
-    </BoardSettingsContext.Provider>
-  )
-}
+}) => (
+  <BoardSettingsContext.Provider value={value}>
+    {children}
+  </BoardSettingsContext.Provider>
+)
 
 export const useBoardSettings = () => {
   const context = useContext(BoardSettingsContext)
@@ -60,10 +55,6 @@ export const useBoardSettings = () => {
   return context
 }
 ```
-
-### Why memoize the value?
-
-Passing a memoized value prevents unnecessary re-renders of components consuming the context. This becomes important when the provider sits high in your component tree and wraps many children.
 
 ## Consuming the Context
 
@@ -127,7 +118,6 @@ Because every component inside the provider shares the same context, you can int
 
 - Define a context value type that captures the shared configuration.
 - Export both the provider and a custom hook that validates usage.
-- Memoize the context value to avoid unnecessary renders.
 - Wrap only the subtree that needs the shared data, keeping providers focused and intentional.
 
 With these patterns, React Context becomes a reliable way to manage shared state in your TypeScript tscircuit projects without the noise of prop drilling.
@@ -136,7 +126,7 @@ With these patterns, React Context becomes a reliable way to manage shared state
   hide3DTab
   hidePCBTab
   defaultView="schematic"
-  code={`import { ReactNode, createContext, useContext, useMemo } from "react"
+  code={`import { ReactNode, createContext, useContext } from "react"
 
 type BoardSettings = {
   boardName: string
@@ -155,15 +145,11 @@ const BoardSettingsProvider = ({
 }: {
   children: ReactNode
   value: BoardSettings
-}) => {
-  const memoizedValue = useMemo(() => value, [value])
-
-  return (
-    <BoardSettingsContext.Provider value={memoizedValue}>
-      {children}
-    </BoardSettingsContext.Provider>
-  )
-}
+}) => (
+  <BoardSettingsContext.Provider value={value}>
+    {children}
+  </BoardSettingsContext.Provider>
+)
 
 const useBoardSettings = () => {
   const context = useContext(BoardSettingsContext)
