@@ -1,5 +1,8 @@
 ---
 title: Port and Net Selectors
+description: >-
+  Learn how to target ports, nets, and components with selector strings, and
+  see practical examples for traces and component props.
 ---
 
 Selectors are a string used to reference a port, net or any component. They're most
