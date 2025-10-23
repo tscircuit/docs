@@ -97,10 +97,10 @@ This creates four resistors with increasing resistance and evenly spaced positio
 
 Feature | Example | Description  
 --- | --- | ---  
-Basic math | {10 + 5} | Adds, subtracts, multiplies, divides  
-Variables | {baseX + spacing} | Reuses values across components  
-Functions | {offsetY(i)} | Calculates positions dynamically  
-Conditionals | {isPower ? 'red' : 'black'} | Changes attributes based on logic  
+Basic math | &#123;10 + 5&#125; | Adds, subtracts, multiplies, divides  
+Variables | &#123;baseX + spacing&#125; | Reuses values across components  
+Functions | &#123;offsetY(i)&#125; | Calculates positions dynamically  
+Conditionals | &#123;isPower ? 'red' : 'black'&#125; | Changes attributes based on logic  
 Loops | [1,2,3].map(...) | Generates multiple components
 
 ---
