@@ -157,7 +157,7 @@ the autorouter will connect to the net.
 ## Creating a direct path with a custom thickness
 
 Use an empty `pcbPath` array to keep the autorouter's direct path between two
-ports while still overriding the copper width via the `thickness` property.
+ports while overriding the trace width via the `thickness` property.
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
   export default () => (
@@ -165,7 +165,7 @@ ports while still overriding the copper width via the `thickness` property.
       <resistor name="R1" resistance="1k" footprint="0402" pcbX={-3} />
       <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={3} />
       <trace
-        from="R1.pin1"
+        from="R1.pin2"
         to="C1.pin1"
         pcbPath={[]}
         thickness="0.5mm"
