@@ -19,9 +19,10 @@ Instead of manually typing every number, you can use JavaScript arithmetic and v
 ## 🔢 Basic Arithmetic
 
 Example:
-
+```
 &lt;resistor resistance={100 + 20} /&gt;  
 &lt;wire x1={10} x2={10 + 5} y1={0} y2={0} /&gt;
+```
 
 This creates a resistor of 120 Ω and a wire that extends 5 mm from the base coordinate.
 
@@ -31,11 +32,13 @@ This creates a resistor of 120 Ω and a wire that extends 5 mm from the base coo
 
 Declare variables and reuse them throughout your circuit.
 
+```
 const baseX = 10  
 const spacing = 5
 
 &lt;capacitor x={baseX + spacing} /&gt;  
 &lt;resistor x={baseX + spacing * 2} /&gt;
+```
 
 You can tweak the “spacing” value and your layout adjusts accordingly.
 
@@ -44,11 +47,12 @@ You can tweak the “spacing” value and your layout adjusts accordingly.
 ## 🧩 Expressions in Attributes
 
 You can also use conditionals and computed attributes.
-
+```
 &lt;wire  
 &nbsp;&nbsp;color={isPowerLine ? 'red' : 'black'}  
 &nbsp;&nbsp;width={baseWidth * 0.5}  
 /&gt;
+```
 
 This wire changes color based on a condition and calculates its width dynamically.
 
@@ -57,13 +61,13 @@ This wire changes color based on a condition and calculates its width dynamicall
 ## ⚙️ Function-Based Values
 
 For complex or repetitive patterns, define helper functions.
-
+```
 function offsetY(index: number) {  
 &nbsp;&nbsp;return index * 10  
 }
 
 &lt;led y={offsetY(3)} /&gt;
-
+```
 This places the LED 30 mm below the origin.
 
 ---
@@ -71,11 +75,11 @@ This places the LED 30 mm below the origin.
 ## 🔁 Loops and Arrays
 
 Use arrays or loops to generate multiple components.
-
+```
 [1, 2, 3, 4].map((i) =&gt; (  
 &nbsp;&nbsp;&lt;resistor key={i} x={i * 10} resistance={100 * i} /&gt;  
 ))
-
+```
 This creates four resistors with increasing resistance and evenly spaced positions.
 
 ---
