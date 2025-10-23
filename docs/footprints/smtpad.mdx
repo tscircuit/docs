@@ -49,6 +49,7 @@ Each smtpad shape has different properties.
 | ----------- | ------------ | --------------------------------------------------------------------------- |
 | width       | rect, pill   | The width of the pad                                                        |
 | height      | rect, pill   | The height of the pad                                                       |
+| cornerRadius | rect         | Optional. Corner radius for rectangular pads                                |
 | radius      | circle, pill | The radius of the pad (for circle) or corner radius (for pill)              |
 | points      | polygon      | An array of `{ x, y }` coordinates describing the polygon vertices          |
 | ccwRotation | rect         | Counter-clockwise rotation angle in degrees                                 |
@@ -56,6 +57,35 @@ Each smtpad shape has different properties.
 | pcbX        | all          | X position of the pad center on the PCB                                     |
 | pcbY        | all          | Y position of the pad center on the PCB                                     |
 | layer       | all          | Which layer the pad is on (`"top"` or `"bottom"`)                           |
+
+## Example: Rectangular Pad with Rounded Corners
+
+Use the `cornerRadius` property on rectangular pads to round their corners.
+
+<CircuitPreview
+  defaultView="schematic"
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <smtpad
+            pcbX="0mm"
+            pcbY="0mm"
+            layer="top"
+            shape="rect"
+            width="5mm"
+            height="5mm"
+            portHints={["pin1"]}
+            cornerRadius={1}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
 
 ## Example: Polygon Pad
 
