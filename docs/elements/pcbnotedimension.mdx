@@ -25,7 +25,6 @@ Below is a simple board with a dimension annotation showing the distance between
       <pcbnotedimension
         from={{ x: -3, y: 2 }}
         to={{ x: 3, y: 2 }}
-        text="6mm"
         arrowSize={0.8}
         fontSize={1.5}
         color="#ffffff"
@@ -34,6 +33,8 @@ Below is a simple board with a dimension annotation showing the distance between
   )
   `}
 />
+
+Both `<pcbnotedimension />` and `<fabricationnotedimension />` automatically calculate the distance between `from` and `to`. You only need to provide the `text` prop when you want to override that default label.
 
 ## Using Selectors
 
@@ -51,7 +52,6 @@ Instead of specifying exact coordinates, you can use selectors to reference comp
       <pcbnotedimension
         from="R1"
         to="R2"
-        text="10mm spacing"
         fontSize={1.2}
         color="#00ff00"
       />
@@ -66,7 +66,7 @@ Instead of specifying exact coordinates, you can use selectors to reference comp
 |---------|------|-------------|
 | `from` | string \| Point | **Required.** Starting point of the dimension. Can be a selector string (e.g., `"R1"`) or a Point object with `x` and `y` coordinates. |
 | `to` | string \| Point | **Required.** Ending point of the dimension. Can be a selector string (e.g., `"R2"`) or a Point object with `x` and `y` coordinates. |
-| `text` | string | Label text to display on the dimension line (e.g., `"5mm"`, `"Critical spacing"`). |
+| `text` | string | Optional override for the label text. By default, the measured distance between `from` and `to` is displayed. |
 | `arrowSize` | length | Size of the arrows at each end of the dimension line. Defaults to `1mm`. |
 | `fontSize` | length | Height of the label text. Defaults to `1mm`. |
 | `color` | string | Hex color code for the dimension line, arrows, and text (e.g., `"#ffffff"`, `"#00ff00"`). |
