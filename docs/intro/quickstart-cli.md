@@ -45,11 +45,12 @@ To use the CLI offline, you need to disable the "Force Latest @tscircuit/eval" o
 
 ## Pushing to the tscircuit Registry
 
-<!-- TODO -->
 Next, you push your project by running `tsci push`. This will push your project to your registry.
+
 ![tsci push result](../../static/img/tsci-push.png)
 
 Go to your tscircuit account. You can now see PCB, Schematic and 3D views of your circuit in you registry. 
+
 ![browser](../../static/img/registry-snippet.png)
 
 ## Exporting to SVGs, PDF, or Fabrication Files
