@@ -1,0 +1,80 @@
+---
+title: Using Groups for PCB Layout
+description: >-
+  Groups can help you break up your layout problem into smaller, more manageable
+  and reusable parts.
+---
+
+`<group />` elements allow you to move chips together, keep chips
+contained within a a smaller area, or apply different layout engines and
+techniques for different areas of your board.
+
+tscircuit `<group />` elements are a lot like HTML `<div />` elements. They can
+contain other elements for the purpose of applying different layout engines,
+like flexbox or grid, or to move multiple elements at once.
+
+In tscircuit, we have two main main types of positioning modes:
+
+- `relative` position. In this mode, your position is relative to your "container"
+  or parent element. You can set `pcbX` or `pcbY`, or even set constraints like
+  "I should be 1mm away from some other element"
+- `pack` layout. In this layout mode, things are packed together with a strategy
+  you specify. By default, we pack to minimize trace distance using a pack order
+  from largest to smallest.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Relative Positioning
+
+Any component inside a `<group />` will be shifted by the `pcbX` and `pcbY` of
+the group (or any other layout changes to the group, such as `pcbRotation` or
+if the group is packed)
+
+<CircuitPreview defaultView="pcb" hide3DTab hideSchematicTab code={`
+  export default () => (
+    <board boardAnchorAlignment="bottom_left" boardAnchorPosition={{x: 0, y: 0}} width="10mm" height="10mm">
+      <group pcbX={5} pcbY={5}>
+        <resistor pcbX={2.5} pcbY={2.5} name="R1" resistance="1k" footprint="0402" />
+        <resistor pcbX={2.5} pcbY={0} name="R2" resistance="1k" footprint="0402" />
+        <resistor pcbX={2.5} pcbY={-2.5} name="R3" resistance="1k" footprint="0402" />
+      </group>
+      <fabricationnotetext text="(0,5)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={0} pcbY={5} />
+      <fabricationnotetext text="(5,5)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={5} pcbY={5} />
+      <fabricationnotetext text="(10,5)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={10} pcbY={5} />
+    </board>
+  )
+`} />
+
+## Automatic Packing
+
+Groups can automatically pack their inner components based on the connections,
+this packed group can then itself be packed or set at a relative position! 
+
+This is great for managing small connected groups of components, such as a
+microcontroller with all of its decoupling capacitors.
+
+<CircuitPreview defaultView="pcb" hide3DTab hideSchematicTab code={`
+  export default () => (
+    <board width="26mm" height="10mm">
+      <group pcbPack pcbPackGap="1mm" pcbX={-5}>
+        <resistor name="R1" resistance="1k" footprint="0402" />
+        <resistor name="R2" resistance="1k" footprint="0402" connections={{ pin1: "R1.pin2", pin2: "R3.pin1" }} />
+        <resistor name="R3" resistance="1k" footprint="0402" connections={{ pin1: "R1.pin1" }}/>
+      </group>
+      <group pcbPack pcbPackGap="2mm" pcbX={5}>
+        <resistor name="R4" resistance="1k" footprint="0402" />
+        <resistor name="R5" resistance="1k" footprint="0402" connections={{ pin1: "R4.pin2", pin2: "R6.pin1" }} />
+        <resistor name="R6" resistance="1k" footprint="0402" />
+      </group>
+      <fabricationnotetext text="(0,0)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={0} pcbY={5} />
+      <fabricationnotetext text="(-5,0)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={-5} pcbY={5} />
+      <fabricationnotetext text="(5,0)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={5} pcbY={5} />
+    </board>
+  )
+`} />
+
+## Relative Constraints
+
+You can make elements or groups relative to other elements or groups.
+
+> Example coming soon!

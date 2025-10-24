@@ -1,0 +1,45 @@
+.docItemContainer header + *,
+.docItemContainer article > *:first-child {
+  margin-top: 0;
+}
+
+.docItemWithButton {
+  position: relative;
+}
+
+.contentHeader {
+  position: relative;
+  z-index: 10;
+}
+
+.contentHeader :global(.copy-page-button-container) {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.docItemWithButton :global(.markdown) > :global(h1):first-child {
+  padding-right: 180px;
+}
+
+@media (max-width: 500px) {
+  .contentHeader {
+    position: static;
+    margin-bottom: 1rem;
+  }
+
+  .contentHeader :global(.copy-page-button-container) {
+    position: relative;
+  }
+
+  .docItemWithButton :global(.markdown) > :global(h1):first-child {
+    padding-right: 0;
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (min-width: 997px) {
+  .docItemCol {
+    max-width: 75% !important;
+  }
+}

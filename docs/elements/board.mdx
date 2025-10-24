@@ -32,6 +32,50 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 Generally you'll use the `width` and `height` properties to define the size of
 the board.
 
+### Rounding Board Corners with `borderRadius`
+
+To soften sharp corners on a rectangular board, set the optional `borderRadius`
+prop. You can pass the radius as either a number—interpreted in millimeters—or
+as a string like `"2mm"`. The radius is applied uniformly to all four corners.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="20mm" height="15mm" borderRadius="3mm">
+      <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={5} pcbY={3} />
+      <resistor name="R2" resistance="10k" footprint="0402" pcbX={-5} pcbY={-3} />
+    </board>
+  )
+`} />
+
+### Configuring the Layer Stack with `layers`
+
+You can set the `layers` prop to add additional inner layers to your circuit
+board. If you specify `layers={4}`, the `"inner1"` and `"inner2"` layers are
+added automatically and available for routing, while omitting the prop keeps the
+default two-layer stackup.
+
+The following example enables a four-layer board and shows traces connecting
+components across that stackup:
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board
+      width="32mm"
+      height="20mm"
+      layers={4}
+    >
+      <chip name="U1" footprint="soic8" pcbX={-6} pcbY={0} />
+      <chip name="U2" footprint="soic8" pcbX={6} pcbY={0} rotation={180} />
+
+      <trace from=".U1 > .pin1" to=".U2 > .pin5" />
+      <trace from=".U1 > .pin2" to=".U2 > .pin6" />
+      <trace from=".U1 > .pin3" to=".U2 > .pin7" />
+      <trace from=".U1 > .pin4" to=".U2 > .pin8" />
+    </board>
+  )
+`} />
+
 ### Setting the `autorouter`
 
 Boards or [subcircuits](./subcircuit.mdx) can specify what autorouter should be
@@ -144,6 +188,61 @@ export default () => (
 
 `}
 /> 
+
+
+### Board Anchor Properties
+
+You can control the board's position and alignment using anchor properties:
+
+- `boardAnchorPosition`: Moves the board's anchor point to the specified coordinates
+- `boardAnchorAlignment`: Sets which part of the board the anchor point refers to
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+   <board 
+      width="10mm" 
+      height="10mm"
+      boardAnchorPosition={{x:0, y:0}} 
+      boardAnchorAlignment="bottom_left"
+    >
+    <resistor resistance="1k" footprint="0402" name="R1" pcbX={2} pcbY={2} />
+
+    <fabricationnotetext text="(5,5)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={5} pcbY={5} />
+    <fabricationnotetext text="(10,10)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={10} pcbY={10} />
+    <fabricationnotetext text="(0,0)" anchorAlignment="bottom_left" fontSize="0.5mm" pcbX={0} pcbY={0} />
+
+    </board>
+  )
+`}/>
+
+#### Try Different Alignments
+
+```jsx
+// This moves the board's center to position (1,2)
+<board 
+  boardAnchorPosition={{x:1, y:2}} 
+  boardAnchorAlignment="center"  // Try changing this to other values
+  width="10mm" 
+  height="10mm"
+>
+  <resistor resistance="1k" footprint="0402" name="R1" />
+</board>
+```
+
+#### How Anchoring Works
+- The `boardAnchorAlignment` determines which point on the board is considered the anchor point
+- The `boardAnchorPosition` moves that anchor point to the specified (x,y) coordinates
+
+**Example Alignments**:
+- `"center"` - Board is centered on the anchor point
+- `"top_left"` - Top-left corner is at the anchor point
+- `"top_right"` - Top-right corner is at the anchor point
+- `"bottom_left"` - Bottom-left corner is at the anchor point
+- `"bottom_right"` - Bottom-right corner is at the anchor point
+- `"center_left"` - Middle of the left edge is at the anchor point
+- `"center_right"` - Middle of the right edge is at the anchor point
+- `"top_center"` - Top center point is at the anchor point
+- `"bottom_center"` - Bottom center point is at the anchor point
 
 ## Flexible PCBs
 

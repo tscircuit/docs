@@ -1,6 +1,7 @@
 ---
 title: jlcsearch API
 sidebar_position: 6
+description: Search and query JLCPCB in-stock components with the jlcsearch JSON API for scripting and integration.
 ---
 
 # jlcsearch.tscircuit.com

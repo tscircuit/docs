@@ -16,9 +16,76 @@ as a standalone element.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
+## Hole Shapes
+
+Two hole shapes are supported:
+
+- `circle` - A circular hole (default)
+- `pill` - A pill-shaped hole (rounded rectangle)
+
+### Circle Hole
+
+A circular hole is the most common type used for mounting:
+
 <CircuitPreview
   defaultView="3d"
+  browser3dView={false}
   code={`export default () => (
-    <hole diameter="3mm" x={10} y={10} />
+    <board width="30mm" height="20mm">
+      <hole diameter="3mm" x={10} y={10} />
+    </board>
   )`}
 />
+
+### Pill-Shaped Hole
+
+Pill-shaped holes are useful for mounting components that need elongated holes or for allowing some positional adjustment:
+
+<CircuitPreview
+  defaultView="pcb"
+  browser3dView={false}
+  code={`export default () => (
+    <board width="30mm" height="20mm">
+      <hole 
+        shape="pill" 
+        width="5mm" 
+        height="2mm" 
+        pcbX={0} 
+        pcbY={0} 
+      />
+    </board>
+  )`}
+/>
+
+### Rotated Pill Hole
+
+Pill-shaped holes can be rotated using the `pcbRotation` property:
+
+<CircuitPreview
+  defaultView="pcb"
+  browser3dView={false}
+  code={`export default () => (
+    <board width="30mm" height="20mm">
+      <hole 
+        shape="pill" 
+        width="5mm" 
+        height="2mm" 
+        pcbX={0} 
+        pcbY={0}
+        pcbRotation="45deg"
+      />
+    </board>
+  )`}
+/>
+
+## Properties
+
+| Property | Shape | Type | Default | Description |
+|----------|-------|------|---------|-------------|
+| shape | all | `"circle"` \| `"pill"` | `"circle"` | Shape of the hole |
+| diameter | circle | number \| string | - | Diameter of the circular hole |
+| width | pill | number \| string | - | Width of the pill-shaped hole |
+| height | pill | number \| string | - | Height of the pill-shaped hole |
+| x | all | number | 0 | X position of the hole center |
+| y | all | number | 0 | Y position of the hole center |
+| pcbRotation | pill | number \| string | 0 | Rotation angle in degrees (e.g., `"45deg"` or `45`) |

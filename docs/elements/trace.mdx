@@ -39,6 +39,7 @@ Here's a simple example connecting two components:
 | `maxLength` | Maximum length the trace can be (optional) | `"10mm"` |
 | `minLength` | Minimum length the trace must be (optional) | `"5mm"` |
 | `width` | Width of the trace (optional) | `"0.2mm"` |
+| `thickness` | Same as `width`; sets the copper width for the trace (optional) | `"0.2mm"` |
 | `pcbPath` | Array of points defining a manual PCB path relative to an anchor port | `[{ x: 1, y: 0 }, { x: 1, y: 1 }]` |
 | `pcbPathRelativeTo` | Port selector that `pcbPath` coordinates are relative to (defaults to the `from` port) | `".R1 > .pin2"` |
 
@@ -69,7 +70,7 @@ You can customize the autorouting behavior by setting the `autorouter` property 
 
 ## Manual PCB Paths
 
-Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port).
+Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port). Entries in `pcbPath` can mix coordinate objects with [port selectors](../guides/tscircuit-essentials/port-and-net-selectors.md) so you can anchor the path to specific component pins.
 
 <CircuitPreview leftView='code' rightView='pcb' code={`
   export default () => (
@@ -80,12 +81,7 @@ Sometimes you may want to manually specify the exact path a trace should take on
         from="R1.pin2"
         to="R2.pin1"
         pcbPathRelativeTo="R1.pin2"
-        pcbPath={[
-          { x: 1, y: 0 },
-          { x: 1, y: 1 },
-          { x: 4, y: 1 },
-          { x: 4, y: 0 },
-        ]}
+        pcbPath={["R1.pin2", { x: 0, y: 4 }, "R2.pin1"]}
       />
     </board>
   )
@@ -157,3 +153,23 @@ When using net connections we use a Rats Nest on a PCB view or a net label on a
 schematic view. When you see a dotted line on a Rats Nest, you should think of
 it as a _possible_ connection point, but not necessarily the final place where
 the autorouter will connect to the net.
+
+## Creating a direct path with a custom thickness
+
+Use an empty `pcbPath` array to keep the autorouter's direct path between two
+ports while overriding the trace width via the `thickness` property.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`
+  export default () => (
+    <board width="20mm" height="10mm">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={-3} />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={3} />
+      <trace
+        from="R1.pin2"
+        to="C1.pin1"
+        pcbPath={[]}
+        thickness="0.5mm"
+      />
+    </board>
+  )
+`} />

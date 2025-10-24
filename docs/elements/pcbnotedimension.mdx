@@ -1,0 +1,74 @@
+---
+title: <pcbnotedimension />
+description: The `<pcbnotedimension />` element adds dimension annotations to PCBs showing measurements between two points.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<pcbnotedimension />` lets you add dimensional annotations to your PCB design. These annotations display the distance between two points with arrows and an automatically generated measurement label, making it easy to communicate critical measurements for manufacturing, assembly, or design review. Dimension annotations are visible in PCB previews and can be exported with fabrication outputs.
+
+## Basic Usage
+
+Below is a simple board with a dimension annotation showing the distance between two components. The dimension line connects two points and displays a label with the measurement.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+  export default () => (
+    <board width="20mm" height="15mm">
+      <resistor name="R1" resistance="10k" footprint="0402" pcbX={-3} pcbY={0} />
+      <resistor name="R2" resistance="10k" footprint="0402" pcbX={3} pcbY={0} />
+      <pcbnotedimension
+        from={{ x: -3, y: 2 }}
+        to={{ x: 3, y: 2 }}
+        arrowSize={0.8}
+        fontSize={1.5}
+        color="#ffffff"
+      />
+    </board>
+  )
+  `}
+/>
+
+## Using Selectors
+
+Instead of specifying exact coordinates, you can use selectors to reference components. The dimension will automatically point to the component's position.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+  export default () => (
+    <board width="25mm" height="15mm">
+      <resistor name="R1" resistance="10k" footprint="0402" pcbX={-5} pcbY={0} />
+      <resistor name="R2" resistance="10k" footprint="0402" pcbX={5} pcbY={0} />
+      <pcbnotedimension
+        from="R1"
+        to="R2"
+        fontSize={1.2}
+        color="#00ff00"
+      />
+    </board>
+  )
+  `}
+/>
+
+## Properties
+
+| Property | Type | Description |
+|---------|------|-------------|
+| `from` | string \| Point | **Required.** Starting point of the dimension. Can be a selector string (e.g., `"R1"`) or a Point object with `x` and `y` coordinates. |
+| `to` | string \| Point | **Required.** Ending point of the dimension. Can be a selector string (e.g., `"R2"`) or a Point object with `x` and `y` coordinates. |
+| `text` | string | Optional custom label text to override the auto-generated measurement (e.g., `"Critical spacing"`). |
+| `arrowSize` | length | Size of the arrows at each end of the dimension line. Defaults to `1mm`. |
+| `fontSize` | length | Height of the label text. Defaults to `1mm`. |
+| `color` | string | Hex color code for the dimension line, arrows, and text (e.g., `"#ffffff"`, `"#00ff00"`). |
+| `font` | enum | Font type for the text. Currently only `"tscircuit2024"` is supported. Optional. |
+| `offset` | length | Distance to offset the dimension line from the direct path between points. |
+| `pcbRelative` | boolean | When `true`, coordinates are relative to the parent group instead of the board origin. |
+| `relative` | boolean | Similar to `pcbRelative`, applies to both PCB and schematic coordinates when used inside groups. |

@@ -3,8 +3,6 @@ title: <group />
 description: A group is the basic container element that can contain other elements.
 ---
 
-## Overview
-
 A group is the basic container element that can contain other elements.
 
 By default, a group doesn't have any effect on the circuit.
@@ -28,6 +26,89 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   )
   `}
 />
+
+## Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Optional identifier for the group element. |
+| `children` | `any` | Elements that will be rendered inside the group. |
+| `schTitle` | `string` | Title displayed above the group in the schematic view. |
+| `showAsSchematicBox` | `boolean` | When true, renders the group as a single schematic box. |
+| `connections` | `Connections` | Map of external pin names to internal connection targets. |
+| `schPinArrangement` | `SchematicPinArrangement` | Controls the ordering and sides of pins when shown as a schematic box. |
+| `schPinSpacing` | `Distance` | Adjusts the spacing between schematic pins in box mode. |
+| `schPinStyle` | `SchematicPinStyle` | Styles applied to individual pins in schematic box mode. |
+| `pcbWidth` / `pcbHeight` | `Distance` | Override the PCB footprint width or height for the group box. |
+| `schWidth` / `schHeight` | `Distance` | Override the schematic box width or height. |
+| `pcbLayout` / `schLayout` | `LayoutConfig` | Advanced layout configuration objects applied to PCB or schematic views. |
+| `cellBorder` / `border` | `Border \| null` | Custom border styling for the group when rendered as a cell or schematic box. |
+| `schPadding*` | `Distance` | Sets overall or per-side padding around schematic contents (`schPadding`, `schPaddingLeft`, etc.). |
+| `pcbPadding*` | `Distance` | Sets overall or per-side padding around PCB contents (`pcbPadding`, `pcbPaddingLeft`, etc.). |
+| `pcbPositionAnchor` | `AutocompleteString<typeof ninePointAnchor>` | Anchor used when interpreting `pcbX`/`pcbY` relative to `pcbPosition`. |
+
+### Grid Layout Props
+
+<CircuitPreview
+  defaultView="pcb"
+  showTabs={false}
+  code={`
+  export default () => (
+    <board width="26mm" height="20mm">
+      <group pcbGrid pcbGridCols={2} pcbGridGap="1mm">
+        <resistor name="R1" resistance="1k" footprint="0402" />
+        <capacitor name="C1" capacitance="10uF" footprint="0402" />
+        <led name="LED1" color="red" footprint="0603" />
+        <chip name="U1" footprint="soic8" />
+      </group>
+    </board>
+  )
+  `}
+/>
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `pcbGrid` / `schGrid` | `boolean` | Enables CSS grid style layout in the PCB or schematic view. |
+| `pcbGridCols` / `schGridCols` | `number \| string` | Sets the number of columns in the grid. |
+| `pcbGridRows` / `schGridRows` | `number \| string` | Sets the number of rows in the grid. |
+| `pcbGridTemplateRows` / `schGridTemplateRows` | `string` | Explicit template row sizes for the grid. |
+| `pcbGridTemplateColumns` / `schGridTemplateColumns` | `string` | Explicit template column sizes for the grid. |
+| `pcbGridTemplate` / `schGridTemplate` | `string` | Shorthand template definition covering both rows and columns. |
+| `pcbGridGap` / `schGridGap` | `number \| string` | Sets the row and column gap simultaneously. |
+| `pcbGridRowGap` / `schGridRowGap` | `number \| string` | Sets the gap between rows. |
+| `pcbGridColumnGap` / `schGridColumnGap` | `number \| string` | Sets the gap between columns. |
+
+### Flex Layout Props
+
+<CircuitPreview
+  defaultView="pcb"
+  showTabs={false}
+  code={`
+  export default () => (
+    <board width="26mm" height="20mm">
+      <group pcbFlex pcbFlexGap="1mm" pcbAlignItems="center" pcbJustifyContent="space-between">
+        <resistor name="R1" resistance="1k" footprint="0402" />
+        <resistor name="R2" resistance="1k" footprint="0402" />
+        <resistor name="R3" resistance="1k" footprint="0402" />
+      </group>
+    </board>
+  )
+  `}
+/>
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `pcbFlex` / `schFlex` | `boolean \| string` | Enables flex layout for PCB or schematic contents; string values pass raw CSS flex settings. |
+| `pcbFlexGap` / `schFlexGap` | `number \| string` | Gap between items in a flex layout. |
+| `pcbFlexDirection` / `schFlexDirection` | `"row" \| "column"` | Controls primary axis direction. |
+| `pcbAlignItems` / `schAlignItems` | `"start" \| "center" \| "end" \| "stretch"` | Aligns items on the cross axis. |
+| `pcbJustifyContent` / `schJustifyContent` | `"start" \| "center" \| "end" \| "stretch" \| "space-between" \| "space-around" \| "space-evenly"` | Aligns items on the main axis. |
+| `pcbFlexRow` / `schFlexRow` | `boolean` | Convenience booleans for forcing row direction. |
+| `pcbFlexColumn` / `schFlexColumn` | `boolean` | Convenience booleans for forcing column direction. |
+| `pcbGap` / `schGap` | `number \| string` | Legacy alias for flex gap sizing. |
+| `pcbPack` / `schPack` | `boolean` | Enables flexbox packing utilities. |
+| `pcbPackGap` | `number \| string` | Gap used when `pcbPack` is enabled. |
+| `schMatchAdapt` | `boolean` | In schematic flex layouts, match the adaptive flex sizing of PCB contents. |
 
 
 ## Moving multiple components via a `<group />`

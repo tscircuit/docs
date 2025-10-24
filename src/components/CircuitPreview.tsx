@@ -1,4 +1,8 @@
-import { createSvgUrl, createPngUrl } from "@tscircuit/create-snippet-url"
+import {
+  createSvgUrl,
+  createPngUrl,
+  getCompressedBase64SnippetString,
+} from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
 import { useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
@@ -49,7 +53,7 @@ const FileTab = ({
     <button
       type="button"
       className={tw(
-        `px-3 py-1 text-sm font-mono rounded-md ${
+        `px-3 py-1 text-xs font-mono rounded-md ${
           !isDarkTheme
             ? active
               ? "bg-slate-100 text-slate-950"
@@ -76,9 +80,12 @@ export default function CircuitPreview({
   hidePCBTab = false,
   hide3DTab = false,
   showPinoutTab = false,
-  fsMap = {},
-  entrypoint = "index.tsx",
+  browser3dView = true,
+  fsMap,
+  entrypoint = undefined,
+  mainComponentPath = undefined,
   schematicOnly = false,
+  projectBaseUrl = "https://docs.tscircuit.com/",
   leftView,
   rightView,
 }: {
@@ -93,13 +100,18 @@ export default function CircuitPreview({
   showPinoutTab?: boolean
   fsMap?: Record<string, string>
   entrypoint?: string
+  mainComponentPath?: string
   schematicOnly?: boolean
+  browser3dView?: boolean
   leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
+  projectBaseUrl?: string
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
-  const [currentFile, setCurrentFile] = useState<string>(entrypoint)
+  const [currentFile, setCurrentFile] = useState<string>(
+    entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
+  )
 
   let _showTabs = showTabs
   let _splitView = splitView
@@ -125,29 +137,63 @@ export default function CircuitPreview({
   const [view, setView] = useState<
     "pcb" | "schematic" | "code" | "3d" | "runframe" | "pinout"
   >(rightView ?? _defaultView)
-  const currentCode = code || fsMap[entrypoint] || ""
-  const pcbUrl = useMemo(() => createSvgUrl(currentCode, "pcb"), [currentCode])
+  const hasMultipleFiles = Object.keys(fsMap ?? {}).length > 1
+  const fsMapOrCode = hasMultipleFiles
+    ? fsMap || code
+    : code || Object.values(fsMap ?? {})[0]
+  const pcbUrl = useMemo(() => createSvgUrl(fsMapOrCode, "pcb"), [fsMapOrCode])
   const schUrl = useMemo(
-    () => createSvgUrl(currentCode, "schematic"),
-    [currentCode],
+    () => createSvgUrl(fsMapOrCode, "schematic"),
+    [fsMapOrCode],
   )
   const pinoutUrl = useMemo(
-    () => createSvgUrl(currentCode, "pinout"),
-    [currentCode],
+    () => createSvgUrl(fsMapOrCode, "pinout"),
+    [fsMapOrCode],
   )
-  const threeDUrl = useMemo(
-    () => createPngUrl(currentCode, "3d"),
-    [currentCode],
-  )
+  const threeDUrl = useMemo(() => {
+    if (browser3dView && typeof fsMapOrCode === "string") {
+      return createPngUrl(fsMapOrCode, "3d")
+    }
+
+    // If fsMap is provided, use fs_map parameter instead of code
+    if (fsMap) {
+      const fsMapJson = JSON.stringify(fsMap)
+      // Use browser-compatible base64 encoding
+      const encodedFsMap = btoa(
+        encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
+          String.fromCharCode(Number.parseInt(p1, 16)),
+        ),
+      )
+
+      // Construct the URL step by step for clarity
+      const baseUrl = "https://svg.tscircuit.com/"
+      const params: Record<string, string> = {
+        svg_type: "3d",
+        format: "png",
+        png_width: "800",
+        png_height: "600",
+        fs_map: encodeURIComponent(encodedFsMap),
+        main_component_path: mainComponentPath
+          ? encodeURIComponent(mainComponentPath)
+          : undefined,
+        project_base_url: encodeURIComponent(projectBaseUrl),
+      }
+      const queryString = Object.entries(params)
+        .map(([key, value]) => `${key}=${value}`)
+        .join("&")
+      return `${baseUrl}?${queryString}`
+    }
+
+    const encodedCode = encodeURIComponent(
+      getCompressedBase64SnippetString(code),
+    )
+    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodedCode}`
+  }, [code, browser3dView, fsMap])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
   const tabContentHeightCss =
-    _showTabs && windowSize !== "mobile"
-      ? "h-[calc(100%-46px)]"
-      : "h-full max-h-[300px]"
-
-  const hasMultipleFiles = Object.keys(fsMap).length > 1
+    _showTabs && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
 
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
@@ -209,7 +255,7 @@ export default function CircuitPreview({
           `flex-inline justify-start gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-white" : "bg-slate-800"} p-1 gap-2`,
         )}
       >
-        {Object.keys(fsMap).map((filename) => (
+        {Object.keys(fsMap ?? {}).map((filename) => (
           <FileTab
             key={filename}
             filename={filename}
@@ -242,7 +288,7 @@ export default function CircuitPreview({
                 )}
                 language="tsx"
               >
-                {fsMap[currentFile]?.trim() || code?.trim() || ""}
+                {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
               </CodeBlock>
             </div>
           </div>
@@ -252,7 +298,7 @@ export default function CircuitPreview({
       return (
         <div
           className={tw(
-            `flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0 flex items-center justify-center ${
+            `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
               v === "pcb"
                 ? "bg-black"
                 : v === "schematic"
@@ -330,7 +376,7 @@ export default function CircuitPreview({
                 )}
                 language="tsx"
               >
-                {fsMap[currentFile]?.trim() || code?.trim() || ""}
+                {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
               </CodeBlock>
             </div>
           </div>
@@ -342,7 +388,13 @@ export default function CircuitPreview({
           view === "pinout") && (
           <div
             className={tw(
-              "flex-1 basis-1/2 min-w-0 min-h-[300px] overflow-hidden m-0 p-0",
+              `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
+                view === "pcb"
+                  ? "bg-black"
+                  : view === "schematic"
+                    ? "bg-[#F5F1ED]"
+                    : "bg-white"
+              }`,
             )}
           >
             {_showTabs && shouldSplitCode && tabsElm}

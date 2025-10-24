@@ -1,0 +1,107 @@
+---
+title: <symbol />
+description: >-
+  Used to define custom schematic representations for chips using primitive drawing components like rectangles, circles, lines, and arcs.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<symbol />` element allows you to create custom schematic representations for your chips. Instead of using the default schematic box with pins, you can draw custom shapes using primitive components like `<schematicline />`, `<schematiccircle />`, `<schematicrect />`, and `<schematicarc />`.
+
+Most components let you customize their schematic appearance through the `symbol` prop, where you can combine `<port />` elements with drawing primitives to define connection points.
+
+:::tip
+Use `<symbol />` when you want to create a custom schematic appearance for your component that differs from the standard rectangular box representation.
+:::
+
+## Basic Symbol Example
+
+Here's an example combining multiple primitive components to create a custom symbol:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2}
+            height={1.5}
+            isFilled={false}
+          />
+          <schematiccircle
+            center={{ x: 0, y: 0 }}
+            radius={0.3}
+            isFilled={true}
+          />
+          <schematicline x1={-0.5} y1={0} x2={0.5} y2={0} strokeWidth={0.03} />
+          <port name="in" direction="left" schX={-1} schY={0} />
+          <port name="out" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Symbols with Connections
+
+You can create multiple chips with custom symbols and connect them via traces:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      schX={0}
+      schY={0}
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2}
+            height={2}
+            isFilled={false}
+          />
+          <port name="pin1" direction="right" schX={1} schY={0} />
+        </symbol>
+      }
+    />
+    <chip
+      schX={4}
+      schY={0}
+      name="U2"
+      symbol={
+        <symbol>
+          <schematicrect
+            schX={0}
+            schY={0}
+            width={2}
+            height={2}
+            isFilled={false}
+          />
+          <port name="pin1" direction="left" schX={3} schY={0} />
+        </symbol>
+      }
+      connections={{
+        pin1: ".U1 > .pin1",
+      }}
+    />
+  </board>
+)
+`} />
+
+## Available Schematic Drawing Components
+
+Within a `<symbol />`, you can use the following primitive components to draw your custom schematic representation:
+
+- [`<schematicrect />`](./schematicrect.mdx) - Draw rectangles and boxes
+- [`<schematiccircle />`](./schematiccircle.mdx) - Draw circles
+- [`<schematicline />`](./schematicline.mdx) - Draw straight lines
+- [`<schematicarc />`](./schematicarc.mdx) - Draw circular arcs
