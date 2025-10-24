@@ -1,5 +1,6 @@
 ---
 title: tsci login
+description: Sign in to the tscircuit registry to enable publishing and cloud tools
 sidebar_position: 1
 ---
 

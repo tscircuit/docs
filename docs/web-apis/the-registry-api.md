@@ -1,5 +1,6 @@
 ---
 title: Registry API
+description: Use the tscircuit registry for package management, bundling, and advanced endpoints
 sidebar_position: 1
 ---
 

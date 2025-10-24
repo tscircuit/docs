@@ -1,5 +1,6 @@
 ---
 title: Programmatically Building Circuits
+description: Use tscircuit libraries and APIs to generate circuits from scripts or services
 ---
 
 This guide is about using tscircuit inside of scripts, APIs or inside the browser. Maybe you want to create a website that allows your users drag'n'drop to create custom electronics and turn their designs into real circuits automatically.

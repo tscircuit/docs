@@ -1,5 +1,6 @@
 ---
 title: Getting Started as a Contributor
+description: Learn how to set up your environment and find issues in the tscircuit ecosystem
 sidebar_position: 1
 ---
 

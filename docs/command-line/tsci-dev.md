@@ -1,5 +1,6 @@
 ---
 title: tsci dev
+description: Run a local preview server for your tscircuit project
 sidebar_position: 2
 ---
 
