@@ -1,20 +1,28 @@
 ---
 title: Importing from JLCPCB
 sidebar_position: 2
-description: JLCPCB has a massive component catalog of 3d models and footprints.
+description: Import components from JLCPCB's massive catalog using the web-based RunFrame interface.
 ---
 
 import YouTubeEmbed from '../../../src/components/YouTubeEmbed';
 
 ## Overview
 
-JLCPCB has a massive component catalog of 3d models and footprints.
+JLCPCB has a massive component catalog with over 500,000 parts, including 3D models and footprints. The easiest way to import these components into your tscircuit projects is through the web-based RunFrame interface at [tscircuit.com](https://tscircuit.com).
 
-## Web Import
+## Web Import via RunFrame (Recommended)
 
-You can import JLCPCB components on [tscircuit.com](https://tscircuit.com). After
-importing the snippet, it'll be given a package name like `@tsci/YOUR_NAME.CHIP_NAME`
-and available for import from the tscircuit registry.
+The RunFrame web interface at [tscircuit.com](https://tscircuit.com) provides the simplest and most reliable way to import JLCPCB components. After importing, your component will be published to the tscircuit registry with a package name like `@tsci/YOUR_NAME.CHIP_NAME`, making it instantly available in all your projects.
+
+### Why Use RunFrame?
+
+- **Zero Setup** - No CLI installation or configuration required
+- **Instant Preview** - See your component's PCB, schematic, and 3D views immediately
+- **Registry Publishing** - Components are automatically published and shareable
+- **Always Current** - Access the latest JLCPCB component data
+- **Browser-Based** - Works on any device with a web browser
+
+### Step-by-Step Guide
 
 <figure>
   <img src="/img/tscircuit-new-import-part.png" />
@@ -41,8 +49,9 @@ and available for import from the tscircuit registry.
   <figcaption>An example of an imported JLCPCB component</figcaption>
 </figure>
 
-After your component has been added to tscircuit, you can import it as a
-`@tsci/*` import like this:
+### Using Your Imported Component
+
+Once your component is published to the registry, you can use it in any tscircuit project by importing it with the `@tsci/*` namespace:
 
 ```tsx
 import { ESP32_WROOM_32DC } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC"
@@ -54,17 +63,23 @@ export default () => (
 )
 ```
 
+The component will include:
+- Accurate footprint from JLCPCB
+- 3D model for visualization
+- Schematic symbol
+- Pin mappings and port definitions
 
-## CLI Import
+## Alternative: CLI Import
 
-To import JLCPCB components using the tsci dev environment, follow these steps:
+For users who prefer working locally, you can also import JLCPCB components using the `tsci dev` environment:
 
 1. Run `tsci dev` to start the development server
 2. In the tsci dev environment, navigate to "File -> Import"
+3. Enter the JLCPCB part number and import
 
 <YouTubeEmbed youtubeId="tFCGAa81KUs" />
 
-After importing, you can use the component in your circuit like this:
+After importing, you can use the component in your circuit:
 
 ```tsx
 import { ComponentName } from "@tsci/imported-component"
@@ -75,3 +90,7 @@ export default () => (
   </board>
 )
 ```
+
+:::note
+While the CLI method works well for local development, we recommend using the web-based RunFrame import for easier sharing and collaboration.
+:::
