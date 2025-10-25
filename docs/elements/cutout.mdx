@@ -1,0 +1,121 @@
+---
+title: <cutout />
+description: >-
+  Remove material from a board outline to create slots, notches, or other interior shapes.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<cutout />` element removes material from a [`<board />`](./board.mdx)
+outline. Use cutouts to add interior slots, mounting reliefs, wire passages, or
+other custom shapes without editing the overall board outline.
+
+Cutouts are fabricated along with the board outline, so you can preview them in
+the PCB view and expect them to be milled or routed during manufacturing.
+
+## Supported Shapes
+
+The `shape` prop determines how the cutout is interpreted:
+
+- `rect` (default) &mdash; remove a rectangular slot using `width` and `height`.
+- `circle` &mdash; remove a circular opening using `radius` or `diameter`.
+- `polygon` &mdash; remove a custom polygon defined by `points`.
+
+All shapes support `pcbX` and `pcbY` to position the cutout relative to the
+board's origin. Dimensions accept either numbers (treated as millimeters) or
+strings like `"3mm"`.
+
+## Examples
+
+### Multiple Cutout Shapes on One Board
+
+This board uses three different cutout shapes: a rectangular USB notch, a cable
+pass-through circle, and a decorative polygon.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+    <board width="30mm" height="20mm">
+      <cutout shape="rect" width="5mm" height="3mm" pcbX="-10mm" pcbY="0mm" />
+      <cutout shape="circle" radius="2mm" pcbX="0mm" pcbY="0mm" />
+      <cutout
+        shape="polygon"
+        points={[
+          { x: 5, y: -2 },
+          { x: 8, y: 0 },
+          { x: 5, y: 2 },
+          { x: 6, y: 0 },
+        ]}
+        pcbX="5mm"
+        pcbY="0mm"
+      />
+    </board>
+  )`}
+/>
+
+### Rectangular Slot for Connectors
+
+Rectangular cutouts are ideal for panel-mount connectors or finger slots. Width
+and height define the opening size.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+    <board width="25mm" height="18mm">
+      <chip name="U1" footprint="soic8" pcbX={0} pcbY={0} />
+      <cutout shape="rect" width="6mm" height="4mm" pcbX={-8} pcbY={0} />
+    </board>
+  )`}
+/>
+
+### Circular Cable Relief
+
+Circular cutouts create pass-throughs for wires or alignment posts. Set either a
+`radius` or `diameter` to size the opening.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+    <board width="24mm" height="16mm">
+      <cutout shape="circle" radius="1.5mm" pcbX={6} pcbY={-3} />
+      <cutout shape="circle" radius="1.5mm" pcbX={6} pcbY={3} />
+    </board>
+  )`}
+/>
+
+### Custom Polygon Cutout
+
+Pass an array of `{ x, y }` points to `points` for complex shapes. Points are
+specified in millimeters relative to the cutout's local origin, which is then
+positioned with `pcbX` and `pcbY`.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+    <board width="28mm" height="22mm">
+      <cutout
+        shape="polygon"
+        points={[
+          { x: -4, y: -2 },
+          { x: 4, y: -2 },
+          { x: 6, y: 0 },
+          { x: 4, y: 2 },
+          { x: -4, y: 2 },
+        ]}
+        pcbX={0}
+        pcbY={0}
+      />
+    </board>
+  )`}
+/>
+
+## Tips
+
+- Combine cutouts with [`<hole />`](./hole.mdx) elements when you need both
+  clearance and mounting hardware on the same edge.
+- Keep a small gap between cutouts and copper features to satisfy your
+  manufacturer’s mechanical clearance rules.
+- When exporting fabrication files, cutouts appear on the board outline layer,
+  so confirm your CAM output shows the expected openings before ordering.
