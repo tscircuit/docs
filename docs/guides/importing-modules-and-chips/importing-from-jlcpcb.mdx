@@ -10,6 +10,30 @@ import YouTubeEmbed from '../../../src/components/YouTubeEmbed';
 
 JLCPCB has a massive component catalog of 3d models and footprints.
 
+## RunFrame Import (Recommended)
+
+The recommended way to import JLCPCB components is by using RunFrame. RunFrame is a tscircuit component that allows you to preview and run tscircuit code directly in your browser.
+
+You can use RunFrame to import JLCPCB components by providing the JLCPCB part number to the `RunFrame` component.
+
+```tsx
+import { RunFrame } from "@tscircuit/runframe"
+
+export default () => (
+  <RunFrame
+    initialJlcpcbId="C133726"
+    packageName="my-jlcpcb-component"
+  />
+)
+```
+
+This will display the component in the RunFrame, and you can then use it in your tscircuit projects.
+
+<figure>
+  <img src="/img/runframe-example.png" />
+  <figcaption>An example of a JLCPCB component imported with RunFrame</figcaption>
+</figure>
+
 ## Web Import
 
 You can import JLCPCB components on [tscircuit.com](https://tscircuit.com). After
