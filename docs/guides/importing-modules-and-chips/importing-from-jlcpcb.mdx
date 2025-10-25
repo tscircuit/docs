@@ -27,7 +27,21 @@ export default () => (
 )
 ```
 
-This will display the component in the RunFrame, and you can then use it in your tscircuit projects.
+This will display the component in the RunFrame. After the component has been imported, it will be available on the tscircuit registry under the package name you provided.
+
+### Using the Imported Component
+
+To use the component in your own tscircuit projects, you can import it from the tscircuit registry using the package name you provided in the `RunFrame` component.
+
+```tsx
+import { MyJlcpcbComponent } from "@tsci/my-jlcpcb-component"
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <MyJlcpcbComponent />
+  </board>
+)
+```
 
 <figure>
   <img src="/img/runframe-example.png" />
