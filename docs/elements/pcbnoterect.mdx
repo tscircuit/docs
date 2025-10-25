@@ -108,6 +108,29 @@ export default () => (
 `}
 />
 
+### Using Color Names
+
+Any web-compatible color name or hex code can be used for the `color` property.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <pcbnoterect
+      pcbX={0}
+      pcbY={0}
+      width={12}
+      height={8}
+      strokeWidth={0.4}
+      color="yellow"
+    />
+  </board>
+)
+`}
+/>
 
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
@@ -116,7 +139,7 @@ export default () => (
 | width | distance | Yes | - | Width of the rectangle in mm |
 | height | distance | Yes | - | Height of the rectangle in mm |
 | strokeWidth | distance | No | 0.1 | Width of the rectangle border in mm |
-| color | string | No | - | Rectangle color as hex string (e.g., "#ff0000") |
+| color | string | No | - | Rectangle color as a web-compatible color name or hex string (e.g., "yellow", "#ff0000") |
 | isFilled | boolean | No | false | Whether the rectangle is filled with color |
 | hasStroke | boolean | No | true | Whether the rectangle has a border |
 | isStrokeDashed | boolean | No | false | Whether the border is drawn with dashes |
