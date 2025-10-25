@@ -36,6 +36,8 @@ pass-through circle, and a decorative polygon.
 
 <CircuitPreview
   defaultView="pcb"
+  hideSchematicTab
+  browser3dView={false}
   code={`export default () => (
     <board width="30mm" height="20mm">
       <cutout shape="rect" width="5mm" height="3mm" pcbX="-10mm" pcbY="0mm" />
@@ -62,6 +64,8 @@ and height define the opening size.
 
 <CircuitPreview
   defaultView="pcb"
+  hideSchematicTab
+  browser3dView={false}
   code={`export default () => (
     <board width="25mm" height="18mm">
       <chip name="U1" footprint="soic8" pcbX={0} pcbY={0} />
@@ -77,6 +81,8 @@ Circular cutouts create pass-throughs for wires or alignment posts. Set either a
 
 <CircuitPreview
   defaultView="pcb"
+  hideSchematicTab
+  browser3dView={false}
   code={`export default () => (
     <board width="24mm" height="16mm">
       <cutout shape="circle" radius="1.5mm" pcbX={6} pcbY={-3} />
@@ -93,6 +99,8 @@ positioned with `pcbX` and `pcbY`.
 
 <CircuitPreview
   defaultView="pcb"
+  hideSchematicTab
+  browser3dView={false}
   code={`export default () => (
     <board width="28mm" height="22mm">
       <cutout
@@ -111,11 +119,3 @@ positioned with `pcbX` and `pcbY`.
   )`}
 />
 
-## Tips
-
-- Combine cutouts with [`<hole />`](./hole.mdx) elements when you need both
-  clearance and mounting hardware on the same edge.
-- Keep a small gap between cutouts and copper features to satisfy your
-  manufacturer’s mechanical clearance rules.
-- When exporting fabrication files, cutouts appear on the board outline layer,
-  so confirm your CAM output shows the expected openings before ordering.
