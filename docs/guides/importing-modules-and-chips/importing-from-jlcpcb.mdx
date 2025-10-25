@@ -10,6 +10,41 @@ import YouTubeEmbed from '../../../src/components/YouTubeEmbed';
 
 JLCPCB has a massive component catalog of 3d models and footprints.
 
+## Editor Import
+
+:::tip Recommended Method
+The easiest way to import JLCPCB components is through the editor's built-in import dialog. This provides a modern search interface with real-time stock information and instant component preview.
+:::
+
+<figure>
+  <img src="/img/runframe-import-dialog.png" />
+  <figcaption>Click the Import button in the toolbar to begin importing JLCPCB parts</figcaption>
+</figure>
+
+<figure>
+  <img src="/img/runframe-jlcpcb-search.png" />
+  <figcaption>Go to the JLCPCB Parts tab and search by part number (e.g., 'C5100227') or keyword (e.g., 'ESP32')</figcaption>
+</figure>
+
+<figure>
+  <img src="/img/runframe-jlcpcb-results.png" />
+  <figcaption>Select component and click Import</figcaption>
+</figure>
+
+The component is saved to your project's `imports/` directory, ready to use immediately.
+
+### Example Usage
+
+```tsx
+import { ESP32_WROOM_32D } from "./imports/ESP32_WROOM_32D"
+
+export default () => (
+  <board width="50mm" height="50mm">
+    <ESP32_WROOM_32D />
+  </board>
+)
+```
+
 ## Web Import
 
 You can import JLCPCB components on [tscircuit.com](https://tscircuit.com). After
@@ -54,40 +89,6 @@ export default () => (
 )
 ```
 
-## RunFrame Import
-
-:::tip Recommended Method
-The easiest way to import JLCPCB components is through RunFrame's built-in import dialog. This provides a modern search interface with real-time stock information and instant component preview.
-:::
-
-<figure>
-  <img src="/img/runframe-import-dialog.png" />
-  <figcaption>Click the Import button in the toolbar to begin importing JLCPCB parts</figcaption>
-</figure>
-
-<figure>
-  <img src="/img/runframe-jlcpcb-search.png" />
-  <figcaption>Go to the JLCPCB Parts tab and search by part number (e.g., 'C5100227') or keyword (e.g., 'ESP32')</figcaption>
-</figure>
-
-<figure>
-  <img src="/img/runframe-jlcpcb-results.png" />
-  <figcaption>Select component and click Import</figcaption>
-</figure>
-
-The component is saved to your project's `imports/` directory, ready to use immediately.
-
-### Example Usage
-
-```tsx
-import { ESP32_WROOM_32D } from "./imports/ESP32_WROOM_32D"
-
-export default () => (
-  <board width="50mm" height="50mm">
-    <ESP32_WROOM_32D />
-  </board>
-)
-```
 
 ## CLI Import
 
