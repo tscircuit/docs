@@ -8,17 +8,21 @@ import YouTubeEmbed from '../../../src/components/YouTubeEmbed';
 
 ## Overview
 
-JLCPCB has a massive component catalog of 3d models and footprints.
+JLCPCB maintains a massive component catalog with 3D models and footprints for thousands of parts. You can import these components directly into your tscircuit projects using several methods.
 
-## Editor Import
+## Import Using Editor Locally
 
-:::tip Recommended Method
-The easiest way to import JLCPCB components is through the editor's built-in import dialog. This provides a modern search interface with real-time stock information and instant component preview.
-:::
+The easiest way to import JLCPCB components is using the editor's built-in import dialog when running `tsci dev`. This provides a modern search interface with real-time stock information.
+
+
+<figure>
+  <img src="/img/runframe-cli-setup.png" />
+  <figcaption>Run `tsci dev` to start the development server</figcaption>
+</figure>
 
 <figure>
   <img src="/img/runframe-import-dialog.png" />
-  <figcaption>Click the Import button in the toolbar to begin importing JLCPCB parts</figcaption>
+  <figcaption>In the tsci dev environment, navigate to "File -> Import"</figcaption>
 </figure>
 
 <figure>
@@ -31,21 +35,27 @@ The easiest way to import JLCPCB components is through the editor's built-in imp
   <figcaption>Select component and click Import</figcaption>
 </figure>
 
-The component is saved to your project's `imports/` directory, ready to use immediately.
+<YouTubeEmbed youtubeId="tFCGAa81KUs" />
+
+After importing, you can use the component in your circuit like this:
 
 ### Example Usage
 
 ```tsx
-import { ESP32_WROOM_32D } from "./imports/ESP32_WROOM_32D"
+import { ComponentName } from "@tsci/imported-component"
 
 export default () => (
-  <board width="50mm" height="50mm">
-    <ESP32_WROOM_32D />
+  <board width="10mm" height="10mm">
+    <ComponentName />
   </board>
 )
 ```
 
-## Web Import
+:::tip Tip
+Using File > Import from the editor locally is recommended
+:::
+
+## Import Using Web UI
 
 You can import JLCPCB components on [tscircuit.com](https://tscircuit.com). After
 importing the snippet, it'll be given a package name like `@tsci/YOUR_NAME.CHIP_NAME`
@@ -85,28 +95,6 @@ import { ESP32_WROOM_32DC } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC"
 export default () => (
   <board width="10mm" height="10mm">
     <ESP32_WROOM_32DC />
-  </board>
-)
-```
-
-
-## CLI Import
-
-To import JLCPCB components using the tsci dev environment, follow these steps:
-
-1. Run `tsci dev` to start the development server
-2. In the tsci dev environment, navigate to "File -> Import"
-
-<YouTubeEmbed youtubeId="tFCGAa81KUs" />
-
-After importing, you can use the component in your circuit like this:
-
-```tsx
-import { ComponentName } from "@tsci/imported-component"
-
-export default () => (
-  <board width="10mm" height="10mm">
-    <ComponentName />
   </board>
 )
 ```
