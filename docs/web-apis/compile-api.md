@@ -1,5 +1,6 @@
 ---
 title: Compile API
+description: Compile tscircuit code into Circuit JSON through the hosted API
 sidebar_position: 2
 ---
 
@@ -104,4 +105,3 @@ Returns a status indicating if the service is operational. The response also inc
 ```bash
 bun run start
 ```
-

@@ -1,5 +1,6 @@
 ---
 title: Bounties and Sponsorship
+description: Understand how tscircuit bounties and contributor sponsorships are awarded
 ---
 
 tscircuit has thousands of dollars (USD) of bounties opened every month in over
