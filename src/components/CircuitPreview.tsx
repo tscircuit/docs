@@ -88,7 +88,7 @@ export default function CircuitPreview({
   projectBaseUrl = "https://docs.tscircuit.com/",
   leftView,
   rightView,
-  isSolderMasked,
+  showSolderMask,
 }: {
   code?: string
   showTabs?: boolean
@@ -107,7 +107,7 @@ export default function CircuitPreview({
   leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   projectBaseUrl?: string
-  isSolderMasked?: boolean
+  showSolderMask?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -146,11 +146,11 @@ export default function CircuitPreview({
   const createSvgUrlWithOptions = createSvgUrl as unknown as (
     source: typeof fsMapOrCode,
     view: "pcb" | "schematic" | "pinout",
-    options?: { isSolderMasked?: boolean },
+    options?: { showSolderMask?: boolean },
   ) => string
   const pcbUrl = useMemo(
-    () => createSvgUrlWithOptions(fsMapOrCode, "pcb", { isSolderMasked }),
-    [fsMapOrCode, isSolderMasked],
+    () => createSvgUrlWithOptions(fsMapOrCode, "pcb", { showSolderMask }),
+    [fsMapOrCode, showSolderMask],
   )
   const schUrl = useMemo(
     () => createSvgUrl(fsMapOrCode, "schematic"),
