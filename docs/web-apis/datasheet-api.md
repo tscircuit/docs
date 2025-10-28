@@ -1,5 +1,6 @@
 ---
 title: Datasheet API
+description: Store and retrieve structured component datasheets via the tscircuit API
 sidebar_position: 4
 ---
 

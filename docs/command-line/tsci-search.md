@@ -1,5 +1,6 @@
 ---
 title: tsci search
+description: Discover footprints and packages across the tscircuit ecosystem
 ---
 
 `tsci search` finds footprints and packages from across the tscircuit ecosystem.
