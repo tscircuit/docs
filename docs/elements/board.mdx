@@ -160,6 +160,33 @@ export default () => (
 
 `} />
 
+If you'd like a circular PCB, you can generate evenly spaced points around a
+circle and pass them as the outline. In the example below a `radiusMm` variable
+controls the size of the board—changing it automatically updates both the
+outline points and the board's bounding box:
+
+<CircuitPreview defaultView="pcb" code={`
+import { range } from "@tscircuit/math-utils"
+
+const steps = 120
+const radiusMm = 12
+
+export default () => (
+  <board
+    width={`\${radiusMm * 2}mm`}
+    height={`\${radiusMm * 2}mm`}
+    outline={range(steps).map((step) => {
+      const angle = (step / steps) * Math.PI * 2
+
+      return {
+        x: Math.cos(angle) * radiusMm,
+        y: Math.sin(angle) * radiusMm,
+      }
+    })}
+  />
+)
+`} />
+
 ### Offseting the board origin
 
 `width` and `height` set the board's bounding box (and thus the `pcbX`/`pcbY`
