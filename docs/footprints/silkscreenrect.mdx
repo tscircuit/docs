@@ -22,7 +22,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Filled Silkscreen Rectangles
 
-Enable the `isFilled` prop to create solid silkscreen blocks—useful for alignment targets or bold markings. You can mix filled and outlined rectangles within the same footprint.
+Enable the `filled` prop to create solid silkscreen blocks—useful for alignment targets or bold markings. You can mix filled and outlined rectangles within the same footprint.
 
 <CircuitPreview code={`
   export default () => (
@@ -34,7 +34,7 @@ Enable the `isFilled` prop to create solid silkscreen blocks—useful for alignm
           pcbY={0}
           width={1}
           height={1}
-          isFilled
+          filled
         />
       </footprint>
     </group>
