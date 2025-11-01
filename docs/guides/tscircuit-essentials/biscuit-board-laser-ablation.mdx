@@ -1,0 +1,164 @@
+---
+title: Biscuit Board Laser Ablation
+description: Learn how to route PCBs against a prefabricated via template using the laser_prefab autorouter and the netIsAssignable via property.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# Biscuit Board Laser Ablation
+
+The **laser_prefab** autorouter pairs tscircuit with a fabrication process that
+combines laser ablation and a "biscuit" carrier board. Fabricators pre-drill a
+matrix of vias into an inexpensive substrate—the biscuit—then laminate thin
+copper to the top and bottom. A UV or IR laser ablates the copper, defining the
+traces while leaving the via barrels intact. Because the vias are prefabricated,
+you route against a known template instead of drilling new holes for every
+board.
+
+This guide walks through designing for that workflow. You'll learn how to:
+
+1. Prepare a via template that can be reused across designs.
+2. Configure your board to route with `autorouter="laser_prefab"`.
+3. Mark vias as assignable so the autorouter can claim them dynamically.
+4. Validate that the generated routing honors the biscuit's geometry.
+
+## 1. Build a reusable via template
+
+Create a library subcircuit that contains every via location available on the
+biscuit board. Mark each via with `netIsAssignable` so it becomes an assignable
+obstacle when the router runs. The vias can optionally include default net names
+to serve as documentation for repeated layouts.
+
+```tsx title="src/biscuit-template.tsx"
+import { Fragment } from "react"
+
+export const BiscuitTemplate = () => (
+  <Fragment>
+    <via name="B1" pcbX={-4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
+    <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
+    <via name="B3" pcbX={4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
+    <via name="B4" pcbX={-4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+    <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+    <via name="B6" pcbX={4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+  </Fragment>
+)
+```
+
+Keep the template focused on the vias themselves. Copper features such as fiducials or
+alignment marks should live in their own subcircuits so you can swap templates
+without affecting the mechanical stackup.
+
+## 2. Place the biscuit template on your board
+
+Include the template inside your `<board />` before adding components. Because
+the vias are already drilled in the physical biscuit, avoid translating or
+rotating the template in a way that misaligns the coordinates.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+  <board width="20mm" height="20mm" autorouter="laser_prefab">
+    <group name="biscuit" pcbX={0} pcbY={0}>
+      <via name="B1" pcbX={-4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B3" pcbX={4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B4" pcbX={-4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B6" pcbX={4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+    </group>
+
+    <testpoint name="TP_TOP" footprintVariant="pad" pcbX={0} pcbY={9} layer="top" />
+    <testpoint name="TP_BOTTOM" footprintVariant="pad" pcbX={0} pcbY={-9} layer="bottom" />
+  </board>
+)`}
+/>
+
+If your biscuit provides fiducials or tooling holes, align them with your CAD
+origin so the panelization step can easily merge your routed copper with the
+prefabricated template. Keep the board outline slightly inside the biscuit's
+usable area so the laser can clear debris without hitting the rails.
+
+## 3. Route with `autorouter="laser_prefab"`
+
+Once the template is in place, add traces exactly as you would for a conventional
+board. The router treats assignable vias as neutral territory: any net can claim
+them provided both layers are available and no design rules are violated.
+
+```tsx title="src/laser-prefab-example.tsx"
+<board width="20mm" height="20mm" autorouter="laser_prefab">
+  <BiscuitTemplate />
+
+  <chip
+    name="U1"
+    footprint="soic8"
+    pcbX={-6}
+    pcbY={0}
+    connections={{ pin1: "R1.pin1", pin8: "B6.top" }}
+  />
+  <resistor name="R1" resistance="1k" footprint="0402" pcbX={6} pcbY={0} />
+
+  <trace from="TP_TOP.pin1" to="B2.top" />
+  <trace from="B2.bottom" to="TP_BOTTOM.pin1" />
+</board>
+```
+
+During routing, tscircuit emits a **simple route JSON** that marks each
+`netIsAssignable` via as an obstacle with the `netIsAssignable` flag. The
+`laser_prefab` preset looks for that flag, allowing it to reserve a via for any
+trace that needs to change layers. The [integration test in the core
+library](https://github.com/tscircuit/core/blob/main/tests/autorouting/laser-prefab.test.tsx)
+verifies the behavior end to end.
+
+### Reserving specific vias
+
+Sometimes you know that certain vias must stay tied to a particular net—perhaps
+they connect to ground pour or stitching features. In that case, omit the
+`netIsAssignable` flag on those vias and route them manually. The router will
+leave them untouched while still consuming the rest of the biscuit template as
+needed.
+
+## 4. Validate the routed output
+
+After calling `circuit.renderUntilSettled()`, inspect the PCB view or export the
+Gerber/ODB++ data to confirm that:
+
+- Every claimed via matches a real location on the biscuit template.
+- Unused vias remain isolated and keep their original net names.
+- Trace clearances respect your fabrication limits.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+  <board width="20mm" height="20mm" autorouter="laser_prefab">
+    <group name="biscuit">
+      <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+    </group>
+
+    <testpoint name="TP_TOP" footprintVariant="pad" pcbX={0} pcbY={9} layer="top" />
+    <testpoint name="TP_BOTTOM" footprintVariant="pad" pcbX={0} pcbY={-9} layer="bottom" />
+
+    <trace from="TP_TOP.pin1" to="B2.top" />
+    <trace from="B2.bottom" to="B5.top" />
+    <trace from="B5.bottom" to="TP_BOTTOM.pin1" />
+  </board>
+)`}
+/>
+
+If you need to adjust routing priorities, you can provide a custom autorouter
+object instead of the preset. Just make sure the implementation understands the
+`netIsAssignable` obstacles that tscircuit produces.
+
+## Additional tips
+
+- **Version your templates.** Include a `templateVersion` prop or layer marker so
+  your fabrication team can confirm they are loading the correct biscuit.
+- **Simulate thermal load.** Prefabricated vias sometimes have smaller annular
+  rings. Run a design-rule check (DRC) to ensure high-current nets can handle the
+  reduced copper area.
+- **Document drill tolerances.** Share the biscuit's drill chart with your team so
+  component footprints can account for any off-center holes.
+
+With these practices, you can create a repeatable laser ablation workflow that
+leverages tscircuit's autorouting while taking full advantage of prefabricated
+via templates.
