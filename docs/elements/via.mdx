@@ -48,9 +48,8 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 The [`laser_prefab` autorouter](./board.mdx#setting-the-autorouter) pairs with
 prefabricated ("biscuit") via templates used in laser ablation workflows.
-Setting `netIsAssignable` on a via exports it as an **assignable obstacle**,
-allowing the autorouter to repurpose the hole for whichever net needs to switch
-layers during routing.
+Setting `netIsAssignable` on a via marks it as reusable so the autorouter can
+repurpose the hole for whichever net needs to switch layers during routing.
 
 <CircuitPreview
   defaultView="pcb"

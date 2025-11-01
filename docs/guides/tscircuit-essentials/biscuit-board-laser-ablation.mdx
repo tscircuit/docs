@@ -24,10 +24,10 @@ This guide walks through designing for that workflow. You'll learn how to:
 
 ## 1. Build a reusable via template
 
-Create a library subcircuit that contains every via location available on the
-biscuit board. Mark each via with `netIsAssignable` so it becomes an assignable
-obstacle when the router runs. The vias can optionally include default net names
-to serve as documentation for repeated layouts.
+Create a component for your biscuit template that contains every via location
+available on the board. Mark each via with `netIsAssignable` so it is treated as
+an assignable via when the router runs. The vias can optionally include default
+net names to serve as documentation for repeated layouts.
 
 ```tsx title="src/biscuit-template.tsx"
 import { Fragment } from "react"
@@ -44,9 +44,9 @@ export const BiscuitTemplate = () => (
 )
 ```
 
-Keep the template focused on the vias themselves. Copper features such as fiducials or
-alignment marks should live in their own subcircuits so you can swap templates
-without affecting the mechanical stackup.
+Keep the template focused on the vias themselves. Copper features such as
+fiducials or alignment marks should live in their own components so you can swap
+templates without affecting the mechanical stackup.
 
 ## 2. Place the biscuit template on your board
 
@@ -73,10 +73,8 @@ rotating the template in a way that misaligns the coordinates.
 )`}
 />
 
-If your biscuit provides fiducials or tooling holes, align them with your CAD
-origin so the panelization step can easily merge your routed copper with the
-prefabricated template. Keep the board outline slightly inside the biscuit's
-usable area so the laser can clear debris without hitting the rails.
+Keep the board outline slightly inside the biscuit's usable area so the laser
+can clear debris without hitting the rails.
 
 ## 3. Route with `autorouter="laser_prefab"`
 
@@ -103,9 +101,9 @@ them provided both layers are available and no design rules are violated.
 ```
 
 During routing, tscircuit emits a **simple route JSON** that marks each
-`netIsAssignable` via as an obstacle with the `netIsAssignable` flag. The
-`laser_prefab` preset looks for that flag, allowing it to reserve a via for any
-trace that needs to change layers. The [integration test in the core
+`netIsAssignable` via with the `netIsAssignable` flag. The `laser_prefab` preset
+looks for that flag, allowing it to reserve a via for any trace that needs to
+change layers. The [integration test in the core
 library](https://github.com/tscircuit/core/blob/main/tests/autorouting/laser-prefab.test.tsx)
 verifies the behavior end to end.
 
@@ -147,7 +145,7 @@ Gerber/ODB++ data to confirm that:
 
 If you need to adjust routing priorities, you can provide a custom autorouter
 object instead of the preset. Just make sure the implementation understands the
-`netIsAssignable` obstacles that tscircuit produces.
+`netIsAssignable` vias that tscircuit produces.
 
 ## Additional tips
 
