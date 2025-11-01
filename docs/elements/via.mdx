@@ -46,26 +46,11 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ### Prefabricated vias for laser routing
 
-The [`laser_prefab` autorouter](./board.mdx#setting-the-autorouter) is designed
-for fabrication flows that combine laser ablation with pre-drilled or templated
-vias. These workflows start with a "biscuit" carrier board that already contains
-a precise matrix of holes. Copper is laminated onto the carrier and a laser
-ablates the top copper to define traces before the template's vias are filled or
-re-plated.
-
-When you mark a via with `netIsAssignable`, the autorouter exports an
-**assignable obstacle** so the router can reuse the via for whichever net needs
-to cross layers during routing. This lets you place a library of vias ahead of
-time while still giving the autorouter flexibility to finish the layout. You can
-still pre-assign a net to the via in your design; the autorouter only replaces
-that assignment if a different trace claims the via.
-
-:::tip
-Group all of the prefabricated vias together—usually in a separate subcircuit or
-component library—so you can reuse the same biscuit template across multiple
-projects. The `netIsAssignable` flag prevents unused vias from shorting random
-nets while remaining available to complete new connections.
-:::
+The [`laser_prefab` autorouter](./board.mdx#setting-the-autorouter) pairs with
+prefabricated ("biscuit") via templates used in laser ablation workflows.
+Setting `netIsAssignable` on a via exports it as an **assignable obstacle**,
+allowing the autorouter to repurpose the hole for whichever net needs to switch
+layers during routing.
 
 <CircuitPreview
   defaultView="pcb"
@@ -89,7 +74,6 @@ nets while remaining available to complete new connections.
   )`}
 />
 
-When the board renders, any assignable via that remains unused keeps its
-original net assignment. Otherwise, the autorouter replaces its net with the one
-required for the completed connection. For an end-to-end workflow, read the
+Unused assignable vias keep their original net, while claimed vias are updated
+to match the completed connection. For a full walkthrough, see the
 [Biscuit Board Laser Ablation guide](../guides/tscircuit-essentials/biscuit-board-laser-ablation.mdx).
