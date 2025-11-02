@@ -42,37 +42,4 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | outerDiameter | number \| string | "0.8mm" | Outer diameter of the copper annular ring |
 | pcbX | number | 0 | PCB X position of the via |
 | pcbY | number | 0 | PCB Y position of the via |
-| netIsAssignable | boolean | `false` | Marks the via as prefabricated so autorouters like `laser_prefab` can claim it for any compatible net |
-
-### Prefabricated vias for laser routing
-
-The [`laser_prefab` autorouter](./board.mdx#setting-the-autorouter) pairs with
-prefabricated ("biscuit") via templates used in laser ablation workflows.
-Setting `netIsAssignable` on a via marks it as reusable so the autorouter can
-repurpose the hole for whichever net needs to switch layers during routing.
-
-<CircuitPreview
-  defaultView="pcb"
-  code={`export default () => (
-    <board width="10mm" height="10mm" autorouter="laser_prefab">
-      <testpoint name="TP_TOP" footprintVariant="pad" pcbX={0} pcbY={4} layer="top" />
-      <testpoint name="TP_BOTTOM" footprintVariant="pad" pcbX={0} pcbY={-4} layer="bottom" />
-      <via
-        name="V_ASSIGNABLE"
-        pcbX={0}
-        pcbY={0}
-        fromLayer="top"
-        toLayer="bottom"
-        holeDiameter="0.3mm"
-        outerDiameter="0.6mm"
-        netIsAssignable
-      />
-      <trace from="TP_TOP.pin1" to="V_ASSIGNABLE.top" />
-      <trace from="V_ASSIGNABLE.bottom" to="TP_BOTTOM.pin1" />
-    </board>
-  )`}
-/>
-
-Unused assignable vias keep their original net, while claimed vias are updated
-to match the completed connection. For a full walkthrough, see the
-[Biscuit Board Laser Ablation guide](../guides/tscircuit-essentials/biscuit-board-laser-ablation.mdx).
+| netIsAssignable | boolean | `false` | Marks the via as prefabricated so autorouters like `laser_prefab` can claim it for any compatible net. For a full workflow, see the [Biscuit Board Laser Ablation guide](../guides/tscircuit-essentials/biscuit-board-laser-ablation.mdx). |

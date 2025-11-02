@@ -17,12 +17,10 @@ board.
 
 This guide walks through designing for that workflow. You'll learn how to:
 
-1. Prepare a via template that can be reused across designs.
-2. Configure your board to route with `autorouter="laser_prefab"`.
-3. Mark vias as assignable so the autorouter can claim them dynamically.
-4. Validate that the generated routing honors the biscuit's geometry.
+1. Build a reusable via template (the biscuit board).
+2. Place that template, route with `autorouter="laser_prefab"`, and confirm the results match the prefabricated geometry.
 
-## 1. Build a reusable via template
+## 1. Build a reusable via template (a biscuit board)
 
 Create a component for your biscuit template that contains every via location
 available on the board. Mark each via with `netIsAssignable` so it is treated as
@@ -48,7 +46,7 @@ Keep the template focused on the vias themselves. Copper features such as
 fiducials or alignment marks should live in their own components so you can swap
 templates without affecting the mechanical stackup.
 
-## 2. Place the biscuit template on your board
+## 2. Place the biscuit template, route, and validate
 
 Include the template inside your `<board />` before adding components. Because
 the vias are already drilled in the physical biscuit, avoid translating or
@@ -76,8 +74,6 @@ rotating the template in a way that misaligns the coordinates.
 Keep the board outline slightly inside the biscuit's usable area so the laser
 can clear debris without hitting the rails.
 
-## 3. Route with `autorouter="laser_prefab"`
-
 Once the template is in place, add traces exactly as you would for a conventional
 board. The router treats assignable vias as neutral territory: any net can claim
 them provided both layers are available and no design rules are violated.
@@ -100,25 +96,8 @@ them provided both layers are available and no design rules are violated.
 </board>
 ```
 
-During routing, tscircuit emits a **simple route JSON** that marks each
-`netIsAssignable` via with the `netIsAssignable` flag. The `laser_prefab` preset
-looks for that flag, allowing it to reserve a via for any trace that needs to
-change layers. The [integration test in the core
-library](https://github.com/tscircuit/core/blob/main/tests/autorouting/laser-prefab.test.tsx)
-verifies the behavior end to end.
-
-### Reserving specific vias
-
-Sometimes you know that certain vias must stay tied to a particular net—perhaps
-they connect to ground pour or stitching features. In that case, omit the
-`netIsAssignable` flag on those vias and route them manually. The router will
-leave them untouched while still consuming the rest of the biscuit template as
-needed.
-
-## 4. Validate the routed output
-
-After calling `circuit.renderUntilSettled()`, inspect the PCB view or export the
-Gerber/ODB++ data to confirm that:
+After generating manufacturing data (Gerber or ODB++ exports) or reviewing the
+PCB preview, confirm that:
 
 - Every claimed via matches a real location on the biscuit template.
 - Unused vias remain isolated and keep their original net names.
@@ -142,21 +121,3 @@ Gerber/ODB++ data to confirm that:
   </board>
 )`}
 />
-
-If you need to adjust routing priorities, you can provide a custom autorouter
-object instead of the preset. Just make sure the implementation understands the
-`netIsAssignable` vias that tscircuit produces.
-
-## Additional tips
-
-- **Version your templates.** Include a `templateVersion` prop or layer marker so
-  your fabrication team can confirm they are loading the correct biscuit.
-- **Simulate thermal load.** Prefabricated vias sometimes have smaller annular
-  rings. Run a design-rule check (DRC) to ensure high-current nets can handle the
-  reduced copper area.
-- **Document drill tolerances.** Share the biscuit's drill chart with your team so
-  component footprints can account for any off-center holes.
-
-With these practices, you can create a repeatable laser ablation workflow that
-leverages tscircuit's autorouting while taking full advantage of prefabricated
-via templates.
