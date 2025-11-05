@@ -32,12 +32,12 @@ import { Fragment } from "react"
 
 export const BiscuitTemplate = () => (
   <Fragment>
-    <via name="B1" pcbX={-4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
-    <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
-    <via name="B3" pcbX={4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
-    <via name="B4" pcbX={-4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
-    <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
-    <via name="B6" pcbX={4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+    <via name="B1" pcbX={-4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+    <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+    <via name="B3" pcbX={4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+    <via name="B4" pcbX={-4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+    <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+    <via name="B6" pcbX={4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
   </Fragment>
 )
 ```
@@ -57,12 +57,12 @@ rotating the template in a way that misaligns the coordinates.
   code={`export default () => (
   <board width="20mm" height="20mm" autorouter="laser_prefab">
     <group name="biscuit" pcbX={0} pcbY={0}>
-      <via name="B1" pcbX={-4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
-      <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
-      <via name="B3" pcbX={4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
-      <via name="B4" pcbX={-4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
-      <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
-      <via name="B6" pcbX={4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B1" pcbX={-4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+      <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+      <via name="B3" pcbX={4} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+      <via name="B4" pcbX={-4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+      <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+      <via name="B6" pcbX={4} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
     </group>
 
     <testpoint name="TP_TOP" footprintVariant="pad" pcbX={0} pcbY={9} layer="top" />
@@ -79,21 +79,21 @@ board. The router treats assignable vias as neutral territory: any net can claim
 them provided both layers are available and no design rules are violated.
 
 ```tsx title="src/laser-prefab-example.tsx"
-<board width="20mm" height="20mm" autorouter="laser_prefab">
-  <BiscuitTemplate />
+  <board width="20mm" height="20mm" autorouter="laser_prefab">
+    <BiscuitTemplate />
 
-  <chip
-    name="U1"
-    footprint="soic8"
-    pcbX={-6}
-    pcbY={0}
-    connections={{ pin1: "R1.pin1", pin8: "B6.top" }}
-  />
-  <resistor name="R1" resistance="1k" footprint="0402" pcbX={6} pcbY={0} />
+    <chip
+      name="U1"
+      footprint="soic8"
+      pcbX={-6}
+      pcbY={0}
+      connections={{ pin1: "R1.pin1", pin8: "B6.top" }}
+    />
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={6} pcbY={0} />
 
   <trace from="TP_TOP.pin1" to="B2.top" />
   <trace from="B2.bottom" to="TP_BOTTOM.pin1" />
-</board>
+  </board>
 ```
 
 After generating manufacturing data (Gerber or ODB++ exports) or reviewing the
@@ -108,8 +108,8 @@ PCB preview, confirm that:
   code={`export default () => (
   <board width="20mm" height="20mm" autorouter="laser_prefab">
     <group name="biscuit">
-      <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable />
-      <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable />
+      <via name="B2" pcbX={0} pcbY={6} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
+      <via name="B5" pcbX={0} pcbY={0} fromLayer="top" toLayer="bottom" netIsAssignable outerDiameter={0.8} holeDiameter={0.4} />
     </group>
 
     <testpoint name="TP_TOP" footprintVariant="pad" pcbX={0} pcbY={9} layer="top" />
