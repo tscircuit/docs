@@ -89,7 +89,6 @@ export default function CircuitPreview({
   leftView,
   rightView,
   showSolderMask,
-
 }: {
   code?: string
   showTabs?: boolean
@@ -109,7 +108,6 @@ export default function CircuitPreview({
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   projectBaseUrl?: string
   showSolderMask?: boolean
-
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
