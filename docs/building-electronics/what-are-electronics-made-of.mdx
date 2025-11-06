@@ -86,15 +86,17 @@ pins are called "surface-mount" chips.
 <CircuitPreview defaultView="pcb" code={`
 
 export default () => (
-  <footprint>
-    <platedhole
-      shape="circle"
-      x="5mm"
-      y="2.4mm"
-      holeDiameter="0.25mm"
-      outerDiameter="0.35mm"
-    />
-  </footprint>
+  <board width="2mm" height="2mm">
+    <footprint>
+      <platedhole
+        shape="circle"
+        x="5mm"
+        y="2.4mm"
+        holeDiameter="0.25mm"
+        outerDiameter="0.35mm"
+      />
+    </footprint>
+  </board>
 )
 
 `} />
@@ -108,9 +110,11 @@ can be very helpful for mounting the printed circuit board.
 <CircuitPreview defaultView="pcb" code={`
 
 export default () => (
-  <footprint>
-    <hole diameter="1mm" />
-  </footprint>
+  <board width="2mm" height="2mm">
+    <footprint>
+      <hole diameter="1mm" />
+    </footprint>
+  </board>
 )
 
 `} />
