@@ -1,0 +1,275 @@
+---
+title: Measuring circuit size from scripts
+description: Use @tscircuit/core to evaluate groups, extract bounding boxes, and pick board templates that fit
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+Automating board design often starts with a question: _how much space does this group of parts actually need?_ This guide shows how to render groups inside a script, capture their dimensions, and store metadata that other steps in your pipeline can read.
+
+## Recommended workflow
+
+1. Keep each reusable group in a `design-groups/` directory so it can be evaluated on its own.
+2. Run a script that loads every group, renders it with `@tscircuit/core`, and saves a metadata JSON file containing width and height.
+3. When you build the final board component, import the metadata file to decide which carrier template has enough room.
+
+Separating generated metadata from hand-authored TSX keeps the process debuggable. If you _do_ write metadata back into a `.tsx` file, wrap the generated block in clearly marked comments so humans and tools know where automation can safely write.
+
+## Directory layout
+
+```text
+my-project/
+├─ design-groups/
+│  ├─ esp32-breakout.tsx             # Exports the group you want to analyze
+│  └─ esp32-breakout.metadata.json   # Width/height baked by the script
+├─ carriers/
+│  └─ esp32-breakout-carrier.tsx     # Imports metadata when building the final board
+└─ scripts/
+   └─ bake-group-metadata.ts         # Script that renders the group and writes JSON
+```
+
+Each group file should export a React component that renders a `<group name="...">` inside a `<board>` or within the structure you normally use. The script can then import it, render it in isolation, and evaluate the results.
+
+```tsx title="design-groups/esp32-breakout.tsx"
+export const Circuit = () => (
+  <group name="esp32-breakout">
+    {/* Components, nets, and layout props */}
+  </group>
+)
+```
+
+## Rendering a group and measuring its bounding box
+
+The snippet below renders a group, waits for placement to settle, and then extracts the PCB group bounds from Circuit JSON.
+
+```ts title="scripts/bake-group-metadata.ts"
+import React, { type ComponentType } from "react"
+import { RootCircuit } from "@tscircuit/core"
+import type { CircuitJson, PcbGroup } from "circuit-json"
+import { writeFile } from "node:fs/promises"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
+const GROUPS = [
+  {
+    name: "esp32-breakout",
+    load: async () =>
+      (await import("../design-groups/esp32-breakout.tsx")).Circuit,
+  },
+]
+
+async function renderGroup(name: string, load: () => Promise<ComponentType>) {
+  const Circuit = await load()
+  const circuit = new RootCircuit()
+
+  circuit.add(
+    <board>
+      <group name={name}>
+        <Circuit />
+      </group>
+    </board>,
+  )
+
+  await circuit.renderUntilSettled()
+  return (await circuit.getCircuitJson()) as CircuitJson
+}
+
+function getGroupBounds(json: CircuitJson, groupName: string) {
+  const pcbGroup = json.find(
+    (element): element is PcbGroup =>
+      element.type === "pcb_group" && element.name === groupName,
+  )
+
+  if (!pcbGroup || pcbGroup.width === undefined || pcbGroup.height === undefined) {
+    throw new Error(
+      `Group ${groupName} rendered without width/height. Check the group name and resolve packing issues before baking metadata.`,
+    )
+  }
+
+  return {
+    width: pcbGroup.width,
+    height: pcbGroup.height,
+    center: pcbGroup.center,
+  }
+}
+
+async function bakeMetadata() {
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+
+  for (const entry of GROUPS) {
+    const circuitJson = await renderGroup(entry.name, entry.load)
+    const bounds = getGroupBounds(circuitJson, entry.name)
+
+    const outputPath = path.resolve(
+      scriptDir,
+      `../design-groups/${entry.name}.metadata.json`,
+    )
+
+    await writeFile(outputPath, JSON.stringify(bounds, null, 2))
+    console.log(`Wrote ${outputPath}`)
+  }
+}
+
+bakeMetadata().catch((error) => {
+  console.error(error)
+  process.exitCode = 1
+})
+```
+
+The `PcbGroup` element in Circuit JSON contains `width`, `height`, and a `center` point for the packed group, making it the most direct source for bounding boxes. If the group fails to pack, the width and height are undefined, so the script throws and you can inspect the failing JSON.
+
+## Detecting packing failures programmatically
+
+Packing issues (such as overlaps or components outside the board) are surfaced in Circuit JSON as elements whose `type` ends in `_error`, for example `pcb_placement_error`, `pcb_footprint_overlap_error`, and `pcb_component_outside_board_error`. You can scan for them before trusting the bounding box.
+
+```ts
+function getPackingErrors(json: CircuitJson) {
+  return json.filter(
+    (element) =>
+      element.type.startsWith("pcb_") && element.type.endsWith("_error"),
+  )
+}
+```
+
+If `getPackingErrors` returns any elements, skip writing metadata and log the error messages so you can debug the group in isolation. You can also persist the raw JSON to disk for later inspection or feed it into tools like `circuitjson.com`.
+
+## Trying candidate board sizes
+
+Once you can render a group programmatically, you can try it against a list of candidate board footprints and pick the smallest one that succeeds. Render the group inside a `<board>` that has the candidate size, check for packing errors, and return the first success.
+
+```ts
+const CANDIDATE_SIZES = [
+  { name: "SMALL", width: 21, height: 51 },
+  { name: "MEDIUM", width: 24, height: 58 },
+]
+
+async function findSmallestBoard(load: () => Promise<React.FC>) {
+  for (const size of CANDIDATE_SIZES) {
+    const circuit = new RootCircuit()
+    const Circuit = await load()
+
+    circuit.add(
+      <board width={`${size.width}mm`} height={`${size.height}mm`}>
+        <Circuit />
+      </board>,
+    )
+
+    await circuit.renderUntilSettled()
+    const json = (await circuit.getCircuitJson()) as CircuitJson
+
+    if (getPackingErrors(json).length === 0) {
+      return { size, json }
+    }
+  }
+
+  throw new Error("No candidate board size could pack the circuit")
+}
+```
+
+With this helper you can run multiple passes: one to bake metadata for inspection, and another to select the best board footprint automatically. Store the selected board ID alongside the size metadata so later steps (such as generating headers or enclosure geometry) can read the decision without re-running the analysis.
+
+## Using the baked metadata in a board component
+
+The final board component can import the JSON and pick a template accordingly. Because the metadata is static, you can safely load it during module evaluation.
+
+```tsx title="carriers/esp32-breakout-carrier.tsx"
+import metadata from "../design-groups/esp32-breakout.metadata.json" assert { type: "json" }
+
+const TEMPLATE_OPTIONS = [
+  { id: "SMALL", width: 21, height: 51 },
+  { id: "MEDIUM", width: 24, height: 58 },
+]
+
+const selectedTemplate = TEMPLATE_OPTIONS.find(
+  (option) =>
+    option.width >= metadata.width && option.height >= metadata.height,
+)
+
+if (!selectedTemplate) {
+  throw new Error("No board template can fit the baked group bounds")
+}
+
+export const Esp32BreakoutCarrier = ({ children }: { children: React.ReactNode }) => (
+  <board width={`${selectedTemplate.width}mm`} height={`${selectedTemplate.height}mm`}>
+    {children}
+  </board>
+)
+```
+
+When automation needs to update the layout (for example, after rerunning packing with AI assistance), rerun the baking script to regenerate the JSON and let the board component pick a new template automatically. This keeps generated numbers out of your hand-authored TSX while remaining easy to audit.
+
+> ℹ️ If your tooling does not yet support `assert { type: "json" }`, generate a thin `.metadata.ts` file that re-exports the JSON contents so regular TypeScript imports still work.
+
+## Preview: metadata-driven template selection
+
+The preview below includes a baked metadata file, a small helper that re-exports the JSON, and a carrier component that chooses the smallest template capable of containing the group. Switch between the files to see how the metadata flows through the project.
+
+<CircuitPreview
+  showTabs
+  defaultView="pcb"
+  fsMap={{
+    "/design-groups/esp32-breakout.tsx": `export const Esp32BreakoutGroup = () => (
+  <group name="esp32-breakout">
+    <chip
+      name="U1"
+      footprint="qfn32"
+      pinLabels={{ VDD: "3V3", GND: "GND", IO0: "IO0", IO1: "IO1" }}
+      pcbRotation={45}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-6} pcbY={6} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={6} pcbY={6} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-6} pcbY={-6} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={6} pcbY={-6} />
+  </group>
+)
+`,
+    "/design-groups/esp32-breakout.metadata.json": `{
+  "width": 18.2,
+  "height": 18.2
+}
+`,
+    "/design-groups/esp32-breakout.metadata.ts": `import json from "./esp32-breakout.metadata.json" assert { type: "json" }
+
+export const metadata = json as { width: number; height: number }
+`,
+    "/carriers/templates.tsx": `export const BOARD_TEMPLATES = [
+  { id: "SMALL", width: 20, height: 20 },
+  { id: "MEDIUM", width: 24, height: 24 },
+  { id: "LARGE", width: 28, height: 28 },
+] as const
+`,
+    "/carriers/esp32-breakout-carrier.tsx": `import { BOARD_TEMPLATES } from "./templates"
+import { metadata } from "../design-groups/esp32-breakout.metadata"
+import { Esp32BreakoutGroup } from "../design-groups/esp32-breakout"
+
+const selectedTemplate = BOARD_TEMPLATES.find(
+  (option) =>
+    option.width >= metadata.width && option.height >= metadata.height,
+)
+
+if (!selectedTemplate) {
+  throw new Error("No board template can fit the baked group bounds")
+}
+
+export const Esp32BreakoutCarrier = () => (
+  <board
+    name="esp32-breakout-carrier"
+    width={`${selectedTemplate.width}mm`}
+    height={`${selectedTemplate.height}mm`}
+  >
+    <group name="esp32-breakout">
+      <Esp32BreakoutGroup />
+    </group>
+  </board>
+)
+`,
+    "/index.tsx": `import { Esp32BreakoutCarrier } from "./carriers/esp32-breakout-carrier"
+
+export default () => (
+  <Esp32BreakoutCarrier />
+)
+`,
+  }}
+  entrypoint="/index.tsx"
+  mainComponentPath="/carriers/esp32-breakout-carrier.tsx"
+/>
