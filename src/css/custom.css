@@ -624,27 +624,30 @@ figure img {
   padding-right: 16px !important;
 }
 
-.sidebar-item-level-1 .menu__link {
-  padding-left: 16px !important;
-}
-
-.sidebar-item-level-2 .menu__link {
-  padding-left: 16px !important;
-}
-
-.sidebar-item-level-3 .menu__link {
+.theme-doc-sidebar-item-category[class*="level-3"]
+  > .menu__list-item-collapsible
+  > .menu__link {
   padding-left: 28px !important;
 }
 
-.sidebar-item-level-4 .menu__link {
+.theme-doc-sidebar-item-link[class*="level-4"] .menu__link,
+.theme-doc-sidebar-item-category[class*="level-4"]
+  > .menu__list-item-collapsible
+  > .menu__link {
   padding-left: 40px !important;
 }
 
-.sidebar-item-level-5 .menu__link {
+.theme-doc-sidebar-item-link[class*="level-5"] .menu__link,
+.theme-doc-sidebar-item-category[class*="level-5"]
+  > .menu__list-item-collapsible
+  > .menu__link {
   padding-left: 52px !important;
 }
 
-.sidebar-item-level-6 .menu__link {
+.theme-doc-sidebar-item-link[class*="level-6"] .menu__link,
+.theme-doc-sidebar-item-category[class*="level-6"]
+  > .menu__list-item-collapsible
+  > .menu__link {
   padding-left: 64px !important;
 }
 
