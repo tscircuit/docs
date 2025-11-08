@@ -624,6 +624,33 @@ figure img {
   padding-right: 16px !important;
 }
 
+.theme-doc-sidebar-item-category[class*="level-3"]
+  > .menu__list-item-collapsible
+  > .menu__link {
+  padding-left: 28px !important;
+}
+
+.theme-doc-sidebar-item-link[class*="level-4"] .menu__link,
+.theme-doc-sidebar-item-category[class*="level-4"]
+  > .menu__list-item-collapsible
+  > .menu__link {
+  padding-left: 40px !important;
+}
+
+.theme-doc-sidebar-item-link[class*="level-5"] .menu__link,
+.theme-doc-sidebar-item-category[class*="level-5"]
+  > .menu__list-item-collapsible
+  > .menu__link {
+  padding-left: 52px !important;
+}
+
+.theme-doc-sidebar-item-link[class*="level-6"] .menu__link,
+.theme-doc-sidebar-item-category[class*="level-6"]
+  > .menu__list-item-collapsible
+  > .menu__link {
+  padding-left: 64px !important;
+}
+
 @media (max-width: 768px) {
   iframe {
     max-width: 90vw;
