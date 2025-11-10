@@ -26,14 +26,17 @@ few traces stitching components back to ground.
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
-    <board width="30mm" height="20mm">
+    <board
+      width="30mm"
+      height="20mm"
+    >
       <chip name="U1" footprint="soic8" pcbX={-6} pcbY={0} />
       <resistor name="R1" resistance="10k" footprint="0402" pcbX={6} pcbY={4} />
       <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={6} pcbY={-4} />
       <trace from=".R1 > .pin2" to="net.GND" />
       <trace from=".C1 > .pin2" to="net.GND" />
       <trace from=".U1 > .pin4" to="net.GND" />
-      <copperpour connectsTo="net.GND" layer="top" clearance="0.3mm" />
+      <copperpour connectsTo="net.GND" layer="top" clearance="0.15mm" />
     </board>
   )
 `} />
@@ -44,7 +47,11 @@ few traces stitching components back to ground.
 | -------- | ----------- | ------- |
 | `connectsTo` | Net that the pour is tied to. Often `net.GND` or `net.VCC`. | `"net.GND"` |
 | `layer` | PCB layer for the pour (`"top"`, `"bottom"`, or an inner layer name). | `"top"` |
-| `clearance` | Minimum distance kept between the pour and other copper. | `"0.3mm"` |
+| `clearance` | Default minimum distance between the pour and other features (e.g. pads, traces, board edge). This is used as a fallback for specific margin properties. Defaults to `0.2mm`. | `"0.3mm"` |
+| `padMargin` | Minimum distance from component pads. Overrides `clearance`. | `"0.4mm"` |
+| `traceMargin` | Minimum distance from traces on other nets. Overrides `clearance`. | `"0.1mm"` |
+| `boardEdgeMargin` | Minimum distance from the board edge. Overrides `clearance`. | `"2mm"` |
+| `cutoutMargin` | Minimum distance from board cutouts. Overrides `clearance`. | `"0.1mm"` |
 | `thermalRelief` | Configure spoke width/count when attaching to pads. | `{ spokeWidth: "0.3mm", spokeCount: 4 }` |
 | `outline` | Optional polygon describing a custom pour boundary. | `[{ x: -10, y: -8 }, { x: 10, y: -8 }, ...]` |
 
@@ -57,10 +64,22 @@ or dedicated power planes.
   export default () => (
     <board width="28mm" height="18mm">
       <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        layer="bottom"
+        pcbX={5}
+        pcbY={5}
+        connections={{
+          pin1: "net.GND",
+          pin2: "net.VCC",
+        }}
+      />
       <trace from=".U1 > .pin8" to="net.GND" />
-      <trace from=".U1 > .pin24" to="net.GND" />
+      <trace from=".U1 > .pin24" to="net.VCC" />
       <copperpour connectsTo="net.GND" layer="top" clearance="0.25mm" />
-      <copperpour connectsTo="net.GND" layer="bottom" clearance="0.25mm" />
+      <copperpour connectsTo="net.VCC" layer="bottom" clearance="0.25mm" />
     </board>
   )
 `} />
