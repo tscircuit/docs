@@ -1,0 +1,155 @@
+---
+title: SPICE Simulation
+sidebar_position: 4
+description: >-
+  Run SPICE simulations on your circuits to analyze their analog behavior.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+tscircuit supports SPICE simulation to analyze the analog behavior of your circuits. You can define voltage sources with various waveforms, place probes to measure voltages, and configure the simulation parameters. The results can be visualized to understand how your circuit performs over time.
+
+## Simulation Components
+
+### `<analogsimulation />`
+
+This component configures and enables the analog simulation for the board.
+
+| Property      | Type   | Description                                           |
+| ------------- | ------ | ----------------------------------------------------- |
+| `duration`    | number | The total duration of the simulation (e.g., in seconds).    |
+| `timePerStep` | number | The time interval between simulation steps (e.g., in seconds). |
+| `spiceEngine` | string | The SPICE engine to use (e.g., `"ngspice"`).            |
+
+Example:
+
+```tsx
+<analogsimulation
+  duration={0.01}
+  timePerStep={1e-6}
+  spiceEngine="ngspice"
+/>
+```
+
+### Probes
+
+Probes are used to specify which parts of the circuit you want to measure. These do not have a physical representation on the PCB.
+
+#### `<voltageprobe />`
+
+Measures the voltage at a specific point in the circuit.
+
+| Property     | Type   | Description                                                                                             |
+| ------------ | ------ | ------------------------------------------------------------------------------------------------------- |
+| `connectsTo` | string | A [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md) indicating where to place the probe. |
+
+Example:
+
+```tsx
+<voltageprobe connectsTo=".R1 > .pin1" />
+```
+
+### `<voltagesource />`
+
+For simulations, `<voltagesource />` can be configured to produce various waveforms beyond a simple DC voltage.
+
+| Property    | Type             | Description                                                                    |
+| ----------- | ---------------- | ------------------------------------------------------------------------------ |
+| `waveShape` | string           | Shape of the voltage wave. Can be `"dc"`, `"sine"`, `"square"`, `"triangle"`.  |
+| `frequency` | string or number | Frequency of the waveform (e.g., `"1kHz"` or `1000`).                           |
+| `amplitude` | string or number | Amplitude of the AC signal. For square waves, this is the peak voltage.        |
+| `offset`    | string or number | DC offset of the waveform.                                                     |
+| `dutyCycle` | number           | For square waves, the fraction of the period the signal is high (0 to 1). |
+
+## Example: Boost Converter
+
+Here is an example of a boost converter circuit configured for SPICE simulation. It uses one voltage source (`V2`) with a square wave to drive a MOSFET, boosting the voltage from a 5V DC source (`V1`) to a higher level. Voltage probes are placed at the input and output to observe the results.
+
+<CircuitPreview
+  defaultView="schematic"
+  showSimulationGraph={true}
+  code={`
+export default () => (
+      <board width={30} height={30} schMaxTraceDistance={5}>
+        <voltagesource
+          name="V1"
+          voltage={"5V"}
+          schY={2}
+          schX={-5}
+          schRotation={270}
+        />
+        <trace from={".V1 > .pin1"} to={".L1 > .pin1"} />
+        <trace from={".L1 > .pin2"} to={".D1 > .anode"} />
+        <trace from={".D1 > .cathode"} to={".C1 > .pin1"} />
+        <trace from={".D1 > .cathode"} to={".R1 > .pin1"} />
+        <trace from={".C1 > .pin2"} to={".R1 > .pin2"} />
+        <trace from={".R1 > .pin2"} to={".V1 > .pin2"} />
+        <trace from={".L1 > .pin2"} to={".M1 > .drain"} />
+        <trace from={".M1 > .source"} to={".V1 > .pin2"} />
+        <trace from={".M1 > .source"} to={"net.GND"} />
+        <trace from={".M1 > .gate"} to={".V2 > .pin1"} />
+        <trace from={".V2 > .pin2"} to={".V1 > .pin2"} />
+        <inductor 
+          footprint={"0603"} 
+          name="L1" 
+          inductance={"1mH"} 
+          schY={3} 
+          schX={-1} 
+          pcbY={3} 
+        />
+        <diode
+          name="D1"
+          footprint={"0603"}
+          schY={3}
+          schX={2.1}
+          pcbY={6}
+          pcbX={3}
+        />
+        <capacitor
+          polarized
+          schRotation={270}
+          name="C1"
+          capacitance={"10uF"}
+          footprint={"0603"}
+          schX={3}
+          pcbX={3}
+        />
+        <resistor
+          schRotation={270}
+          name="R1"
+          resistance={"1k"}
+          footprint={"0603"}
+          schX={6}
+          pcbX={9}
+        />
+        <voltagesource
+          name="V2"
+          voltage={"10V"}
+          waveShape="square"
+          dutyCycle={0.68}
+          frequency={"1kHz"}
+          schX={-3}
+          schRotation={270}
+        />
+        <mosfet
+          channelType="n"
+          footprint={"sot23"}
+          name="M1"
+          mosfetMode="enhancement"
+          pcbX={-4}
+        />
+        <voltageprobe connectsTo={".V1 > .pin1"} />
+        <voltageprobe connectsTo={".R1 > .pin1"} />
+
+        <analogsimulation
+          duration={100}
+          timePerStep={1}
+          spiceEngine="ngspice"
+        />
+      </board>
+)
+`} />
+
+The simulation results would show the output voltage across `R1` successfully "boosted" compared to the 5V input from `V1`. The specific output voltage depends on the duty cycle of the MOSFET driver `V2` and the component values.
