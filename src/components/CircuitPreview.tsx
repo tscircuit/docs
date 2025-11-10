@@ -88,6 +88,7 @@ export default function CircuitPreview({
   projectBaseUrl = "https://docs.tscircuit.com/",
   leftView,
   rightView,
+  showSimulationGraph = false,
 }: {
   code?: string
   showTabs?: boolean
@@ -106,6 +107,7 @@ export default function CircuitPreview({
   leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   projectBaseUrl?: string
+  showSimulationGraph?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -141,11 +143,17 @@ export default function CircuitPreview({
   const fsMapOrCode = hasMultipleFiles
     ? fsMap || code
     : code || Object.values(fsMap ?? {})[0]
+
   const pcbUrl = useMemo(() => createSvgUrl(fsMapOrCode, "pcb"), [fsMapOrCode])
+  console.log(fsMapOrCode)
   const schUrl = useMemo(
-    () => createSvgUrl(fsMapOrCode, "schematic"),
-    [fsMapOrCode],
+    () =>
+      createSvgUrl(fsMapOrCode, showSimulationGraph ? "schsim" : "schematic", {
+        simulationExperimentId: "simulation_experiment_0",
+      }),
+    [fsMapOrCode, showSimulationGraph],
   )
+  console.log(schUrl)
   const pinoutUrl = useMemo(
     () => createSvgUrl(fsMapOrCode, "pinout"),
     [fsMapOrCode],
