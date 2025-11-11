@@ -80,7 +80,7 @@ export default function CircuitPreview({
   hidePCBTab = false,
   hide3DTab = false,
   showPinoutTab = false,
-  browser3dView = true,
+  browser3dView = false,
   fsMap,
   entrypoint = undefined,
   mainComponentPath = undefined,
