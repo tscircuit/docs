@@ -32,7 +32,7 @@ A circular hole is the most common type used for mounting:
   browser3dView={false}
   code={`export default () => (
     <board width="30mm" height="20mm">
-      <hole diameter="3mm" x={10} y={10} />
+      <hole diameter="3mm" pcbX={10} pcbY={10} />
     </board>
   )`}
 />
@@ -86,6 +86,6 @@ Pill-shaped holes can be rotated using the `pcbRotation` property:
 | diameter | circle | number \| string | - | Diameter of the circular hole |
 | width | pill | number \| string | - | Width of the pill-shaped hole |
 | height | pill | number \| string | - | Height of the pill-shaped hole |
-| x | all | number | 0 | X position of the hole center |
-| y | all | number | 0 | Y position of the hole center |
+| pcbX | all | number | 0 | X position of the hole center on the PCB |
+| pcbY | all | number | 0 | Y position of the hole center on the PCB |
 | pcbRotation | pill | number \| string | 0 | Rotation angle in degrees (e.g., `"45deg"` or `45`) |
