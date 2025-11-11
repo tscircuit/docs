@@ -180,6 +180,7 @@ export default function CircuitPreview({
         format: "png",
         png_width: "800",
         png_height: "600",
+        show_infinite_grid: "true",
         fs_map: encodeURIComponent(encodedFsMap),
         main_component_path: mainComponentPath
           ? encodeURIComponent(mainComponentPath)
@@ -195,7 +196,7 @@ export default function CircuitPreview({
     const encodedCode = encodeURIComponent(
       getCompressedBase64SnippetString(code),
     )
-    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodedCode}`
+    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&code=${encodedCode}`
   }, [code, browser3dView, fsMap])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
