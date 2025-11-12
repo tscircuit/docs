@@ -1,0 +1,10 @@
+{
+  "label": "SPICE Simulation",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Learn how to use tscircuit to run SPICE simulations and analyze analog circuit behavior."
+  },
+  "collapsible": true,
+  "collapsed": true
+}
