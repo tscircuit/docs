@@ -1,0 +1,63 @@
+---
+title: SPICE Simulation Introduction
+sidebar_label: Introduction
+sidebar_position: 1
+description: >-
+  Run SPICE simulations on your circuits to analyze their analog behavior.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+<p>
+  tscircuit supports SPICE simulation to analyze the analog behavior of your
+  circuits. You can define voltage sources with various waveforms, place
+  probes to measure voltages, and configure the simulation parameters. The
+  results can be visualized to understand how your circuit performs over
+  time.
+</p>
+## Simulation Components
+### {"<analogsimulation />"}
+<p>
+  This component configures and enables the analog simulation for the board.
+</p>
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `duration` | number | The total duration of the simulation (e.g., in seconds). |
+| `timePerStep` | number | The time interval between simulation steps (e.g., in seconds). |
+| `spiceEngine` | string | The SPICE engine to use. Can be `"spicey"` (default) or `"ngspice"`. |
+<br />
+Example:
+```tsx
+<analogsimulation
+  duration={0.01}
+  timePerStep={1e-6}
+  spiceEngine="ngspice"
+/>
+```
+### Probes
+<p>
+  Probes are used to specify which parts of the circuit you want to measure.
+  These do not have a physical representation on the PCB.
+</p>
+#### {"<voltageprobe />"}
+<p>Measures the voltage at a specific point in the circuit.</p>
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `connectsTo` | string | A port selector indicating where to place the probe. |
+<br />
+Example:
+```tsx
+<voltageprobe connectsTo=".R1 > .pin1" />
+```
+### {"<voltagesource />"}
+<p>
+  For simulations, {"<voltagesource />"} can be configured to produce
+  various waveforms beyond a simple DC voltage.
+</p>
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `waveShape` | string | Shape of the voltage wave. Can be `"dc"`, `"sine"`, `"square"`, `"triangle"`. |
+| `frequency` | string or number | Frequency of the waveform (e.g., `"1kHz"` or `1000`). |
+| `amplitude` | string or number | Amplitude of the AC signal. For square waves, this is the peak voltage. |
+| `offset` | string or number | DC offset of the waveform. |
+| `dutyCycle` | number | For square waves, the fraction of the period the signal is high (0 to 1). |
