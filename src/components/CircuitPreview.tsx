@@ -80,7 +80,7 @@ export default function CircuitPreview({
   hidePCBTab = false,
   hide3DTab = false,
   showPinoutTab = false,
-  browser3dView = true,
+  browser3dView = false,
   fsMap,
   entrypoint = undefined,
   mainComponentPath = undefined,
@@ -89,6 +89,7 @@ export default function CircuitPreview({
   leftView,
   rightView,
   showSolderMask,
+  showSimulationGraph = false,
 }: {
   code?: string
   showTabs?: boolean
@@ -108,6 +109,7 @@ export default function CircuitPreview({
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   projectBaseUrl?: string
   showSolderMask?: boolean
+  showSimulationGraph?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -151,9 +153,13 @@ export default function CircuitPreview({
   }, [fsMapOrCode, showSolderMask])
 
   const schUrl = useMemo(
-    () => createSvgUrl(fsMapOrCode, "schematic"),
-    [fsMapOrCode],
+    () =>
+      createSvgUrl(fsMapOrCode, showSimulationGraph ? "schsim" : "schematic", {
+        simulationExperimentId: "simulation_experiment_0",
+      }),
+    [fsMapOrCode, showSimulationGraph],
   )
+  console.log(schUrl)
   const pinoutUrl = useMemo(
     () => createSvgUrl(fsMapOrCode, "pinout"),
     [fsMapOrCode],
@@ -180,6 +186,7 @@ export default function CircuitPreview({
         format: "png",
         png_width: "800",
         png_height: "600",
+        show_infinite_grid: "true",
         fs_map: encodeURIComponent(encodedFsMap),
         main_component_path: mainComponentPath
           ? encodeURIComponent(mainComponentPath)
@@ -195,7 +202,7 @@ export default function CircuitPreview({
     const encodedCode = encodeURIComponent(
       getCompressedBase64SnippetString(code),
     )
-    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&code=${encodedCode}`
+    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&code=${encodedCode}`
   }, [code, browser3dView, fsMap])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
