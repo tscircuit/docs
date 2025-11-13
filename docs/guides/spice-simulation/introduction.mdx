@@ -61,3 +61,12 @@ Example:
 | `amplitude` | string or number | Amplitude of the AC signal. For square waves, this is the peak voltage. |
 | `offset` | string or number | DC offset of the waveform. |
 | `dutyCycle` | number | For square waves, the fraction of the period the signal is high (0 to 1). |
+
+### {"<switch />"}
+<p>
+  For simulations, a {"<switch />"} can be configured to toggle at a
+  specific frequency.
+</p>
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `simSwitchFrequency` | string or number | Frequency at which the switch toggles (e.g., `"1kHz"` or `1000`). |

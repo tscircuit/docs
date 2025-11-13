@@ -1,0 +1,44 @@
+---
+title: Switch Example
+sidebar_label: Switch
+sidebar_position: 4
+description: An example of using a switch in a SPICE simulation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<p>
+  This example demonstrates how to use a switch in a SPICE simulation. When
+  the <code>simSwitchFrequency</code> property is set, an ideal switch will
+  toggle at the specified frequency. A voltage probe is placed after the switch
+  to observe the output.
+</p>
+<CircuitPreview
+  defaultView="schematic"
+  showSimulationGraph={true}
+  code={`
+export default () => (
+      <board schMaxTraceDistance={10} routingDisabled>
+        <voltagesource name="V1" voltage="5V" />
+        <switch name="SW1" spst simSwitchFrequency="1kHz" />
+        <trace from=".V1 > .terminal1" to=".SW1 > .pin1" />
+        <resistor
+          name="R1"
+          resistance="1k"
+          footprint="0402"
+          connections={{ pin1: ".SW1 > .pin2", pin2: ".V1 > .terminal2" }}
+        />
+        <voltageprobe connectsTo={".R1 > .pin1"} />
+        <analogsimulation
+          duration="4ms"
+          timePerStep="10us"
+          spiceEngine="ngspice"
+        />
+      </board>
+)
+`}
+/>
+<p>
+  The simulation shows the voltage at the node after the switch. Since the
+  switch is toggling at 1kHz, the voltage probe will show a 1kHz square
+  wave going between approximately 0V and 5V.
+</p>
