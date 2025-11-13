@@ -27,6 +27,16 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 
 ## Board Properties
 
+| Prop | Type | Description |
+| --- | --- | --- |
+| `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
+| `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
+| `layers` | `number` | Increase the number of copper layers beyond the default two-layer stackup. |
+| `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
+| `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
+| `outline` | `Array<{ x: number, y: number }>` | Supply a custom polygon to replace the default rectangular outline. |
+| `outlineOffsetX`, `outlineOffsetY` | `string \| number` | Offset a custom outline relative to the bounding box origin. |
+
 ### Customizing the Size of the Board
 
 Generally you'll use the `width` and `height` properties to define the size of
@@ -121,6 +131,28 @@ You can also specify a custom autorouter object to use your own autorouter.
 
 Learn more about [the Autorouting API here](../web-apis/autorouting-api.mdx)
 
+:::tip Disable schematic output for mechanical fixtures
+Set `schematicDisabled` when the schematic view would add clutter to the editor
+or slow down complex mechanical assemblies. The prop is a simple boolean, so you
+can add it without a value just like any other JSX attribute.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="20mm" height="20mm" schematicDisabled>
+      <fabricationnotetext
+        name="Label"
+        text="PCB Fixture"
+        anchorAlignment="center"
+        pcbX={0}
+        pcbY={0}
+      />
+    </board>
+  )
+`}/>
+
+With `schematicDisabled` set, the schematic tab shows a placeholder instead of
+attempting to lay out symbols or connections.
+:::
 
 ### Custom Board Outlines
 
