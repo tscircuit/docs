@@ -89,6 +89,7 @@ export default function CircuitPreview({
   leftView,
   rightView,
   showSimulationGraph = false,
+  verticalStack = false,
 }: {
   code?: string
   showTabs?: boolean
@@ -108,6 +109,7 @@ export default function CircuitPreview({
   rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
   projectBaseUrl?: string
   showSimulationGraph?: boolean
+  verticalStack?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -357,88 +359,119 @@ export default function CircuitPreview({
     )
   }
 
+  const CodeView =
+    (view === "code" ||
+      shouldSplitCode ||
+      (!_showTabs && windowSize === "mobile")) &&
+    (
+      <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
+        {hasMultipleFiles && fileTabsElm}
+        <div
+          className={tw(
+            `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${
+              !isDarkTheme ? "border-gray-200" : "border-gray-700"
+            }`,
+          )}
+        >
+          <CodeBlock
+            className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
+            language="tsx"
+          >
+            {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
+          </CodeBlock>
+        </div>
+      </div>
+    )
+
+  const ImageView =
+    (view === "pcb" ||
+      view === "schematic" ||
+      view === "3d" ||
+      view === "runframe" ||
+      view === "pinout") &&
+    (
+      <div
+        className={tw(
+          `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
+            view === "pcb"
+              ? "bg-black"
+              : view === "schematic"
+              ? "bg-[#F5F1ED]"
+              : "bg-white"
+          }`,
+        )}
+      >
+        {_showTabs && shouldSplitCode && tabsElm}
+        <img
+          src={pcbUrl}
+          alt="PCB Circuit Preview"
+          className={tw(
+            `w-full ${tabContentHeightCss} m-0 object-contain bg-black flex items-center justify-center ${
+              view !== "pcb" ? "hidden" : ""
+            }`,
+          )}
+        />
+        <img
+          src={schUrl}
+          alt="Schematic Circuit Preview"
+          className={tw(
+            `w-full ${tabContentHeightCss} m-0 object-contain bg-[#F5F1ED] ${
+              view !== "schematic" ? "hidden" : ""
+            }`,
+          )}
+        />
+        <img
+          src={pinoutUrl}
+          alt="Pinout Circuit Preview"
+          className={tw(
+            `w-full ${tabContentHeightCss} m-0 object-contain bg-white ${
+              view !== "pinout" ? "hidden" : ""
+            }`,
+          )}
+        />
+        <img
+          src={threeDUrl}
+          alt="3D Circuit Preview"
+          className={tw(
+            `w-full ${tabContentHeightCss} m-0 object-cover bg-white ${
+              view !== "3d" ? "hidden" : ""
+            }`,
+          )}
+        />
+        {showRunFrame && view === "runframe" && (
+          <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
+        )}
+      </div>
+    )
+
   return (
     <div
       className={tw(
-        `shadow-lg pt-0 pb-0 pl-0 pr-0 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8 overflow-hidden`,
+        `shadow-lg pt-0 pb-0 pl-0 pr-0 border ${
+          !isDarkTheme ? "border-gray-100" : "border-gray-800"
+        } rounded-lg mb-8 overflow-hidden`,
       )}
     >
       {_showTabs && !shouldSplitCode && tabsElm}
       <div
         className={tw(
-          `h-full overflow-hidden flex m-0 p-0 ${!_showTabs && windowSize === "mobile" ? "flex-col" : ""}`,
+          `h-full overflow-hidden flex m-0 p-0 ${
+            (!_showTabs && windowSize === "mobile") || verticalStack
+              ? "flex-col"
+              : ""
+          }`,
         )}
       >
-        {(view === "code" ||
-          shouldSplitCode ||
-          (!_showTabs && windowSize === "mobile")) && (
-          <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
-            {hasMultipleFiles && fileTabsElm}
-            <div
-              className={tw(
-                `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
-              )}
-            >
-              <CodeBlock
-                className={tw(
-                  "w-full rounded-none shadow-none p-0 m-0 min-w-0",
-                )}
-                language="tsx"
-              >
-                {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
-              </CodeBlock>
-            </div>
-          </div>
-        )}
-        {(view === "pcb" ||
-          view === "schematic" ||
-          view === "3d" ||
-          view === "runframe" ||
-          view === "pinout") && (
-          <div
-            className={tw(
-              `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
-                view === "pcb"
-                  ? "bg-black"
-                  : view === "schematic"
-                    ? "bg-[#F5F1ED]"
-                    : "bg-white"
-              }`,
-            )}
-          >
-            {_showTabs && shouldSplitCode && tabsElm}
-            <img
-              src={pcbUrl}
-              alt="PCB Circuit Preview"
-              className={tw(
-                `w-full ${tabContentHeightCss} m-0 object-contain bg-black flex items-center justify-center ${view !== "pcb" ? "hidden" : ""}`,
-              )}
-            />
-            <img
-              src={schUrl}
-              alt="Schematic Circuit Preview"
-              className={tw(
-                `w-full ${tabContentHeightCss} m-0 object-contain bg-[#F5F1ED] ${view !== "schematic" ? "hidden" : ""}`,
-              )}
-            />
-            <img
-              src={pinoutUrl}
-              alt="Pinout Circuit Preview"
-              className={tw(
-                `w-full ${tabContentHeightCss} m-0 object-contain bg-white ${view !== "pinout" ? "hidden" : ""}`,
-              )}
-            />
-            <img
-              src={threeDUrl}
-              alt="3D Circuit Preview"
-              className={tw(
-                `w-full ${tabContentHeightCss} m-0 object-cover bg-white ${view !== "3d" ? "hidden" : ""}`,
-              )}
-            />
-            {showRunFrame && view === "runframe" && (
-              <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
-            )}
-          </div>
+        {verticalStack ? (
+          <>
+            {ImageView}
+            {CodeView}
+          </>
+        ) : (
+          <>
+            {CodeView}
+            {ImageView}
+          </>
         )}
       </div>
     </div>
