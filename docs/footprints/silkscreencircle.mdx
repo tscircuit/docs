@@ -11,10 +11,12 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview code={`
   export default () => (
+  <board width="100mm" height="100mm">
     <group>
       <footprint>
         <silkscreencircle pcbX={0} pcbY={0} radius={1} />
       </footprint>
     </group>
+  </board>
   )
 `} />
