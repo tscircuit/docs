@@ -1,0 +1,55 @@
+---
+title: Half-Wave Rectifier Example
+sidebar_label: Half-Wave Rectifier
+sidebar_position: 1
+description: An example of a half-wave rectifier circuit for SPICE simulation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<p>
+  This example demonstrates a half-wave rectifier. The diode allows current to
+  flow in only one direction, effectively cutting off the negative portion of
+  the AC input sine wave. The two voltage probes allow for a comparison of
+  the input and output waveforms.
+</p>
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+      <board schMaxTraceDistance={10} routingDisabled>
+        <voltagesource
+          name="V1"
+          voltage="5V"
+          frequency="40Hz"
+          waveShape="sinewave"
+        />
+        <diode name="D1" />
+        <resistor name="R1" resistance="640ohm" />
+
+        <trace from=".V1 > .pin1" to=".D1 > .anode" />
+        <trace from=".D1 > .cathode" to=".R1 > .pin1" />
+
+        <trace from=".V1 > .pin2" to=".R1 > .pin2" />
+
+        <voltageprobe name="VP_IN" connectsTo=".V1 > .pin1" />
+        <voltageprobe name="VP_OUT" connectsTo=".R1 > .pin1" />
+
+        <analogsimulation
+          duration="50ms"
+          timePerStep="0.1ms"
+          spiceEngine="ngspice"
+        />
+      </board>
+)
+`}
+/>
+<p>
+  The simulation graph shows the input sine wave and the rectified output.
+  The output voltage follows the positive half of the input sine wave and is
+  approximately 0V during the negative half, demonstrating the rectifying
+  action of the diode.
+</p>
