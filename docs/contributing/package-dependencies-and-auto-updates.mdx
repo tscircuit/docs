@@ -20,9 +20,6 @@ flowchart TD
     %% Eval to Runframe
     eval --> runframe[tscircuit/runframe]
 
-    %% Eval to tscircuit.com
-    eval --> tscircuitcom[tscircuit.com]
-
     %% 3D Viewer to Runframe
     viewer3d[tscircuit/3d-viewer] --> runframe
 
@@ -35,6 +32,9 @@ flowchart TD
     %% Runframe to CLI
     runframe --> cli[tscircuit/cli]
 
+    %% Runframe to tscircuit.com
+    runframe --> tscircuitcom[tscircuit/tscircuit.com]
+    
     %% CLI to Tscircuit
     cli --> tscircuit[tscircuit/tscircuit]
 
