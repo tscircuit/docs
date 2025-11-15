@@ -183,6 +183,7 @@ export default function CircuitPreview({
         png_width: "800",
         png_height: "600",
         show_infinite_grid: "true",
+        background_color: "%23ffffff",
         fs_map: encodeURIComponent(encodedFsMap),
         main_component_path: mainComponentPath
           ? encodeURIComponent(mainComponentPath)
@@ -198,7 +199,7 @@ export default function CircuitPreview({
     const encodedCode = encodeURIComponent(
       getCompressedBase64SnippetString(code),
     )
-    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&code=${encodedCode}`
+    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&code=${encodedCode}`
   }, [code, browser3dView, fsMap])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
