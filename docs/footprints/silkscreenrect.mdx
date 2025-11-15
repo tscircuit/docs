@@ -12,11 +12,11 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview code={`
   export default () => (
-    <group>
-      <footprint>
-        <silkscreenrect pcbX={0} pcbY={0} width={1} height={1} />
-      </footprint>
-    </group>
+ <board width="5mm" height="5mm">
+    <footprint>
+      <silkscreenrect pcbX={0} pcbY={0} width={1} height={1} />
+    </footprint>
+  </board>
   )
 `} />
 
@@ -26,17 +26,17 @@ Enable the `filled` prop to create solid silkscreen blocks—useful for alignmen
 
 <CircuitPreview code={`
   export default () => (
-    <group>
-      <footprint name="U1">
-        <silkscreenrect pcbX={-1.2} pcbY={0} width={1} height={1} />
-        <silkscreenrect
-          pcbX={1.2}
-          pcbY={0}
-          width={1}
-          height={1}
-          filled
-        />
-      </footprint>
-    </group>
+  <board width="5mm" height="5mm">
+    <footprint name="U1">
+      <silkscreenrect pcbX={-1.2} pcbY={0} width={1} height={1} />
+      <silkscreenrect
+        pcbX={1.2}
+        pcbY={0}
+        width={1}
+        height={1}
+        filled
+      />
+    </footprint>
+  </board>
   )
 `} />
