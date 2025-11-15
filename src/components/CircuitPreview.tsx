@@ -162,7 +162,7 @@ export default function CircuitPreview({
   )
   const threeDUrl = useMemo(() => {
     if (browser3dView && typeof fsMapOrCode === "string") {
-      return createPngUrl(fsMapOrCode, "3d")
+      return `${createPngUrl(fsMapOrCode, "3d")}&background_color=%23ffffff`
     }
 
     // If fsMap is provided, use fs_map parameter instead of code
