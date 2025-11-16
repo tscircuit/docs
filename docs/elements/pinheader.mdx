@@ -15,17 +15,19 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 <CircuitPreview
   defaultView="schematic"
   code={`export default () => (
-    <pinheader
-      name="J1"
-      pinCount={8}
-      gender="male"
-      pitch="2.54mm"
-      doubleRow={true}
-      showSilkscreenPinLabels={true}
-      pinLabels={["VCC", "GND", "SDA", "SCL", "MISO", "MOSI", "SCK", "CS"]}
-      pcbX={10}
-      pcbY={10}
-    />
+    <board width="10mm" height="10mm">
+      <pinheader
+        name="J1"
+        pinCount={8}
+        gender="male"
+        pitch="2.54mm"
+        doubleRow={true}
+        showSilkscreenPinLabels={true}
+        pinLabels={["VCC", "GND", "SDA", "SCL", "MISO", "MOSI", "SCK", "CS"]}
+        pcbX={10}
+        pcbY={10}
+      />
+    </board>
   )
 `}
 />
