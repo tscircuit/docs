@@ -27,16 +27,24 @@ bun install -g yalc
 
 ## Basic Workflow
 
-### 1. Publish Your Local Package
+### 1. Build and Publish Your Local Package
 
 In the package you're developing `@<username>/<package-name>` (e.g., `@tscircuit/pico`):
 
 ```bash
 cd path/to/your/local/package
+
+# Build the package first
+bun run build
+# or npm run build
+
+# Then publish to yalc
 yalc publish
 ```
 
-This publishes the package to your local yalc store.
+This builds the package and publishes the distribution files to your local yalc store.
+
+**Note**: You must build the package before publishing with yalc, as it publishes the compiled output (typically in `dist/` or `lib/`), not the source files.
 
 ### 2. Link the Package to Your Project
 
@@ -68,10 +76,11 @@ When you make changes to your local package:
 
 ```bash
 # In the local package directory
-yalc push
+bun run build  # Rebuild with your changes
+yalc push      # Push updates to all linked projects
 ```
 
-This will update all linked projects. You may need to restart `tsci dev` to pick up the changes.
+This will rebuild and update all linked projects. You may need to restart `tsci dev` to pick up the changes.
 
 ## How It Works
 
@@ -96,7 +105,7 @@ export const MyCustomChip = (props: any) => {
 
 **Publish it locally**:
 ```bash
-cd my-components
+bun run build
 yalc publish
 ```
 
