@@ -18,8 +18,12 @@ The `<schematicarc />` element is a primitive drawing component used within `<sy
 
 Here's a simple example of a chip with an arc symbol (semicircle):
 
-<CircuitPreview defaultView="schematic" code={`
-export default () => (
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+  export default () => (
   <board width="10mm" height="10mm">
     <chip
       name="U1"
@@ -46,8 +50,12 @@ export default () => (
 
 You can create quarter circle arcs for rounded corners:
 
-<CircuitPreview defaultView="schematic" code={`
-export default () => (
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+  export default () => (
   <board width="10mm" height="10mm">
     <chip
       name="U1"
@@ -73,8 +81,12 @@ export default () => (
 
 By default, arcs are drawn counterclockwise. You can specify clockwise direction:
 
-<CircuitPreview defaultView="schematic" code={`
-export default () => (
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+  export default () => (
   <board width="10mm" height="10mm">
     <chip
       name="U1"
@@ -101,8 +113,12 @@ export default () => (
 
 Arcs can be drawn with dashes:
 
-<CircuitPreview defaultView="schematic" code={`
-export default () => (
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+  export default () => (
   <board width="10mm" height="10mm">
     <chip
       name="U1"
@@ -129,8 +145,12 @@ export default () => (
 
 Combine multiple arcs to create complex curved symbols:
 
-<CircuitPreview defaultView="schematic" code={`
-export default () => (
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+  export default () => (
   <board width="10mm" height="10mm">
     <chip
       name="U1"

@@ -18,8 +18,12 @@ The `<schematicrect />` element is a primitive drawing component used within `<s
 
 Here's a simple example of a chip with a rectangular symbol:
 
-<CircuitPreview defaultView="schematic" code={`
-export default () => (
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+  export default () => (
   <board width="10mm" height="10mm">
     <chip
       name="U1"
