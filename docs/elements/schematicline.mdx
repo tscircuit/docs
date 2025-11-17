@@ -21,8 +21,9 @@ Here's a simple example of a chip with line elements in the symbol:
 <CircuitPreview   
   hide3DTab
   hidePCBTab
-  defaultView="schematic" code={`
-  export default () => (
+  defaultView="schematic" 
+  code={`
+export default () => (
   <board width="10mm" height="10mm">
     <chip
       name="U1"
@@ -50,10 +51,10 @@ Here's a simple example of a chip with line elements in the symbol:
 You can create dashed lines for visual separation:
 
 <CircuitPreview 
-hide3DTab
-hidePCBTab
-defaultView="schematic"
-code={`
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
 export default () => (
   <board width="10mm" height="10mm">
     <chip
@@ -89,10 +90,10 @@ export default () => (
 You can combine multiple lines to create patterns:
 
 <CircuitPreview
-hide3DTab
-hidePCBTab
-defaultView="schematic"
-code={`
+  hide3DTab
+  hidePCBTab
+d efaultView="schematic"
+  code={`
 export default () => (
   <board width="10mm" height="10mm">
     <chip
