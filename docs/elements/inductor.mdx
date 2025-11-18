@@ -23,11 +23,13 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   code={`
 
   export default () => (
+   <board width="10mm" height="10mm">
     <inductor
       name="L1"
       footprint="0603"
       inductance="10μH"
     />
+   </board>
   )
 
   `}
