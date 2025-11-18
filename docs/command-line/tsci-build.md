@@ -31,13 +31,11 @@ Use this command before publishing or in CI to ensure your circuits evaluate cor
 
 ## Transpiling circuit entrypoints
 
-Pass the `--transpile` flag when you need browser-friendly or Node.js-friendly bundles of the same entry file you used to build `circuit.json`. The flag runs an extra Rollup pass that writes:
+Pass the `--transpile` flag when you want your codebase to be a reusable module that can be imported into other projects. Your "entrypoint", usually `lib/index.tsx` will be the source for the bundle. Export any circuits you'd like out of that file
 
 - `dist/<entry>/index.js` – an ESM bundle
 - `dist/<entry>.cjs` – a CommonJS bundle
 - `dist/<entry>.d.ts` – generated type declarations that reflect the JSX surface of your entry file
-
-This extra work is useful when you want to re-use the same TSCircuit entrypoint in a documentation site, demo, or other tooling without re-running the evaluator.
 
 ### Example project
 
@@ -52,7 +50,6 @@ tsci init
 Replace the generated `index.tsx` with a tiny RC circuit:
 
 ```tsx title="index.tsx"
-/// <reference types="tscircuit" />
 import React from "react"
 
 export default () => (
@@ -78,7 +75,6 @@ tsci build --transpile
 
 The build writes `dist/index/circuit.json` as usual, then finishes by bundling the entrypoint and printing the paths to the emitted ESM, CJS, and type declaration artifacts.
 
-You can inspect the generated files with `tree dist`:
 
 ```text
 dist
