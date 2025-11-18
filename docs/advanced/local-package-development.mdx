@@ -9,7 +9,7 @@ When developing tscircuit projects, you may want to test changes to local packag
 
 Currently supported methods:
 - **yalc** - Recommended for most use cases
-- More linking methods (like `bun link`) coming soon!
+- **bun link** - Native Bun linking for Bun users
 
 ## What is Yalc?
 
@@ -154,3 +154,74 @@ yalc remove --all
 - Use `yalc push` instead of `yalc publish` when updating packages - it's faster and automatically updates linked projects
 - The `.yalc` directory and `yalc.lock` file should be added to `.gitignore`
 - Remember to test with the published npm version before releasing to ensure compatibility
+
+## Using Bun Link
+
+If you're using Bun as your package manager, you can use the native `bun link` command instead of yalc. This provides a simpler workflow for Bun users.
+
+### Basic Workflow with Bun Link
+
+#### 1. Link Your Local Package
+
+In the package you're developing (e.g., `@tscircuit/pico`):
+
+```bash
+cd path/to/your/local/package
+
+# Build the package first
+bun run build
+
+# Register it for linking
+bun link
+```
+
+This registers the package globally, making it available for linking in other projects.
+
+#### 2. Link the Package to Your Project
+
+In your tscircuit project:
+
+```bash
+cd path/to/your/tscircuit-project
+bun link @tscircuit/pico
+```
+
+This creates a symlink in your project's `node_modules` pointing to your local package.
+
+#### 3. Start Development
+
+Run the dev server as usual:
+
+```bash
+tsci dev index.circuit.tsx
+```
+
+The dev server will automatically detect that `@tscircuit/pico` is a local package (via the symlink) and upload it along with your component files.
+
+#### 4. Update Your Local Package
+
+When you make changes to your local package:
+
+```bash
+# In the local package directory
+bun run build  # Rebuild with your changes
+```
+
+Since `bun link` uses symlinks, the changes will be immediately available. You may need to restart `tsci dev` to pick up the changes.
+
+### Unlinking Bun Packages
+
+To remove a linked package:
+
+```bash
+# In your project
+bun unlink @tscircuit/pico
+```
+
+To remove the global link registration:
+
+```bash
+# In the package directory
+bun unlink
+```
+
