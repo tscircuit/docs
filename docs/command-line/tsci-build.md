@@ -21,7 +21,7 @@ Output files are placed in a `dist/` directory relative to your project. The mai
 - `--ignore-errors` – do not exit with code `1` on evaluation errors.
 - `--ignore-warnings` – suppress warning messages.
 - `--all-images` – emit every renderable image (PCB, schematic, 3D preview) for each built circuit into the matching `dist` subdirectory.
-- `--transpile` – emit bundler-friendly JavaScript alongside the generated `circuit.json`. See [Transpiling circuit entrypoints](#transpiling-circuit-entrypoints) for details.
+- `--transpile` – Package your project for use as a library
 
 ### Targeting specific sources
 - `tsci build path/to/file.circuit.tsx` – builds the given file, even if it does not match the `includeBoardFiles` glob in `tscircuit.config.json`.
