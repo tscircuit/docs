@@ -18,7 +18,11 @@ The `<schematicline />` element is a primitive drawing component used within `<s
 
 Here's a simple example of a chip with line elements in the symbol:
 
-<CircuitPreview defaultView="schematic" code={`
+<CircuitPreview   
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic" 
+  code={`
 export default () => (
   <board width="10mm" height="10mm">
     <chip
@@ -46,7 +50,11 @@ export default () => (
 
 You can create dashed lines for visual separation:
 
-<CircuitPreview defaultView="schematic" code={`
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
 export default () => (
   <board width="10mm" height="10mm">
     <chip
@@ -81,7 +89,11 @@ export default () => (
 
 You can combine multiple lines to create patterns:
 
-<CircuitPreview defaultView="schematic" code={`
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+d efaultView="schematic"
+  code={`
 export default () => (
   <board width="10mm" height="10mm">
     <chip
