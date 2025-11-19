@@ -1,0 +1,227 @@
+---
+title: Local Package Development
+description: Learn how to develop and test local packages with tsci dev using yalc and other linking tools
+---
+
+## Overview
+
+When developing tscircuit projects, you may want to test changes to local packages without publishing them to npm. The `tsci dev` command automatically detects and uploads local packages, making local development seamless.
+
+Currently supported methods:
+- **yalc** - Recommended for most use cases
+- **bun link** - Native Bun linking for Bun users
+
+## What is Yalc?
+
+[Yalc](https://github.com/wclr/yalc) is a tool for managing local package dependencies. It's a better alternative to `npm link` that creates a local package store and symlinks packages into your project's `node_modules`.
+
+## Installation
+
+First, install yalc globally:
+
+```bash
+npm install -g yalc
+# or
+bun install -g yalc
+```
+
+## Basic Workflow
+
+### 1. Build and Publish Your Local Package
+
+In the package you're developing `@<username>/<package-name>` (e.g., `@tscircuit/pico`):
+
+```bash
+cd path/to/your/local/package
+
+# Build the package first
+bun run build
+# or npm run build
+
+# Then publish to yalc
+yalc publish
+```
+
+This builds the package and publishes the distribution files to your local yalc store.
+
+**Note**: You must build the package before publishing with yalc, as it publishes the compiled output (typically in `dist/` or `lib/`), not the source files.
+
+### 2. Link the Package to Your Project
+
+In your tscircuit project:
+
+```bash
+cd path/to/your/tscircuit-project
+yalc add @tscircuit/pico
+```
+
+This will:
+- Add the package to your `node_modules`
+- Update your `package.json` with a `file:.yalc/@tscircuit/pico` reference
+- Create a `.yalc` directory with the package contents
+
+### 3. Start Development
+
+Run the dev server as usual:
+
+```bash
+tsci dev index.circuit.tsx
+```
+
+The dev server will automatically detect that `@tscircuit/pico` is a local package (via the `file:.yalc/` reference) and upload it along with your component files.
+
+### 4. Update Your Local Package
+
+When you make changes to your local package:
+
+```bash
+# In the local package directory
+bun run build  # Rebuild with your changes
+yalc push      # Push updates to all linked projects
+```
+
+This will rebuild and update all linked projects. You may need to restart `tsci dev` to pick up the changes.
+
+## How It Works
+
+The `tsci dev` command automatically uploads packages from `node_modules` **only if** they meet these criteria:
+
+1. The package is referenced in `package.json` with a `file:.yalc/` path
+2. The package exists in your `node_modules` directory
+
+Regular npm packages (like `react`, `lodash`, etc.) are **not** uploaded to keep bundle sizes small and development fast.
+
+## Example
+
+Here's a complete example of developing a custom component library:
+
+**Your local library** (`my-components`):
+```tsx
+// my-components/src/index.ts
+export const MyCustomChip = (props: any) => {
+  return <chip name="U1" footprint="0805" />
+}
+```
+
+**Publish it locally**:
+```bash
+bun run build
+yalc publish
+```
+
+**Use it in your project**:
+```bash
+cd my-tscircuit-project
+yalc add my-components
+```
+
+**Your component**:
+```tsx
+// circuit.tsx
+import { MyCustomChip } from "my-components"
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <MyCustomChip />
+  </board>
+)
+```
+
+**Start dev server**:
+```bash
+tsci dev circuit.tsx
+```
+
+Now both your component and the `my-components` package code will be uploaded to the dev server!
+
+## Removing Yalc Packages
+
+To remove a yalc package and restore the npm version:
+
+```bash
+yalc remove @tscircuit/pico
+npm install @tscircuit/pico
+```
+
+Or remove all yalc packages:
+
+```bash
+yalc remove --all
+```
+
+## Tips
+
+- Use `yalc push` instead of `yalc publish` when updating packages - it's faster and automatically updates linked projects
+- The `.yalc` directory and `yalc.lock` file should be added to `.gitignore`
+- Remember to test with the published npm version before releasing to ensure compatibility
+
+## Using Bun Link
+
+If you're using Bun as your package manager, you can use the native `bun link` command instead of yalc. This provides a simpler workflow for Bun users.
+
+### Basic Workflow with Bun Link
+
+#### 1. Link Your Local Package
+
+In the package you're developing (e.g., `@tscircuit/pico`):
+
+```bash
+cd path/to/your/local/package
+
+# Build the package first
+bun run build
+
+# Register it for linking
+bun link
+```
+
+This registers the package globally, making it available for linking in other projects.
+
+#### 2. Link the Package to Your Project
+
+In your tscircuit project:
+
+```bash
+cd path/to/your/tscircuit-project
+bun link @tscircuit/pico
+```
+
+This creates a symlink in your project's `node_modules` pointing to your local package.
+
+#### 3. Start Development
+
+Run the dev server as usual:
+
+```bash
+tsci dev index.circuit.tsx
+```
+
+The dev server will automatically detect that `@tscircuit/pico` is a local package (via the symlink) and upload it along with your component files.
+
+#### 4. Update Your Local Package
+
+When you make changes to your local package:
+
+```bash
+# In the local package directory
+bun run build  # Rebuild with your changes
+```
+
+Since `bun link` uses symlinks, the changes will be immediately available. You may need to restart `tsci dev` to pick up the changes.
+
+### Unlinking Bun Packages
+
+To remove a linked package:
+
+```bash
+# In your project
+bun unlink @tscircuit/pico
+```
+
+To remove the global link registration:
+
+```bash
+# In the package directory
+bun unlink
+```
+
