@@ -22,7 +22,7 @@
   padding-right: 180px;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 800px) {
   .contentHeader {
     position: static;
     margin-bottom: 1rem;
