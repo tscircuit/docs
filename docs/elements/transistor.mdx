@@ -16,11 +16,13 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   defaultView="schematic"
   code={`
   export default () => (
+   <board width="10mm" height="10mm">
     <transistor
       name="Q1"
       type="npn"
       footprint="sot23"
     />
+  </board>
   )
 `}
 />
