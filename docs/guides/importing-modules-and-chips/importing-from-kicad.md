@@ -41,21 +41,43 @@ we can convert KiCad files on the command line.
 First install the component converter:
 
 ```bash
-npm install -g kicad-mod-converter
+npm install -g kicad-component-converter
 ```
 
 Next, run the following command to convert your KiCad files:
 
 ```bash
 # Convert a directory ./my-footprints.pretty to a tscircuit project
-kicad-mod-converter convert-kicad-directory --input-dir ./my-footprints.pretty --output-dir ./my-tscircuit-footprints
+kicad-component-converter convert-kicad-directory --input-dir ./my-footprints.pretty --output-dir ./my-tscircuit-footprints
 ```
 
 ### Importing KiCad Components Programmatically
 
 ```bash
-bun add kicad-mod-converter
+bun add kicad-component-converter
 ```
+
+#### Import `.kicad_mod` files directly
+
+`kicad-component-converter` registers a bundler loader that lets you import KiCad
+footprints like any other module inside your tscircuit project:
+
+```tsx
+import kicadMod from "./footprint.kicad_mod"
+
+export default () => {
+  return (
+    <board>
+      <chip footprint={kicadMod} name="U1" />
+    </board>
+  )
+}
+```
+
+#### Convert KiCad files manually
+
+If you need to do the conversion yourself (for example inside a build script),
+you can read the `.kicad_mod` file and pass it through the parser:
 
 ```tsx
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
