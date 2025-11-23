@@ -20,7 +20,11 @@ Use `<symbol />` when you want to create a custom schematic appearance for your 
 
 Here's an example combining multiple primitive components to create a custom symbol:
 
-<CircuitPreview defaultView="schematic" code={`
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
 export default () => (
   <board width="10mm" height="10mm">
     <chip
@@ -53,7 +57,11 @@ export default () => (
 
 You can create multiple chips with custom symbols and connect them via traces:
 
-<CircuitPreview defaultView="schematic" code={`
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
 export default () => (
   <board width="10mm" height="10mm">
     <chip
