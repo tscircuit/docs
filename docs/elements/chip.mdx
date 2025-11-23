@@ -25,6 +25,7 @@ interface Props extends CommonLayoutProps {
 
 export const A555Timer = (props: Props) => {
   return (
+   <board width="10mm" height="10mm">
     <chip
       footprint="soic8"
       pinLabels={{
@@ -39,6 +40,7 @@ export const A555Timer = (props: Props) => {
       }}
       {...props}
     />
+  </board>
   )
 }
 `} />
@@ -458,6 +460,7 @@ interface Props extends CommonLayoutProps {
 
 export const Diode1N4148WS = (props: Props) => {
   return (
+   <board width="10mm" height="10mm">
     <diode
       name="D1"
       {...props}
@@ -532,6 +535,7 @@ export const Diode1N4148WS = (props: Props) => {
         },
       }}
     />
+   </board>
   )
 }
 
