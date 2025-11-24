@@ -15,12 +15,14 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   defaultView="schematic"
   code={`
   export default () => (
+   <board width="10mm" height="10mm">
     <mosfet
       name="Q1"
       channelType="n"
       mosfetMode="depletion"
       footprint="sot23"
     />
+   </board>
   )
 `}
 />
