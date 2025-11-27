@@ -48,16 +48,16 @@ When boards are added to a panel without explicit `pcbX` and `pcbY` positions, t
     <panel width="60mm" height="40mm">
       {/* These boards will be automatically positioned in a grid */}
       <board width="15mm" height="10mm">
-        <resistor resistance="1k" footprint="0402" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
       </board>
       <board width="15mm" height="10mm">
-        <capacitor capacitance="10uF" footprint="0603" />
+        <capacitor name="C1" capacitance="10uF" footprint="0603" />
       </board>
       <board width="15mm" height="10mm">
-        <led color="red" footprint="0603" />
+        <led name="LED1" color="red" footprint="0603" />
       </board>
       <board width="15mm" height="10mm">
-        <resistor resistance="10k" footprint="0603" />
+        <resistor name="R2" resistance="10k" footprint="0603" />
       </board>
     </panel>
   )
