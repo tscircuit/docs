@@ -1,0 +1,188 @@
+---
+title: <panel />
+sidebar_position: 2
+description: >-
+  Container element for grouping multiple boards into a single panelized PCB with tabs and mouse bites.
+---
+
+The `<panel />` element is a container that groups multiple `<board />` elements together for panelization. It automatically arranges unpositioned boards in a grid layout and generates tabs and mouse bites for easy separation after manufacturing.
+
+Panels are essential for manufacturing efficiency when producing multiple identical or different boards, as they allow all boards to be fabricated on a single panel and then broken apart.
+
+import CircuitPreview from '@site/src/components/CircuitPreview'
+
+<CircuitPreview defaultView="pcb" code={`
+
+  export default () => (
+    <panel width="100mm" height="80mm">
+      <board width="20mm" height="15mm">
+        <resistor resistance="1k" footprint="0402" name="R1" />
+      </board>
+      <board width="20mm" height="15mm">
+        <resistor resistance="1k" footprint="0402" name="R2" />
+      </board>
+    </panel>
+  )
+
+`} />
+
+
+## Panel Properties
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `width`, `height` | `Distance` | Define the panel's dimensions (e.g. "100mm", "4in"). |
+| `tabWidth` | `Distance` | Width of the tabs connecting boards (default: 2.5mm). |
+| `tabLength` | `Distance` | Length of the tabs connecting boards (default: 5mm). |
+| `boardGap` | `Distance` | Gap between boards in the panel (defaults to tabWidth). |
+| `mouseBites` | `boolean` | Enable mouse bite holes for easy board separation (default: true). |
+| `panelizationMethod` | `"tab-routing" \| "none"` | Method for connecting boards (default: "tab-routing"). |
+| `noSolderMask` | `boolean` | Prevent solder mask from being applied to the panel (default: false). |
+
+## Automatic Board Positioning
+
+When boards are added to a panel without explicit `pcbX` and `pcbY` positions, the panel automatically arranges them in a grid layout. The grid is sized to fit all boards efficiently.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <panel width="60mm" height="40mm">
+      {/* These boards will be automatically positioned in a grid */}
+      <board width="15mm" height="10mm">
+        <resistor resistance="1k" footprint="0402" />
+      </board>
+      <board width="15mm" height="10mm">
+        <capacitor capacitance="10uF" footprint="0603" />
+      </board>
+      <board width="15mm" height="10mm">
+        <led color="red" footprint="0603" />
+      </board>
+      <board width="15mm" height="10mm">
+        <resistor resistance="10k" footprint="0603" />
+      </board>
+    </panel>
+  )
+`} />
+
+## Manual Board Positioning
+
+You can manually position boards within a panel using `pcbX` and `pcbY` properties. When any board has explicit positioning, automatic grid layout is disabled.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <panel width="50mm" height="30mm">
+      <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
+        <resistor resistance="1k" footprint="0402" />
+      </board>
+      <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
+        <capacitor capacitance="10uF" footprint="0603" />
+      </board>
+    </panel>
+  )
+`} />
+
+## Panelization with Tabs and Mouse Bites
+
+By default, panels generate tabs and mouse bites to connect boards. Tabs are narrow strips of material that keep boards connected during manufacturing, while mouse bites are small holes that make it easy to break boards apart.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <panel width="50mm" height="30mm" tabWidth="3mm" tabLength="6mm">
+      <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
+        <resistor resistance="1k" footprint="0402" />
+      </board>
+      <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
+        <capacitor capacitance="10uF" footprint="0603" />
+      </board>
+    </panel>
+  )
+`} />
+
+## Customizing Panelization
+
+### Adjusting Tab Dimensions
+
+You can customize the tab width and length to suit your manufacturing requirements:
+
+```jsx
+<panel
+  width="60mm"
+  height="40mm"
+  tabWidth="2mm"    // Narrower tabs
+  tabLength="4mm"   // Shorter tabs
+>
+  <board width="15mm" height="10mm">
+    <resistor resistance="1k" footprint="0402" />
+  </board>
+  <board width="15mm" height="10mm">
+    <capacitor capacitance="10uF" footprint="0603" />
+  </board>
+</panel>
+```
+
+### Controlling Board Spacing
+
+The `boardGap` property controls the spacing between boards. By default it matches the `tabWidth`, but you can set it independently:
+
+```jsx
+<panel
+  width="60mm"
+  height="40mm"
+  boardGap="5mm"    // More space between boards
+  tabWidth="2.5mm"  // Tab width can be different
+>
+  <board width="15mm" height="10mm">
+    <resistor resistance="1k" footprint="0402" />
+  </board>
+  <board width="15mm" height="10mm">
+    <capacitor capacitance="10uF" footprint="0603" />
+  </board>
+</panel>
+```
+
+### Disabling Mouse Bites
+
+Mouse bites can be disabled if you prefer different separation methods:
+
+```jsx
+<panel width="50mm" height="30mm" mouseBites={false}>
+  <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
+    <resistor resistance="1k" footprint="0402" />
+  </board>
+  <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
+    <capacitor capacitance="10uF" footprint="0603" />
+  </board>
+</panel>
+```
+
+### Disabling Panelization
+
+For panels where boards should be completely separate, set `panelizationMethod="none"`:
+
+```jsx
+<panel width="50mm" height="30mm" panelizationMethod="none">
+  <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
+    <resistor resistance="1k" footprint="0402" />
+  </board>
+  <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
+    <capacitor capacitance="10uF" footprint="0603" />
+  </board>
+</panel>
+```
+
+## Solder Mask Control
+
+By default, panels are covered with solder mask. You can prevent solder mask application using the `noSolderMask` property:
+
+```jsx
+<panel width="50mm" height="30mm" noSolderMask>
+  <board width="15mm" height="10mm">
+    <resistor resistance="1k" footprint="0402" />
+  </board>
+</panel>
+```
+
+## Panel Constraints
+
+- Panels can only contain `<board />` elements
+- Panels must contain at least one board
+- Board positioning is handled automatically unless `pcbX`/`pcbY` are specified on individual boards
