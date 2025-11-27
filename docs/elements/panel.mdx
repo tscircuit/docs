@@ -71,10 +71,10 @@ You can manually position boards within a panel using `pcbX` and `pcbY` properti
   export default () => (
     <panel width="50mm" height="30mm">
       <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
-        <resistor resistance="1k" footprint="0402" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
       </board>
       <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
-        <capacitor capacitance="10uF" footprint="0603" />
+        <capacitor name="C1" capacitance="10uF" footprint="0603" />
       </board>
     </panel>
   )
@@ -88,10 +88,10 @@ By default, panels generate tabs and mouse bites to connect boards. Tabs are nar
   export default () => (
     <panel width="50mm" height="30mm" tabWidth="3mm" tabLength="6mm">
       <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
-        <resistor resistance="1k" footprint="0402" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
       </board>
       <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
-        <capacitor capacitance="10uF" footprint="0603" />
+        <capacitor name="C1" capacitance="10uF" footprint="0603" />
       </board>
     </panel>
   )
@@ -111,10 +111,10 @@ You can customize the tab width and length to suit your manufacturing requiremen
   tabLength="4mm"   // Shorter tabs
 >
   <board width="15mm" height="10mm">
-    <resistor resistance="1k" footprint="0402" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
   </board>
   <board width="15mm" height="10mm">
-    <capacitor capacitance="10uF" footprint="0603" />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" />
   </board>
 </panel>
 ```
@@ -131,10 +131,10 @@ The `boardGap` property controls the spacing between boards. By default it match
   tabWidth="2.5mm"  // Tab width can be different
 >
   <board width="15mm" height="10mm">
-    <resistor resistance="1k" footprint="0402" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
   </board>
   <board width="15mm" height="10mm">
-    <capacitor capacitance="10uF" footprint="0603" />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" />
   </board>
 </panel>
 ```
@@ -146,10 +146,10 @@ Mouse bites can be disabled if you prefer different separation methods:
 ```jsx
 <panel width="50mm" height="30mm" mouseBites={false}>
   <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
-    <resistor resistance="1k" footprint="0402" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
   </board>
   <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
-    <capacitor capacitance="10uF" footprint="0603" />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" />
   </board>
 </panel>
 ```
@@ -161,10 +161,10 @@ For panels where boards should be completely separate, set `panelizationMethod="
 ```jsx
 <panel width="50mm" height="30mm" panelizationMethod="none">
   <board width="15mm" height="10mm" pcbX={-10} pcbY={0}>
-    <resistor resistance="1k" footprint="0402" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
   </board>
   <board width="15mm" height="10mm" pcbX={10} pcbY={0}>
-    <capacitor capacitance="10uF" footprint="0603" />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" />
   </board>
 </panel>
 ```
@@ -176,7 +176,7 @@ By default, panels are covered with solder mask. You can prevent solder mask app
 ```jsx
 <panel width="50mm" height="30mm" noSolderMask>
   <board width="15mm" height="10mm">
-    <resistor resistance="1k" footprint="0402" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
   </board>
 </panel>
 ```
