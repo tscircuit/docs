@@ -1,0 +1,74 @@
+---
+title: Full-Wave Rectifier Example
+sidebar_label: Full-Wave Rectifier
+sidebar_position: 2
+description: An example of a full-wave rectifier circuit for SPICE simulation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<p>
+  This example demonstrates a full-wave bridge rectifier. The four diodes are
+  arranged to route both the positive and negative halves of the AC input
+  sine wave to the output, but with the negative half inverted. The result is
+  a DC voltage that pulses at twice the frequency of the AC input.
+</p>
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+        <board schMaxTraceDistance={10} routingDisabled>
+        <voltagesource
+          name="V1"
+          voltage="5V" /* 5V amplitude -> 10V pk-pk */
+          frequency="40Hz"
+          waveShape="sinewave"
+          schRotation={270}
+        />
+        <diode name="D1" />
+        <diode name="D2" />
+        <diode name="D3" />
+        <diode name="D4" />
+        <resistor name="R1" resistance="100" />
+
+        <trace from=".V1 > .pin1" to=".D1 > .anode" />
+        <trace from=".V1 > .pin1" to=".D4 > .cathode" />
+
+        <trace from=".V1 > .pin2" to=".D2 > .cathode" />
+        <trace from=".V1 > .pin2" to=".D3 > .anode" />
+
+        <trace from=".D1 > .cathode" to=".D3 > .cathode" />
+        <trace from=".D1 > .cathode" to=".R1 > .pin1" />
+
+        <trace from=".D2 > .anode" to=".D4 > .anode" />
+        <trace from=".D2 > .anode" to=".R1 > .pin2" />
+
+        <voltageprobe name="VP_IN1" connectsTo=".V1 > .pin1" />
+
+        <voltageprobe
+          name="VR1"
+          connectsTo=".R1 > .pin1"
+          referenceTo=".R1 > .pin2"
+        />
+
+        <analogsimulation
+          duration="100ms"
+          timePerStep="0.1ms"
+          spiceEngine="ngspice"
+        />
+      </board>
+)
+`}
+/>
+<p>
+  To build and simulate this circuit, we defined a {"<voltagesource />"},
+  four {"<diode />"} components, and a {"<resistor />"}. {"<trace />"} elements
+  are used to wire the components into a bridge rectifier configuration. A
+  differential {"<voltageprobe />"} measures the voltage across the load
+  resistor, which is achieved by supplying both <code>connectsTo</code> and{" "}
+  <code>referenceTo</code> props. Finally, the {"<analogsimulation />"}{" "}
+  component runs the simulation.
+</p>
