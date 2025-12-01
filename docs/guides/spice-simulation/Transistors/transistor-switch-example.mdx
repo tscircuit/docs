@@ -1,0 +1,59 @@
+---
+title: Switch
+sidebar_label: Switch
+sidebar_position: 1
+description: An example of using a switch to drive a transistor in a SPICE simulation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<p>
+This example illustrates how a timed switch can be used to drive a transistor. As the switch toggles at a set frequency, it alternately activates and deactivates the transistor. This switching action controls the current flowing through the collector resistor, allowing the transistor to function as an electronic switch. A voltage probe placed at the collector displays the resulting output waveform.
+</p>
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+        <board schMaxTraceDistance={10} routingDisabled>
+        <voltagesource name="V1" voltage="5V" />
+        <resistor name="R_base" resistance="10k" schY={2} />
+        <switch name="SW1" simSwitchFrequency="1kHz" schX={1.5} schY={2} />
+        <transistor
+          name="Q1"
+          type="npn"
+          footprint="sot23"
+          schX={2}
+          schY={0.3}
+          schRotation={180}
+        />
+        <resistor name="R_collector" resistance="10k" schY={-2} />
+
+        <trace from=".V1 > .pin1" to=".R_base > .pin1" />
+        <trace from=".R_base > .pin2" to=".SW1 > .pin1" />
+        <trace from=".SW1 > .pin2" to=".Q1 > .base" />
+
+        <trace from=".V1 > .pin1" to=".R_collector > .pin1" />
+        <trace from=".R_collector > .pin2" to=".Q1 > .collector" />
+
+        <trace from=".Q1 > .emitter" to=".V1 > .pin2" />
+
+        <voltageprobe name="VP_COLLECTOR" connectsTo=".R_collector > .pin2" />
+
+        <analogsimulation
+          duration="4ms"
+          timePerStep="50us"
+          spiceEngine="ngspice"
+        />
+      </board>
+)
+`}
+/>
+<p>
+  The simulation shows the voltage at the transistor's collector.
+  When the switch is closed, current flows into the base, turning the
+  transistor on. This pulls the collector voltage close to 0V. When the switch
+  is open, the transistor turns off, and the collector voltage rises to 5V.
+</p>
