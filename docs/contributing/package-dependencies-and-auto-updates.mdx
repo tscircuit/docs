@@ -29,6 +29,9 @@ flowchart TD
     %% Schematic Viewer to Runframe
     schemaviewer[tscircuit/schematic-viewer] --> runframe
 
+    %% Circuit JSON to Gerber to Runframe
+    circuitjsontogerber[circuit-json-to-gerber] --> runframe
+
     %% Runframe to CLI
     runframe --> cli[tscircuit/cli]
 
