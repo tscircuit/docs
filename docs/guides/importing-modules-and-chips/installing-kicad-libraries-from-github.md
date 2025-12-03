@@ -16,6 +16,8 @@ To install a KiCad library from GitHub, use the `tsci add` command with the repo
 tsci add https://github.com/espressif/kicad-libraries
 ```
 
+![Installing KiCad library from GitHub](/img/guides/installing-kicad-library/install-lib.png)
+
 :::tip
 `tsci install` is an alias for `tsci add` - both commands work identically.
 :::
@@ -29,15 +31,6 @@ When you install a repository containing `.kicad_mod` files, `tsci` will automat
 3. **Detect KiCad footprints** - Scans for `.kicad_mod` files in the repository
 4. **Generate TypeScript types** - Creates type definitions in `types/<package-name>.d.ts`
 5. **Configure `tsconfig.json`** - Adds the types directory to `typeRoots`
-
-Example output:
-
-```
-Adding https://github.com/espressif/kicad-libraries
-Detected KiCad footprint library
-Generated types/kicad-libraries.d.ts
-Successfully installed kicad-libraries
-```
 
 ## Using KiCad Footprints in Your Circuit
 
@@ -56,6 +49,8 @@ export default () => {
 ```
 
 The imported `kicadMod` can be used directly as the `footprint` prop on components like `<chip>`.
+
+![ESP32-S2-MINI-1 PCB footprint](/img/guides/installing-kicad-library/pcb.png)
 
 ## Generated Type Definitions
 
