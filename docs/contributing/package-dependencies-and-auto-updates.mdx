@@ -32,6 +32,9 @@ flowchart TD
     %% Circuit JSON to Gerber to Runframe
     circuitjsontogerber[circuit-json-to-gerber] --> runframe
 
+    %% Circuit JSON to GLTF to Runframe
+    circuitjsontogltf[circuit-json-to-gltf] --> runframe
+
     %% Runframe to CLI
     runframe --> cli[tscircuit/cli]
 
