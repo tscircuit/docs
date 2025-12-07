@@ -31,7 +31,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | --- | --- | --- |
 | `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
-| `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Increase the number of copper layers beyond the default two-layer stackup. |
+| `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
 | `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
