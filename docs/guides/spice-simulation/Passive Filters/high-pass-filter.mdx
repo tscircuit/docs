@@ -1,0 +1,58 @@
+---
+title: High-Pass Filter (RC)
+sidebar_label: High-Pass Filter (RC)
+sidebar_position: 1
+description: An example of an RC high-pass filter circuit configured for SPICE simulation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<p>
+  Here's an example of an RC high-pass filter. This circuit allows high-frequency signals to pass while attenuating low-frequency signals. When a DC voltage is applied (a step input), the capacitor acts as an open circuit after it is fully charged, thus blocking the DC signal from the output. The output voltage across the resistor shows a quick spike and then decays to zero.
+</p>
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+      <board width={16} height={16} schMaxTraceDistance={5}>
+        <voltagesource
+          name="V1"
+          voltage="5V"
+          schX={-4}
+          schY={1}
+          schRotation={270}
+        />
+        <capacitor
+          name="C1"
+          capacitance="10uF"
+          footprint="0402"
+          schX={-1}
+        />
+        <resistor
+          name="R1"
+          resistance="35ohm"
+          footprint="0402"
+          schX={2}
+          schY={1}
+          schRotation={270}
+        />
+
+        <trace from={".V1 > .pin1"} to={".C1 > .pin1"} />
+        <trace from={".C1 > .pin2"} to={".R1 > .pin1"} />
+        <trace from={".R1 > .pin2"} to={"net.GND"} />
+        <trace from={".V1 > .pin2"} to={"net.GND"} />
+
+        <voltageprobe connectsTo={".V1 > .pin1"} />
+        <voltageprobe connectsTo={".R1 > .pin1"} />
+
+        <analogsimulation duration="2.5ms" timePerStep="0.01ms" spiceEngine="ngspice"/>
+      </board>
+)
+`}
+/>
+<p>
+  The simulation results show the voltage at the input and at the output across <code>R1</code>. The output voltage briefly matches the input and then decays to 0V as the capacitor charges. This demonstrates the "differentiating" behavior of a high-pass filter.
+</p>
