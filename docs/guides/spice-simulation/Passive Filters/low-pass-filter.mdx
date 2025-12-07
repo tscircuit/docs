@@ -1,0 +1,67 @@
+---
+title: Low-Pass Filter (RC)
+sidebar_label: Low-Pass Filter (RC)
+sidebar_position: 2
+description: An example of an RC low-pass filter circuit configured for SPICE simulation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<p>
+  Here is an example of an RC low-pass filter. This circuit passes
+  low-frequency signals and blocks high-frequency signals. When a DC voltage
+  is applied, the capacitor starts to charge through the resistor. The
+  voltage across the capacitor increases over time, approaching the input
+  voltage. This demonstrates the "integrating" behavior of a low-pass
+  filter.
+</p>
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+      <board width={16} height={16} schMaxTraceDistance={5}>
+        <voltagesource
+          name="V1"
+          voltage="5V"
+          schX={-4}
+          schY={1}
+          schRotation={270}
+        />
+        <resistor
+          name="R1"
+          resistance="187ohm"
+          footprint="0402"
+          schX={-1}
+          schY={0}
+        />
+        <capacitor
+          name="C1"
+          capacitance="10uF"
+          footprint="0402"
+          schX={2}
+          schY={1}
+          schRotation={270}
+        />
+
+        <trace from={".V1 > .pin1"} to={".R1 > .pin1"} />
+        <trace from={".R1 > .pin2"} to={".C1 > .pin1"} />
+        <trace from={".C1 > .pin2"} to={"net.GND"} />
+        <trace from={".V1 > .pin2"} to={"net.GND"} />
+
+        <voltageprobe connectsTo={".V1 > .pin1"} />
+        <voltageprobe connectsTo={".C1 > .pin1"} />
+
+        <analogsimulation duration="15ms" timePerStep="0.1ms" spiceEngine="ngspice" />
+      </board>
+)
+`}
+/>
+<p>
+  The simulation results show the voltage at the input and the output
+  voltage across the capacitor. The output voltage charges exponentially
+  towards the 5V input, characteristic of a low-pass filter's response to a
+  step input.
+</p>
