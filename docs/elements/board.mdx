@@ -31,16 +31,107 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | --- | --- | --- |
 | `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
-| `layers` | `number` | Increase the number of copper layers beyond the default two-layer stackup. |
+| `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
 | `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
+| `routingDisabled` | `boolean` | Skip routing to speed up development. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
 | `outline` | `Array<{ x: number, y: number }>` | Supply a custom polygon to replace the default rectangular outline. |
 | `outlineOffsetX`, `outlineOffsetY` | `string \| number` | Offset a custom outline relative to the bounding box origin. |
+| `material` | `'fr4' \| 'fr1'` | PCB substrate material. Defaults to 'fr4'. |
+| `thickness` | `string \| number` | Board thickness in millimeters. |
+| `title` | `string` | Title for the board, displayed in documentation and exports. |
+| `solderMaskColor` | `string` | Color applied to both top and bottom solder masks. |
+| `topSolderMaskColor` | `string` | Color of the top solder mask. |
+| `bottomSolderMaskColor` | `string` | Color of the bottom solder mask. |
+| `silkscreenColor` | `string` | Color applied to both top and bottom silkscreens. |
+| `topSilkscreenColor` | `string` | Color of the top silkscreen. |
+| `bottomSilkscreenColor` | `string` | Color of the bottom silkscreen. |
+| `doubleSidedAssembly` | `boolean` | Whether the board should be assembled on both sides. Defaults to false. |
+| `boardAnchorPosition` | `{ x: number, y: number }` | Moves the board's anchor point to the specified coordinates. |
+| `boardAnchorAlignment` | `'center' \| 'top_left' \| 'top_right' \| 'bottom_left' \| 'bottom_right' \| 'center_left' \| 'center_right' \| 'top_center' \| 'bottom_center'` | Sets which part of the board the anchor point refers to. |
+| `defaultTraceWidth` | `string \| number` | Default width for traces within this board. |
+| `minTraceWidth` | `string \| number` | Minimum allowed trace width for routing. |
 
 ### Customizing the Size of the Board
 
 Generally you'll use the `width` and `height` properties to define the size of
 the board.
+
+### Disabling Routing with `routingDisabled`
+
+The `routingDisabled` prop is a powerful development speed optimization. When working
+on component placement and circuit design, autorouting can slow down your iteration
+cycle. Set `routingDisabled={true}` to skip the routing step and see your changes
+instantly:
+
+```jsx
+<board width="20mm" height="20mm" routingDisabled>
+  <chip name="U1" footprint="soic8" pcbX={5} pcbY={0} />
+  <resistor name="R1" pcbX={-5} pcbY={0} resistance={100} footprint="0402" />
+  {/* Traces will show as unrouted ratsnest lines */}
+  <trace from=".U1 > .pin1" to=".R1 > .pin1" />
+</board>
+```
+
+**Why use `routingDisabled`?**
+- **Faster development** - Skip routing calculations during component placement
+- **Instant feedback** - See layout changes immediately without waiting
+- **Focus on placement** - Perfect for optimizing component positions before routing
+- **Better performance** - Especially helpful with complex boards that have many traces
+
+Simply remove `routingDisabled` or set it to `false` when you're ready to see the
+final routed board. This workflow significantly speeds up the iterative design process.
+
+### Board Material and Colors
+
+You can customize the appearance and manufacturing properties of your board:
+
+#### Material Selection
+Set the `material` prop to specify the PCB substrate:
+- `"fr4"` (default) - Standard fiberglass epoxy laminate
+- `"fr1"` - Paper-based phenolic resin (lower cost)
+
+#### Solder Mask Colors
+Customize the solder mask appearance:
+- `solderMaskColor` - Sets both top and bottom mask colors
+- `topSolderMaskColor` - Sets only the top mask color
+- `bottomSolderMaskColor` - Sets only the bottom mask color
+
+Common colors include: `"green"`, `"red"`, `"blue"`, `"purple"`, `"black"`, `"white"`, `"yellow"`
+
+#### Silkscreen Colors
+Control the silkscreen layer colors:
+- `silkscreenColor` - Sets both top and bottom silkscreen colors
+- `topSilkscreenColor` - Sets only the top silkscreen color
+- `bottomSilkscreenColor` - Sets only the bottom silkscreen color
+
+Example with custom colors:
+```jsx
+<board 
+  width="30mm" 
+  height="20mm"
+  material="fr4"
+  solderMaskColor="black"
+  silkscreenColor="white"
+  thickness="1.6mm"
+>
+  <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
+</board>
+```
+
+### Double-Sided Assembly
+
+For boards that require components on both sides, set `doubleSidedAssembly={true}`:
+
+```jsx
+<board width="40mm" height="30mm" doubleSidedAssembly>
+  <chip name="U1" footprint="soic8" pcbX={0} pcbY={5} layer="top" />
+  <chip name="U2" footprint="soic8" pcbX={0} pcbY={-5} layer="bottom" />
+</board>
+```
+
+This informs manufacturing that components will be placed on both the top and
+bottom layers of the board.
 
 ### Rounding Board Corners with `borderRadius`
 
@@ -85,6 +176,34 @@ components across that stackup:
     </board>
   )
 `} />
+
+### Board Thickness
+
+The board thickness can be specified using the `thickness` prop (e.g., `thickness="1.6mm"`).
+This is important for mechanical fit and impedance control considerations.
+
+### Controlling Trace Width
+
+You can set default and minimum trace widths for all traces within a board:
+
+- `defaultTraceWidth` - Sets the default width for all traces (e.g., `"0.25mm"`)
+- `minTraceWidth` - Sets the minimum allowed trace width during routing (e.g., `"0.15mm"`)
+
+```jsx
+<board 
+  width="30mm" 
+  height="20mm"
+  defaultTraceWidth="0.3mm"
+  minTraceWidth="0.2mm"
+>
+  <chip name="U1" footprint="soic8" pcbX={5} pcbY={0} />
+  <resistor name="R1" pcbX={-5} pcbY={0} resistance={100} footprint="0402" />
+  <trace from=".U1 > .pin1" to=".R1 > .pin1" />
+</board>
+```
+
+These settings help ensure your traces meet manufacturing requirements and
+handle the expected current loads.
 
 ### Setting the `autorouter`
 
