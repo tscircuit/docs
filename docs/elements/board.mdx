@@ -156,9 +156,6 @@ board. If you specify `layers={4}`, the `"inner1"` and `"inner2"` layers are
 added automatically and available for routing, while omitting the prop keeps the
 default two-layer stackup.
 
-The board thickness can be specified using the `thickness` prop (e.g., `thickness="1.6mm"`).
-This is important for mechanical fit and impedance control considerations.
-
 The following example enables a four-layer board and shows traces connecting
 components across that stackup:
 
@@ -179,6 +176,11 @@ components across that stackup:
     </board>
   )
 `} />
+
+### Board Thickness
+
+The board thickness can be specified using the `thickness` prop (e.g., `thickness="1.6mm"`).
+This is important for mechanical fit and impedance control considerations.
 
 ### Controlling Trace Width
 
