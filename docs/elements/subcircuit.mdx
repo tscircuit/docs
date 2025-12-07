@@ -24,10 +24,10 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   export default () => (
     <board width="10mm" height="10mm">
       <subcircuit name="subcircuit1" schX={-2}>
-        <resistor name="R1" resistance="1k" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
       </subcircuit>
       <subcircuit name="subcircuit2" schX={2}>
-        <resistor name="R2" resistance="1k"  />
+        <resistor name="R2" resistance="1k" footprint="0402"  />
       </subcircuit>
       <trace from=".subcircuit1 .R1 .pin1" to=".subcircuit2 .R2 .pin1" />
     </board>
@@ -55,10 +55,10 @@ e.g. `.somesubcircuit .R1`
   export default () => (
     <board width="10mm" height="10mm">
       <subcircuit name="subcircuit1" schX={-2}>
-        <resistor name="R1" resistance="1k" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
       </subcircuit>
       <subcircuit name="subcircuit2" schX={2}>
-        <resistor name="R1" resistance="1k" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
       </subcircuit>
       <trace from=".subcircuit1 .R1 .pin1" to=".subcircuit2 .R1 .pin1" />
     </board>
