@@ -1060,7 +1060,7 @@ const circuitJson = await parseKicadModToCircuitJson(fileContent)
 - `fileContent` (string): Raw content of a `.kicad_mod` file
 
 **Returns:**
-- Promise<AnyCircuitElement[]>: Array of circuit elements in Circuit JSON format
+- Promise of AnyCircuitElement[]: Array of circuit elements in Circuit JSON format
 
 **Throws:**
 - Error if file format is invalid
@@ -1104,7 +1104,7 @@ const circuitJson = await convertKicadJsonToTsCircuitSoup(kicadJson)
 - `kicadJson` (KicadModJson): Intermediate KiCad format
 
 **Returns:**
-- Promise<AnyCircuitElement[]>: Circuit JSON format
+- Promise of AnyCircuitElement[]: Circuit JSON format
 
 ### Example: Complete Conversion Pipeline
 
