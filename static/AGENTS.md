@@ -1,0 +1,64 @@
+# AGENTS.md — Agent Configuration Template
+
+This template helps AI assistants understand how to interact with tscircuit projects. Copy this file into your project root and customize it for your specific needs.
+
+---
+
+## 📋 Project Context
+
+Describe your project, goals, constraints, and any relevant hardware requirements. Include information about:
+- Project objectives and scope
+- Target hardware platform(s)
+- Key components and design decisions
+- Any project-specific conventions
+
+## 🔧 tscircuit Syntax Primer
+
+Provide examples of how your project uses tscircuit components. AI tools will reference these when generating code:
+
+```tsx
+<resistor name="R1" resistance="10k" footprint="0805" />
+<led name="LED1" color="red" footprint="led0603" />
+<trace from="R1.pin1" to="LED1.pin1" />
+<chip name="IC1" model="ATmega328P" footprint="dip28" />
+```
+
+Include common patterns, naming conventions, and component selections used in your project.
+
+## ⚙️ tscircuit CLI Commands
+
+List the CLI commands that AI tools may need to run during development:
+
+```bash
+bun run dev      # Start development server
+bun run build    # Build the project
+tsci export      # Export design (Gerber, BOM, etc.)
+tsci search      # Search for components
+```
+
+## 🚀 Development Workflow
+
+Explain your project's development process:
+- How to test changes
+- Where to place new components
+- Git workflow and branch naming conventions
+- Build and validation steps
+
+## ⛔ Constraints for Assistants
+
+**Do's:**
+- Modify files in `/src` and `/docs` as needed
+- Test changes before committing
+- Provide clear commit messages
+- Ask for clarification on requirements
+
+**Don'ts:**
+- Do not modify configuration files without approval
+- Do not create breaking changes without discussion
+- Do not commit directly to main branch
+- Keep changes small and focused
+
+---
+
+**Last Updated:** December 2025  
+**Project:** [Your Project Name]
