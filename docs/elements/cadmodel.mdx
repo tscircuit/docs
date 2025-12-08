@@ -95,6 +95,34 @@ preserve the exact geometry of the model.
 > **Example coming soon!**
 
 
+## Translucent Models
+
+You can render a component as translucent (semi-transparent) by setting `showAsTranslucentModel` on the component.
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board>
+      <chip
+        name="U2"
+        footprint="soic8"
+        showAsTranslucentModel
+        cadModel={
+          <cadmodel
+            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+          />
+        }
+      />
+    </board>
+  )
+  `}
+/>
+
+
 ## Supported File Formats
 
 The following model file formats are supported:
