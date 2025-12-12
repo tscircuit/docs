@@ -17,29 +17,52 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Explicit Size
 
-```tsx
-<panel width="100mm" height="80mm">
-  <board width="40mm" height="40mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="100mm" height="80mm">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
 
 ## Auto-Sizing
 
 Omit dimensions to auto-calculate based on board positions (adds 5mm margin):
 
-```tsx
-<panel>
-  <board width="40mm" height="30mm" pcbX="-25mm" routingDisabled />
-  <board width="40mm" height="30mm" pcbX="25mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel>
+    <board width="40mm" height="30mm" pcbX="-25mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="30mm" pcbX="25mm" routingDisabled>
+      <resistor name="R2" resistance="10k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
 
 ## Solder Mask
 
 Disable solder mask on panel outline:
 
-```tsx
-<panel noSolderMask width="100mm" height="80mm">
-  <board width="40mm" height="40mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel noSolderMask width="100mm" height="80mm">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>

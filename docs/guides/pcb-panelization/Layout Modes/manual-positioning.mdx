@@ -36,9 +36,19 @@ If **any** board has explicit position, auto-layout is disabled for all boards. 
 
 ## Mixed Sizes
 
-```tsx
-<panel width="150mm" height="100mm">
-  <board width="40mm" height="40mm" pcbX="-45mm" pcbY="0mm" routingDisabled />
-  <board width="60mm" height="80mm" pcbX="25mm" pcbY="0mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="150mm" height="100mm">
+    <board width="40mm" height="40mm" pcbX="-45mm" pcbY="0mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="60mm" height="80mm" pcbX="25mm" pcbY="0mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+      <capacitor name="C1" capacitance="100nF" footprint="0805" />
+    </board>
+  </panel>
+)
+`}
+/>

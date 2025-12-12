@@ -20,23 +20,41 @@ Small perforated holes along the tab line that make it easier to snap boards apa
 
 ## With Mouse Bites (Default)
 
-```tsx
-<panel mouseBites={true}>
-  <board width="40mm" height="40mm" routingDisabled />
-  <board width="40mm" height="40mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel mouseBites={true} panelizationMethod="tab-routing">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
 
 ## Without Mouse Bites
 
 For cleaner edges (requires sawing or routing to separate):
 
-```tsx
-<panel mouseBites={false}>
-  <board width="40mm" height="40mm" routingDisabled />
-  <board width="40mm" height="40mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel mouseBites={false} panelizationMethod="tab-routing">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
 
 ## When to Disable
 

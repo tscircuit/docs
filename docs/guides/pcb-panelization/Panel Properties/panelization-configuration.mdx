@@ -46,9 +46,18 @@ export default () => (
 
 Disable tabs for manual separation control:
 
-```tsx
-<panel panelizationMethod="none">
-  <board width="40mm" height="40mm" routingDisabled />
-  <board width="40mm" height="40mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel panelizationMethod="none">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>

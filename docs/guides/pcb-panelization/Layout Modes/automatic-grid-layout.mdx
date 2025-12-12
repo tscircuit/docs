@@ -39,10 +39,21 @@ export default () => (
 
 ## Custom Gap
 
-```tsx
-<panel width="150mm" height="100mm" boardGap="10mm">
-  <board width="30mm" height="30mm" routingDisabled />
-  <board width="30mm" height="30mm" routingDisabled />
-  <board width="30mm" height="30mm" routingDisabled />
-</panel>
-```
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="150mm" height="100mm" boardGap="10mm">
+    <board width="30mm" height="30mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="30mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="30mm" routingDisabled>
+      <resistor name="R3" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
