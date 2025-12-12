@@ -1,0 +1,578 @@
+---
+title: PCB Panelization
+sidebar_label: PCB Panelization
+description: Arrange multiple boards on a single panel for efficient manufacturing with automatic tab routing and mouse bites.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# PCB Panelization
+
+PCB panelization is the process of arranging multiple circuit boards onto a single larger panel for efficient manufacturing. Instead of fabricating individual small boards, multiple boards are produced on one large sheet and then separated after fabrication. This reduces manufacturing costs and improves production efficiency.
+
+## Quick Start
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="100mm" height="50mm">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="10k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+## Key Features
+
+- **Auto-layout**: Boards arranged automatically in a grid
+- **Tab routing**: Breakable tabs generated between boards
+- **Mouse bites**: Small holes for easy separation
+- **Auto-sizing**: Panel dimensions calculated automatically
+
+## Panel Properties
+
+### Basic Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `width` | Distance | Auto | Panel width |
+| `height` | Distance | Auto | Panel height |
+| `pcbX` | Distance | 0 | X position |
+| `pcbY` | Distance | 0 | Y position |
+| `noSolderMask` | boolean | false | Disable solder mask on panel outline |
+
+### Panelization Configuration
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `panelizationMethod` | `"tab-routing"` \| `"none"` | `"none"` | Connection method |
+| `boardGap` | Distance | 2mm | Space between boards |
+| `tabWidth` | Distance | 2mm | Tab thickness |
+| `tabLength` | Distance | 5mm | Tab cutout length |
+| `mouseBites` | boolean | true | Add mouse bite holes |
+
+### Explicit Panel Size
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="100mm" height="80mm">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+### Auto-Sizing Panels
+
+Omit dimensions to auto-calculate based on board positions (adds 5mm margin):
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel>
+    <board width="40mm" height="30mm" pcbX="-25mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="30mm" pcbX="25mm" routingDisabled>
+      <resistor name="R2" resistance="10k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+### Solder Mask Control
+
+Disable solder mask on panel outline:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel noSolderMask width="100mm" height="80mm">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+## Layout Modes
+
+### Automatic Grid Layout
+
+When boards don't have explicit positions, they're arranged in a grid:
+- Grid size: `columns = ceil(sqrt(numBoards))`
+- Boards spaced by `boardGap`
+- Grid centered in panel
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="150mm" height="100mm">
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R3" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R4" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+#### Custom Board Gap
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="150mm" height="100mm" boardGap="10mm">
+    <board width="30mm" height="30mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="30mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="30mm" routingDisabled>
+      <resistor name="R3" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+### Manual Positioning
+
+Position boards explicitly using `pcbX` and `pcbY`. Positions are **relative to panel center** (0, 0):
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="100mm" height="100mm">
+    <board width="30mm" height="30mm" pcbX="-30mm" pcbY="0mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="30mm" pcbX="30mm" pcbY="0mm" routingDisabled>
+      <resistor name="R2" resistance="10k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+:::warning
+If **any** board has explicit position, auto-layout is disabled for all boards. Unpositioned boards default to (0, 0).
+:::
+
+#### Mixed Board Sizes
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="150mm" height="100mm">
+    <board width="40mm" height="40mm" pcbX="-45mm" pcbY="0mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="60mm" height="80mm" pcbX="25mm" pcbY="0mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+      <capacitor name="C1" capacitance="100nF" footprint="0805" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+## Tab Routing
+
+Tabs are small bridges that hold boards together during manufacturing. After fabrication, you snap boards apart along these tabs.
+
+### Basic Tab Routing
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="100mm" height="50mm" panelizationMethod="tab-routing">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+**Default Configuration:**
+
+| Setting | Default |
+|---------|--------|
+| Tab Width | 2mm |
+| Tab Length | 5mm |
+| Mouse Bite Diameter | 0.9mm (0.45 × tabWidth) |
+
+### Tab Routing with Configuration
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel
+    width="120mm"
+    height="60mm"
+    panelizationMethod="tab-routing"
+    boardGap="5mm"
+    tabWidth="2mm"
+    tabLength="5mm"
+    mouseBites={true}
+  >
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+### Customizing Tab Strength
+
+#### Stronger Tabs for Large Boards
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel
+    width="200mm"
+    height="120mm"
+    panelizationMethod="tab-routing"
+    tabWidth="3mm"
+    tabLength="10mm"
+    boardGap="15mm"
+  >
+    <board width="80mm" height="50mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="80mm" height="50mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+#### Thinner Tabs for Easy Separation
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel
+    panelizationMethod="tab-routing"
+    tabWidth="0.5mm"
+    tabLength="2mm"
+  >
+    <board width="20mm" height="20mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="20mm" height="20mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+**Tab Width Guidelines:**
+
+| Board Size | Recommended Tab Width |
+|------------|---------------------|
+| Small (under 30mm) | 1-2mm |
+| Medium (30-60mm) | 2-3mm |
+| Large (over 60mm) | 3-4mm |
+
+## Mouse Bites
+
+Mouse bites are small perforated holes along the tab line that make it easier to snap boards apart cleanly. The diameter is automatically calculated as 0.45 × `tabWidth`.
+
+### With Mouse Bites (Default)
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel mouseBites={true} panelizationMethod="tab-routing">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+### Without Mouse Bites
+
+For cleaner edges (requires sawing or routing to separate):
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel mouseBites={false} panelizationMethod="tab-routing">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+**When to Disable Mouse Bites:**
+- **V-scoring** will be used instead
+- **Clean edges** required for enclosure fit
+- **Automated depaneling** equipment available
+
+## No Panelization
+
+Disable tabs for manual separation control:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel panelizationMethod="none">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+## Advanced Examples
+
+### Multiple Identical Boards
+
+Define your board once, use it multiple times:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+const SensorBoard = () => (
+  <board width="30mm" height="30mm" routingDisabled>
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX="-5mm" />
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX="5mm" />
+  </board>
+)
+
+export default () => (
+  <panel width="120mm" height="80mm">
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+  </panel>
+)
+`}
+/>
+
+### Production Panel Example
+
+```tsx
+import { Circuit } from "@tscircuit/core"
+
+const SensorBoard = () => (
+  <board width="30mm" height="30mm" routingDisabled>
+    <resistor name="R1" resistance="10k" footprint="0402" />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" />
+    <chip name="U1" footprint="SOT23-6" />
+  </board>
+)
+
+const circuit = new Circuit()
+
+circuit.add(
+  <panel
+    width="100mm"
+    height="80mm"
+    panelizationMethod="tab-routing"
+    tabWidth="2mm"
+    boardGap="5mm"
+  >
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+  </panel>
+)
+
+circuit.render()
+const gerber = circuit.getGerberOutput()
+```
+
+### Different Board Sizes
+
+Combine different board sizes using manual positioning:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="150mm" height="100mm">
+    <board width="40mm" height="40mm" pcbX="-45mm" pcbY="0mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="60mm" height="80mm" pcbX="25mm" pcbY="0mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+      <capacitor name="C1" capacitance="100nF" footprint="0805" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+**Layout Planning:**
+1. Calculate total width: `board1_width + boardGap + board2_width`
+2. Calculate positions from panel center
+3. Leave margin from panel edges (min 5mm)
+
+## Important Rules
+
+### Structural Constraints
+
+1. **Panel must be root-level** - Cannot nest inside a board
+   ```tsx
+   // ✗ INVALID
+   <board>
+     <panel>...</panel>
+   </board>
+
+   // ✓ VALID
+   <panel>
+     <board>...</board>
+   </panel>
+   ```
+
+2. **Only one panel per circuit**
+
+3. **Only boards as children** - Panel can only contain `<board>` elements
+
+4. **Must contain at least one board**
+
+5. **Use `routingDisabled`** - Always set on boards to prevent cross-panel traces
+   ```tsx
+   <board width="40mm" height="40mm" routingDisabled>
+   ```
+
+### Coordinate System
+
+- Board positions (`pcbX`, `pcbY`) are **relative to panel center** (0, 0)
+- Positive X → right
+- Positive Y → up
+- If panel has position, board positions are relative to panel position
+
+## Best Practices
+
+### Manufacturing Considerations
+
+- **Minimum tab width:** Check with manufacturer (typically 1-2mm)
+- **Panel margins:** Leave ≥5mm from panel edge to board edge
+- **Board spacing:** Allow ≥2-3mm gap for tab routing
+- **Panel size limits:**
+  - Maximum: typically 450mm × 450mm
+  - Minimum: typically 50mm × 50mm
+
+### Tab Configuration by Use Case
+
+**Large heavy boards:**
+- Use wider tabs (3-4mm) for strength
+- Longer tab lengths (8-10mm)
+- More board gap (10-15mm)
+
+**Small lightweight boards:**
+- Thinner tabs (1-2mm) for easy separation
+- Shorter tab lengths (2-5mm)
+- Standard board gap (3-5mm)
+
+**Fragile components:**
+- Longer tab lengths to reduce stress during separation
+- Consider mouse bites for cleaner breaks
+
+### When to Use Auto-Sizing
+
+**Good for:**
+- Imported boards with variable dimensions
+- Dynamic layouts
+- Prototyping and experimentation
+
+**Use explicit sizing for:**
+- Manufacturer requirements
+- Standard industry panel sizes
+- Consistent panel sizes across revisions
+
+## Troubleshooting
+
+### Boards Overlapping
+
+**Solution:**
+- Check board positions don't overlap
+- Increase `boardGap` in auto-layout
+- Use explicit positioning with adequate spacing
+
+### Tabs Not Appearing
+
+**Solution:**
+- Set `panelizationMethod="tab-routing"`
+- Verify boards have gaps between them
+- Ensure boards aren't touching or overlapping
+
+### Panel Size Too Small
+
+**Solution:**
+- Use auto-sizing by omitting width/height
+- Calculate: largest board + gaps + 2 × 5mm margin
+- Increase explicit panel dimensions
+
+### Auto-Layout Not Working
+
+**Solution:**
+- Remove ALL explicit `pcbX`/`pcbY` from boards
+- Verify all boards are direct children of panel
+- Check that panel isn't using `panelizationMethod="none"`
