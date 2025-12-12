@@ -1,0 +1,48 @@
+---
+title: Automatic Grid Layout
+sidebar_label: Auto Grid Layout
+sidebar_position: 1
+description: Let the panel automatically arrange boards in a grid.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## How It Works
+
+When boards don't have explicit positions, they're arranged in a grid:
+- Grid size: `columns = ceil(sqrt(numBoards))`
+- Boards spaced by `boardGap`
+- Grid centered in panel
+
+## Example: 4 Boards → 2×2 Grid
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="150mm" height="100mm">
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R3" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="40mm" routingDisabled>
+      <resistor name="R4" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+## Custom Gap
+
+```tsx
+<panel width="150mm" height="100mm" boardGap="10mm">
+  <board width="30mm" height="30mm" routingDisabled />
+  <board width="30mm" height="30mm" routingDisabled />
+  <board width="30mm" height="30mm" routingDisabled />
+</panel>
+```

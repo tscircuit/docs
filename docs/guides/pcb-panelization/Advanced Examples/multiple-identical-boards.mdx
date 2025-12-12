@@ -1,0 +1,66 @@
+---
+title: Multiple Identical Boards
+sidebar_label: Identical Boards
+sidebar_position: 1
+description: Panel multiple copies of the same board design.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Reusable Board Component
+
+Define your board once, use it multiple times:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+const SensorBoard = () => (
+  <board width="30mm" height="30mm" routingDisabled>
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX="-5mm" />
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX="5mm" />
+  </board>
+)
+
+export default () => (
+  <panel width="120mm" height="80mm">
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+  </panel>
+)
+`}
+/>
+
+## Production Example
+
+```tsx
+import { Circuit } from "@tscircuit/core"
+
+const SensorBoard = () => (
+  <board width="30mm" height="30mm" routingDisabled>
+    <resistor name="R1" resistance="10k" footprint="0402" />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" />
+    <chip name="U1" footprint="SOT23-6" />
+  </board>
+)
+
+const circuit = new Circuit()
+
+circuit.add(
+  <panel
+    width="100mm"
+    height="80mm"
+    tabWidth="2mm"
+    boardGap="5mm"
+  >
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+    <SensorBoard />
+  </panel>
+)
+
+circuit.render()
+```

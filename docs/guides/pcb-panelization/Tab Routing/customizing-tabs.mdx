@@ -1,0 +1,58 @@
+---
+title: Customizing Tabs
+sidebar_label: Customizing Tabs
+sidebar_position: 2
+description: Configure tab width, length, and strength.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Tab Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `tabWidth` | Distance | 2mm | Tab thickness |
+| `tabLength` | Distance | 5mm | Cutout length |
+
+## Stronger Tabs (Large Boards)
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel
+    width="200mm"
+    height="120mm"
+    tabWidth="3mm"
+    tabLength="10mm"
+    boardGap="15mm"
+  >
+    <board width="80mm" height="50mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="80mm" height="50mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+## Thinner Tabs (Easy Separation)
+
+```tsx
+<panel
+  tabWidth="0.5mm"
+  tabLength="2mm"
+>
+  <board width="20mm" height="20mm" routingDisabled />
+  <board width="20mm" height="20mm" routingDisabled />
+</panel>
+```
+
+## Guidelines
+
+| Board Size | Recommended Tab Width |
+|------------|---------------------|
+| Small (under 30mm) | 1-2mm |
+| Medium (30-60mm) | 2-3mm |
+| Large (over 60mm) | 3-4mm |

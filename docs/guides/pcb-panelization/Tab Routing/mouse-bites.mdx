@@ -1,0 +1,45 @@
+---
+title: Mouse Bites
+sidebar_label: Mouse Bites
+sidebar_position: 3
+description: Configure mouse bite holes for board separation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## What Are Mouse Bites?
+
+Small perforated holes along the tab line that make it easier to snap boards apart cleanly.
+
+## Configuration
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `mouseBites` | boolean | true | Enable/disable mouse bites |
+
+**Mouse bite diameter** = 0.45 × `tabWidth` (automatically calculated)
+
+## With Mouse Bites (Default)
+
+```tsx
+<panel mouseBites={true}>
+  <board width="40mm" height="40mm" routingDisabled />
+  <board width="40mm" height="40mm" routingDisabled />
+</panel>
+```
+
+## Without Mouse Bites
+
+For cleaner edges (requires sawing or routing to separate):
+
+```tsx
+<panel mouseBites={false}>
+  <board width="40mm" height="40mm" routingDisabled />
+  <board width="40mm" height="40mm" routingDisabled />
+</panel>
+```
+
+## When to Disable
+
+- **V-scoring** will be used instead
+- **Clean edges** required for enclosure fit
+- **Automated depaneling** equipment available

@@ -1,0 +1,42 @@
+---
+title: Tab Routing Basics
+sidebar_label: Basics
+sidebar_position: 1
+description: How tab routing works for board separation.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## What Are Tabs?
+
+Tabs are small bridges that hold boards together during manufacturing. After fabrication, you snap boards apart along these tabs.
+
+## Generated Elements
+
+1. **Tab Cutouts**: Rectangular cutouts on board edges
+2. **Mouse Bites**: Small holes for easy breaking
+
+## Default Configuration
+
+| Setting | Default |
+|---------|--------|
+| Tab Width | 2mm |
+| Tab Length | 5mm |
+| Mouse Bite Diameter | 0.9mm (0.45 × tabWidth) |
+
+## Example
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="100mm" height="50mm" panelizationMethod="tab-routing">
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>

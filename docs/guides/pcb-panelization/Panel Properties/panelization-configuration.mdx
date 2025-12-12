@@ -1,0 +1,54 @@
+---
+title: Panelization Configuration
+sidebar_label: Panelization Config
+sidebar_position: 2
+description: Configure how boards are connected in a panel.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Configuration Options
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `panelizationMethod` | `"tab-routing"` \| `"none"` | `"none"` | Connection method |
+| `boardGap` | Distance | 2mm | Space between boards |
+| `tabWidth` | Distance | 2mm | Tab thickness |
+| `tabLength` | Distance | 5mm | Tab cutout length |
+| `mouseBites` | boolean | true | Add mouse bite holes |
+
+## Example
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel
+    width="120mm"
+    height="60mm"
+    panelizationMethod="tab-routing"
+    boardGap="5mm"
+    tabWidth="2mm"
+    tabLength="5mm"
+    mouseBites={true}
+  >
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="40mm" height="40mm" routingDisabled>
+      <resistor name="R2" resistance="1k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+## No Panelization
+
+Disable tabs for manual separation control:
+
+```tsx
+<panel panelizationMethod="none">
+  <board width="40mm" height="40mm" routingDisabled />
+  <board width="40mm" height="40mm" routingDisabled />
+</panel>
+```

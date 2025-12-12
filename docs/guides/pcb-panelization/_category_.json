@@ -1,0 +1,10 @@
+{
+  "label": "PCB Panelization",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Learn how to arrange multiple circuit boards on a single manufacturing panel."
+  },
+  "collapsible": true,
+  "collapsed": true
+}

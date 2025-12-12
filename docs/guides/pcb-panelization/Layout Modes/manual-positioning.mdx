@@ -1,0 +1,44 @@
+---
+title: Manual Positioning
+sidebar_label: Manual Positioning
+sidebar_position: 2
+description: Position boards manually using pcbX and pcbY.
+---
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Coordinate System
+
+- Positions are **relative to panel center** (0, 0)
+- Positive X → right
+- Positive Y → up
+
+## Example
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <panel width="100mm" height="100mm">
+    <board width="30mm" height="30mm" pcbX="-30mm" pcbY="0mm" routingDisabled>
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </board>
+    <board width="30mm" height="30mm" pcbX="30mm" pcbY="0mm" routingDisabled>
+      <resistor name="R2" resistance="10k" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+:::warning
+If **any** board has explicit position, auto-layout is disabled for all boards. Unpositioned boards default to (0, 0).
+:::
+
+## Mixed Sizes
+
+```tsx
+<panel width="150mm" height="100mm">
+  <board width="40mm" height="40mm" pcbX="-45mm" pcbY="0mm" routingDisabled />
+  <board width="60mm" height="80mm" pcbX="25mm" pcbY="0mm" routingDisabled />
+</panel>
+```
