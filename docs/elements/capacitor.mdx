@@ -23,12 +23,15 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   code={`
 
   export default () => (
+   <board width="10mm" height="10mm">
     <capacitor
       name="C2"
       footprint="axial_p5mm"
       capacitance="10μF"
       polarized
-    />
+    /> 
+  </board>
+
   )
 
   `}
