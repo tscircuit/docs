@@ -33,7 +33,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Repositioning the Model
 
-You can use `positionOffset` and `rotationOffset` to reposition the model.
+You can use `positionOffset`, `rotationOffset`, and `zOffsetFromSurface` to reposition the model.
 
 <CircuitPreview
   defaultView="3d"
@@ -50,6 +50,33 @@ You can use `positionOffset` and `rotationOffset` to reposition the model.
           <cadmodel
             positionOffset={{ x: -2, y: 0, z: 0 }}
             rotationOffset={{ x: 0, y: 0, z: 45 }}
+            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+          />
+        }
+      />
+    </board>
+  )
+  `}
+/>
+
+### Z-Offset from Surface
+
+Use `zOffsetFromSurface` to control the vertical distance of the model from the PCB surface. This is useful for components that need to be positioned above or below the board surface.
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board>
+      <chip
+        name="U1"
+        footprint="soic8"
+        cadModel={
+          <cadmodel
+            zOffsetFromSurface="2mm"
             modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
           />
         }
@@ -132,3 +159,15 @@ The following model file formats are supported:
 - OBJ
 - STEP
 - STL
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `modelUrl` | `string` | URL to the 3D model file (GLB, GLTF, OBJ, STL, STEP, WRL) |
+| `stepUrl` | `string` | URL to a STEP model file for export purposes |
+| `positionOffset` | `{x: number, y: number, z: number}` | Offset the model position from the component center |
+| `rotationOffset` | `number \| {x: number, y: number, z: number}` | Rotate the model (number = Z-axis rotation in degrees) |
+| `zOffsetFromSurface` | `Distance` | Vertical offset from the PCB surface (e.g., "2mm", "0.1in") |
+| `size` | `{x: number, y: number, z: number}` | Scale the model size |
+| `modelUnitToMmScale` | `Distance` | Scale factor to convert model units to millimeters |
