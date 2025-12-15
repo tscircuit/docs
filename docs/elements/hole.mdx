@@ -29,6 +29,7 @@ A circular hole is the most common type used for mounting:
 
 <CircuitPreview
   defaultView="3d"
+  hideSchematicTab
   browser3dView={false}
   code={`export default () => (
     <board width="30mm" height="20mm">
@@ -43,6 +44,7 @@ Pill-shaped holes are useful for mounting components that need elongated holes o
 
 <CircuitPreview
   defaultView="pcb"
+  hideSchematicTab
   browser3dView={false}
   code={`export default () => (
     <board width="30mm" height="20mm">
@@ -63,6 +65,7 @@ Pill-shaped holes can be rotated using the `pcbRotation` property:
 
 <CircuitPreview
   defaultView="pcb"
+  hideSchematicTab
   browser3dView={false}
   code={`export default () => (
     <board width="30mm" height="20mm">
