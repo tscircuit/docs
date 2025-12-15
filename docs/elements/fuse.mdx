@@ -22,12 +22,14 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   code={`
 
 export default () => (
+  <board width="10mm" height="10mm">
     <fuse
       name="F1"
       footprint="0603"
       currentRating="2A"
       voltageRating="32V"
     />
+  </board>
 )
 
   `}
