@@ -1,0 +1,110 @@
+---
+title: <fabricationnotedimension />
+description: The `<fabricationnotedimension />` element adds dimensional annotations to PCB fabrication drawings showing measurements between two points.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<fabricationnotedimension />` lets you add dimensional annotations to your PCB fabrication drawings. These annotations display the distance between two points with arrows and an automatically generated measurement label, making it easy to communicate critical measurements for manufacturing. Fabrication dimension annotations are included in fabrication outputs but do not appear on the silkscreen or schematic layers.
+
+## Basic Usage
+
+Below is a simple board with a fabrication dimension annotation showing the distance between two mounting holes. The dimension line connects two points and displays a label with the measurement.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+  export default () => (
+    <board width="30mm" height="20mm">
+      <hole name="H1" diameter="2mm" pcbX={-10} pcbY={0} />
+      <hole name="H2" diameter="2mm" pcbX={10} pcbY={0} />
+      <fabricationnotedimension
+        from={{ x: -10, y: 3 }}
+        to={{ x: 10, y: 3 }}
+        arrowSize={0.8}
+        fontSize={1.5}
+        color="#ffffff"
+      />
+    </board>
+  )
+  `}
+/>
+
+## Advanced Usage
+
+You can specify different dimension measurement types using the dimension type properties.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+  export default () => (
+    <board width="40mm" height="25mm">
+      <chip name="U1" footprint="soic8" pcbX={0} pcbY={0} />
+      <fabricationnotedimension
+        from={{ x: -8, y: 5 }}
+        to={{ x: 8, y: 5 }}
+        text="Package Width"
+        outerEdgeToEdge={true}
+        fontSize={1.2}
+        color="#ff9900"
+      />
+      <fabricationnotedimension
+        from={{ x: -3, y: -8 }}
+        to={{ x: 3, y: -8 }}
+        text="Package Length"
+        centerToCenter={true}
+        fontSize={1.2}
+        color="#ff9900"
+      />
+    </board>
+  )
+  `}
+/>
+
+## Properties
+
+| Property | Type | Description |
+|---------|------|-------------|
+| `from` | string \| Point | **Required.** Starting point of the dimension. Can be a Point object with `x` and `y` coordinates. |
+| `to` | string \| Point | **Required.** Ending point of the dimension. Can be a Point object with `x` and `y` coordinates. |
+| `text` | string | Optional custom label text to override the auto-generated measurement (e.g., `"Critical spacing"`). |
+| `offset` | length | Distance to offset the dimension line from the direct path between points. |
+| `font` | "tscircuit2024" | Font type for the text. Currently only `"tscircuit2024"` is supported. Optional. |
+| `fontSize` | length | Height of the label text. |
+| `color` | string | Hex color code for the dimension line, arrows, and text (e.g., `"#ffffff"`, `"#00ff00"`). |
+| `arrowSize` | length | Size of the arrows at each end of the dimension line. |
+| `units` | "in" \| "mm" | Unit system for the dimension display. Options: `"in"` or `"mm"`. |
+| `outerEdgeToEdge` | true | When set to `true`, measures from the outer edges of components/shapes. |
+| `centerToCenter` | true | When set to `true`, measures from the center to center of components/shapes. |
+| `innerEdgeToEdge` | true | When set to `true`, measures from the inner edges of components/shapes. |
+
+### Inherited Properties
+
+The `<fabricationnotedimension />` element also inherits all standard PCB layout properties except for positioning properties, including:
+
+- `pcbWidth`, `pcbHeight` - Set the width and height of the dimension
+- `layer` - Specify which layer the dimension appears on
+- `portHints` - Port connection hints
+- `pcbRelative` - When `true`, coordinates are relative to parent group
+- `relative` - Similar to `pcbRelative`, applies to both PCB and schematic coordinates
+
+## Tips
+
+- Fabrication dimensions are only visible in fabrication outputs and PCB previews—they don't appear on the final PCB silkscreen.
+- Use descriptive `text` values to communicate manufacturing requirements clearly.
+- Combine with other fabrication notes like [`<fabricationnotetext />`](fabricationnotetext) to provide comprehensive manufacturing instructions.
+- Use different `color` values to distinguish between different types of dimensions (e.g., critical vs. reference dimensions).
+- The `units` property allows you to specify whether dimensions should be displayed in metric (`"mm"`) or imperial (`"in"`) units.
+- Dimension type properties (`outerEdgeToEdge`, `centerToCenter`, `innerEdgeToEdge`) should be set to `true` to activate the specific measurement type.
+
+## Related Elements
+
+- [`<fabricationnotetext />`](./fabricationnotetext) - Add text notes to fabrication drawings
+- [`<fabricationnoterect />`](./fabricationnoterect) - Add rectangular callouts to fabrication drawings
+- [`<pcbnotedimension />`](../elements/pcbnotedimension) - Add dimensions to PCB notes (different layer)
