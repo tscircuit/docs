@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-export const useLatestCircuitPreviewCdnUrl = (): string | null => {
+export const useLatestCircuitPreviewCdnUrl = () => {
   const [url, setUrl] = useState<string | null>(null)
 
   useEffect(() => {

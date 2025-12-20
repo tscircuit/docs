@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-export const useLatestTscircuitCdnUrl = (): string | null => {
+export const useLatestTscircuitCdnUrl = () => {
   const [url, setUrl] = useState<string | null>(null)
 
   useEffect(() => {
