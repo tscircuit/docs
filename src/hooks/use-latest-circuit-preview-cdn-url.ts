@@ -1,18 +1,3 @@
-import { useEffect, useState } from "react"
-
 export const useLatestCircuitPreviewCdnUrl = () => {
-  const [url, setUrl] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch("https://registry.npmjs.org/@tscircuit/circuit-preview/latest")
-      .then((res) => res.json())
-      .then((data: { version: string }) => {
-        setUrl(
-          `https://unpkg.com/@tscircuit/circuit-preview@${data.version}/dist/index.global.js`,
-        )
-      })
-      .catch(() => {})
-  }, [])
-
-  return url
+  return "https://cdn.jsdelivr.net/gh/tscircuit/circuit-preview/dist/index.global.js"
 }
