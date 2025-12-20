@@ -9,6 +9,14 @@ description: >-
 
 The `<platedhole />` element is used to represent a plated through hole on a PCB.
 
+## Deprecated Properties
+
+:::warning
+The following properties are deprecated and will be removed in a future version:
+- `innerWidth` - Use `holeWidth` instead
+- `innerHeight` - Use `holeHeight` instead
+:::
+
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview
@@ -33,27 +41,226 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   `}
 />
 
+### More Examples
+
+#### Oval Plated Hole
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <platedhole
+            pcbX="0mm"
+            pcbY="0mm"
+            shape="oval"
+            holeWidth="0.8mm"
+            holeHeight="1.2mm"
+            outerWidth="1.5mm"
+            outerHeight="2mm"
+            portHints={["pin1"]}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
+#### Pill Plated Hole
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <platedhole
+            pcbX="0mm"
+            pcbY="0mm"
+            shape="pill"
+            holeWidth="0.5mm"
+            holeHeight="1.5mm"
+            outerWidth="1mm"
+            outerHeight="2mm"
+            portHints={["pin1"]}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
+#### Circular Hole with Rectangular Pad
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <platedhole
+            pcbX="0mm"
+            pcbY="0mm"
+            shape="circular_hole_with_rect_pad"
+            holeDiameter="1mm"
+            rectPadWidth="2mm"
+            rectPadHeight="1.5mm"
+            rectBorderRadius="0.2mm"
+            portHints={["pin1"]}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
+#### Pill Hole with Rectangular Pad
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <platedhole
+            pcbX="0mm"
+            pcbY="0mm"
+            shape="pill_hole_with_rect_pad"
+            holeWidth="0.8mm"
+            holeHeight="1.5mm"
+            rectPadWidth="2mm"
+            rectPadHeight="2.5mm"
+            holeOffsetX="0.2mm"
+            holeOffsetY="0mm"
+            portHints={["pin1"]}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
+#### Hole with Polygon Pad
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          <platedhole
+            pcbX="0mm"
+            pcbY="0mm"
+            shape="hole_with_polygon_pad"
+            holeShape="circle"
+            holeDiameter="1mm"
+            padOutline={[
+              { x: -1.5, y: -1 },
+              { x: 1.5, y: -1 },
+              { x: 2, y: 0 },
+              { x: 1.5, y: 1 },
+              { x: -1.5, y: 1 },
+              { x: -2, y: 0 }
+            ]}
+            holeOffsetX="0mm"
+            holeOffsetY="0mm"
+            portHints={["pin1"]}
+          />
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
 ## Plated Hole Shapes
 
-There are 3 types of plated holes:
+There are 6 types of plated holes:
 
-- `circle` - A circular plated hole
-- `oval` - An oval plated hole
-- `pill` - A pill-shaped plated hole (rounded rectangle)
+- `circle` - A circular plated hole with circular pad
+- `oval` - An oval plated hole with oval pad
+- `pill` - A pill-shaped plated hole (rounded rectangle) with pill-shaped pad
+- `circular_hole_with_rect_pad` - A circular hole with rectangular pad
+- `pill_hole_with_rect_pad` - A pill-shaped hole with rectangular pad
+- `hole_with_polygon_pad` - A hole with custom polygon-shaped pad
 
 Each shape has different properties
 
 ## Properties
 
-| Property      | Shape      | Description                                    |
-| ------------- | ---------- | ---------------------------------------------- |
-| holeDiameter  | circle     | The diameter of the inner hole                 |
-| outerDiameter | circle     | The diameter of the outer copper pad           |
-| innerWidth    | oval, pill | The width of the inner hole                    |
-| innerHeight   | oval, pill | The height of the inner hole                   |
-| outerWidth    | oval, pill | The width of the outer copper pad              |
-| outerHeight   | oval, pill | The height of the outer copper pad             |
-| portHints     | all        | Array of port names that this hole connects to |
-| pcbX          | all        | X position of the hole center on the PCB       |
-| pcbY          | all        | Y position of the hole center on the PCB       |
-| name          | all        | Optional name identifier for the plated hole   |
+### Common Properties (All Shapes)
+| Property | Type | Description |
+|----------|------|-------------|
+| name | string | Optional name identifier for the plated hole |
+| connectsTo | string \| string[] | What this hole connects to |
+| portHints | string[] | Array of port names that this hole connects to |
+| pcbX | number \| string | X position of the hole center on the PCB |
+| pcbY | number \| string | Y position of the hole center on the PCB |
+| solderMaskMargin | number \| string | Margin for solder mask around the hole |
+| coveredWithSolderMask | boolean | Whether the hole is covered with solder mask |
+
+### Circle Shape Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| holeDiameter | number \| string | The diameter of the inner hole |
+| outerDiameter | number \| string | The diameter of the outer copper pad |
+| padDiameter | number \| string | Diameter of the copper pad (alternative to outerDiameter) |
+
+### Oval Shape Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| outerWidth | number \| string | The width of the outer copper pad |
+| outerHeight | number \| string | The height of the outer copper pad |
+| holeWidth | number \| string | The width of the inner hole |
+| holeHeight | number \| string | The height of the inner hole |
+| innerWidth | number \| string | **DEPRECATED** use holeWidth |
+| innerHeight | number \| string | **DEPRECATED** use holeHeight |
+
+### Pill Shape Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| outerWidth | number \| string | The width of the outer copper pad |
+| outerHeight | number \| string | The height of the outer copper pad |
+| holeWidth | number \| string | The width of the inner hole |
+| holeHeight | number \| string | The height of the inner hole |
+| holeOffsetX | number \| string | X offset of the hole from center |
+| holeOffsetY | number \| string | Y offset of the hole from center |
+| rectPad | boolean | Whether to use rectangular pad |
+| innerWidth | number \| string | **DEPRECATED** use holeWidth |
+| innerHeight | number \| string | **DEPRECATED** use holeHeight |
+
+### Circular Hole with Rect Pad Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| holeDiameter | number \| string | The diameter of the inner hole |
+| rectPadWidth | number \| string | Width of the rectangular pad |
+| rectPadHeight | number \| string | Height of the rectangular pad |
+| rectBorderRadius | number \| string | Border radius of the rectangular pad |
+| holeOffsetX | number \| string | X offset of the hole from center |
+| holeOffsetY | number \| string | Y offset of the hole from center |
+
+### Pill Hole with Rect Pad Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| holeWidth | number \| string | The width of the inner hole |
+| holeHeight | number \| string | The height of the inner hole |
+| rectPadWidth | number \| string | Width of the rectangular pad |
+| rectPadHeight | number \| string | Height of the rectangular pad |
+| holeOffsetX | number \| string | X offset of the hole from center |
+| holeOffsetY | number \| string | Y offset of the hole from center |
+
+### Hole with Polygon Pad Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| holeShape | "circle" \| "oval" \| "pill" \| "rotated_pill" | Shape of the hole |
+| holeDiameter | number \| string | The diameter of the inner hole (for circle) |
+| holeWidth | number \| string | The width of the inner hole (for oval/pill) |
+| holeHeight | number \| string | The height of the inner hole (for oval/pill) |
+| padOutline | Point[] | Array of points defining the polygon pad outline |
+| holeOffsetX | number \| string | X offset of the hole from center |
+| holeOffsetY | number \| string | Y offset of the hole from center |
