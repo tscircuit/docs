@@ -130,12 +130,12 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
             pcbX="0mm"
             pcbY="0mm"
             shape="pill_hole_with_rect_pad"
+            holeShape="pill"
+            padShape="rect"
             holeWidth="0.8mm"
             holeHeight="1.5mm"
             rectPadWidth="2mm"
             rectPadHeight="2.5mm"
-            holeOffsetX="0.2mm"
-            holeOffsetY="0mm"
             portHints={["pin1"]}
           />
         </footprint>
@@ -247,6 +247,8 @@ Each shape has different properties
 ### Pill Hole with Rect Pad Properties
 | Property | Type | Description |
 |----------|------|-------------|
+| holeShape | "pill" | Shape of the hole |
+| padShape | "rect" | Shape of the pad |
 | holeWidth | number \| string | The width of the inner hole |
 | holeHeight | number \| string | The height of the inner hole |
 | rectPadWidth | number \| string | Width of the rectangular pad |
