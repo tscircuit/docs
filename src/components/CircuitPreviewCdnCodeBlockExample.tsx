@@ -4,8 +4,6 @@ import { useLatestCircuitPreviewCdnUrl } from "../hooks/use-latest-circuit-previ
 export default () => {
   const url = useLatestCircuitPreviewCdnUrl()
 
-  if (!url) return null
-
   return (
     <CodeBlock language="html">{`<!DOCTYPE html>
 <html lang="en">

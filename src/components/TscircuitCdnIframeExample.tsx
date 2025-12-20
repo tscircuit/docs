@@ -3,8 +3,6 @@ import { useLatestTscircuitCdnUrl } from "../hooks/use-latest-tscircuit-cdn-url"
 export default () => {
   const url = useLatestTscircuitCdnUrl()
 
-  if (!url) return null
-
   return (
     <iframe
       title="Tscircuit Iframe Example"

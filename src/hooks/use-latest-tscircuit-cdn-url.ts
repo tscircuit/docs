@@ -1,3 +1,3 @@
-export const useLatestTscircuitCdnUrl = () => {
-  return "https://cdn.jsdelivr.net/gh/tscircuit/tscircuit/packages/browser/dist/bundle.js"
+export const useLatestTscircuitCdnUrl = (): string => {
+  return "https://cdn.jsdelivr.net/npm/tscircuit/dist/browser.min.js"
 }

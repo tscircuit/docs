@@ -1,3 +1,3 @@
-export const useLatestCircuitPreviewCdnUrl = () => {
-  return "https://cdn.jsdelivr.net/gh/tscircuit/circuit-preview/dist/index.global.js"
+export const useLatestCircuitPreviewCdnUrl = (): string => {
+  return "https://cdn.jsdelivr.net/npm/@tscircuit/circuit-preview/dist/index.global.js"
 }

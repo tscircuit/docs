@@ -4,8 +4,6 @@ import { useLatestTscircuitCdnUrl } from "../hooks/use-latest-tscircuit-cdn-url"
 export default () => {
   const url = useLatestTscircuitCdnUrl()
 
-  if (!url) return null
-
   return (
     <CodeBlock language="html">{`<!DOCTYPE html>
 <html lang="en">
