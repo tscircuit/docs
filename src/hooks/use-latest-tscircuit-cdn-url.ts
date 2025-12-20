@@ -4,11 +4,11 @@ export const useLatestTscircuitCdnUrl = () => {
   const [url, setUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch("https://api.cdnjs.com/libraries/tscircuit?fields=version")
+    fetch("https://registry.npmjs.org/tscircuit/latest")
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: { version: string }) => {
         setUrl(
-          `https://cdnjs.cloudflare.com/ajax/libs/tscircuit/${data.version}/browser.min.js`,
+          `https://cdn.jsdelivr.net/npm/tscircuit@${data.version}/dist/browser.min.js`,
         )
       })
       .catch(() => {})
