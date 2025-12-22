@@ -8,7 +8,7 @@ export const useLatestCircuitPreviewCdnUrl = () => {
       .then((res) => res.json())
       .then((data: { version: string }) => {
         setUrl(
-          `https://unpkg.com/@tscircuit/circuit-preview@${data.version}/dist/index.global.js`,
+          `https://cdn.jsdelivr.net/npm/@tscircuit/circuit-preview@${data.version}/dist/index.global.js`,
         )
       })
       .catch(() => {})
