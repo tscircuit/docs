@@ -1,5 +1,5 @@
 ---
-title: Exporting KiCad Library
+title: Exporting a KiCad Library
 description: >-
   Export your tscircuit designs as a KiCad library containing symbols,
   footprints, and 3D models that can be reused across multiple KiCad projects.
@@ -18,7 +18,7 @@ The exported library includes:
 
 ## How to Export KiCad Library
 
-### Using the Browser (RunFrame / tsci dev)
+### Using the Browser
 
 1. Run `tsci dev` in your project directory to start the development server
 2. Navigate to **File > Export > KiCad Library**
@@ -38,8 +38,8 @@ This creates a directory in the same location as the input file:
 my-circuit-kicad-library/
 ├── my-circuit.kicad_sym          # Symbol library
 ├── my-circuit.pretty/            # Footprint library
-│   ├── simple_resistor.kicad_mod
-│   ├── simple_capacitor.kicad_mod
+│   ├── resistor.kicad_mod
+│   ├── capacitor.kicad_mod
 │   └── ...
 ├── my-circuit.3dshapes/          # 3D models
 │   └── component.step
@@ -149,6 +149,6 @@ circuit.add(
 ```
 
 Exporting this circuit will create a library with:
-- 3 symbols (R1, C1, SW1)
-- 3 footprints (0402, 0603, pushbutton)
+- 3 symbols (resistor, capacitor, chip)
+- 3 footprints (resistor_0402, capacitor_0603, chip)
 - 1 3D model (switch.step)
