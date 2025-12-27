@@ -22,12 +22,14 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   code={`
 
 export default () => (
+  <board width="10mm" height="10mm">
     <testpoint
       name="TP1"
       footprintVariant="pad"
       padShape="circle"
       padDiameter="1mm"
     />
+  </board>
 )
 
   `}
