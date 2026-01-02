@@ -30,4 +30,10 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | `text`            | string | The text string to display.                                                                                   |
 | `anchorAlignment` | enum   | Alignment of the text. One of "center", "top_left", "top_right", "bottom_left", "bottom_right". Defaults to "center". |
 | `font`            | enum   | Optional. The font type, e.g. `"tscircuit2024"`.                                                                |
-| `fontSize`        | length | Optional. The size of the font.                                                                               |
+| `fontSize`        | length | Optional. The size of the font. If not specified, inherits from the board's `pcbStyle.silkscreenFontSize` if set. |
+
+## Global Font Size
+
+You can set a global font size for all silkscreen text elements using the `pcbStyle` prop on the `<board />` element. See the [board documentation](../elements/board.mdx#global-silkscreen-text-size-adjustment) for details.
+
+When a global `silkscreenFontSize` is set on the board, all `<silkscreentext />` elements without an explicit `fontSize` prop will use that global size. You can still override it by providing a `fontSize` prop on individual elements.

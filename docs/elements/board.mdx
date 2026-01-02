@@ -51,6 +51,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `boardAnchorAlignment` | `'center' \| 'top_left' \| 'top_right' \| 'bottom_left' \| 'bottom_right' \| 'center_left' \| 'center_right' \| 'top_center' \| 'bottom_center'` | Sets which part of the board the anchor point refers to. |
 | `defaultTraceWidth` | `string \| number` | Default width for traces within this board. |
 | `minTraceWidth` | `string \| number` | Minimum allowed trace width for routing. |
+| `pcbStyle` | `object` | Style configuration object for PCB elements. See [Global Silkscreen Text Size](#global-silkscreen-text-size-adjustment) below. |
 
 ### Customizing the Size of the Board
 
@@ -118,6 +119,42 @@ Example with custom colors:
   <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
 </board>
 ```
+
+### Global Silkscreen Text Size Adjustment
+
+You can set a global font size for all silkscreen text elements using the `pcbStyle` prop with `silkscreenFontSize`. This is useful when you want consistent text sizing across your board without specifying `fontSize` on each individual `<silkscreentext />` element.
+
+Silkscreen text elements that don't have an explicit `fontSize` prop will inherit the global size. Individual elements can still override the global size by providing their own `fontSize` prop.
+
+<CircuitPreview defaultView="pcb" code={`
+  const GLOBAL_FONT_SIZE = 2.5
+
+  export default () => (
+    <board
+      width="20mm"
+      height="20mm"
+      pcbStyle={{
+        silkscreenFontSize: GLOBAL_FONT_SIZE,
+      }}
+    >
+      {/* Multiple silkscreen texts without explicit fontSize - should use global size */}
+      <silkscreentext pcbX={0} pcbY={0} text="TEXT1" />
+      <silkscreentext pcbX={0} pcbY={3} text="TEXT2" />
+      <silkscreentext pcbX={0} pcbY={6} text="TEXT3" layer="top" />
+      <silkscreentext pcbX={0} pcbY={9} text="TEXT4" layer="bottom" />
+
+      {/* Text with explicit fontSize - should override global size */}
+      <silkscreentext pcbX={0} pcbY={12} text="OVERRIDE" fontSize={1.0} />
+    </board>
+  )
+`} />
+
+In this example:
+- `TEXT1`, `TEXT2`, `TEXT3`, and `TEXT4` all use the global font size of `2.5` because they don't specify a `fontSize` prop
+- `OVERRIDE` uses a font size of `1.0` because it explicitly sets `fontSize={1.0}`, which overrides the global setting
+- The global size applies to silkscreen text on both top and bottom layers
+
+This feature helps maintain visual consistency across your board while still allowing flexibility for individual text elements when needed.
 
 ### Double-Sided Assembly
 
