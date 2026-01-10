@@ -1,0 +1,153 @@
+---
+title: Working with Soldermask
+description: Learn how to configure soldermask layers in your PCB designs for proper fabrication and assembly
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## What is Soldermask?
+
+Soldermask is a protective layer applied to printed circuit boards (PCBs) that:
+
+- Prevents solder from bridging between adjacent pads and traces
+- Protects copper traces from oxidation and environmental damage
+- Provides electrical insulation
+- Helps with component placement during assembly
+- Can be configured with different margins around features like holes and pads
+
+In tscircuit, soldermask is automatically included in your fabrication files and can be visualized in the PCB viewer.
+
+## Configuring Soldermask on Holes
+
+You can control soldermask behavior on individual holes using these properties:
+
+- `coveredWithSolderMask`: Boolean - Whether the hole should have soldermask applied
+- `solderMaskMargin`: Number - Additional margin around the hole in millimeters (can be negative)
+
+### Examples
+
+<CircuitPreview
+  defaultView="pcb"
+  showSolderMask={true}
+  verticalStack
+  code={`export default () => (
+  <board width="12mm" height="10mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          {/* Positive margin: soldermask extends beyond hole */}
+          <hole
+            pcbX="-4mm"
+            pcbY="2mm"
+            diameter="1mm"
+            solderMaskMargin={0.2}
+            coveredWithSolderMask={true}
+          />
+          <silkscreentext
+            pcbX="-4mm"
+            pcbY="3.2mm"
+            text="+0.2mm"
+            fontSize="0.4mm"
+            anchorAlignment="center"
+          />
+
+          {/* Negative margin: soldermask pulled back from hole */}
+          <hole
+            pcbX="-4mm"
+            pcbY="-2mm"
+            diameter="1mm"
+            solderMaskMargin={-0.1}
+            coveredWithSolderMask={true}
+          />
+          <silkscreentext
+            pcbX="-4mm"
+            pcbY="-3.2mm"
+            text="-0.1mm"
+            fontSize="0.4mm"
+            anchorAlignment="center"
+          />
+
+          {/* Rectangular hole with positive margin */}
+          <hole
+            pcbX="0mm"
+            pcbY="2mm"
+            width="1.5mm"
+            height="1mm"
+            shape="rect"
+            solderMaskMargin={0.15}
+            coveredWithSolderMask={true}
+          />
+          <silkscreentext
+            pcbX="0mm"
+            pcbY="3.2mm"
+            text="+0.15mm"
+            fontSize="0.4mm"
+            anchorAlignment="center"
+          />
+
+          {/* Pill-shaped hole with positive margin */}
+          <hole
+            pcbX="4mm"
+            pcbY="2mm"
+            width="2mm"
+            height="1mm"
+            shape="pill"
+            solderMaskMargin={0.25}
+            coveredWithSolderMask={true}
+          />
+          <silkscreentext
+            pcbX="4mm"
+            pcbY="3.2mm"
+            text="+0.25mm"
+            fontSize="0.4mm"
+            anchorAlignment="center"
+          />
+
+          {/* Pill-shaped hole with negative margin */}
+          <hole
+            pcbX="4mm"
+            pcbY="-2mm"
+            width="2mm"
+            height="1mm"
+            shape="pill"
+            solderMaskMargin={-0.15}
+            coveredWithSolderMask={true}
+          />
+          <silkscreentext
+            pcbX="4mm"
+            pcbY="-3.2mm"
+            text="-0.15mm"
+            fontSize="0.4mm"
+            anchorAlignment="center"
+          />
+        </footprint>
+      }
+    />
+  </board>
+)`}
+/>
+
+## Soldermask Margin Guidelines
+
+### Positive Margins (Recommended for most holes)
+- `0.1mm - 0.2mm`: Standard margin for plated through-holes
+- `0.15mm`: Good balance between protection and accessibility
+- `0.25mm`: Extra protection for high-reliability applications
+
+### Negative Margins (Special cases)
+- `-0.05mm to -0.1mm`: For holes that need better solder flow or test access
+- Use sparingly and only when necessary for specific manufacturing requirements
+
+### When to Use Different Margins
+- **Standard mounting holes**: Use positive margins (0.1mm - 0.2mm)
+- **Fiducial holes**: Often use negative margins for better camera recognition
+- **Test points**: May use negative margins for probe access
+- **High-density designs**: Consider tighter positive margins
+
+## Manufacturing Considerations
+
+- Soldermask margins affect the final hole size in your fabrication files
+- Always verify with your manufacturer's capabilities and design rules
+- Most fabricators have minimum soldermask clearance requirements
+- Check your fabrication service's design rules before finalizing margins

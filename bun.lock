@@ -21,7 +21,7 @@
         "@docusaurus/module-type-aliases": "3.8.1",
         "@docusaurus/tsconfig": "3.8.1",
         "@docusaurus/types": "3.8.1",
-        "@tscircuit/create-snippet-url": "^0.0.12",
+        "@tscircuit/create-snippet-url": "^0.0.13",
         "@tscircuit/footprinter": "^0.0.135",
         "@tscircuit/math-utils": "^0.0.18",
         "@twind/core": "^1.1.3",
@@ -619,7 +619,7 @@
 
     "@trysound/sax": ["@trysound/sax@0.2.0", "", {}, "sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA=="],
 
-    "@tscircuit/create-snippet-url": ["@tscircuit/create-snippet-url@0.0.12", "", { "dependencies": { "fflate": "^0.8.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-dOBs/rv53Gz2y6swurLKbF25kUmz9KPzDAndjBh+lmmWSs6QRs63OubIk7HYBagsdgwKvOhHDceSl4ByTmTAZQ=="],
+    "@tscircuit/create-snippet-url": ["@tscircuit/create-snippet-url@0.0.13", "", { "dependencies": { "fflate": "^0.8.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-F1BUIzGFR4h3pPKa3UqshYEXeMuv7uCbBG4JSz3FJByGTRwcbcgHAq9GPQSEibBujVWIbY/5gf1kcVO5GyJvmA=="],
 
     "@tscircuit/footprinter": ["@tscircuit/footprinter@0.0.135", "", { "dependencies": { "@tscircuit/mm": "^0.0.8", "zod": "^3.23.8" }, "peerDependencies": { "circuit-json": "*" } }, "sha512-+8MasMGTNQL/NINnlWk2v6zw/NDerfdIBG3uqhrTr0r7VOHh4lK1ymTkQR7IeoypkxTIHYGB9wHbOt39XAF3mg=="],
 

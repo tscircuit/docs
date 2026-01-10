@@ -90,6 +90,7 @@ export default function CircuitPreview({
   rightView,
   showSimulationGraph = false,
   verticalStack = false,
+  showSolderMask = false,
 }: {
   code?: string
   showTabs?: boolean
@@ -110,6 +111,7 @@ export default function CircuitPreview({
   projectBaseUrl?: string
   showSimulationGraph?: boolean
   verticalStack?: boolean
+  showSolderMask?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -146,7 +148,10 @@ export default function CircuitPreview({
     ? fsMap || code
     : code || Object.values(fsMap ?? {})[0]
 
-  const pcbUrl = useMemo(() => createSvgUrl(fsMapOrCode, "pcb"), [fsMapOrCode])
+  const pcbUrl = useMemo(
+    () => createSvgUrl(fsMapOrCode, "pcb", { showSolderMask: true }),
+    [fsMapOrCode, showSolderMask],
+  )
   console.log(fsMapOrCode)
   const schUrl = useMemo(
     () =>
