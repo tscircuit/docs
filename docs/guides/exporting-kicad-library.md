@@ -36,8 +36,8 @@ Components that use **standard footprinter strings** (e.g., `0402`, `soic8`) are
 ```
 my-library/
 ├── symbols/
-│   ├── my-library.kicad_sym          # User symbols (custom components)
-│   └── tscircuit_builtin.kicad_sym   # Builtin symbols (standard parts)
+│   ├── my-library.kicad_sym          # User symbols (custom symbols)
+│   └── tscircuit_builtin.kicad_sym   # Builtin symbols (standard symbols)
 ├── footprints/
 │   ├── my-library.pretty/            # User footprints
 │   │   └── MyCustomSwitch.kicad_mod
@@ -112,7 +112,7 @@ import stepUrl from "./switch.step"
   footprint={<footprint>...</footprint>}
   cadModel={
     <cadmodel
-      modelUrl={stepurl}
+      modelUrl={stepUrl}
       rotationOffset={{ x: 0, y: 0, z: 270 }}
       positionOffset={{ x: 0.5, y: -0.3, z: 0 }}
     />
