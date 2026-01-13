@@ -24,8 +24,45 @@ tscircuit automatically separates your components into two library categories:
 
 Components that use **custom footprints or symbols** are placed in the user library, named after your project (e.g., `my-library`). These include:
 
-- Components with a custom `footprint` prop (JSX footprint definition)
-- Components with a custom `symbol` prop (JSX symbol definition)
+- Components with a custom `footprint` prop (JSX footprint definition):
+
+```tsx
+<chip
+  name="U1"
+  footprint={
+    <footprint>
+      <smtpad portHints={["VIN"]} pcbX={-4} pcbY={2} width="2mm" height="2mm" shape="rect" />
+      <smtpad portHints={["GND"]} pcbX={4} pcbY={2} width="2mm" height="2mm" shape="rect" />
+      <smtpad portHints={["OUT"]} pcbX={0} pcbY={-2} width="2mm" height="2mm" shape="rect" />
+      <silkscreenpath
+        route={[
+          { x: -6, y: -4 },
+          { x: 6, y: -4 },
+          { x: 6, y: 4 },
+          { x: -6, y: 4 },
+          { x: -6, y: -4 },
+        ]}
+      />
+    </footprint>
+  }
+/>
+```
+
+- Components with a custom `symbol` prop (JSX symbol definition):
+
+```tsx
+<chip
+  name="U1"
+  symbol={
+    <symbol>
+      <schematicrect schX={0} schY={0} width={2} height={1.5} isFilled={false} />
+      <schematiccircle center={{ x: 0, y: 0 }} radius={0.3} isFilled={true} />
+      <port name="in" direction="left" schX={-1} schY={0} />
+      <port name="out" direction="right" schX={1} schY={0} />
+    </symbol>
+  }
+/>
+```
 
 ### Builtin Components
 
@@ -81,24 +118,6 @@ The CLI will:
 3. **Use the symbols and footprints** in your schematic and PCB:
    - Custom symbols appear under your library name (e.g., `my-library`)
    - Standard symbols appear under `tscircuit_builtin`
-
-## Creating Custom Components
-
-To create components that go into the user library, use custom footprint or symbol definitions:
-
-```tsx
-export const MyCustomSwitch = () => (
-  <chip
-    name="SW1"
-    footprint={
-      <footprint>
-        <smtpad shape="rect" width="1mm" height="1mm" portHints={["pin1"]} pcbX={-2} />
-        <smtpad shape="rect" width="1mm" height="1mm" portHints={["pin2"]} pcbX={2} />
-      </footprint>
-    }
-  />
-)
-```
 
 ## Including 3D Models
 
