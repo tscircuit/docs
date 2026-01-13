@@ -72,7 +72,7 @@ The CLI will:
 
 ## Using the Library in KiCad
 
-1. **Extract the library** to your KiCad project folder or a shared libraries location
+1. **Extract/Copy the library** to your KiCad project folder or a shared libraries location
 
 2. **Add the library tables** to your KiCad project:
    - Copy `fp-lib-table` and `sym-lib-table` to your project folder, OR
