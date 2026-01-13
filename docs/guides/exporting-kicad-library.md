@@ -109,7 +109,7 @@ import stepUrl from "./switch.step"
 
 <chip
   name="SW1"
-  footprint={<footprint>...</footprint>}
+  footprint="pushbutton"
   cadModel={
     <cadmodel
       modelUrl={stepUrl}
