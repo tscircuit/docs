@@ -11,82 +11,101 @@ tscircuit allows you to export your circuit designs as a **KiCad Library**. Unli
 
 The exported library includes:
 
-- **Symbol Library** (`.kicad_sym`) - Schematic symbols for all components
-- **Footprint Library** (`.pretty` folder) - PCB footprints for all components
-- **3D Models** (`.3dshapes` folder) - 3D model files (STEP/WRL) referenced by footprints
-- **Library Tables** (`fp-lib-table`, `sym-lib-table`) - Configuration files for KiCad to locate the libraries
+- **Symbol Libraries** (`symbols/` folder) - Schematic symbols for all components
+- **Footprint Libraries** (`footprints/` folder) - PCB footprints for all components
+- **3D Models** (`3dmodels/` folder) - 3D model files (STEP/WRL) referenced by footprints
+- **Library Tables** (`fp-lib-table`, `sym-lib-table`) - Configuration files for KiCad
 
-## How to Export KiCad Library
+## User vs Builtin Components
+
+tscircuit automatically separates your components into two library categories:
+
+### User Components
+
+Components that use **custom footprints or symbols** are placed in the user library, named after your project (e.g., `my-library`). These include:
+
+- Components with a custom `footprint` prop (JSX footprint definition):
+
+```tsx
+<chip
+  name="U1"
+  footprint={
+    <footprint>
+      <smtpad portHints={["VIN"]} pcbX={-4} pcbY={2} width="2mm" height="2mm" shape="rect" />
+      <smtpad portHints={["GND"]} pcbX={4} pcbY={2} width="2mm" height="2mm" shape="rect" />
+      <smtpad portHints={["OUT"]} pcbX={0} pcbY={-2} width="2mm" height="2mm" shape="rect" />
+      <silkscreenpath
+        route={[
+          { x: -6, y: -4 },
+          { x: 6, y: -4 },
+          { x: 6, y: 4 },
+          { x: -6, y: 4 },
+          { x: -6, y: -4 },
+        ]}
+      />
+    </footprint>
+  }
+/>
+```
+
+- Components with a custom `symbol` prop (JSX symbol definition):
+
+```tsx
+<chip
+  name="U1"
+  symbol={
+    <symbol>
+      <schematicrect schX={0} schY={0} width={2} height={1.5} isFilled={false} />
+      <schematiccircle center={{ x: 0, y: 0 }} radius={0.3} isFilled={true} />
+      <port name="in" direction="left" schX={-1} schY={0} />
+      <port name="out" direction="right" schX={1} schY={0} />
+    </symbol>
+  }
+/>
+```
+
+### Builtin Components
+
+Components that use **standard footprinter strings** (e.g., `0402`, `soic8`) are placed in the `tscircuit_builtin` library. This includes all footprints that tscircuit supports by default.
+
+## Directory Structure
+
+```
+my-library/
+├── symbols/
+│   ├── my-library.kicad_sym          # User symbols (custom symbols)
+│   └── tscircuit_builtin.kicad_sym   # Builtin symbols (standard symbols)
+├── footprints/
+│   ├── my-library.pretty/            # User footprints
+│   │   └── MyCustomSwitch.kicad_mod
+│   └── tscircuit_builtin.pretty/     # Builtin footprints
+│       ├── resistor_0402.kicad_mod
+│       └── chip_soic8.kicad_mod
+├── 3dmodels/
+│   └── switch.step
+├── fp-lib-table
+└── sym-lib-table
+```
+
+## How to Export
 
 ### Using the Browser
 
-1. Run `tsci dev` in your project directory to start the development server
+1. Run `tsci dev` in your project directory
 2. Navigate to **File > Export > KiCad Library**
 3. A zip file will be downloaded containing all library files
 
 ### Using the CLI
 
-You can also export directly from the command line:
-
 ```bash
-tsci export ./my-circuit.tsx -f kicad-library
+tsci export ./lib/my-library.ts -f kicad-library
 ```
 
-This creates a directory in the same location as the input file:
-
-```
-my-circuit-kicad-library/
-├── my-circuit.kicad_sym          # Symbol library
-├── my-circuit.pretty/            # Footprint library
-│   ├── resistor.kicad_mod
-│   ├── capacitor.kicad_mod
-│   └── ...
-├── my-circuit.3dshapes/          # 3D models
-│   └── component.step
-├── fp-lib-table                  # Footprint library table
-└── sym-lib-table                 # Symbol library table
-```
-
-## What's Inside the Export
-
-### Symbol Library (`.kicad_sym`)
-
-Contains schematic symbols for all components in your circuit. Each symbol includes:
-- Pin definitions with correct electrical types
-- Reference designator (e.g., R1, C1, U1)
-- Footprint association linking to the corresponding footprint
-
-### Footprint Library (`.pretty` folder)
-
-Contains PCB footprints for each unique component. Each `.kicad_mod` file includes:
-- Pad definitions (SMD or through-hole)
-- Silkscreen graphics
-- Courtyard outlines
-- 3D model references (pointing to the `.3dshapes` folder)
-
-### 3D Models (`.3dshapes` folder)
-
-Contains STEP files for 3D visualization in KiCad's 3D viewer. These are automatically:
-- **CLI**: Copied from the source paths in your project
-- **Browser**: Fetched via HTTP and included in the zip
-
-### Library Tables
-
-Configuration files that tell KiCad where to find the libraries:
-
-**`fp-lib-table`** - Footprint library configuration:
-```
-(fp_lib_table
-  (lib (name my-circuit)(type KiCad)(uri ${KIPRJMOD}/my-circuit.pretty)(options "")(descr ""))
-)
-```
-
-**`sym-lib-table`** - Symbol library configuration:
-```
-(sym_lib_table
-  (lib (name my-circuit)(type KiCad)(uri ${KIPRJMOD}/my-circuit.kicad_sym)(options "")(descr ""))
-)
-```
+The CLI will:
+1. Discover all component exports from the entry file
+2. Build each component to circuit JSON
+3. Extract and classify footprints/symbols (user vs builtin)
+4. Generate the KiCad library files
 
 ## Using the Library in KiCad
 
@@ -96,15 +115,17 @@ Configuration files that tell KiCad where to find the libraries:
    - Copy `fp-lib-table` and `sym-lib-table` to your project folder, OR
    - Merge the entries into your existing library tables
 
-3. **Use the symbols and footprints** in your KiCad schematic and PCB:
-   - Symbols appear under the library name you exported
-   - Footprints are automatically linked to symbols
+3. **Use the symbols and footprints** in your schematic and PCB:
+   - Custom symbols appear under your library name (e.g., `my-library`)
+   - Standard symbols appear under `tscircuit_builtin`
 
 ## Including 3D Models
 
-To include 3D models in your export, add a `cadModel` prop to your components:
+Add a `cadModel` prop to include 3D models in your export:
 
 ```tsx
+import stepUrl from "./switch.step"
+
 <chip
   name="SW1"
   footprint="pushbutton"
@@ -120,35 +141,4 @@ To include 3D models in your export, add a `cadModel` prop to your components:
 
 The 3D model will be:
 - Referenced in the footprint file with the correct path
-- Included in the `.3dshapes` folder of the export
-
-## Example
-
-Here's a complete example of a circuit with components that will be exported:
-
-```tsx
-import stepUrl from "./switch.step"
-
-circuit.add(
-  <board width="20mm" height="20mm">
-    <resistor name="R1" resistance="1k" footprint="0402" />
-    <capacitor name="C1" capacitance="1uF" footprint="0603" />
-    <chip
-      name="SW1"
-      footprint="pushbutton"
-      cadModel={
-        <cadmodel
-          modelUrl={stepUrl}
-          rotationOffset={{ x: 0, y: 0, z: 270 }}
-        />
-      }
-    />
-    <trace from=".R1 .pin2" to=".C1 .pin1" />
-  </board>
-)
-```
-
-Exporting this circuit will create a library with:
-- 3 symbols (resistor, capacitor, chip)
-- 3 footprints (resistor_0402, capacitor_0603, chip)
-- 1 3D model (switch.step)
+- Included in the `3dmodels/` folder of the export
