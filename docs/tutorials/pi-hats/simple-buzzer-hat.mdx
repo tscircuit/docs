@@ -1,0 +1,338 @@
+---
+title: Building a Simple Buzzer HAT
+description: >-
+  This tutorial will walk you through building a Raspberry Pi HAT with a simple
+  buzzer using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building a Raspberry Pi HAT (Hardware Attached on Top) with a passive buzzer that can be controlled via GPIO. The buzzer can be used for notifications, alarms, or playing simple tones.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Passive Buzzer */}
+    <chip
+      name="BZ1"
+      footprint="0603"
+      manufacturerPartNumber="Passive Buzzer"
+      pcbX={10}
+      pcbY={-10}
+    />
+
+    {/* NPN Transistor (2N2222) */}
+    <chip
+      name="Q1"
+      footprint="sot23"
+      pinLabels={{
+        pin1: ["B"],
+        pin2: ["E"],
+        pin3: ["C"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={-10}
+    />
+
+    {/* Base resistor (1k) */}
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
+
+    {/* GPIO18 (PWM) to base resistor */}
+    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+
+    {/* Resistor to transistor base */}
+    <trace from=".R1 > .pin2" to=".Q1 .B" />
+
+    {/* Transistor emitter to ground */}
+    <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
+
+    {/* Buzzer positive to 5V */}
+    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+
+    {/* Buzzer negative to transistor collector */}
+    <trace from=".BZ1 > .pin2" to=".Q1 .C" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is a Raspberry Pi HAT?
+
+A HAT (Hardware Attached on Top) is an add-on board for Raspberry Pi that conforms to a specific form factor and includes an EEPROM for automatic configuration. HATs:
+
+- Follow the standard 65mm x 56mm board dimensions
+- Connect via the 40-pin GPIO header
+- Can include identification EEPROM for automatic driver loading
+
+## Circuit Requirements
+
+Our buzzer HAT needs to:
+- Connect to a PWM-capable GPIO pin for tone generation
+- Use a transistor to drive the buzzer (GPIO pins can't source enough current)
+- Include a current-limiting resistor for the transistor base
+
+## Understanding the Components
+
+### Passive Buzzer
+A passive buzzer requires an AC signal (PWM) to produce sound, unlike active buzzers which have built-in oscillators. This allows us to control the pitch by varying the PWM frequency.
+
+### NPN Transistor (2N2222)
+Since GPIO pins can only source about 16mA, we use an NPN transistor as a switch to drive the buzzer with more current from the 5V rail.
+
+### Base Resistor (1k)
+The 1k resistor limits current into the transistor base, protecting both the GPIO pin and the transistor.
+
+## Building the Circuit Step by Step
+
+### Step 1: Import the RaspberryPiHatBoard
+
+First, we import the `RaspberryPiHatBoard` component from `@tscircuit/common`. This gives us a board with the correct dimensions and GPIO header.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Components go here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+### Step 2: Add the Buzzer
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="BZ1"
+      footprint="0603"
+      manufacturerPartNumber="Passive Buzzer"
+      pcbX={10}
+      pcbY={-10}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Add the Transistor
+
+The transistor acts as a switch. When current flows into the base (B), it allows current to flow from collector (C) to emitter (E).
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="BZ1"
+      footprint="0603"
+      manufacturerPartNumber="Passive Buzzer"
+      pcbX={10}
+      pcbY={-10}
+    />
+    <chip
+      name="Q1"
+      footprint="sot23"
+      pinLabels={{
+        pin1: ["B"],
+        pin2: ["E"],
+        pin3: ["C"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={-10}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 4: Add the Base Resistor
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="BZ1"
+      footprint="0603"
+      manufacturerPartNumber="Passive Buzzer"
+      pcbX={10}
+      pcbY={-10}
+    />
+    <chip
+      name="Q1"
+      footprint="sot23"
+      pinLabels={{
+        pin1: ["B"],
+        pin2: ["E"],
+        pin3: ["C"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={-10}
+    />
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 5: Connect Everything
+
+Now we wire all the components together:
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="BZ1"
+      footprint="0603"
+      manufacturerPartNumber="Passive Buzzer"
+      pcbX={10}
+      pcbY={-10}
+    />
+    <chip
+      name="Q1"
+      footprint="sot23"
+      pinLabels={{
+        pin1: ["B"],
+        pin2: ["E"],
+        pin3: ["C"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={-10}
+    />
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
+
+    {/* GPIO18 (PWM) to base resistor */}
+    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+
+    {/* Resistor to transistor base */}
+    <trace from=".R1 > .pin2" to=".Q1 .B" />
+
+    {/* Transistor emitter to ground */}
+    <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
+
+    {/* Buzzer positive to 5V */}
+    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+
+    {/* Buzzer negative to transistor collector */}
+    <trace from=".BZ1 > .pin2" to=".Q1 .C" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Available GPIO Pins
+
+The `RaspberryPiHatBoard` component exposes the standard 40-pin Raspberry Pi header. Here are some commonly used pins:
+
+| Pin | Function | Notes |
+|-----|----------|-------|
+| GPIO_18 | PWM0 | Hardware PWM, ideal for buzzer |
+| GPIO_12 | PWM0 | Alternative PWM pin |
+| GPIO_13 | PWM1 | Secondary PWM channel |
+| V5_1, V5_2 | 5V Power | Power supply for buzzer |
+| V3_3_1, V3_3_2 | 3.3V Power | Logic level power |
+| GND_1 - GND_8 | Ground | Multiple ground pins available |
+
+## PCB Layout
+
+The PCB layout places components on the HAT board. You can adjust the `pcbX` and `pcbY` properties to position components:
+
+<CircuitPreview hide3DTab defaultView="pcb" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="BZ1"
+      footprint="0603"
+      manufacturerPartNumber="Passive Buzzer"
+      pcbX={10}
+      pcbY={-10}
+    />
+    <chip
+      name="Q1"
+      footprint="sot23"
+      pinLabels={{
+        pin1: ["B"],
+        pin2: ["E"],
+        pin3: ["C"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={-10}
+    />
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
+
+    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".Q1 .B" />
+    <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin2" to=".Q1 .C" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Controlling the Buzzer
+
+Once the HAT is assembled and attached to your Raspberry Pi, you can control the buzzer using Python:
+
+```python
+import RPi.GPIO as GPIO
+import time
+
+BUZZER_PIN = 18
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(BUZZER_PIN, GPIO.OUT)
+
+# Create PWM instance
+pwm = GPIO.PWM(BUZZER_PIN, 1000)  # 1000 Hz frequency
+pwm.start(50)  # 50% duty cycle
+
+# Play different tones
+frequencies = [262, 294, 330, 349, 392, 440, 494, 523]  # C major scale
+for freq in frequencies:
+    pwm.ChangeFrequency(freq)
+    time.sleep(0.5)
+
+pwm.stop()
+GPIO.cleanup()
+```
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading them to JLCPCB or another PCB manufacturer. Follow the instructions from [Ordering Prototypes](/building-electronics/ordering-prototypes).
+
+## Next Steps
+
+- Add an LED indicator to show when the buzzer is active
+- Add multiple buzzers for polyphonic sound
+- Include an I2C EEPROM for automatic HAT configuration
+- Add volume control with a potentiometer

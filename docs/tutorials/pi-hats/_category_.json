@@ -1,0 +1,10 @@
+{
+  "label": "Raspberry Pi HATs",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Build custom Raspberry Pi HATs with tscircuit!"
+  },
+  "collapsible": true,
+  "collapsed": false
+}

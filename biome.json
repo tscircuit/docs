@@ -13,7 +13,12 @@
     }
   },
   "files": {
-    "ignore": ["cosmos-export", "dist", "package.json"]
+    "ignore": [
+      "cosmos-export",
+      "dist",
+      "package.json",
+      "!./codetestingplayground"
+    ]
   },
   "javascript": {
     "formatter": {
