@@ -17,6 +17,9 @@
     "tscircuit": "^0.0.1148"
   },
   "dependencies": {
-    "@tscircuit/common": "^0.0.33"
+    "@tsci/AnasSarkiz.WS2812B_2020": "^0.1.0",
+    "@tsci/seveibar.WS2812B_2020": "^0.0.1",
+    "@tscircuit/common": "^0.0.33",
+    "@tscircuit/core": "^0.0.972"
   }
 }

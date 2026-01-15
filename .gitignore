@@ -21,3 +21,5 @@ yarn-error.log*
 
 .vscode
 .aider*
+*.diff.png
+*.diff.svg
