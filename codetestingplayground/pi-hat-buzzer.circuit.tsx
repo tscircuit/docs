@@ -29,7 +29,13 @@ export default () => (
     />
 
     {/* Base resistor for transistor (1k) */}
-    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0402"
+      pcbX={-10}
+      pcbY={-10}
+    />
 
     {/* Connect GPIO18 (PWM) to base resistor */}
     <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
