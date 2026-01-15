@@ -1,0 +1,341 @@
+---
+title: Building an LED Matrix HAT
+description: >-
+  This tutorial will walk you through building a Raspberry Pi HAT with an
+  addressable LED matrix using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building a Raspberry Pi HAT (Hardware Attached on Top) with a 4x4 addressable LED matrix using WS2812B LEDs. The matrix can display patterns, animations, and respond to data from the Raspberry Pi.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { WS2812B_2020 as LedWithIc } from "@tsci/seveibar.WS2812B_2020"
+import { grid } from "@tscircuit/math-utils"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {grid({ cols: 4, rows: 4, xSpacing: 8, ySpacing: 8, offsetX: -6, offsetY: -5 }).map(
+      ({ center, index }) => {
+        const ledName = "LED" + (index + 1)
+        return (
+          <>
+            <LedWithIc
+              name={ledName}
+              pcbX={center.x}
+              pcbY={center.y}
+              schX={center.x / 2 + 12}
+              schY={center.y / 2}
+            />
+            <trace from={\`.\${ledName} .GND\`} to="net.GND" />
+            <trace from={\`.\${ledName} .VDD\`} to="net.V5" />
+            {index > 0 && (
+              <trace from={\`.LED\${index} .DO\`} to={\`.\${ledName} .DI\`} />
+            )}
+          </>
+        )
+      }
+    )}
+    <trace from=".HAT1_chip .GPIO_18" to=".LED1 .DI" />
+    <trace from="net.V5" to=".HAT1_chip .V5_1" />
+    <trace from="net.GND" to=".HAT1_chip .GND_1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is a Raspberry Pi HAT?
+
+A HAT (Hardware Attached on Top) is an add-on board for Raspberry Pi that conforms to a specific form factor:
+
+- Standard 65mm x 56mm board dimensions
+- Connects via the 40-pin GPIO header
+- Can include identification EEPROM for automatic driver loading
+
+## Circuit Requirements
+
+Our LED Matrix HAT needs to:
+- Use addressable WS2812B LEDs for individual color control
+- Connect to a GPIO pin capable of driving the LED data protocol
+- Provide adequate power from the 5V rail
+- Chain LEDs together via data in/out connections
+
+## Understanding the Components
+
+### WS2812B Addressable LEDs
+
+WS2812B LEDs are integrated RGB LEDs with a built-in controller chip. Each LED has 4 pins:
+
+| Pin | Function |
+|-----|----------|
+| VDD | 5V Power supply |
+| GND | Ground |
+| DI | Data Input |
+| DO | Data Output (chains to next LED) |
+
+These LEDs offer several advantages:
+- **Individual Control**: Each LED can display any RGB color independently
+- **Daisy-Chaining**: Only one GPIO pin controls the entire matrix
+- **Simple Wiring**: Only 4 connections per LED
+
+### LED Chaining
+
+The LEDs are connected in series via their data pins. The data output (DO) of each LED connects to the data input (DI) of the next LED in the chain:
+
+```
+GPIO_18 → LED1.DI → LED1.DO → LED2.DI → LED2.DO → ... → LED16.DI
+```
+
+## Building the Circuit Step by Step
+
+### Step 1: Import the RaspberryPiHatBoard
+
+First, we import the `RaspberryPiHatBoard` component which provides the correct HAT dimensions and GPIO header.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Components go here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+### Step 2: Add a Single LED
+
+Let's start with a single WS2812B LED:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { WS2812B_2020 as LedWithIc } from "@tsci/seveibar.WS2812B_2020"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <LedWithIc name="LED1" pcbX={0} pcbY={0} />
+
+    {/* Connect LED to power and ground */}
+    <trace from=".LED1 .VDD" to="net.V5" />
+    <trace from=".LED1 .GND" to="net.GND" />
+
+    {/* Connect data input to GPIO18 */}
+    <trace from=".HAT1_chip .GPIO_18" to=".LED1 .DI" />
+
+    {/* Connect power nets to HAT header */}
+    <trace from="net.V5" to=".HAT1_chip .V5_1" />
+    <trace from="net.GND" to=".HAT1_chip .GND_1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Chain Two LEDs Together
+
+To create a chain, connect the data output of the first LED to the data input of the second:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { WS2812B_2020 as LedWithIc } from "@tsci/seveibar.WS2812B_2020"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <LedWithIc name="LED1" pcbX={-5} pcbY={0} schX={-3} />
+    <LedWithIc name="LED2" pcbX={5} pcbY={0} schX={3} />
+
+    {/* Power connections */}
+    <trace from=".LED1 .VDD" to="net.V5" />
+    <trace from=".LED1 .GND" to="net.GND" />
+    <trace from=".LED2 .VDD" to="net.V5" />
+    <trace from=".LED2 .GND" to="net.GND" />
+
+    {/* Chain LEDs together */}
+    <trace from=".LED1 .DO" to=".LED2 .DI" />
+
+    {/* Connect first LED to GPIO */}
+    <trace from=".HAT1_chip .GPIO_18" to=".LED1 .DI" />
+
+    {/* HAT power connections */}
+    <trace from="net.V5" to=".HAT1_chip .V5_1" />
+    <trace from="net.GND" to=".HAT1_chip .GND_1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 4: Create the Full 4x4 Matrix
+
+Using the `grid` helper function, we can efficiently create a 4x4 matrix:
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { WS2812B_2020 as LedWithIc } from "@tsci/seveibar.WS2812B_2020"
+import { grid } from "@tscircuit/math-utils"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {grid({ cols: 4, rows: 4, xSpacing: 8, ySpacing: 8, offsetX: -6, offsetY: -5 }).map(
+      ({ center, index }) => {
+        const ledName = "LED" + (index + 1)
+        return (
+          <>
+            <LedWithIc
+              name={ledName}
+              pcbX={center.x}
+              pcbY={center.y}
+              schX={center.x / 2 + 12}
+              schY={center.y / 2}
+            />
+            <trace from={\`.\${ledName} .GND\`} to="net.GND" />
+            <trace from={\`.\${ledName} .VDD\`} to="net.V5" />
+            {index > 0 && (
+              <trace from={\`.LED\${index} .DO\`} to={\`.\${ledName} .DI\`} />
+            )}
+          </>
+        )
+      }
+    )}
+    <trace from=".HAT1_chip .GPIO_18" to=".LED1 .DI" />
+    <trace from="net.V5" to=".HAT1_chip .V5_1" />
+    <trace from="net.GND" to=".HAT1_chip .GND_1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+The `grid` function creates positions for each LED with:
+- `cols: 4, rows: 4` - 4x4 matrix (16 LEDs total)
+- `xSpacing: 8, ySpacing: 8` - 8mm spacing between LEDs
+- `offsetX: -6, offsetY: -5` - Position the matrix away from the board edge
+
+## Available GPIO Pins
+
+The `RaspberryPiHatBoard` component exposes the standard 40-pin Raspberry Pi header. Here are commonly used pins for LED control:
+
+| Pin | Function | Notes |
+|-----|----------|-------|
+| GPIO_18 | Data | Commonly used for WS2812B data |
+| GPIO_12 | Data | Alternative data pin |
+| GPIO_21 | Data | Another option |
+| V5_1, V5_2 | 5V Power | Power supply for LEDs |
+| GND_1 - GND_8 | Ground | Multiple ground pins available |
+
+## PCB Layout
+
+The PCB layout positions the LED matrix centered on the HAT board:
+
+<CircuitPreview hide3DTab defaultView="pcb" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { WS2812B_2020 as LedWithIc } from "@tsci/seveibar.WS2812B_2020"
+import { grid } from "@tscircuit/math-utils"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {grid({ cols: 4, rows: 4, xSpacing: 8, ySpacing: 8, offsetX: -6, offsetY: -5 }).map(
+      ({ center, index }) => {
+        const ledName = "LED" + (index + 1)
+        return (
+          <>
+            <LedWithIc
+              name={ledName}
+              pcbX={center.x}
+              pcbY={center.y}
+              schX={center.x / 2 + 12}
+              schY={center.y / 2}
+            />
+            <trace from={\`.\${ledName} .GND\`} to="net.GND" />
+            <trace from={\`.\${ledName} .VDD\`} to="net.V5" />
+            {index > 0 && (
+              <trace from={\`.LED\${index} .DO\`} to={\`.\${ledName} .DI\`} />
+            )}
+          </>
+        )
+      }
+    )}
+    <trace from=".HAT1_chip .GPIO_18" to=".LED1 .DI" />
+    <trace from="net.V5" to=".HAT1_chip .V5_1" />
+    <trace from="net.GND" to=".HAT1_chip .GND_1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Power Considerations
+
+WS2812B LEDs can draw up to 60mA each at full white brightness. For a 4x4 matrix (16 LEDs):
+
+- **Maximum current**: 16 LEDs x 60mA = 960mA
+- **Typical usage**: Usually much less at moderate brightness levels
+- **Raspberry Pi 5V**: Can supply up to 1A, but consider external power for larger matrices
+
+For larger matrices, consider:
+- Adding a separate 5V power supply
+- Using a capacitor (100-1000µF) across VDD and GND
+- Adding a 300-500Ω resistor on the data line
+
+## Controlling the LED Matrix
+
+Once assembled, control the matrix using Python and the `neopixel` library:
+
+```python
+import board
+import neopixel
+
+# Configure the LED matrix
+NUM_LEDS = 16
+PIN = board.D18  # GPIO18
+pixels = neopixel.NeoPixel(PIN, NUM_LEDS, brightness=0.3, auto_write=False)
+
+# Set all LEDs to red
+pixels.fill((255, 0, 0))
+pixels.show()
+
+# Set individual LEDs (row, col to index conversion)
+def set_pixel(row, col, color):
+    index = row * 4 + col
+    pixels[index] = color
+    pixels.show()
+
+# Create a simple pattern
+colors = [
+    (255, 0, 0),    # Red
+    (0, 255, 0),    # Green
+    (0, 0, 255),    # Blue
+    (255, 255, 0),  # Yellow
+]
+
+for i, color in enumerate(colors):
+    for j in range(4):
+        set_pixel(i, j, color)
+
+# Rainbow effect
+import time
+
+def wheel(pos):
+    if pos < 85:
+        return (pos * 3, 255 - pos * 3, 0)
+    elif pos < 170:
+        pos -= 85
+        return (255 - pos * 3, 0, pos * 3)
+    else:
+        pos -= 170
+        return (0, pos * 3, 255 - pos * 3)
+
+while True:
+    for j in range(256):
+        for i in range(NUM_LEDS):
+            pixel_index = (i * 256 // NUM_LEDS) + j
+            pixels[i] = wheel(pixel_index & 255)
+        pixels.show()
+        time.sleep(0.01)
+```
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading them to JLCPCB or another PCB manufacturer. Follow the instructions from [Ordering Prototypes](/building-electronics/ordering-prototypes).
+
+## Next Steps
+
+- Expand to a larger matrix (8x8 or 16x16)
+- Add a level shifter for better signal integrity at 5V logic
+- Include a web interface for remote control
+- Add sensors for interactive displays
+- Create animations and patterns using the Raspberry Pi
