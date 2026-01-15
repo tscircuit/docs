@@ -15,5 +15,8 @@
   "devDependencies": {
     "@types/react": "^19.2.8",
     "tscircuit": "^0.0.1148"
+  },
+  "dependencies": {
+    "@tscircuit/common": "^0.0.33"
   }
 }

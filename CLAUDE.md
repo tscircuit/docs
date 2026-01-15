@@ -36,3 +36,4 @@
 - The autorouter and DRC often throws errors and this is expected since the
   product is in early stages of development, use `tsci build --ignore-errors` to ignore
   non-fatal errors
+- Prefer `bunx` over `npx`
