@@ -4,7 +4,7 @@ sidebar_position: 1
 description: Learn how to use AI assistants like Claude to help design and generate circuit boards in tscircuit
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview"
+import CircuitPreview from "@site/src/components/CircuitPreview";
 
 AI assistants like Claude can help you design and generate circuit boards more quickly by understanding your requirements, searching for components, and writing tscircuit code. This guide walks you through setting up your project for AI-assisted circuit design.
 
@@ -27,11 +27,12 @@ Here's how you can start with an Arduino Shield form factor:
 import { ArduinoShield } from "@tscircuit/common"
 
 export default () => (
-  <ArduinoShield>
-    <resistor name="R1" resistance="10k" footprint="0805" />
-    <led name="LED1" color="red" footprint="led0603" />
-    <trace from="R1.pin1" to="LED1.pin1" />
-    <trace from="R1.pin2" to="LED1.pin2" />
+  <ArduinoShield name="example">
+    <resistor name="R1" resistance="220ohm" footprint="0805" pcbX={0} pcbY={5}  />
+    <led name="LED1" color="red" footprint="0603" pcbX={0} pcbY={-5} />
+    <trace from=".D13" to="R1.pin1" />
+    <trace from="R1.pin2" to="LED1.pin1" />
+    <trace from="LED1.pin2" to=".GND2" />
   </ArduinoShield>
 )
 `} />
@@ -83,6 +84,7 @@ This adds the component to your project dependencies, making it available to imp
 ### Writing Circuit Code
 
 The AI can generate tscircuit code based on your requirements, using the correct syntax for:
+
 - Component placement
 - Trace routing
 - Pin configurations
@@ -91,6 +93,7 @@ The AI can generate tscircuit code based on your requirements, using the correct
 ### Iterating on Designs
 
 As you provide feedback, the AI can:
+
 - Adjust component values
 - Add or remove parts
 - Reorganize layouts
@@ -103,14 +106,16 @@ Here's a typical workflow for AI-assisted circuit design:
 1. **Define your goal**: "I want to create an Arduino Shield that reads temperature from a sensor and displays it on an LCD"
 
 2. **AI searches for components**:
+
    ```bash
    tsci search "temperature sensor"
    tsci search "16x2 LCD"
    ```
 
 3. **AI generates initial circuit**:
+
    ```tsx
-   import { ArduinoShield } from "@tscircuit/common"
+   import { ArduinoShield } from "@tscircuit/common";
 
    export default () => (
      <ArduinoShield>
@@ -121,12 +126,12 @@ Here's a typical workflow for AI-assisted circuit design:
            pin1: "VCC",
            pin2: "SCL",
            pin3: "SDA",
-           pin4: "GND"
+           pin4: "GND",
          }}
        />
        {/* ... rest of circuit ... */}
      </ArduinoShield>
-   )
+   );
    ```
 
 4. **Preview and iterate**: Run `tsci dev` to see the design, then ask the AI to make adjustments
