@@ -1,0 +1,214 @@
+---
+title: Building a Capacitive Touch Sensor
+description: Learn how to create a capacitive touch sensor using polygon SMT pads with solder mask coverage in tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building a capacitive touch sensor using
+tscircuit. Capacitive touch sensors work by detecting changes in capacitance
+when a finger approaches or touches the sensor pad. By covering the copper pad
+with solder mask, we create a protective layer while still allowing capacitive
+sensing to work through the mask.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="pcb" code={`
+export default () => {
+  return (
+    <board width="30mm" height="40mm">
+      {/* Touch sensor pad - covered with solder mask for protection */}
+      <chip
+        name="TOUCH1"
+        footprint={
+          <footprint>
+            <smtpad
+              portHints={["1"]}
+              shape="rect"
+              width="10mm"
+              height="10mm"
+              pcbX="0mm"
+              pcbY="0mm"
+              coveredWithSolderMask={true}
+            />
+          </footprint>
+        }
+        pcbX={0}
+        pcbY={8}
+      />
+
+      {/* Ground reference pad nearby */}
+      <chip
+        name="GND_REF"
+        footprint={
+          <footprint>
+            <smtpad
+              portHints={["1"]}
+              shape="rect"
+              width="2mm"
+              height="10mm"
+              pcbX="0mm"
+              pcbY="0mm"
+            />
+          </footprint>
+        }
+        pcbX={-8}
+        pcbY={8}
+      />
+
+      {/* Connect to MCU touch input */}
+      <chip
+        name="U1"
+        footprint="soic8"
+        pcbY={-8}
+      />
+
+      <trace from=".TOUCH1 > .1" to=".U1 > .1" />
+      <trace from=".GND_REF > .1" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## How It Works
+
+### The `coveredWithSolderMask` Property
+
+The key to creating a capacitive touch sensor is using the `coveredWithSolderMask`
+property on your SMT pad:
+
+```tsx
+<smtpad
+  shape="rect"
+  width="10mm"
+  height="10mm"
+  coveredWithSolderMask={true}
+/>
+```
+
+When `coveredWithSolderMask` is set to `true`:
+- The copper pad is covered with solder mask (typically green, but depends on your PCB finish)
+- This protects the copper from oxidation and provides electrical insulation
+- Capacitive sensing still works through the solder mask layer
+
+### Design Tips
+
+1. **Pad Size**: Larger pads provide better touch sensitivity. A 10mm x 10mm pad works well for finger touch.
+
+2. **Ground Reference**: Place a ground pad nearby to improve sensing accuracy and reduce noise.
+
+3. **Trace Routing**: Keep the trace from the touch pad to the MCU short and away from noisy signals.
+
+4. **Pad Shapes**: You can use different shapes for aesthetic or functional purposes:
+
+<TscircuitIframe defaultView="pcb" code={`
+export default () => {
+  return (
+    <board width="50mm" height="25mm">
+      {/* Rectangular touch pad */}
+      <chip
+        name="RECT"
+        footprint={
+          <footprint>
+            <smtpad
+              portHints={["1"]}
+              shape="rect"
+              width="8mm"
+              height="8mm"
+              pcbX="0mm"
+              pcbY="0mm"
+              coveredWithSolderMask={true}
+            />
+          </footprint>
+        }
+        pcbX={-15}
+        pcbY={0}
+      />
+
+      {/* Circular touch pad */}
+      <chip
+        name="CIRCLE"
+        footprint={
+          <footprint>
+            <smtpad
+              portHints={["1"]}
+              shape="circle"
+              radius="4mm"
+              pcbX="0mm"
+              pcbY="0mm"
+              coveredWithSolderMask={true}
+            />
+          </footprint>
+        }
+        pcbX={0}
+        pcbY={0}
+      />
+
+      {/* Pill-shaped touch pad */}
+      <chip
+        name="PILL"
+        footprint={
+          <footprint>
+            <smtpad
+              portHints={["1"]}
+              shape="pill"
+              width="12mm"
+              height="6mm"
+              pcbX="0mm"
+              pcbY="0mm"
+              coveredWithSolderMask={true}
+            />
+          </footprint>
+        }
+        pcbX={15}
+        pcbY={0}
+      />
+    </board>
+  )
+}
+`} />
+
+## Building a Touch Slider
+
+You can create a touch slider by placing multiple touch pads in a row:
+
+<TscircuitIframe defaultView="pcb" code={`
+export default () => {
+  const sliderPads = [0, 1, 2, 3, 4]
+
+  return (
+    <board width="60mm" height="20mm">
+      {sliderPads.map((i) => (
+        <chip
+          key={i}
+          name={\`PAD\${i + 1}\`}
+          footprint={
+            <footprint>
+              <smtpad
+                portHints={["1"]}
+                shape="rect"
+                width="8mm"
+                height="12mm"
+                pcbX="0mm"
+                pcbY="0mm"
+                coveredWithSolderMask={true}
+              />
+            </footprint>
+          }
+          pcbX={-20 + i * 10}
+          pcbY={0}
+        />
+      ))}
+    </board>
+  )
+}
+`} />
+
+This creates 5 adjacent touch pads that can be used to detect sliding finger
+motion. Connect each pad to a separate touch-capable GPIO on your MCU.
+
+## Next Steps
+
+- Connect to a touch-capable MCU like STM32 with TSC or ESP32 with touch pins
+- Add LED indicators for visual feedback
+- Implement touch detection algorithms in your firmware
