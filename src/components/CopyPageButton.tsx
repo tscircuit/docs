@@ -1,13 +1,11 @@
 import React, { useState, useRef, useEffect } from "react"
 import TurndownService from "turndown"
 import { tw } from "@site/src/tw"
-import { useColorMode } from "../hooks/use-color-mode"
 
 export default function CopyPageButton() {
   const [isOpen, setIsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const { isDarkTheme } = useColorMode()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -122,11 +120,7 @@ export default function CopyPageButton() {
 
   return (
     <div className="copy-page-button-container" ref={dropdownRef}>
-      <div
-        className={tw(
-          `copy-page-button-wrapper ${isDarkTheme ? "dark" : "light"}`,
-        )}
-      >
+      <div className="copy-page-button-wrapper">
         <button
           type="button"
           className="copy-page-button-main"
@@ -174,9 +168,7 @@ export default function CopyPageButton() {
       </div>
 
       {isOpen && (
-        <div
-          className={tw(`copy-page-dropdown ${isDarkTheme ? "dark" : "light"}`)}
-        >
+        <div className="copy-page-dropdown">
           <button
             type="button"
             className="copy-page-dropdown-item"
