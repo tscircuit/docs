@@ -31,7 +31,7 @@ export default () => (
         <symbol>
           <schematicpath
             strokeWidth={0.05}
-            route={[
+            points={[
               { x: -1, y: -0.6 },
               { x: -0.3, y: 0.6 },
               { x: 0.4, y: -0.6 },
@@ -65,7 +65,7 @@ export default () => (
           <schematicpath
             strokeWidth={0.04}
             color="#1f78d1"
-            route={[
+            points={[
               { x: -1.2, y: 0 },
               { x: 0.6, y: 0 },
               { x: 0.6, y: 0.4 },
@@ -87,6 +87,6 @@ export default () => (
 
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
-| route | array | Yes | - | Array of points defining the path. Each point is an object with `x` and `y` coordinates |
+| points | array | Yes | - | Array of points defining the path. Each point is an object with `x` and `y` coordinates |
 | strokeWidth | distance | No | - | Width of the path stroke |
 | color | string | No | "#000000" | Color of the path |
