@@ -53,6 +53,7 @@ const config: Config = {
   ],
 
   plugins: [
+    require.resolve("./plugins/markdown-source-plugin"),
     [
       "posthog-docusaurus",
       {
