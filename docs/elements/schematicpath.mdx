@@ -1,0 +1,92 @@
+---
+title: <schematicpath />
+description: >-
+  Draw connected line segments within custom schematic symbols.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<schematicpath />` element is a primitive drawing component used within `<symbol />` to create connected line segments in custom schematic representations. It's ideal for zigzags, arrows, or any shape that requires multiple connected points.
+
+:::note
+`<schematicpath />` can only be used inside a `<symbol />` element.
+:::
+
+## Basic Path
+
+Here's a simple example showing a zigzag path inside a symbol:
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="12mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicpath
+            strokeWidth={0.05}
+            route={[
+              { x: -1, y: -0.6 },
+              { x: -0.3, y: 0.6 },
+              { x: 0.4, y: -0.6 },
+              { x: 1.1, y: 0.6 },
+            ]}
+          />
+          <port name="in" direction="left" schX={-1.5} schY={0} />
+          <port name="out" direction="right" schX={1.5} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Arrow Path
+
+You can use connected points to create custom arrows or indicators:
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="12mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          <schematicpath
+            strokeWidth={0.04}
+            color="#1f78d1"
+            route={[
+              { x: -1.2, y: 0 },
+              { x: 0.6, y: 0 },
+              { x: 0.6, y: 0.4 },
+              { x: 1.2, y: 0 },
+              { x: 0.6, y: -0.4 },
+              { x: 0.6, y: 0 },
+            ]}
+          />
+          <port name="in" direction="left" schX={-1.5} schY={0} />
+          <port name="out" direction="right" schX={1.5} schY={0} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| route | array | Yes | - | Array of points defining the path. Each point is an object with `x` and `y` coordinates |
+| strokeWidth | distance | No | - | Width of the path stroke |
+| color | string | No | "#000000" | Color of the path |
