@@ -218,7 +218,8 @@ module.exports = function markdownSourcePlugin(context, options) {
 
       for (const mdFile of mdFiles) {
         const sourcePath = path.join(docsDir, mdFile)
-        const destPath = path.join(buildDir, mdFile)
+        const destFile = mdFile.replace(/\.mdx$/, ".md")
+        const destPath = path.join(buildDir, destFile)
 
         try {
           await fs.ensureDir(path.dirname(destPath))
@@ -230,7 +231,7 @@ module.exports = function markdownSourcePlugin(context, options) {
           await fs.writeFile(destPath, cleanedContent, "utf8")
           copiedCount++
 
-          console.log(`  ✓ Processed: ${mdFile}`)
+          console.log(`  ✓ Processed: ${mdFile} -> ${destFile}`)
         } catch (error) {
           console.error(`  ✗ Failed to process ${mdFile}:`, error.message)
         }
