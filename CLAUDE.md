@@ -1,5 +1,7 @@
 # tscircuit docs - Development Guidelines
 
+- Use `bun` not `node`/`npx`/`npm`
+
 ## Commands
 
 - **Start development server**: `bun run start`
