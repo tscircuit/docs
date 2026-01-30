@@ -10,10 +10,11 @@ tscircuit components support KiCad-specific metadata properties that preserve in
 
 ## Properties Overview
 
-| Property | Description |
-|----------|-------------|
-| `kicadFootprintMetadata` | Metadata from KiCad footprint (`.kicad_mod`) files |
-| `kicadSymbolMetadata` | Metadata from KiCad symbol (`.kicad_sym`) files |
+| Property | Element | Description |
+|----------|---------|-------------|
+| `kicadFootprintMetadata` | Components | Metadata from KiCad footprint (`.kicad_mod`) files |
+| `kicadSymbolMetadata` | Components | Metadata from KiCad symbol (`.kicad_sym`) files |
+| `kicadPinMetadata` | `<port />` | Metadata for KiCad pin electrical and visual properties |
 
 ---
 
@@ -273,6 +274,105 @@ interface KicadSymbolProperty {
     }
   }}
 />
+```
+
+---
+
+## kicadPinMetadata
+
+The `kicadPinMetadata` property is used on `<port />` elements to store KiCad-specific pin information. This includes the pin's electrical type, graphic style, and text sizing properties that are used when exporting to KiCad symbol files.
+
+### Type Definition
+
+```typescript
+interface KicadPinMetadata {
+  electricalType?: KicadPinElectricalType
+  graphicStyle?: KicadPinGraphicStyle
+  pinLength?: Distance
+  nameTextSize?: Distance
+  numberTextSize?: Distance
+}
+```
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `electricalType` | `KicadPinElectricalType` | Electrical characteristics of the pin |
+| `graphicStyle` | `KicadPinGraphicStyle` | Visual representation style of the pin |
+| `pinLength` | `Distance` | Physical length of the pin |
+| `nameTextSize` | `Distance` | Text size for the pin name label |
+| `numberTextSize` | `Distance` | Text size for the pin number label |
+
+#### electricalType
+
+Specifies the electrical characteristics of the pin:
+
+| Value | Description |
+|-------|-------------|
+| `"input"` | Input pin |
+| `"output"` | Output pin |
+| `"bidirectional"` | Bidirectional pin |
+| `"tri_state"` | Tri-state pin |
+| `"passive"` | Passive pin (resistors, capacitors, etc.) |
+| `"free"` | Free pin (can connect to anything) |
+| `"unspecified"` | Unspecified electrical type |
+| `"power_in"` | Power input pin (VCC, GND) |
+| `"power_out"` | Power output pin |
+| `"open_collector"` | Open collector output |
+| `"open_emitter"` | Open emitter output |
+| `"no_connect"` | No connection pin |
+
+#### graphicStyle
+
+Defines the visual representation of the pin in schematics:
+
+| Value | Description |
+|-------|-------------|
+| `"line"` | Simple line (default) |
+| `"inverted"` | Inverted (bubble) |
+| `"clock"` | Clock input indicator |
+| `"inverted_clock"` | Inverted clock |
+| `"input_low"` | Active low input |
+| `"clock_low"` | Active low clock |
+| `"output_low"` | Active low output |
+| `"falling_edge_clock"` | Falling edge triggered clock |
+| `"nonlogic"` | Non-logic pin |
+
+### Example Usage
+
+```tsx
+<chip name="U1" footprint="soic8">
+  <port
+    name="pin1"
+    pinNumber={1}
+    kicadPinMetadata={{
+      electricalType: "power_in",
+      graphicStyle: "line",
+      pinLength: "2.54mm",
+      nameTextSize: "1.27mm",
+      numberTextSize: "1.27mm"
+    }}
+  />
+  <port
+    name="pin2"
+    pinNumber={2}
+    kicadPinMetadata={{
+      electricalType: "input",
+      graphicStyle: "clock",
+      pinLength: "2.54mm"
+    }}
+  />
+  <port
+    name="pin3"
+    pinNumber={3}
+    kicadPinMetadata={{
+      electricalType: "output",
+      graphicStyle: "inverted",
+      pinLength: "2.54mm"
+    }}
+  />
+</chip>
 ```
 
 ---
