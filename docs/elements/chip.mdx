@@ -45,6 +45,35 @@ export const A555Timer = (props: Props) => {
 }
 `} />
 
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Component identifier (e.g., "U1") |
+| `footprint` | `string \| Footprint` | PCB footprint string or custom `<footprint>` element |
+| `pinLabels` | `Record<string, string>` | Mapping of pin numbers to labels (e.g., `{ pin1: "VCC" }`) |
+| `connections` | `Record<string, string>` | Pin-to-net mappings for wiring |
+| `manufacturerPartNumber` | `string` | Manufacturer part number (MPN) |
+| `supplierPartNumbers` | `Record<string, string[]>` | Part numbers by supplier (e.g., `{ jlcpcb: ["C12345"] }`) |
+| `schPinArrangement` | `SchematicPortArrangement` | Pin layout on schematic box |
+| `schPinStyle` | `Record<string, PinStyle>` | Visual styling for schematic pins |
+| `schPinSpacing` | `Distance` | Gap between pins in schematic |
+| `schWidth` | `Distance` | Schematic symbol width |
+| `schHeight` | `Distance` | Schematic symbol height |
+| `pcbX`, `pcbY` | `Distance` | PCB board coordinates |
+| `pcbRotation` | `number` | Rotation angle on PCB |
+| `schX`, `schY` | `Distance` | Schematic coordinates |
+| `schRotation` | `number` | Rotation angle on schematic |
+| `layer` | `string` | PCB layer (e.g., "top", "bottom") |
+| `cadModel` | `CadModelProp` | 3D model reference for visualization |
+| `internallyConnectedPins` | `(string \| number)[][]` | Groups of internally connected pins |
+| `externallyConnectedPins` | `string[][]` | Groups of pins to be externally connected |
+| `obstructsWithinBounds` | `boolean` | Whether component blocks placement within its bounds |
+| `noSchematicRepresentation` | `boolean` | Omit from schematic view |
+| `doNotPlace` | `boolean` | Exclude from PCB placement |
+| `kicadFootprintMetadata` | [`KicadFootprintMetadata`](/guides/kicad/kicad-metadata#kicadfootprintmetadata) | KiCad footprint file metadata |
+| `kicadSymbolMetadata` | [`KicadSymbolMetadata`](/guides/kicad/kicad-metadata#kicadsymbolmetadata) | KiCad symbol file metadata |
+
 ## Customizing the Schematic Representation
 
 You can alter how a chip appears on the schematic by using the `schPinArrangement`
@@ -635,3 +664,4 @@ guide! This is often much easier and reliable than configuring a chip yourself.
 :::tip
 If you're only looking to use a standard footprint from KiCad, you can skip importing entirely by referencing the footprint directly with the `kicad:` prefix (e.g. `footprint="kicad:Resistor_SMD/R_0402_1005Metric"`). See [KiCad Footprints](/footprints/kicad-footprints) for details.
 :::
+

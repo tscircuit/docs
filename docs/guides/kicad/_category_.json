@@ -1,0 +1,10 @@
+{
+  "label": "KiCad Integration",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Documentation for working with KiCad in tscircuit"
+  },
+  "collapsible": true,
+  "collapsed": true
+}
