@@ -1,0 +1,153 @@
+---
+title: Panelization
+description: >-
+  Arrange multiple boards into a manufacturing panel using <panel> and
+  <subpanel> with grid layout, sizing, and tab routing.
+---
+
+# Panelization
+
+Use `<panel>` to create a manufacturing panel that contains multiple boards.
+Use `<subpanel>` to group boards inside a panel for nested layout and
+panelization controls.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Key rules
+
+- `<panel>` must be the root element if present
+- Only one `<panel>` is allowed per circuit
+- `<panel>` and `<subpanel>` can only contain `<board>` or `<subpanel>`
+- Each panel/subpanel must contain at least one `<board>`
+
+## Basic panel with explicit positions
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <panel width="100mm" height="100mm" pcbX="0mm" pcbY="0mm">
+    <board width="20mm" height="20mm" pcbX="-20mm" pcbY="0mm">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={-4} />
+      <capacitor name="C1" capacitance="1uF" footprint="0402" pcbX={4} />
+      <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    </board>
+    <board width="20mm" height="20mm" pcbX="20mm" pcbY="0mm">
+      <resistor name="R2" resistance="1k" footprint="0402" pcbX={-4} />
+      <capacitor name="C2" capacitance="1uF" footprint="0402" pcbX={4} />
+      <trace from=".R2 > .pin2" to=".C2 > .pin1" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+When `layoutMode="none"`, boards keep their `pcbX`/`pcbY` positions.
+If multiple boards have no positions, a `pcb_placement_error` is emitted.
+
+## Grid layout and auto sizing
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+export default () => (
+  <panel layoutMode="grid" boardGap="2mm" edgePadding="5mm">
+    <board width="10mm" height="10mm">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={-2} />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={2} />
+      <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    </board>
+    <board width="10mm" height="10mm">
+      <resistor name="R2" resistance="1k" footprint="0402" pcbX={-2} />
+      <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={2} />
+      <trace from=".R2 > .pin2" to=".C2 > .pin1" />
+    </board>
+    <board width="10mm" height="10mm">
+      <resistor name="R3" resistance="1k" footprint="0402" pcbX={-2} />
+      <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={2} />
+      <trace from=".R3 > .pin2" to=".C3 > .pin1" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+`layoutMode="grid"` automatically positions boards. Any `pcbX`/`pcbY` on
+boards are ignored and a warning is emitted. If panel width/height are not
+provided, the panel is auto-sized using the grid bounds plus edge padding.
+
+Grid options:
+
+- `row`, `col` to force a specific row/column count
+- `cellWidth`, `cellHeight` to fix grid cell sizes
+- `boardGap` to control spacing between boards
+- `edgePadding`, `edgePaddingLeft`, `edgePaddingRight`, `edgePaddingTop`,
+  `edgePaddingBottom` to control panel margins
+
+## Subpanels
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <panel width="120mm" height="80mm">
+    <subpanel layoutMode="grid" edgePadding="3mm" pcbX={-20} pcbY={0}>
+      <board width="10mm" height="10mm">
+        <resistor name="R1" resistance="1k" footprint="0402" pcbX={-2} />
+        <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={2} />
+        <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+      </board>
+      <board width="10mm" height="10mm">
+        <resistor name="R2" resistance="1k" footprint="0402" pcbX={-2} />
+        <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={2} />
+        <trace from=".R2 > .pin2" to=".C2 > .pin1" />
+      </board>
+    </subpanel>
+    <board width="15mm" height="15mm" pcbX={30} pcbY={0}>
+      <resistor name="R3" resistance="10k" footprint="0603" pcbX={-4} />
+      <hole diameter="1mm" pcbX={4} />
+    </board>
+  </panel>
+)
+`}
+/>
+
+Subpanels group boards inside a panel and can be nested.
+
+## Tab routing and mouse bites
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+export default () => (
+  <panel layoutMode="grid" panelizationMethod="tab-routing">
+    <board width="20mm" height="50mm">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={-4} />
+      <capacitor name="C1" capacitance="1uF" footprint="0402" pcbX={4} />
+      <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    </board>
+    <board width="20mm" height="50mm">
+      <resistor name="R2" resistance="1k" footprint="0402" pcbX={-4} />
+      <capacitor name="C2" capacitance="1uF" footprint="0402" pcbX={4} />
+      <trace from=".R2 > .pin2" to=".C2 > .pin1" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+`panelizationMethod="tab-routing"` generates tab cutouts and mouse-bite holes
+between boards. Customize with:
+
+- `tabWidth` (default 2mm)
+- `tabLength` (default 5mm)
+- `mouseBites` (default true)
+- `boardGap` (defaults to `tabWidth` if not set)
+
+Set `panelizationMethod="none"` to disable tabs and mouse bites.
