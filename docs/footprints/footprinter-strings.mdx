@@ -353,14 +353,28 @@ is specified the 3d model will update accordingly.
 
 <FootprintPreview footprint="pinrow4" />
 
-Parameters:
+### Parameters
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `num_pins` |  | Number of pins |
-| `p` | `"2.3mm"` | Pin pitch |
-| `id` | `"1mm"` | Inner diameter |
+| `num_pins` | 6 | Number of pins |
+| `p` | `"0.1in"` | Pin pitch |
+| `id` | `"1.0mm"` | Inner diameter |
 | `od` | `"1.5mm"` | Outer diameter |
-| `rows` | `1` | Number of rows (single- or double-row headers) |
-| `male` | `true` | Male header |
-| `female` | `false` | Female header |
+| `rows` | 1 | Number of rows (single- or double-row headers) |
+| `male` | true | Male header |
+| `female` | false | Female header |
+| `smd` | false | Surface mount device |
+| `rightangle` | false | Right angle configuration |
+| `pw` | `"1.0mm"` | Pad width for SMD |
+| `pl` | `"2.0mm"` | Pad length for SMD |
+| `pinlabeltextalignleft` | false | Align pin labels to the left |
+| `pinlabeltextaligncenter` | false | Align pin labels to the center |
+| `pinlabeltextalignright` | false | Align pin labels to the right |
+| `pinlabelverticallyinverted` | false | Vertically invert pin labels |
+| `pinlabelorthogonal` | false | Make pin labels orthogonal |
+| `nosquareplating` | false | Do not use rectangular pad for pin 1 |
+| `nopinlabels` | false | Omit silkscreen pin labels |
+| `doublesidedpinlabel` | false | Add silkscreen pins in top and bottom layers |
+| `bottomsidepinlabel` | false | Place silkscreen reference text on bottom layer |
+
