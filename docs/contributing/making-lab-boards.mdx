@@ -1,0 +1,28 @@
+---
+title: Making Lab Boards
+description: Overview of the lab process and board template for making lab boards.
+sidebar_position: 7
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+The tscircuit lab features a Commarker Omni X UV Laser capable of ablating copper
+clad.
+
+The standard copper clad in the lab is single-sided at 100mmx70mm. You should
+generally try to use the entire board to make post-processing simpler.
+
+<CircuitPreview defaultView="pcb" code={`export default () => (
+  <board width="100mm" height="70mm">
+    ...
+  </board>
+)
+`} />
+
+We maintain a [lab inventory full of components](https://links.tscircuit.com/),
+please prefer to use stocked components.
+
+Our standard lab process involves ablating copper clad, applying a Solder Mask
+to the entire board, curing mask, then ablating the exposed pads (laser off the
+negative solder mask layer). We then apply solder paste manually and assemble on
+a hot plate.
