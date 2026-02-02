@@ -99,7 +99,7 @@ curl -X GET "https://api.tscircuit.com/orders/get?order_id=123e4567-e89b-12d3-a4
 ## Additional Notes
 
 - Timestamps are returned in ISO-8601 format.
-- Errors follow this structure:
+- Errors follow this base structure (no `is_fatal` field):
 
 ```json
 {
