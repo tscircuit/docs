@@ -1,0 +1,59 @@
+---
+title: <voltagesource />
+description: Add a voltage source for SPICE simulations and schematic power inputs.
+---
+
+## Overview
+
+`<voltagesource />` defines a two-pin voltage source that can drive your circuit
+in SPICE simulations. It supports DC sources as well as waveform-driven sources
+(sine, square, or triangle). Use this element to provide input stimulus for
+filters, rectifiers, power converters, and other analog designs.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource
+      name="V1"
+      waveShape="square"
+      amplitude="5V"
+      offset="2.5V"
+      frequency="1kHz"
+      dutyCycle={0.5}
+    />
+    <resistor name="R1" resistance="1k" />
+
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".V1 > .pin2" to=".R1 > .pin2" />
+
+    <voltageprobe name="VP_OUT" connectsTo=".R1 > .pin1" />
+    <analogsimulation duration="5ms" timePerStep="0.05ms" spiceEngine="ngspice" />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description | Example |
+| --- | --- | --- |
+| `name` | Reference designator for the source. | `"V1"` |
+| `voltage` | DC voltage (when you want a steady source). | `"5V"` |
+| `waveShape` | Waveform shape for AC sources. Common values are `"sinewave"`, `"square"`, and `"triangle"`. | `"square"` |
+| `frequency` | Frequency of the waveform. | `"1kHz"` |
+| `amplitude` | AC amplitude (peak) for the waveform. | `"5V"` |
+| `offset` | DC offset added to the waveform. | `"2.5V"` |
+| `dutyCycle` | Duty cycle for square waves, from `0` to `1`. | `0.5` |
+| `schX`, `schY`, `schRotation` | Schematic placement controls. | `schRotation={270}` |
+
+Use `<voltagesource />` alongside `<analogsimulation />` to define inputs for
+SPICE analysis. For physical power sources on a PCB, consider `<battery />` or a
+connector instead.

@@ -1,0 +1,48 @@
+---
+title: <analogsimulation />
+description: Configure and run SPICE simulations for a tscircuit board.
+---
+
+## Overview
+
+`<analogsimulation />` enables SPICE simulation for a `<board />` and sets the
+solver configuration, such as duration and time step. Place this element inside
+your board alongside sources and probes to generate simulation results.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" />
+    <resistor name="R1" resistance="1k" />
+
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".V1 > .pin2" to=".R1 > .pin2" />
+
+    <voltageprobe name="VP_IN" connectsTo=".V1 > .pin1" />
+    <voltageprobe name="VP_OUT" connectsTo=".R1 > .pin1" />
+
+    <analogsimulation duration="10ms" timePerStep="0.1ms" spiceEngine="ngspice" />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description | Example |
+| --- | --- | --- |
+| `duration` | Total simulation time. Accepts numbers or time strings. | `"10ms"` |
+| `timePerStep` | Time interval between simulation steps. | `"0.1ms"` |
+| `spiceEngine` | SPICE engine to use. Typically `"ngspice"` or `"spicey"`. | `"ngspice"` |
+
+Use `<analogsimulation />` once per `<board />` to define how the simulation
+runs. Combine it with `<voltagesource />` and `<voltageprobe />` elements to
+create and observe waveforms.
