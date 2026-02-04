@@ -20,6 +20,35 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   )
 `} />
 
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `pcbX` | length | X coordinate of the rectangle center on the PCB silkscreen. |
+| `pcbY` | length | Y coordinate of the rectangle center on the PCB silkscreen. |
+| `width` | length | Width of the rectangle. |
+| `height` | length | Height of the rectangle. |
+| `strokeWidth` | length | Thickness of the rectangle outline. |
+| `filled` | boolean | When `true`, fills the rectangle instead of drawing only the outline. |
+| `hasStroke` | boolean | When `false`, hides the outline even if `filled` is not set. |
+| `isStrokeDashed` | boolean | When `true`, renders the outline with a dashed pattern. |
+| `layer` | string | PCB layer to place the silkscreen rectangle on. |
+
+## Stroke Width
+
+Use `strokeWidth` to control the outline thickness of the rectangle. This is helpful when you want to match line weights across silkscreen features.
+
+<CircuitPreview code={`
+  export default () => (
+  <board width="8mm" height="5mm">
+    <footprint name="U1">
+      <silkscreenrect pcbX={-2} pcbY={0} width={2} height={2} strokeWidth={0.1} />
+      <silkscreenrect pcbX={2} pcbY={0} width={2} height={2} strokeWidth={0.35} />
+    </footprint>
+  </board>
+  )
+`} />
+
 ## Filled Silkscreen Rectangles
 
 Enable the `filled` prop to create solid silkscreen blocks—useful for alignment targets or bold markings. You can mix filled and outlined rectangles within the same footprint.
