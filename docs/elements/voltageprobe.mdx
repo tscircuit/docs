@@ -1,0 +1,53 @@
+---
+title: <voltageprobe />
+description: Measure voltages at specific nodes during SPICE simulation.
+---
+
+## Overview
+
+`<voltageprobe />` records voltage values during SPICE simulation. It attaches to
+an existing node in your schematic and appears in the simulation graph output.
+Use probes to capture input/output signals or differential measurements across
+components.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" />
+    <resistor name="R1" resistance="1k" />
+    <resistor name="R2" resistance="1k" />
+
+    <trace from=".V1 > .pin1" to="net.VCC" />
+    <trace from="net.VCC" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to="net.GND" />
+    <trace from="net.GND" to=".V1 > .pin2" />
+
+    <voltageprobe name="VP_R1" connectsTo=".R1 > .pin1" />
+    <voltageprobe name="VP_R2" connectsTo=".R2 > .pin1" />
+
+    <analogsimulation duration="10ms" timePerStep="0.1ms" spiceEngine="ngspice" />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description | Example |
+| --- | --- | --- |
+| `name` | Optional label for the probe trace in graphs. | `"VP_OUT"` |
+| `connectsTo` | Port selector that identifies the measurement node. | `".R1 > .pin1"` |
+| `referenceTo` | Optional port selector for differential measurements. | `".R1 > .pin2"` |
+
+Add probes for every signal you want plotted in the simulation graph. When you
+provide `referenceTo`, the probe measures the voltage difference between the
+`connectsTo` node and the reference node.
