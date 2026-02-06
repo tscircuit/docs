@@ -87,6 +87,10 @@ const config: Config = {
             from: "/guides/running-tscircuit-standalone",
           },
           {
+            to: "/guides/kicad/exporting-kicad-library",
+            from: "/guides/exporting-kicad-library",
+          },
+          {
             to: "/guides/tscircuit-essentials/automatic-pcb-layout",
             from: "/guides/automatic-pcb-layout",
           },
