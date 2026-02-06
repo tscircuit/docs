@@ -42,7 +42,7 @@ The following export formats are supported:
 | `specctra-dsn` | Specctra DSN format for autorouting |
 | `gltf` | Text-based 3D scene (glTF 2.0) that references board meshes and textures |
 | `glb` | Binary glTF bundle that packs geometry, materials, and textures into a single file |
-| `kicad-library` | KiCad library with symbols, footprints, and 3D models (see [Exporting KiCad Library](../guides/exporting-kicad-library.md)) |
+| `kicad-library` | KiCad library with symbols, footprints, and 3D models (see [Exporting KiCad Library](../guides/kicad/exporting-kicad-library.md)) |
 
 ## Examples
 
