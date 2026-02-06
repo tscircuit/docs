@@ -1,0 +1,59 @@
+---
+title: pcbSx
+sidebar_position: 7
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+The `pcbSx` prop lets you apply PCB-specific style overrides to a component and
+its footprint children using selector-like keys. It is useful when you want to
+adjust details such as silkscreen text sizing without editing the footprint
+itself.
+
+## Basic usage
+
+Use `pcbSx` on a component (like `<chip />`) and target PCB primitives with
+selectors prefixed by `&`.
+
+<CircuitPreview alwaysShowCode defaultView="pcb" code={`
+export default () => (
+  <board width="20mm" height="15mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad portHints={["1"]} pcbX={-2} pcbY={0} width="1mm" height="1mm" />
+          <smtpad portHints={["2"]} pcbX={2} pcbY={0} width="1mm" height="1mm" />
+          <silkscreentext text="U1" pcbX={0} pcbY={-2} fontSize="1mm" />
+        </footprint>
+      }
+      pcbSx={{
+        "& silkscreentext": {
+          fontSize: "2mm",
+        },
+      }}
+    />
+  </board>
+)
+`} />
+
+## Targeting library footprints
+
+You can scope selectors to specific footprint sources. For example, this targets
+KiCad-derived footprints and updates their silkscreen text size:
+
+<CircuitPreview alwaysShowCode defaultView="pcb" code={`
+export default () => (
+  <board width="20mm" height="15mm">
+    <chip
+      name="U1"
+      footprint="kicad:Resistor_SMD:R_0402_1005Metric"
+      pcbSx={{
+        "& footprint[src^='kicad:'] silkscreentext": {
+          fontSize: "2mm",
+        },
+      }}
+    />
+  </board>
+)
+`} />

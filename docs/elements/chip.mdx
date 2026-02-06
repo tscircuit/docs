@@ -62,6 +62,7 @@ export const A555Timer = (props: Props) => {
 | `schHeight` | `Distance` | Schematic symbol height |
 | `pcbX`, `pcbY` | `Distance` | PCB board coordinates |
 | `pcbRotation` | `number` | Rotation angle on PCB |
+| [`pcbSx`](/guides/tscircuit-essentials/pcb-sx) | `PcbSx` | PCB style overrides for footprint primitives |
 | `schX`, `schY` | `Distance` | Schematic coordinates |
 | `schRotation` | `number` | Rotation angle on schematic |
 | `layer` | `string` | PCB layer (e.g., "top", "bottom") |
@@ -664,4 +665,3 @@ guide! This is often much easier and reliable than configuring a chip yourself.
 :::tip
 If you're only looking to use a standard footprint from KiCad, you can skip importing entirely by referencing the footprint directly with the `kicad:` prefix (e.g. `footprint="kicad:Resistor_SMD/R_0402_1005Metric"`). See [KiCad Footprints](/footprints/kicad-footprints) for details.
 :::
-
