@@ -126,7 +126,7 @@ You can set a global font size for all silkscreen text elements using the `pcbSt
 
 Silkscreen text elements that don't have an explicit `fontSize` prop will inherit the global size. Individual elements can still override the global size by providing their own `fontSize` prop.
 
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
   const GLOBAL_FONT_SIZE = 2.5
 
   export default () => (
@@ -292,7 +292,7 @@ Set `schematicDisabled` when the schematic view would add clutter to the editor
 or slow down complex mechanical assemblies. The prop is a simple boolean, so you
 can add it without a value just like any other JSX attribute.
 
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
   export default () => (
     <board width="20mm" height="20mm" schematicDisabled>
       <fabricationnotetext
@@ -316,7 +316,7 @@ You can specify a custom outline for your board by passing an `outline` prop.
 The PCB you get will have this outline cut out, this is great when you want a
 board that's not a rectangle!
 
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
 
 export default () => (
   <board
