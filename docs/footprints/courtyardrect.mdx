@@ -1,0 +1,27 @@
+---
+title: <courtyardrect />
+description: Courtyard rectangles are used to define the physical boundary of a component.
+---
+
+## Overview
+
+Courtyard rectangles define the physical boundary of a component, including potential tolerance. They are critical for ensuring components are not placed too close together.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" hideSchematicTab hide3DTab code={`
+  export default () => (
+    <board width="20mm" height="20mm">
+      <courtyardrect width={2} height={3} />
+      <courtyardrect width={4} height={1} pcbX={5} layer="bottom" />
+    </board>
+  )
+`} />
+
+## Props
+
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `width` | `number \| string` | The width of the rectangle. |
+| `height` | `number \| string` | The height of the rectangle. |
+| ...`PcbLayoutProps` | | Inherited PcbLayoutProps (e.g. `pcbX`, `pcbY`, `layer`, `pcbRotation`). |
