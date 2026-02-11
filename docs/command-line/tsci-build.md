@@ -8,26 +8,77 @@ description: Generate circuit JSON from your source files
 ## Usage
 
 ```bash
-tsci build [path] [--ignore-errors] [--ignore-warnings] [--all-images] [--transpile]
+tsci build [file] [options]
 ```
 
 ### Arguments
-- `path` *(optional)* – path to a source file or directory. If omitted, the command searches for a project entrypoint such as `index.tsx` or the `mainEntrypoint` defined in `tscircuit.config.json`. In addition, all files matching the `*.circuit.tsx` pattern are built automatically.
+- `file` *(optional)* – path to a source file or directory. If omitted, the command searches for a project entrypoint such as `index.tsx` or the `mainEntrypoint` defined in `tscircuit.config.json`. In addition, all files matching the `*.circuit.tsx` pattern are built automatically.
 
 ### Output
 Output files are placed in a `dist/` directory relative to your project. The main entrypoint produces `dist/circuit.json`. Each `*.circuit.tsx` file generates its own subdirectory. For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 
 ### Options
+
+#### Error Handling
 - `--ignore-errors` – do not exit with code `1` on evaluation errors.
 - `--ignore-warnings` – suppress warning messages.
-- `--all-images` – emit every renderable image (PCB, schematic, 3D preview) for each built circuit into the matching `dist` subdirectory.
-- `--transpile` – Package your project for use as a library
+- `--ignore-config` – ignore options from `tscircuit.config.json`.
+
+#### Build Control
+- `--ci` – run install and optional prebuild/build commands (or default CI build).
+- `--disable-pcb` – disable PCB outputs.
+- `--disable-parts-engine` – disable the parts engine.
+- `--concurrency <number>` – number of files to build in parallel (default: 1).
+
+#### Output Formats
+
+##### Images & 3D Models
+- `--preview-images` – generate preview images (PCB SVG, schematic SVG, 3D PNG) for the preview entrypoint.
+- `--all-images` – generate preview images for every successful build output.
+- `--preview-gltf` – generate a GLTF file from the preview entrypoint.
+- `--glbs` – generate GLB 3D model files for every successful build output.
+
+##### KiCad Export
+- `--kicad` – generate KiCad project directories (`.kicad_sch`, `.kicad_pcb`, `.kicad_pro`) for each successful build output.
+- `--kicad-library` – generate KiCad symbol/footprint library in `dist/kicad-library`.
+- `--kicad-pcm` – generate KiCad PCM (Plugin and Content Manager) assets in `dist/pcm`.
+
+##### Library & Site Generation
+- `--transpile` – transpile the entry file to JavaScript for use as a library.
+- `--site` – generate a static site in the dist directory.
+- `--use-cdn-javascript` – use CDN-hosted JavaScript instead of bundled standalone file for `--site`.
 
 ### Targeting specific sources
 - `tsci build path/to/file.circuit.tsx` – builds the given file, even if it does not match the `includeBoardFiles` glob in `tscircuit.config.json`.
 - `tsci build path/to/directory` – scans only the files inside `path/to/directory` that both satisfy the `includeBoardFiles` glob and reside within the directory. Files outside the directory or filtered out by the glob are skipped.
 
 Use this command before publishing or in CI to ensure your circuits evaluate correctly.
+
+## Output Directory Structure
+
+When using various build options, the output structure looks like:
+
+```text
+dist/
+├── my-circuit/
+│   ├── circuit.json          # Always generated
+│   ├── pcb.svg               # With --preview-images or --all-images
+│   ├── schematic.svg         # With --preview-images or --all-images
+│   ├── 3d.png                # With --preview-images or --all-images
+│   ├── 3d.glb                # With --glbs
+│   └── kicad/
+│       ├── my-circuit.kicad_sch   # With --kicad
+│       ├── my-circuit.kicad_pcb   # With --kicad
+│       └── my-circuit.kicad_pro   # With --kicad
+├── my-circuit.gltf           # With --preview-gltf (preview entrypoint only)
+├── kicad-library/            # With --kicad-library
+├── pcm/                      # With --kicad-pcm
+├── index.html                # With --site
+├── standalone.min.js         # With --site (unless --use-cdn-javascript)
+├── index.js                  # With --transpile
+├── index.cjs                 # With --transpile
+└── index.d.ts                # With --transpile
+```
 
 ## Transpiling circuit entrypoints
 
