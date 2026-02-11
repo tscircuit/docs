@@ -8,6 +8,8 @@ description: Configure and run SPICE simulations for a tscircuit board.
 `<analogsimulation />` enables SPICE simulation for a `<board />` and sets the simulation parameters, such as duration and time step. Place this element inside
 your board alongside sources and probes to generate simulation results.
 
+If you're new to simulation workflows, check out the [SPICE simulation guide](/category/spice-simulation) for step-by-step examples.
+
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview
@@ -45,3 +47,6 @@ export default () => (
 Use `<analogsimulation />` once per `<board />` to define how the simulation
 runs. Combine it with `<voltagesource />` and `<voltageprobe />` elements to
 create and observe waveforms.
+
+For more end-to-end examples and best practices, we recommend reviewing the
+[SPICE simulation guide](/category/spice-simulation).
