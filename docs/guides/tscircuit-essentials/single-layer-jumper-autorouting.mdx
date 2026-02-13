@@ -39,27 +39,3 @@ Use both `layers={1}` and `autorouter="auto_jumper"` on the board:
 When traces must cross, the router can introduce jumper paths to preserve
 single-layer manufacturability.
 
-## 2. Route and verify jumper placement
-
-After routing, inspect the PCB preview and manufacturing outputs to ensure:
-
-- All copper traces remain on a single copper layer.
-- Jumper insertions are acceptable for assembly and spacing.
-- Trace widths and clearances still meet fabrication constraints.
-
-```tsx title="src/single-layer-jumper-example.tsx"
-export default () => (
-  <board width="30mm" height="20mm" layers={1} autorouter="auto_jumper">
-    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={4} />
-    <resistor name="R2" resistance="1k" footprint="0402" pcbX={10} pcbY={4} />
-    <resistor name="R3" resistance="1k" footprint="0402" pcbX={-10} pcbY={-4} />
-    <resistor name="R4" resistance="1k" footprint="0402" pcbX={10} pcbY={-4} />
-
-    <trace from="R1.pin2" to="R4.pin1" />
-    <trace from="R3.pin2" to="R2.pin1" />
-  </board>
-)
-```
-
-For the best results, keep part placement orderly and leave vertical clearance
-where you expect jumpers to bridge crossing routes.
