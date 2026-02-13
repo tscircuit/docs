@@ -1,0 +1,175 @@
+---
+title: Relative Positioning
+description: >-
+  Use calc(...) with board bounds, component bounds, and pin coordinates to
+  place parts relative to each other and to board edges.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+`calc(...)` lets you define PCB placement using relationships instead of fixed numbers. This is great when you want layouts that remain correct while board size or part choices change.
+
+In modern tscircuit, `calc(...)` supports:
+
+- Board bounds like `board.minx`, `board.maxx`, `board.miny`, `board.maxy`
+- Component bounds like `R1.x`, `R1.maxx`, `R1.miny`
+- Pin and pad anchors like `U1.pin1.x`, `R1.pin1.minx`
+- Edge-anchor props like `pcbLeftEdgeX`, `pcbRightEdgeX`, `pcbTopEdgeY`, `pcbBottomEdgeY`
+
+## 1) Position relative to board bounds
+
+This keeps a decoupling capacitor pinned near the top-right corner, even if board dimensions change.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+export default () => (
+  <board width="40mm" height="24mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pcbX="calc(board.maxx - 8mm)"
+      pcbY="calc(board.maxy - 5mm)"
+    />
+    <capacitor
+      name="C1"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX="calc(U1.minx - 1.5mm)"
+      pcbY="calc(U1.y)"
+    />
+  </board>
+)
+`} />
+
+## 2) Use edge-anchor properties with calc
+
+`pcbLeftEdgeX` and friends are ideal when your intent is explicitly “this edge should sit here”.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <resistor
+      name="R_LEFT"
+      footprint="0402"
+      resistance="1k"
+      pcbLeftEdgeX="calc(board.minx + 2mm)"
+      pcbY="0mm"
+    />
+
+    <resistor
+      name="R_RIGHT"
+      footprint="0402"
+      resistance="1k"
+      pcbRightEdgeX="calc(board.maxx - 2mm)"
+      pcbY="0mm"
+    />
+
+    <resistor
+      name="R_TOP"
+      footprint="0402"
+      resistance="1k"
+      pcbTopEdgeY="calc(board.maxy - 2mm)"
+      pcbX="0mm"
+    />
+
+    <resistor
+      name="R_BOTTOM"
+      footprint="0402"
+      resistance="1k"
+      pcbBottomEdgeY="calc(board.miny + 2mm)"
+      pcbX="0mm"
+    />
+  </board>
+)
+`} />
+
+## 3) Position components relative to each other
+
+Use component bounds (`minx`, `maxx`, `x`, `y`) to create spacing rules.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+export default () => (
+  <board width="50mm" height="20mm">
+    <resistor name="R1" footprint="0402" resistance="1k" pcbX="0mm" pcbY="0mm" />
+
+    <resistor
+      name="R2"
+      footprint="0402"
+      resistance="1k"
+      pcbX="calc(R1.maxx + 2mm)"
+      pcbY="calc(R1.y)"
+    />
+
+    <capacitor
+      name="C1"
+      capacitance="1uF"
+      footprint="0402"
+      pcbX="calc(R2.maxx + 2mm)"
+      pcbY="calc(R2.y)"
+    />
+  </board>
+)
+`} />
+
+## 4) Align to pin/pad locations
+
+Pin references are useful when you want exact electrical-side alignment.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+export default () => (
+  <board width="40mm" height="20mm">
+    <resistor name="R1" footprint="0402" resistance="1k" pcbX="0mm" pcbY="0mm" />
+
+    <resistor
+      name="R2"
+      footprint="0402"
+      resistance="1k"
+      pcbX="calc(R1.pin1.minx - 2mm)"
+      pcbY="calc(R1.pin1.y)"
+    />
+
+    <chip
+      name="U1"
+      footprint="soic8"
+      pcbX="calc(R1.pin2.x + 4mm)"
+      pcbY="calc(R1.pin2.y)"
+    />
+  </board>
+)
+`} />
+
+## 5) Chained constraints
+
+You can chain references (`R3` depends on `R2`, which depends on `R1`). This enables “placement flows” without manually calculating every absolute coordinate.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+export default () => (
+  <board width="60mm" height="20mm">
+    <resistor name="R1" footprint="0402" resistance="1k" pcbX="0mm" />
+    <resistor name="R2" footprint="0402" resistance="1k" pcbX="calc(R1.maxx + 1mm)" />
+    <resistor name="R3" footprint="0402" resistance="1k" pcbX="calc(R2.maxx + 1mm)" />
+    <resistor name="R4" footprint="0402" resistance="1k" pcbX="calc(R3.maxx + 1mm)" />
+  </board>
+)
+`} />
+
+## Tips and gotchas
+
+- `board.*` expressions require explicit board size (`width` and `height`).
+- Circular references are rejected (for example, `R1` depends on `R2` and `R2` depends on `R1`).
+- Unknown references are rejected (for example, `R999.maxx` when `R999` doesn't exist).
+- Edge anchors (`pcbLeftEdgeX`, etc.) are often clearer than center anchors when defining manufacturing clearances.
