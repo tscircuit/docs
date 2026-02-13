@@ -45,6 +45,40 @@ export const A555Timer = (props: Props) => {
 }
 `} />
 
+:::note Active-low pin labels (top bar)
+To render a pin label with a bar at the top in schematic view, prefix the label
+with `N_` in `pinLabels`.
+
+- `RESET` renders as a normal label
+- `N_RESET` renders as `RESET` with a top bar
+:::
+
+<CircuitPreview splitView defaultView="schematic" hidePcbTab code={`
+
+export default () => (
+  <board width="30mm" height="20mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: "RESET",
+        pin2: "N_RESET",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["RESET"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["N_RESET"],
+        },
+      }}
+    />
+  </board>
+)
+`} />
+
 ## Properties
 
 | Property | Type | Description |
