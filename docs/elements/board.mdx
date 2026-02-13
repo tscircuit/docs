@@ -32,7 +32,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
 | `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
-| `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
+| `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
 | `outline` | `Array<{ x: number, y: number }>` | Supply a custom polygon to replace the default rectangular outline. |
@@ -253,7 +253,8 @@ Usually you'll want to use an autorouter preset:
 - `autorouter="sequential-trace"` - Iterate over each trace and use tscircuit's fast built-in autorouter. This method is fast and deterministic but often fails with over 50 traces.
 - `autorouter="auto-local"` - Use the platform configuration, but only route locally (do not make API calls)
 - `autorouter="auto-cloud"` - Use the platform configuration for
-- `autorouter="laser_prefab"` - Reserve prefabricated vias that can be reassigned during routing. Ideal for rapid-turn PCBs produced with laser ablation and mechanical drilling templates. See the [Biscuit Board Laser Ablation guide](../guides/tscircuit-essentials/biscuit-board-laser-ablation.mdx) for a complete walkthrough.
+- `autorouter="laser_prefab"` - Reserve prefabricated vias that can be reassigned during routing. Ideal for rapid-turn PCBs produced with laser ablation and mechanical drilling templates.
+- `autorouter="auto_jumper"` - Route single-layer boards by inserting jumper wires when traces would otherwise cross. See the [Single Layer Jumper Autorouting guide](../guides/tscircuit-essentials/single-layer-jumper-autorouting.mdx) for a complete walkthrough.
 
 For complex boards with over 50 traces, you should use `autorouter="auto-cloud"`
 to take advantage of tscircuit's cloud autorouters, which internally use the popular
