@@ -1,0 +1,191 @@
+---
+title: Relative Positioning
+description: >-
+  Use calc() with pcbX, pcbY, and edge anchor properties to place components
+  relative to other components, pads, and board edges.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+`calc(...)` expressions let you create layouts that stay correct even when part
+sizes or board dimensions change.
+
+This guide focuses on PCB positioning with:
+
+- component bounds (`R1.x`, `R1.maxx`, `R1.miny`, etc.)
+- pin/pad bounds (`U1.pin1.x`, `R1.pin2.maxx`, etc.)
+- board bounds (`board.minx`, `board.maxx`, `board.miny`, `board.maxy`)
+- edge anchor props (`pcbLeftEdgeX`, `pcbRightEdgeX`, `pcbTopEdgeY`, `pcbBottomEdgeY`)
+
+## Position one component relative to another
+
+A common pattern is: "place this part a fixed distance from another part's
+edge."
+
+<CircuitPreview defaultView="pcb" hide3DTab hideSchematicTab code={`
+export default () => (
+  <board width="24mm" height="12mm">
+    <resistor name="R1" footprint="0805" resistance="1k" pcbX="-5mm" pcbY="0mm" />
+    <resistor
+      name="R2"
+      footprint="0805"
+      resistance="1k"
+      pcbX="calc(R1.maxx + 2mm)"
+      pcbY="calc(R1.y)"
+    />
+  </board>
+)
+`} />
+
+Here `R2` tracks `R1`: if `R1` changes footprint or moves, `R2` keeps a 2mm gap
+from `R1`'s right edge.
+
+## Build a spacing chain
+
+You can chain references to build predictable spacing across many components.
+
+<CircuitPreview defaultView="pcb" hide3DTab hideSchematicTab code={`
+export default () => (
+  <board width="36mm" height="12mm">
+    <resistor name="R1" footprint="0603" resistance="1k" pcbX="-11mm" pcbY="0mm" />
+    <resistor
+      name="R2"
+      footprint="0603"
+      resistance="1k"
+      pcbX="calc(R1.maxx + 1.5mm)"
+      pcbY="calc(R1.y)"
+    />
+    <resistor
+      name="R3"
+      footprint="0603"
+      resistance="1k"
+      pcbX="calc(R2.maxx + 1.5mm)"
+      pcbY="calc(R2.y)"
+    />
+    <resistor
+      name="R4"
+      footprint="0603"
+      resistance="1k"
+      pcbX="calc(R3.maxx + 1.5mm)"
+      pcbY="calc(R3.y)"
+    />
+  </board>
+)
+`} />
+
+This is useful for resistor ladders, LED banks, or connector rows where you
+want stable clearances.
+
+## Position from a specific pin/pad
+
+You can anchor from a pin instead of from a component center/edge.
+
+<CircuitPreview defaultView="pcb" hide3DTab hideSchematicTab code={`
+export default () => (
+  <board width="32mm" height="16mm">
+    <resistor name="R1" footprint="0805" resistance="1k" pcbX="0mm" pcbY="0mm" />
+    <resistor
+      name="R2"
+      footprint="0805"
+      resistance="1k"
+      pcbX="calc(R1.pin1.minx - 2mm)"
+      pcbY="calc(R1.pin1.y)"
+    />
+    <resistor
+      name="R3"
+      footprint="0805"
+      resistance="1k"
+      pcbX="calc(R1.pin2.maxx + 2mm)"
+      pcbY="calc(R1.pin2.y)"
+    />
+  </board>
+)
+`} />
+
+Pin-relative placement is great when the physical relation to a specific pad is
+what matters.
+
+## Anchor directly to board edges
+
+Edge anchor properties are ideal for fixed margins from the PCB outline.
+
+<CircuitPreview defaultView="pcb" hide3DTab hideSchematicTab code={`
+export default () => (
+  <board width="40mm" height="24mm">
+    <resistor
+      name="R_LEFT"
+      footprint="0603"
+      resistance="1k"
+      pcbLeftEdgeX="calc(board.minx + 2mm)"
+      pcbY="0mm"
+    />
+    <resistor
+      name="R_RIGHT"
+      footprint="0603"
+      resistance="1k"
+      pcbRightEdgeX="calc(board.maxx - 2mm)"
+      pcbY="0mm"
+    />
+    <resistor
+      name="R_TOP"
+      footprint="0603"
+      resistance="1k"
+      pcbTopEdgeY="calc(board.maxy - 2mm)"
+      pcbX="0mm"
+    />
+    <resistor
+      name="R_BOTTOM"
+      footprint="0603"
+      resistance="1k"
+      pcbBottomEdgeY="calc(board.miny + 2mm)"
+      pcbX="0mm"
+    />
+  </board>
+)
+`} />
+
+These are especially useful for connectors, mounting holes, fiducials, and test
+points that need consistent edge offset.
+
+## Mix edge anchors and relative spacing
+
+You can combine both styles: lock one component to the edge, then place others
+relative to it.
+
+<CircuitPreview defaultView="pcb" hide3DTab hideSchematicTab code={`
+export default () => (
+  <board width="46mm" height="18mm">
+    <resistor
+      name="R1"
+      footprint="0603"
+      resistance="1k"
+      pcbLeftEdgeX="calc(board.minx + 2mm)"
+      pcbY="0mm"
+    />
+    <resistor
+      name="R2"
+      footprint="0603"
+      resistance="1k"
+      pcbX="calc(R1.maxx + 2mm)"
+      pcbY="calc(R1.y)"
+    />
+    <resistor
+      name="R3"
+      footprint="0603"
+      resistance="1k"
+      pcbX="calc(R2.maxx + 2mm)"
+      pcbY="calc(R2.y)"
+    />
+  </board>
+)
+`} />
+
+This pattern makes it easy to keep a circuit block aligned to the edge while
+preserving internal spacing.
+
+## Tips
+
+- Prefer edge references (`minx`, `maxx`, etc.) when clearance matters.
+- Use pin references (`pin1.x`, `pin2.maxx`, etc.) for pad-specific alignment.
+- Avoid circular dependencies (A depends on B while B depends on A).
+- Keep units explicit in offsets (`+ 2mm`, `- 0.1in`) for readability.
