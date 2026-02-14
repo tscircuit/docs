@@ -1,0 +1,41 @@
+---
+title: Single Layer Jumper Autorouting
+description: Learn how to route one-layer boards with jumper wires using autorouter="auto_jumper" and layers={1}.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# Single Layer Jumper Autorouting
+
+The `auto_jumper` autorouter is designed for **single-layer PCB workflows** where
+crossovers are resolved with jumper wires instead of plated vias. Configure your
+board with `layers={1}` and `autorouter="auto_jumper"` so the router keeps copper
+on one side and inserts jumper components when needed.
+
+This guide covers:
+
+1. Setting up a single-layer board for jumper routing.
+2. Adding traces and validating where jumpers are used.
+
+## 1. Configure the board for a single copper layer
+
+Use both `layers={1}` and `autorouter="auto_jumper"` on the board:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+  <board width="24mm" height="18mm" layers={1} autorouter="auto_jumper">
+    <chip name="U1" footprint="soic8" pcbX={-7} pcbY={0} />
+    <chip name="U2" footprint="soic8" pcbX={7} pcbY={0} rotation={180} />
+
+    <trace from=".U1 > .pin1" to=".U2 > .pin8" />
+    <trace from=".U1 > .pin2" to=".U2 > .pin7" />
+    <trace from=".U1 > .pin3" to=".U2 > .pin6" />
+    <trace from=".U1 > .pin4" to=".U2 > .pin5" />
+  </board>
+)`}
+/>
+
+When traces must cross, the router can introduce jumper paths to preserve
+single-layer manufacturability.
+
