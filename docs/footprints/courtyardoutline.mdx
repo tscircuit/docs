@@ -1,0 +1,45 @@
+---
+title: <courtyardoutline />
+description: Courtyard outlines are used to define the physical boundary of a component with a custom shape.
+---
+
+## Overview
+
+Courtyard outlines define the physical boundary of a component using a custom shape defined by a series of points.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" hideSchematicTab hide3DTab code={`
+  export default () => (
+    <board width="20mm" height="20mm">
+      {/* Triangle shape */}
+      <courtyardoutline
+        outline={[
+          { x: 0, y: 0 },
+          { x: 3, y: 0 },
+          { x: 1.5, y: 2.5 },
+        ]}
+      />
+      {/* L-shaped polygon on bottom layer */}
+      <courtyardoutline
+        outline={[
+          { x: 5, y: 0 },
+          { x: 8, y: 0 },
+          { x: 8, y: 1 },
+          { x: 6, y: 1 },
+          { x: 6, y: 3 },
+          { x: 5, y: 3 },
+        ]}
+        layer="bottom"
+      />
+    </board>
+  )
+`} />
+
+## Props
+
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `outline` | `Point[]` | An array of points defining the vertices of the polygon. |
+| `close` | `boolean` | Whether the outline should be closed. Defaults to `true` (implicit). |
+| ...`PcbLayoutProps` | | Inherited PcbLayoutProps (e.g. `pcbX`, `pcbY`, `layer`, `pcbRotation`). |

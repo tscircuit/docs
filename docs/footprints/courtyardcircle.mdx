@@ -1,0 +1,26 @@
+---
+title: <courtyardcircle />
+description: Courtyard circles are used to define the physical boundary of a component.
+---
+
+## Overview
+
+Courtyard circles define the physical boundary of a circular component or feature, including potential tolerance.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" hideSchematicTab hide3DTab code={`
+  export default () => (
+    <board width="20mm" height="20mm">
+      <courtyardcircle radius={2} />
+      <courtyardcircle radius={2} pcbX={5} />
+    </board>
+  )
+`} />
+
+## Props
+
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `radius` | `number \| string` | The radius of the circle. |
+| ...`PcbLayoutProps` | | Inherited PcbLayoutProps (e.g. `pcbX`, `pcbY`, `layer`, `pcbRotation`). |
