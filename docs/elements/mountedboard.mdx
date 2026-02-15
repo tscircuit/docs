@@ -1,0 +1,134 @@
+---
+title: <mountedboard />
+description: >-
+  A `<mountedboard />` represents a smaller PCB that gets mounted onto a parent board.
+  It's useful for modular PCB designs where a daughterboard/module is soldered onto
+  a larger main board.
+sidebar_position: 2
+---
+
+## Overview
+
+A `<mountedboard />` is a component that represents a smaller PCB (daughterboard or
+module) mounted onto a parent board. Unlike a regular `<board />` which is the root
+PCB, a `<mountedboard />` is nested inside a parent board and is linked to it via
+the `carrier_pcb_board_id` property.
+
+This is useful for:
+- Modular PCB designs
+- Daughterboard/daughtercard configurations
+- Plug-in modules (e.g., an ESP32 module mounted on a main board)
+- Separating complex circuits into manageable smaller boards
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="50mm" height="50mm">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={0} />
+      <resistor name="R2" resistance="10k" footprint="0402" pcbX={10} pcbY={0} />
+
+      <mountedboard width="15mm" height="15mm" pcbX={0} pcbY={15}>
+        <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
+      </mountedboard>
+
+      <trace from=".R1 > .pin1" to=".U1 > .pin1" />
+    </board>
+  )
+  `}
+/>
+
+## MountedBoard vs Regular Board
+
+| Feature | `<board>` | `<mountedboard>` |
+|---------|-----------|------------------|
+| Hierarchy | Root/top-level | Nested inside a `<board>` |
+| Carrier | None (it's the carrier) | Has `carrier_pcb_board_id` linking to parent |
+| Use case | Main PCB | Daughterboard/module |
+
+## Basic Usage
+
+```tsx
+export default () => (
+  <board width="50mm" height="50mm">
+    {/* Main board components */}
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={0} />
+
+    {/* A smaller board mounted onto this main board */}
+    <mountedboard width="10mm" height="10mm" pcbX={0} pcbY={15}>
+      <chip name="U1" footprint="qfn32" pcbX={0} pcbY={0} />
+    </mountedboard>
+
+    <trace from=".R1 > .pin1" to=".U1 > .pin1" />
+  </board>
+)
+```
+
+## Properties
+
+In addition to common layout properties (like `pcbX`, `pcbY`, `schX`, `schY`, `rotation`, `name`), MountedBoard supports:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `width` | `string \| number` | Width of the mounted board in millimeters |
+| `height` | `string \| number` | Height of the mounted board in millimeters |
+| `boardToBoardDistance` | `Distance` | Distance between the mounted board and carrier board |
+| `mountOrientation` | `"faceDown" \| "faceUp"` | Orientation of the mounted board relative to carrier |
+
+Note: Unlike `<board>`, `<mountedboard>` uses `pcbX`/`pcbY` to position on the parent board, not `center`.
+
+## MountedBoard in Schematic View
+
+When using `<mountedboard />`, the components inside it appear in the schematic
+as part of the parent circuit:
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="50mm" height="50mm">
+      <resistor name="R1" resistance="1k" footprint="0402" schX={-10} />
+
+      <mountedboard width="15mm" height="15mm" schX={10}>
+        <chip name="U1" footprint="qfn32" />
+      </mountedboard>
+
+      <trace from=".R1 > .pin1" to=".U1 > .pin1" />
+    </board>
+  )
+  `}
+/>
+
+## Use Cases
+
+### Daughterboard Configuration
+
+MountedBoard is ideal for modular designs where you have a smaller module that
+plugs into or is soldered onto a main board:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="60mm" height="40mm">
+      {/* Main power circuitry on the carrier board */}
+      <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-20} pcbY={0} />
+      <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={-15} pcbY={0} />
+
+      {/* Module mounted on the main board */}
+      <mountedboard width="25mm" height="18mm" pcbX={10} pcbY={0}>
+        <chip name="U1" footprint="soic8" pcbX={0} pcbY={0} />
+      </mountedboard>
+
+      <trace from=".C1 > .pin1" to=".U1 > .pin1" />
+    </board>
+  )
+  `}
+/>
+
+This pattern allows you to:
+- Design the daughterboard independently
+- Reuse the same module across multiple projects
+- Keep complex circuits organized in separate boards
