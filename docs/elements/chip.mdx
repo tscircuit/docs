@@ -106,6 +106,7 @@ export default () => (
 | `obstructsWithinBounds` | `boolean` | Whether component blocks placement within its bounds |
 | `noSchematicRepresentation` | `boolean` | Omit from schematic view |
 | `doNotPlace` | `boolean` | Exclude from PCB placement |
+| `allowOffBoard` | `boolean` | Allow component to be placed outside PCB board boundary without DRC errors |
 | `kicadFootprintMetadata` | [`KicadFootprintMetadata`](/guides/kicad/kicad-metadata#kicadfootprintmetadata) | KiCad footprint file metadata |
 | `kicadSymbolMetadata` | [`KicadSymbolMetadata`](/guides/kicad/kicad-metadata#kicadsymbolmetadata) | KiCad symbol file metadata |
 
@@ -435,7 +436,32 @@ export default () => (
   </board>
 )
 `}
-/>
+ />
+
+### `allowOffBoard`
+
+By default, tscircuit generates a DRC error when a component is placed outside
+the PCB board boundary. Use `allowOffBoard={true}` to explicitly allow a component
+to extend beyond the board edge without triggering errors. This is useful for
+connectors, indicators, or other components that intentionally protrude from the PCB.
+
+<CircuitPreview
+  splitView
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pcbX={15}
+      pcbY={0}
+      allowOffBoard
+    />
+  </board>
+)
+`}
+ />
 
 ### Internally Connected Pins
 
