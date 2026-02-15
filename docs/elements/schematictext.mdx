@@ -16,7 +16,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   code={`
 export default () => (
     <board width="10mm" height="10mm">
-      <schematictext text="Hello" schX={2} schY={3} color="red" anchor="center" />
+      <schematictext text="Hello\\nWorld!" schX={2} schY={3} color="red" anchor="center" />
     </board>
   )
   `}
@@ -27,7 +27,7 @@ export default () => (
 
 | Property | Type | Description |
 |---------|------|-------------|
-| `text` | string | The text string to render. |
+| `text` | string | The text string to render, create multiline text by using `\n` |
 | `schX` | length | X coordinate of the text. |
 | `schY` | length | Y coordinate of the text. |
 | `anchor` | enum | Anchor position such as `"center"`, `"left"`, `"right"`, `"top"`, `"bottom"`, or corner positions. Defaults to `"center"`. |
