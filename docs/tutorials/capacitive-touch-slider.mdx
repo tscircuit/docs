@@ -1,0 +1,138 @@
+---
+title: Building a Capacitive Touch Slider
+description: Learn how to design a capacitive touch slider using tscircuit's polygon smtpads with solder mask coverage.
+---
+
+## Overview
+
+A capacitive touch slider is a PCB-based input element that detects finger
+position along a row of conductive pads. Unlike mechanical potentiometers,
+capacitive sliders have no moving parts â€” making them durable and
+moisture-resistant.
+
+You'll find them in volume controls, brightness sliders, and consumer electronics.
+
+In this tutorial, we'll build a 5-pad capacitive touch slider using tscircuit's
+polygon smtpads with `coveredWithSolderMask` for a protected touch surface.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## The Complete Slider
+
+<TscircuitIframe defaultView="pcb" code={`
+
+export default () => {
+  const padCount = 5
+  const padWidth = 5  // mm
+  const padHeight = 6 // mm
+  const spacing = 8   // mm center-to-center (5mm pad + 3mm gap)
+  const startX = -((padCount - 1) * spacing) / 2
+
+  return (
+    <board width="55mm" height="20mm">
+      {Array.from({ length: padCount }, (_, i) => (
+        <chip
+          key={\`PAD\${i + 1}\`}
+          name={\`PAD\${i + 1}\`}
+          pcbX={startX + i * spacing}
+          pcbY={0}
+          footprint={
+            <footprint>
+              <smtpad
+                shape="polygon"
+                points={[
+                  { x: 0, y: -padHeight / 2 },
+                  { x: padWidth, y: -padHeight / 2 },
+                  { x: padWidth, y: padHeight / 2 },
+                  { x: 0, y: padHeight / 2 },
+                ]}
+                portHints={["1"]}
+                coveredWithSolderMask
+              />
+            </footprint>
+          }
+        />
+      ))}
+    </board>
+  )
+}
+`} />
+
+## How It Works
+
+### Capacitive Sensing
+
+Each touch pad has a baseline capacitance. When your finger approaches,
+it increases the capacitance â€” a microcontroller (like the CAP1188 or MPR121)
+detects this change. With multiple adjacent pads, the controller interpolates
+your finger's exact position along the slider.
+
+### Why Polygon SMT Pads?
+
+tscircuit's `<smtpad>` component supports custom polygon shapes, which gives
+you full control over the pad geometry:
+
+```tsx
+<smtpad
+  shape="polygon"
+  points={[
+    { x: 0, y: -3 },
+    { x: 5, y: -3 },
+    { x: 5, y: 3 },
+    { x: 0, y: 3 },
+  ]}
+  portHints={["1"]}
+  coveredWithSolderMask
+/>
+```
+
+### The Role of Solder Mask
+
+The `coveredWithSolderMask` property is critical for capacitive touch:
+
+- **`coveredWithSolderMask={true}`** â€” Pad is covered by solder mask
+  - Protects copper from oxidation
+  - Smooth, consistent surface for touch
+  - No solder paste applied
+  - Capacitive sensing works through the thin mask layer
+
+- **`coveredWithSolderMask={false}`** â€” Exposed copper
+  - Direct contact, can oxidize over time
+  - Useful for test points or connectors, not ideal for touch
+
+## Design Tips
+
+### Pad Sizing and Spacing
+
+- **Pad width**: 5mm is a good starting point
+- **Pad height**: 6mm provides good finger contact area
+- **Gap between pads**: 2-3mm for good sensitivity
+- **Don't go below 3mm Ã— 3mm** (manufacturing limitation)
+
+### Ground Plane Strategy
+
+- Keep ground at least 5mm from touch pads
+- Use a ground hatch pattern instead of solid pour near sensors
+- A ground ring around the slider helps with shielding
+
+### Trace Routing
+
+- Keep traces short and direct to minimize noise
+- Route all traces on the same layer as the pads when possible
+- Use guard traces between sensitive lines
+
+## Common Use Cases
+
+Capacitive touch sliders are ideal for:
+
+- **Volume controls** on headphones and speakers
+- **Brightness dimmers** for LED lighting
+- **Color pickers** (multiple sliders for hue/saturation/brightness)
+- **Position inputs** in gaming controllers
+
+## Next Steps
+
+- Experiment with different polygon shapes (triangular pads for better interpolation)
+- Add LED indicators under each pad for visual feedback
+- Try different pad counts for higher or lower resolution
+- Connect to a capacitive touch controller IC for real hardware
