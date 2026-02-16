@@ -43,6 +43,16 @@ export default () => (
 )
 `} />
 
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| name | string | Yes | - | Port identifier used for connections |
+| schX | number | Yes | - | X position in schematic units |
+| schY | number | Yes | - | Y position in schematic units |
+| direction | "left" \| "right" \| "up" \| "down" | No | - | Direction the port faces |
+| schStemLength | number | No | - | Length of the stem line extending from the port |
+
 ## Custom Stem Length
 
 Use `schStemLength` to control how far the connection stem extends from the port:
@@ -75,13 +85,3 @@ export default () => (
   </board>
 )
 `} />
-
-## Props
-
-| Property | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| name | string | Yes | - | Port identifier used for connections |
-| schX | number | Yes | - | X position in schematic units |
-| schY | number | Yes | - | Y position in schematic units |
-| direction | "left" \| "right" \| "up" \| "down" | No | - | Direction the port faces |
-| schStemLength | number | No | - | Length of the stem line extending from the port |
