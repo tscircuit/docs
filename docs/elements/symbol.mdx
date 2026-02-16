@@ -118,6 +118,59 @@ export default () => (
 )
 `} />
 
+## Port Stem Length
+
+The `schStemLength` prop on `<port />` controls the length of the stem line that extends from the port. This is useful for adjusting how far connection lines extend before reaching your symbol's body.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      schX={0}
+      schY={0}
+      symbol={
+        <symbol>
+          <schematicrect schX={0} schY={0} width={2} height={2} strokeWidth={0.05} />
+          <port
+            name="IN"
+            schX={-1.6}
+            schY={0.5}
+            direction="left"
+            schStemLength={0.6}
+          />
+          <port
+            name="OUT"
+            schX={1.8}
+            schY={0.5}
+            direction="right"
+            schStemLength={0.8}
+          />
+          <port
+            name="VCC"
+            schX={0}
+            schY={1.5}
+            direction="up"
+            schStemLength={0.5}
+          />
+          <port
+            name="GND"
+            schX={0}
+            schY={-1.4}
+            direction="down"
+            schStemLength={0.4}
+          />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
 ## Available Schematic Drawing Components
 
 Within a `<symbol />`, you can use the following primitive components to draw your custom schematic representation:
