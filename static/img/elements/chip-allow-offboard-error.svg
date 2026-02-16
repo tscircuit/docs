@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="120" viewBox="0 0 1200 120">
+  <style>
+    .bg { fill: #fff5f5; stroke: #ffcfcf; }
+    .card { fill: #fff; stroke: #eee; }
+    .error { fill: #ff4d4f; font-family: Menlo, Monaco, "Courier New", monospace; font-size:16px; }
+    .meta { fill: #b94f4f; font-family: Inter, system-ui, sans-serif; font-size:12px; }
+    .line { opacity: 0.95; }
+  </style>
+  <rect x="8" y="8" rx="8" ry="8" width="1184" height="104" class="bg" stroke-width="1"/>
+  <g transform="translate(24,32)">
+    <text x="0" y="0" class="error" font-size="16" xml:space="preserve">pcb_component_outside_board_error: Component U1 extends outside board boundaries by 1mm. Try moving it 3.65mm right to fit within the board edge.</text>
+    <text x="0" y="28" class="meta">@tscircuit/eval@0.0.645 • @tscircuit/core@0.0.1040</text>
+  </g>
+</svg>
