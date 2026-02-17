@@ -39,7 +39,7 @@ Output files are placed in a `dist/` directory relative to your project. The mai
 - `--glbs` – generate GLB 3D model files for every successful build output.
 
 ##### KiCad Export
-- `--kicad` – generate KiCad project directories (`.kicad_sch`, `.kicad_pcb`, `.kicad_pro`) for each successful build output.
+- `--kicad-project` – generate KiCad project directories (`.kicad_sch`, `.kicad_pcb`, `.kicad_pro`) for each successful build output.
 - `--kicad-library` – generate KiCad symbol/footprint library in `dist/kicad-library`.
 - `--kicad-pcm` – generate KiCad PCM (Plugin and Content Manager) assets in `dist/pcm`.
 
@@ -67,9 +67,9 @@ dist/
 │   ├── 3d.png                # With --preview-images or --all-images
 │   ├── 3d.glb                # With --glbs
 │   └── kicad/
-│       ├── my-circuit.kicad_sch   # With --kicad
-│       ├── my-circuit.kicad_pcb   # With --kicad
-│       └── my-circuit.kicad_pro   # With --kicad
+│       ├── my-circuit.kicad_sch   # With --kicad-project
+│       ├── my-circuit.kicad_pcb   # With --kicad-project
+│       └── my-circuit.kicad_pro   # With --kicad-project
 ├── my-circuit.gltf           # With --preview-gltf (preview entrypoint only)
 ├── kicad-library/            # With --kicad-library
 ├── pcm/                      # With --kicad-pcm
