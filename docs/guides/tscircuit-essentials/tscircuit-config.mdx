@@ -34,6 +34,7 @@ The `tscircuit.config.json` file is a project-level configuration file that allo
 | `snapshotsDir` | [Centralized directory for snapshot outputs.](#snapshotsdir) |
 | `prebuildCommand` | [Command to run before builds.](#prebuildcommand) |
 | `buildCommand` | [Override command used for cloud builds.](#buildcommand) |
+| `kicadProjectEntrypointPath` | [Entry file for KiCad project generation.](#kicadprojectentrypointpath) |
 | `kicadLibraryEntrypointPath` | [Entry file for KiCad footprint library generation.](#kicadlibraryentrypointpath) |
 | `kicadLibraryName` | [Name for the generated KiCad library.](#kicadlibraryname) |
 | `alwaysUseLatestTscircuitOnCloud` | [Force latest tscircuit version in cloud builds.](#alwaysuselatesttscircuitoncloud) |
@@ -259,6 +260,29 @@ Override command used for cloud builds.
 }
 ```
 
+### kicadProjectEntrypointPath
+
+**Type:** `string` (optional)
+
+Entry file for KiCad project generation (`.kicad_pro`, `.kicad_sch`, `.kicad_pcb` files).
+
+**Use Cases:**
+
+- **KiCad project exports:** Define which file is used to generate KiCad project files when running `tsci build --kicad-project` without specifying a file argument.
+
+**Example:**
+
+```json
+{
+  "kicadProjectEntrypointPath": "lib/my-circuit.tsx"
+}
+```
+
+**How It Works:**
+
+- When `build.kicadProject` is `true` or `--kicad-project` flag is used, this file is built and converted to KiCad project format.
+- If not specified and no file argument is provided, the build will use board files found by glob patterns or fall back to `mainEntrypoint`.
+
 ### kicadLibraryEntrypointPath
 
 **Type:** `string` (optional)
@@ -317,6 +341,7 @@ Toggle build outputs for `tsci build`.
 {
   "build": {
     "circuitJson": true,
+    "kicadProject": true,
     "kicadLibrary": false,
     "kicadPcm": true,
     "previewImages": true,
@@ -329,8 +354,9 @@ Toggle build outputs for `tsci build`.
 **Options:**
 
 - `circuitJson` (`boolean`): Enable circuit JSON output in build.
-- `kicadLibrary` (`boolean`): Enable KiCad library output in build.
-- `kicadPcm` (`boolean`): Enable KiCad Plugin/Content Manager assets output in build.
-- `previewImages` (`boolean`): Enable preview image outputs in build.
-- `glbs` (`boolean`): Enable GLB 3D model outputs for each circuit in build.
-- `typescriptLibrary` (`boolean`): Enable TypeScript library output in build.
+- `kicadProject` (`boolean`): Enable KiCad project output (`.kicad_pro`, `.kicad_sch`, `.kicad_pcb`) in build. Equivalent to `--kicad-project` CLI flag.
+- `kicadLibrary` (`boolean`): Enable KiCad library output in build. Equivalent to `--kicad-library` CLI flag.
+- `kicadPcm` (`boolean`): Enable KiCad Plugin/Content Manager assets output in build. Equivalent to `--kicad-pcm` CLI flag.
+- `previewImages` (`boolean`): Enable preview image outputs in build. Equivalent to `--preview-images` CLI flag.
+- `glbs` (`boolean`): Enable GLB 3D model outputs for each circuit in build. Equivalent to `--glbs` CLI flag.
+- `typescriptLibrary` (`boolean`): Enable TypeScript library output in build. Equivalent to `--transpile` CLI flag.
