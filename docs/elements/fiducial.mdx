@@ -1,0 +1,47 @@
+---
+title: <fiducial />
+description: >-
+  A reference marker used for optical alignment during automated PCB assembly.
+---
+
+## Overview
+
+A fiducial is a reference marker placed on a PCB that pick-and-place machines use for optical alignment during automated assembly. It consists of a circular copper pad with soldermask clearance (pullback) around it, creating a high-contrast marker that's easily detected by machine vision systems.
+
+Fiducials do not have a schematic representation.
+
+Fiducials are typically placed at corners of the board or near fine-pitch components to ensure accurate component placement.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  browser3dView={false}
+  code={`export default () => (
+    <board width="30mm" height="20mm">
+      <fiducial 
+        padDiameter="1mm" 
+        soldermaskPullback="1mm" 
+        pcbX={-10} 
+        pcbY={-5} 
+      />
+      <fiducial 
+        padDiameter="1mm" 
+        soldermaskPullback="1mm" 
+        pcbX={10} 
+        pcbY={5} 
+      />
+    </board>
+  )`}
+/>
+
+## Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| padDiameter | number \| string | - | Diameter of the copper pad (e.g., `"1mm"` or `1`) |
+| soldermaskPullback | number \| string | padDiameter / 2 | Margin of soldermask clearance around the pad |
+| pcbX | number | 0 | X position of the fiducial center on the PCB |
+| pcbY | number | 0 | Y position of the fiducial center on the PCB |
+| layer | `"top"` \| `"bottom"` | `"top"` | PCB layer for the fiducial |

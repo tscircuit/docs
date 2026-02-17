@@ -1,0 +1,87 @@
+---
+title: <port />
+description: >-
+  Define connection points within custom schematic symbols.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<port />` element defines connection points within a `<symbol />`. Ports specify where traces connect to your component in the schematic view.
+
+:::note
+`<port />` can only be used inside a `<symbol />` element.
+:::
+
+## Basic Usage
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="D1"
+      symbol={
+        <symbol>
+          {/* Diode triangle */}
+          <schematicline x1={-0.3} y1={-0.4} x2={-0.3} y2={0.4} strokeWidth={0.05} />
+          <schematicline x1={-0.3} y1={0.4} x2={0.3} y2={0} strokeWidth={0.05} />
+          <schematicline x1={0.3} y1={0} x2={-0.3} y2={-0.4} strokeWidth={0.05} />
+          {/* Cathode bar */}
+          <schematicline x1={0.3} y1={-0.4} x2={0.3} y2={0.4} strokeWidth={0.05} />
+          {/* Ports */}
+          <port name="A" schX={-0.3} schY={0} direction="left" />
+          <port name="K" schX={0.3} schY={0} direction="right" />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| name | string | Yes | - | Port identifier used for connections |
+| schX | number | Yes | - | X position in schematic units |
+| schY | number | Yes | - | Y position in schematic units |
+| direction | "left" \| "right" \| "up" \| "down" | No | - | Direction the port faces |
+| schStemLength | number | No | - | Length of the stem line extending from the port |
+
+## Custom Stem Length
+
+Use `schStemLength` to control how far the connection stem extends from the port:
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      symbol={
+        <symbol>
+          {/* Op-amp triangle */}
+          <schematicline x1={-0.5} y1={-0.7} x2={-0.5} y2={0.7} strokeWidth={0.05} />
+          <schematicline x1={-0.5} y1={0.7} x2={0.7} y2={0} strokeWidth={0.05} />
+          <schematicline x1={0.7} y1={0} x2={-0.5} y2={-0.7} strokeWidth={0.05} />
+          {/* Plus/minus labels */}
+          <schematictext schX={-0.35} schY={0.35} text="+" fontSize={0.3} />
+          <schematictext schX={-0.35} schY={-0.35} text="-" fontSize={0.3} />
+          {/* Ports with custom stem lengths */}
+          <port name="IN+" schX={-1} schY={0.35} direction="left" schStemLength={0.5} />
+          <port name="IN-" schX={-1} schY={-0.35} direction="left" schStemLength={0.5} />
+          <port name="OUT" schX={1.1} schY={0} direction="right" schStemLength={0.4} />
+        </symbol>
+      }
+    />
+  </board>
+)
+`} />
