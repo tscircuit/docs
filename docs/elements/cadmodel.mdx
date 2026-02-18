@@ -149,6 +149,35 @@ You can render a component as translucent (semi-transparent) by setting `showAsT
   `}
 />
 
+### Translucent Model in cadmodel
+
+You can also use `showAsTranslucentModel` inside a `<cadmodel />`.
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip
+        name="U2"
+        footprint="soic8"
+        cadModel={
+          <cadmodel
+            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+            showAsTranslucentModel
+          />
+        }
+      />
+    </board>
+  )
+  `}
+/>
+
+
+
 
 ## Supported File Formats
 
@@ -171,4 +200,5 @@ The following model file formats are supported:
 | `rotationOffset` | `number \| {x: number, y: number, z: number}` | Rotate the model (number = Z-axis rotation in degrees) |
 | `zOffsetFromSurface` | `Distance` | Vertical offset from the PCB surface (e.g., "2mm", "0.1in") |
 | `size` | `{x: number, y: number, z: number}` | Scale the model size |
+| `showAsTranslucentModel` | `boolean` | Render the model as translucent |
 | `modelUnitToMmScale` | `Distance` | Scale factor to convert model units to millimeters |
