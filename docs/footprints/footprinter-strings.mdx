@@ -140,6 +140,23 @@ Parameters:
 | `pw` | _calculated_ | Pin width (calculated from pitch if not specified) |
 | `pl` | _calculated_ | Pin length (calculated from pin width if not specified) |
 
+## tqfp
+
+Thin Quad Flat Package (TQFP) footprint with intelligent defaults based on pin count. Commonly used for microcontrollers and FPGAs.
+
+<FootprintPreview footprints={["tqfp32", "tqfp44", "tqfp64"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `32` | Total number of pins (must be divisible by 4). Common values: 32, 44, 48, 64, 80, 100, 144 |
+| `p` | _varies_ | Pin pitch. Defaults: 0.8mm for 32-pin, 0.5mm for 44+ pins |
+| `pl` | _varies_ | Pin length. Defaults based on pin count: 1.475mm for 32-100 pins, 1.6mm for 144 pins |
+| `pw` | _varies_ | Pin width. Defaults based on pin count: 0.55mm (32-pin), 0.3mm (44-100 pins), 0.25mm (144-pin) |
+| `w` | _inherited_ | Package width (inherited from quad base) |
+| `h` | _inherited_ | Package height (inherited from quad base) |
+
 ## stampboard
 
 A breakout board with configurable pins on all sides. Can include inner holes for mounting.
