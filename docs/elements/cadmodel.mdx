@@ -31,6 +31,20 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   `}
 />
 
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `modelUrl` | `string` | URL to the 3D model file (GLB, GLTF, OBJ, STL, STEP, WRL) |
+| `stepUrl` | `string` | URL to a STEP model file for export purposes |
+| `positionOffset` | `{x: number, y: number, z: number}` | Offset the model position from the component center |
+| `rotationOffset` | `number \| {x: number, y: number, z: number}` | Rotate the model (number = Z-axis rotation in degrees) |
+| `zOffsetFromSurface` | `Distance` | Vertical offset from the PCB surface (e.g., "2mm", "0.1in") |
+| `size` | `{x: number, y: number, z: number}` | Scale the model size |
+| `showAsTranslucentModel` | `boolean` | Render the model as translucent |
+| `modelUnitToMmScale` | `Distance` | Scale factor to convert model units to millimeters |
+
+
 ## Repositioning the Model
 
 You can use `positionOffset`, `rotationOffset`, and `zOffsetFromSurface` to reposition the model.
@@ -164,16 +178,3 @@ The following model file formats are supported:
 - STEP
 - STL
 - WRL
-
-## Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `modelUrl` | `string` | URL to the 3D model file (GLB, GLTF, OBJ, STL, STEP, WRL) |
-| `stepUrl` | `string` | URL to a STEP model file for export purposes |
-| `positionOffset` | `{x: number, y: number, z: number}` | Offset the model position from the component center |
-| `rotationOffset` | `number \| {x: number, y: number, z: number}` | Rotate the model (number = Z-axis rotation in degrees) |
-| `zOffsetFromSurface` | `Distance` | Vertical offset from the PCB surface (e.g., "2mm", "0.1in") |
-| `size` | `{x: number, y: number, z: number}` | Scale the model size |
-| `showAsTranslucentModel` | `boolean` | Render the model as translucent |
-| `modelUnitToMmScale` | `Distance` | Scale factor to convert model units to millimeters |
