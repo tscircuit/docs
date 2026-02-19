@@ -3,8 +3,6 @@ import { grid } from "@tscircuit/math-utils"
 
 const grids = {
   2: {
-    width: 30,
-    height: 12,
     grid: grid({
       rows: 1,
       cols: 2,
@@ -14,8 +12,6 @@ const grids = {
     }),
   },
   3: {
-    width: 50,
-    height: 12,
     grid: grid({
       rows: 1,
       cols: 3,
@@ -25,8 +21,6 @@ const grids = {
     }),
   },
   6: {
-    width: 30,
-    height: 30,
     grid: grid({
       rows: 2,
       cols: 3,
@@ -49,7 +43,7 @@ export const FootprintPreview = ({
         defaultView="pcb"
         code={`
 export default () => (
-  <board width="${grid.width}mm" height="${grid.height}mm">
+  <board>
 ${footprints
   .map((f, i) =>
     !f
