@@ -467,6 +467,43 @@ export default () => (
 
 *Screenshot: PCB viewer — Example DRC error shown when a component extends beyond the board edge.*
 
+## Translucent Models
+
+You can render a component as translucent (semi-transparent) by setting `showAsTranslucentModel` on the component.
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+export default () => (
+  <board width="30mm" height="30mm">
+    <chip
+      name="U1"
+      pcbX={0}
+      pcbY={0}
+      showAsTranslucentModel
+    cadModel={
+      <cadassembly>
+        <cadmodel
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+          pcbX={0}
+          pcbY={0}
+        />
+        <cadmodel
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/pinrow3.glb"
+          pcbX={0}
+          pcbY={8}
+        />
+      </cadassembly>
+    }
+  />
+</board>
+  )
+  `}
+/>
+
 ### Internally Connected Pins
 
 Some chips, such as a standard 4 pin pushbutton, have pins that are internally
