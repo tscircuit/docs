@@ -477,19 +477,29 @@ You can render a component as translucent (semi-transparent) by setting `showAsT
   hideSchematicTab
   browser3dView={false}
   code={`
-  export default () => (
-    <board>
-      <chip
-        name="U2"
-        footprint="soic8"
-        showAsTranslucentModel
-        cadModel={
-          <cadmodel
-            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
-          />
-        }
-      />
-    </board>
+export default () => (
+  <board width="30mm" height="30mm">
+    <chip
+      name="U1"
+      pcbX={0}
+      pcbY={0}
+      showAsTranslucentModel
+    cadModel={
+      <cadassembly>
+        <cadmodel
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+          pcbX={0}
+          pcbY={0}
+        />
+        <cadmodel
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/pinrow3.glb"
+          pcbX={0}
+          pcbY={8}
+        />
+      </cadassembly>
+    }
+  />
+</board>
   )
   `}
 />
