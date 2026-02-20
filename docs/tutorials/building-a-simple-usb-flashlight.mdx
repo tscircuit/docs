@@ -1,92 +1,289 @@
 ---
-title: Building a Simple USB Flashlight 
-description: Learn how to build a simple USB-powered flashlight circuit using tscircuit with a push button, LED, and USB-C connector.
+title: Building a Simple USB Flashlight
+description: Learn how to build a simple USB-powered flashlight circuit using tscircuit with a USB-C connector, push button, LED, and resistor. Perfect for learning component placement, net connections, and basic PCB design.
 ---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-This expanded tutorial walks through building a tiny USB-powered flashlight PCB using `tscircuit` components and a USB-C SMD connector.
+This tutorial guides you through creating a simple USB-powered flashlight PCB using tscircuit. We'll cover setting up your environment, understanding the core components (USB-C connector, LED, resistor, pushbutton), building a basic flashlight, and exporting for manufacturing.
 
-import TscircuitIframe from "@site/src/components/TscircuitIframe"
+The flashlight uses a USB-C connector for power, a pushbutton to control the LED, and a current-limiting resistor for safe LED operation. It's a perfect beginner project for learning component placement and net connections.
 
-<TscircuitIframe defaultView="3d" code={`
+<CircuitPreview defaultView="3d" code={`
+// Simple USB flashlight: USB-C provides VBUS, pushbutton switches VBUS
+// through R1 into LED. Compact single-layer example for quick prototyping.
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
-export default () => {
-  return (
-    <board width="12mm" height="30mm">
-      <SmdUsbC
-        name="USBC"
-        connections={{
-          GND1: "net.GND",
-          GND2: "net.GND",
-          VBUS1: "net.VBUS",
-          VBUS2: "net.VBUS",
-        }}
-        pcbY={-10}
-        schX={-4}
-      />
-      <led name="LED" color="red" footprint="0603" pcbY={12} schY={2} />
-      <pushbutton name="SW1" pcbY={0} pin2=".R1 > .pos" pin3="net.VBUS" schY={-2} footprint="pushbutton_id1.3mm_od2mm" />
-      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
-      <trace from=".R1 .neg" to=".LED .pos" />
-      <trace from=".LED .neg" to="net.GND" />
-    </board>
-  )
-}
+export default () => (
+  <board width="12mm" height="30mm">
+    {/* USB-C connector mapped to nets */}
+    <SmdUsbC
+      name="J1"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbY={-10}
+      schX={-4}
+    />
+
+    {/* Indicator LED and series resistor */}
+    <led name="LED" color="red" footprint="0603" pcbY={12} schY={2} />
+    <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+
+    {/* Momentary pushbutton tying VBUS to R1.pos when pressed */}
+    <pushbutton name="SW1" pcbY={0} pin2=".R1 > .pos" pin3="net.VBUS" schY={-2} footprint="pushbutton_id1.3mm_od2mm" />
+
+    {/* Wiring traces */}
+    <trace from=".R1 .neg" to=".LED .pos" />
+    <trace from=".LED .neg" to="net.GND" />
+  </board>
+)
 `} />
 
 
-## Objectives
+## 1. Set Up Your Environment
 
-- Build a compact USB-powered flashlight using a USB-C connector, a single LED and a pushbutton.
-- Learn how to map connector pins to nets using the `connections` prop.
-- Verify schematic and PCB preview before ordering.
+Before we start building, let's get your development environment ready.
 
-## Parts & Tools
+### Prerequisites
 
-- 1 × USB-C SMD connector (4-pin) — used for VBUS + GND
-- 1 × 0603 LED (choose color) — `LED`
-- 1 × 0603 resistor 1k — `R1`
-- 1 × SMD pushbutton — `SW1`
-- Soldering iron, flux, solder, tweezers, multimeter
+You need [Node.js](https://nodejs.org/) or [Bun](https://bun.sh/) installed on your system.
 
-For a larger example of LED wiring and controller usage, see the [3x5 LED matrix tutorial](../tutorials/building-led-matrix.mdx).
+### Install tscircuit CLI
 
-## Circuit explanation
+Install the tscircuit command-line interface (CLI) globally using npm or bun:
 
-- The USB-C footprint exposes `VBUS` (5V) and GND pins.
-- `R1` limits current from `VBUS` into `LED.pos` when `SW1` is pressed.
-- `LED.neg` returns to `net.GND`.
+```bash
+npm install -g tscircuit
+# or
+bun install -g tscircuit
+```
 
-## Step-by-step
+This installs the `tsci` command, which you can use to create, develop, and export tscircuit projects.
 
-1. Inspect the preview above to ensure `SmdUsbC` is mapped to `net.VBUS` and `net.GND` via `connections`.
-2. Place components in the schematic and align footprints on the PCB view.
-3. Use the 3D preview to confirm mechanical clearance for the USB connector.
-4. Generate fabrication files and Gerbers using the export tools in the tscircuit toolchain.
-5. Order PCBs and assemble; test with a multimeter and a current-limited bench supply if available.
+### Create a New Project
 
-## PCB tips
+Navigate to where you want to create your project and run `tsci init`:
 
-- Keep the USB connector mounting pads strong — use recommended footprint from manufacturer.
-- Place a small fillet or bevel at the board edge to reduce stress on the connector.
+```bash
+mkdir my-flashlight
+cd my-flashlight
+tsci init
+```
 
-## Testing
+This command bootstraps a new tscircuit project with a basic structure, including an `index.tsx` file (our main circuit definition), `package.json`, `tsconfig.json`, and other necessary configuration files.
 
-- With no load, verify `VBUS` reads ~5V between `VBUS` and `GND` at the connector.
-- Press `SW1` and verify voltage at `LED.pos` drops per expected LED forward voltage.
-- If LED does not light, confirm polarity and continuity through `R1`.
+### Run the Development Server
 
-## Troubleshooting
+Start the tscircuit development server by running:
 
-- No power: check that the connector footprint actually exposes VBUS pins in the correct orientation.
-- LED dim or not lit: swapped LED pads or wrong resistor value.
+```bash
+tsci dev
+```
 
-## Next steps
+This command compiles your `index.tsx` file and serves it on `http://localhost:3020` (or the next available port). Open this URL in your browser. You should see a live preview of your circuit, including PCB, Schematic, and 3D views. The server watches for file changes and automatically updates the preview.
 
-- Add an LED driver or MOSFET for brighter LEDs
-- Add a simple charge controller and battery for a rechargeable flashlight
+## 2. Import the Main Components
+
+A simple USB flashlight consists of four key components:
+
+1. **USB-C Connector**: Provides power (VBUS) and ground from the USB port.
+2. **LED**: The indicator light that turns on when you press the button.
+3. **Resistor**: Limits current to protect the LED from burning out.
+4. **Pushbutton**: The switch that controls when the LED turns on.
+
+Let's import these components into our project.
+
+First, install the package containing the USB-C connector:
+
+```bash
+tsci add @tsci/seveibar.smd-usb-c
+```
+
+Now let's preview each component individually to understand what we're working with.
+
+### USB-C Connector (SMD)
+
+The `SmdUsbC` component provides a USB-C footprint with pins for power and ground.
+
+<CircuitPreview defaultView="3d" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="20mm" height="20mm">
+    <SmdUsbC name="J1" />
+  </board>
+)
+`} />
+
+### LED (0603 SMD)
+
+A standard surface-mount LED in 0603 footprint. We can specify the color for visualization.
+
+<CircuitPreview defaultView="3d" code={`
+export default () => (
+  <board width="15mm" height="15mm">
+    <led name="LED" color="red" footprint="0603" />
+  </board>
+)
+`} />
+
+### Resistor (0603 SMD)
+
+A current-limiting resistor in 0603 footprint. 1kΩ is a good value for most LEDs at 5V.
+
+<CircuitPreview defaultView="3d" code={`
+export default () => (
+  <board width="15mm" height="15mm">
+    <resistor name="R1" footprint="0603" resistance="1k" />
+  </board>
+)
+`} />
+
+### Pushbutton (SMD)
+
+A momentary pushbutton switch that connects two nets when pressed.
+
+<CircuitPreview defaultView="3d" code={`
+export default () => (
+  <board width="15mm" height="15mm">
+    <pushbutton name="SW1" footprint="pushbutton_id1.3mm_od2mm" />
+  </board>
+)
+`} />
+
+## 3. How the Circuit Works
+
+The USB flashlight operates on a simple principle:
+
+1. **Power Input**: USB-C connector provides stable 5V (VBUS) and grounds the circuit
+2. **Switch Control**: Pushbutton SW1 connects VBUS to one end of R1 when pressed
+3. **Current Limiting**: R1 (1kΩ) limits current flowing through the LED to safe levels (~5mA for a red LED)
+4. **Light Output**: Current flows through LED in the correct direction (anode → cathode), producing light
+5. **Return Path**: LED cathode connects back to ground, completing the circuit
+
+**With button unpressed**: No current flows; LED is off.
+**With button pressed**: ~5V appears across R1 + LED; current flows; LED lights up.
+
+## 4. Build the USB Flashlight
+
+Now let's create the complete flashlight circuit in your `index.tsx` file:
+
+<CircuitPreview defaultView="3d" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="12mm" height="30mm">
+    {/* USB-C connector providing VBUS and GND */}
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      pcbY={-10}
+      schX={-4}
+    />
+
+    {/* Series resistor and indicator LED */}
+    <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+    <led name="LED" color="red" footprint="0603" pcbY={12} schY={2} />
+
+    {/* Pushbutton switch: pin2 connects to R1.pos, pin3 to VBUS */}
+    <pushbutton
+      name="SW1"
+      pcbY={0}
+      pin2=".R1 > .pos"
+      pin3="net.VBUS"
+      schY={-2}
+      footprint="pushbutton_id1.3mm_od2mm"
+    />
+
+    {/* Wiring traces */}
+    <trace from=".R1 .neg" to=".LED .pos" />
+    <trace from=".LED .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+### Component Placement Tips
+
+- **USB Connector**: Position at the bottom/back of the board for user access
+- **Pushbutton**: Place where it's easily reachable for pressing
+- **LED**: Position for visibility (top or side of the board)
+- **Resistor**: Place near the LED to minimize trace length
+
+Save your `index.tsx` and watch the tscircuit preview update automatically!
+
+Once your circuit is complete, you can export it for manufacturing:
+
+### Export Gerber Files
+
+From the tscircuit web UI, click the **Export** button (or use `tsci export` in the terminal) to download:
+
+- Gerber files for PCB manufacturing
+- Bill of Materials (BOM) for component ordering
+- Assembly instructions
+
+### Component List for Assembly
+
+Here are the components you'll need to source:
+
+| Reference | Value/Type | Footprint | Notes |
+|-----------|-----------|-----------|-------|
+| J1 | USB-C Connector | SMD 4-pin | Check pinout for VBUS/GND |
+| R1 | 1kΩ Resistor | 0603 | Current limiting resistor |
+| LED | Red LED | 0603 | Check polarity (anode/cathode) |
+| SW1 | Pushbutton | SMD Momentary | Standard 4-pin pushbutton |
+
+### Manufacturing Tips
+
+- **Design for manufacturing**: Keep traces wide (≥ 0.2mm) for reliability
+- **PCB ordering**: Use services like JLCPCB (with assembly option) or PCBWay
+- **USB connector**: Verify mechanical alignment before soldering; use flux for reliable connections
+- **Testing**: Before assembly, visually inspect the PCB for shorts using the 3D view
+
+See also: [Ordering Prototypes](../building-electronics/ordering-prototypes)
+
+## 6. Testing & Troubleshooting
+
+### Pre-Assembly Testing
+
+- Inspect the PCB preview for trace continuity errors and clearances
+- Verify all pads are properly connected in the schematic
+
+### Post-Assembly Testing
+
+1. **Visual Inspection**: Check for solder bridges and proper component orientation
+2. **Continuity Test**: Use a multimeter to verify:
+   - USB-C VBUS and GND are not shorted
+   - R1 reads ~1kΩ
+   - LED polarity is correct
+3. **Power Test**:
+   - Connect a USB-C cable with 5V power
+   - Verify 5V at USB-C VBUS pad (relative to GND)
+   - Press SW1 and verify LED illuminates
+   - If LED doesn't light, check polarity and continuity
+
+### Common Issues
+
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| LED won't light | Reversed polarity | Verify LED anode is toward R1, cathode toward GND |
+| No power detected | USB connector not soldered | Reflow with flux; check all 4 pins |
+| LED very dim | Wrong resistor value | Check R1 is 1kΩ (not 10kΩ or 100kΩ) |
+| Pushbutton doesn't work | Cold solder joint | Reflow all 4 pins of SW1 |
+
+## Next Steps
+
+- **Brighter LED**: Replace 1kΩ with 470Ω resistor (increases current to ~10mA)
+- **Multiple LEDs**: Connect multiple LEDs in series or parallel with appropriately sized resistors
+- **PWM Control**: Add a microcontroller to the circuit for brightness control
+- **Rechargeable**: Integrate a battery and charging circuit for portability
+
+For a more advanced project with microcontroller integration, check out the [3x5 LED Matrix](../tutorials/building-led-matrix.mdx) or [Custom Keyboard](../tutorials/build-a-custom-keyboard-with-tscircuit.mdx) tutorials.
 
 ---
 
