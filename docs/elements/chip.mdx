@@ -84,13 +84,13 @@ export default () => (
 | Property | Type | Description |
 |----------|------|-------------|
 | `name` | `string` | Component identifier (e.g., "U1") |
-| `footprint` | `string \| Footprint` | PCB footprint string or custom `<footprint>` element |
+| [`footprint`](#custom-footprints) | `string \| Footprint` | PCB footprint string or custom `<footprint>` element |
 | `pinLabels` | `Record<string, string>` | Mapping of pin numbers to labels (e.g., `{ pin1: "VCC" }`) |
 | `connections` | `Record<string, string>` | Pin-to-net mappings for wiring |
 | `manufacturerPartNumber` | `string` | Manufacturer part number (MPN) |
 | `supplierPartNumbers` | `Record<string, string[]>` | Part numbers by supplier (e.g., `{ jlcpcb: ["C12345"] }`) |
-| `schPinArrangement` | `SchematicPortArrangement` | Pin layout on schematic box |
-| `schPinStyle` | `Record<string, PinStyle>` | Visual styling for schematic pins |
+| [`schPinArrangement`](#schpinarrangement) | `SchematicPortArrangement` | Pin layout on schematic box |
+| [`schPinStyle`](#schpinstyles) | `Record<string, PinStyle>` | Visual styling for schematic pins |
 | `schPinSpacing` | `Distance` | Gap between pins in schematic |
 | `schWidth` | `Distance` | Schematic symbol width |
 | `schHeight` | `Distance` | Schematic symbol height |
@@ -101,9 +101,9 @@ export default () => (
 | `schRotation` | `number` | Rotation angle on schematic |
 | `layer` | `string` | PCB layer (e.g., "top", "bottom") |
 | `cadModel` | `CadModelProp` | 3D model reference for visualization |
-| `internallyConnectedPins` | `(string \| number)[][]` | Groups of internally connected pins |
-| `externallyConnectedPins` | `string[][]` | Groups of pins to be externally connected |
-| `obstructsWithinBounds` | `boolean` | Whether component blocks placement within its bounds |
+| [`internallyConnectedPins`](#internally-connected-pins) | `(string \\| number)[][]` | Groups of internally connected pins |
+| [`externallyConnectedPins`](#externally-connected-pins) | `string[][]` | Groups of pins to be externally connected |
+| [`obstructsWithinBounds`](#obstructswithinbounds) | `boolean` | Whether component blocks placement within its bounds |
 | `noSchematicRepresentation` | `boolean` | Omit from schematic view |
 | `doNotPlace` | `boolean` | Exclude from PCB placement |
 | [`allowOffBoard`](#allowoffboard) | `boolean` | Allow component to be placed outside PCB board boundary without DRC errors |
@@ -466,6 +466,43 @@ export default () => (
 ![PCB viewer — component outside board error](/img/elements/chip-allow-offboard-error.svg)
 
 *Screenshot: PCB viewer — Example DRC error shown when a component extends beyond the board edge.*
+
+## Translucent Models
+
+You can render a component as translucent (semi-transparent) by setting `showAsTranslucentModel` on the component.
+
+<CircuitPreview
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  code={`
+export default () => (
+  <board width="30mm" height="30mm">
+    <chip
+      name="U1"
+      pcbX={0}
+      pcbY={0}
+      showAsTranslucentModel
+    cadModel={
+      <cadassembly>
+        <cadmodel
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+          pcbX={0}
+          pcbY={0}
+        />
+        <cadmodel
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/pinrow3.glb"
+          pcbX={0}
+          pcbY={8}
+        />
+      </cadassembly>
+    }
+  />
+</board>
+  )
+  `}
+/>
 
 ### Internally Connected Pins
 
