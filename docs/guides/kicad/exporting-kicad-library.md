@@ -107,6 +107,27 @@ The CLI will:
 3. Extract and classify footprints/symbols (user vs builtin)
 4. Generate the KiCad library files
 
+### Customizing the Library Name
+
+By default, the library name is derived from your package name. You can specify a custom library name using the `--kicad-library-name` flag:
+
+```bash
+tsci build --kicad-library --kicad-library-name "my-custom-lib"
+```
+
+Alternatively, configure it in your `tscircuit.config.json`:
+
+```json
+{
+  "mainEntrypoint": "./lib/index.tsx",
+  "kicadLibraryName": "My Custom Library"
+}
+```
+
+The custom name is used for:
+- Symbol and footprint library filenames
+- PCM package display name (when using `--kicad-pcm`)
+
 ## Using the Library in KiCad
 
 1. **Extract/Copy the library** to your KiCad project folder or a shared libraries location
