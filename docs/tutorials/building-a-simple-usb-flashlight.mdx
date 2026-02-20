@@ -12,28 +12,20 @@ This tutorial guides you through creating a simple USB-powered flashlight PCB us
 The flashlight uses a USB-C connector for power, a pushbutton to control the LED, and a current-limiting resistor for safe LED operation. It's a perfect beginner project for learning component placement and net connections.
 
 <CircuitPreview defaultView="3d" code={`
-// Simple USB flashlight: USB-C provides VBUS, pushbutton switches VBUS
-// through R1 into LED. Compact single-layer example for quick prototyping.
+
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => (
   <board width="12mm" height="30mm">
-    {/* USB-C connector mapped to nets */}
     <SmdUsbC
       name="J1"
       connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
       pcbY={-10}
       schX={-4}
     />
-
-    {/* Indicator LED and series resistor */}
     <led name="LED" color="red" footprint="0603" pcbY={12} schY={2} />
     <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
-
-    {/* Momentary pushbutton tying VBUS to R1.pos when pressed */}
     <pushbutton name="SW1" pcbY={0} pin2=".R1 > .pos" pin3="net.VBUS" schY={-2} footprint="pushbutton_id1.3mm_od2mm" />
-
-    {/* Wiring traces */}
     <trace from=".R1 .neg" to=".LED .pos" />
     <trace from=".LED .neg" to="net.GND" />
   </board>
