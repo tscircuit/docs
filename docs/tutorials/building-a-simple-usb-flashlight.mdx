@@ -11,28 +11,32 @@ tscircuit.
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
 <TscircuitIframe defaultView="3d" code={`
-import { usePushButton } from "@tsci/seveibar.push-button"
-import { useUsbC } from "@tsci/seveibar.smd-usb-c"
+// use the built-in lowercase element which uses the default footprint
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
-  const USBCPort = useUsbC("USBC")
-  const Button = usePushButton("SW1")
   return (
-    <board width="12mm" height="30mm">
-      <USBCPort
-        GND1="net.GND"
-        GND2="net.GND"
-        VBUS1="net.VBUS"
-        VBUS2="net.VBUS"
-        pcbY={-10}
-        schX={-4}
+   <board width="12mm" height="30mm">
+      <SmdUsbC
+      name="J1"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbY={-10}
+      schX={-4}
+    />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
       />
-      <led name="LED" color="red" footprint="0603" pcbY={12} schY={2} />
-      <Button pcbY={0} pin2=".R1 > .pos" pin3="net.VBUS" schY={-2} />
+      <led name="LED" color="red" footprint="0603" pcbY={12} />
+     
       <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
       <trace from=".R1 .neg" to=".LED .pos" />
       <trace from=".LED .neg" to="net.GND" />
     </board>
   )
 }
-`} />
+`} />
