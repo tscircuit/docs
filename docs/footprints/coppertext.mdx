@@ -1,0 +1,60 @@
+---
+title: <coppertext />
+description: >-
+  The `<coppertext />` element is used to add text directly to the copper layer
+  of a PCB.
+---
+
+## Overview
+
+The `<coppertext />` element is used to add text directly to the copper layer of a PCB. This is commonly used for reference designators, polarity indicators, or other markings that need to be part of the copper rather than silkscreen.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <footprint>
+        <coppertext text="U1" pcbX="0" pcbY="0" fontSize="1mm" />
+      </footprint>
+    </board>
+  )
+`}
+/>
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `text` | string | The text string to display. |
+| `pcbX` | length | X coordinate of the text position on the PCB. |
+| `pcbY` | length | Y coordinate of the text position on the PCB |
+| `anchorAlignment` | enum | Alignment of the text. One of "center", "top_left", "top_right", "bottom_left", "bottom_right". Defaults to "center". |
+| `font` | enum | Optional. The font type, e.g. `"tscircuit2024"`. |
+| `fontSize` | length | Optional. The size of the font. |
+| `layers` | array | Optional. The copper layers to render on. Defaults to `["top"]`. |
+| `knockout` | boolean | Optional. When true, removes copper under the text (creates a clear area). |
+| `mirrored` | boolean | Optional. When true, mirrors the text. |
+| `rotation` | number | Optional. Rotation angle in degrees. |
+
+## Knockout
+
+The `knockout` prop removes the copper under the text, creating a clear area. This is useful for text like "GND" or "VCC" where you want to ensure the text is readable and not affected by copper pour.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="12mm" height="10mm">
+      <footprint>
+        <coppertext text="GND" pcbX="-2.5" pcbY="0" fontSize="1.5mm" knockout />
+        <coppertext text="VCC" pcbX="2.5" pcbY="0" fontSize="1.5mm" />
+      </footprint>
+    </board>
+  )
+`}
+/>
+
+The left text has `knockout={true}` (copper removed underneath), while the right text does not.
