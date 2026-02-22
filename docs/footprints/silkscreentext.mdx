@@ -32,6 +32,30 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | `anchorAlignment` | enum   | Alignment of the text. One of "center", "top_left", "top_right", "bottom_left", "bottom_right". Defaults to "center". |
 | `font`            | enum   | Optional. The font type, e.g. `"tscircuit2024"`.                                                                |
 | `fontSize`        | length | Optional. The size of the font. If not specified, inherits from the board's `pcbStyle.silkscreenFontSize` if set. |
+| `isKnockout`      | boolean| Optional. If true, the text will "knock out" the silkscreen background around it.                              |
+| `knockoutPadding` | length | Optional. Padding around the text when `isKnockout` is true. Can be a single value or individual sides (e.g., `knockoutPaddingLeft`). |
+
+## Knockout Text
+
+Knockout text allows you to create readable text by removing the background silkscreen material. This is particularly useful when text is placed over other silkscreen elements or copper pours.
+
+<CircuitPreview
+  hideSchematicTab
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="20mm" height="20mm">
+      <silkscreentext 
+        text="KNOCKOUT" 
+        pcbX={0} 
+        pcbY={0} 
+        fontSize="1.5mm" 
+        isKnockout 
+      />
+    </board>
+  )`}
+/>
+
 
 ## Global Font Size
 
