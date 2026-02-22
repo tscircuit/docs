@@ -12,6 +12,7 @@ The `<coppertext />` element is used to add text directly to the copper layer of
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview
+  hideSchematicTab
   defaultView="pcb"
   code={`
   export default () => (
@@ -44,6 +45,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 The `knockout` prop removes the copper under the text, creating a clear area. This is useful for text like "GND" or "VCC" where you want to ensure the text is readable and not affected by copper pour.
 
 <CircuitPreview
+  hideSchematicTab
   defaultView="pcb"
   code={`
   export default () => (
