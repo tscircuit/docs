@@ -171,6 +171,6 @@ Capacitive touch sliders are easy to implement in tscircuit using the `smtpad` e
 
 ## Further Reading
 
-- [SmtPad Component Reference](/docs/components/smtpad)
-- [PCB Layout Basics](/docs/guides/pcb-layout)
-- [Autorouting with tscircuit](/docs/guides/autorouting)
+- [SmtPad Component Reference](/footprints/smtpad)
+- [Automatic PCB Layout](/guides/tscircuit-essentials/automatic-pcb-layout)
+- [Autorouting API](/web-apis/autorouting-api)
