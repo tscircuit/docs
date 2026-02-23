@@ -429,3 +429,45 @@ Parameters:
 | `pw` | `"1.70mm"` | Pad width |
 | `p` | `"3.5mm"` | Pin pitch |
 
+## m2host
+
+M.2 Host connector footprint (commonly used for NVMe SSDs). Features 75 edge connectors with alternating top/bottom layer pads, a PCB cutout for the module, and a pin 1 marker.
+
+<FootprintPreview footprint="m2host" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `fn` | - | Function name (required, currently unused but part of base definition) |
+
+## ms012
+
+Microchip SOIC-8 footprint variant with pins positioned outside the package body. Commonly used for PIC microcontrollers.
+
+<FootprintPreview footprint="ms012" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `8` | Fixed at 8 pins |
+| `w` | `"3.9mm"` | Overall package width |
+| `p` | `"1.27mm"` | Pin pitch |
+| `legsoutside` | `true` | Pins positioned outside package body |
+
+## ms013
+
+Microchip SOIC-16 footprint variant with pins positioned outside the package body.
+
+<FootprintPreview footprint="ms013" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `16` | Fixed at 16 pins |
+| `w` | `"7.5mm"` | Overall package width |
+| `p` | `"1.27mm"` | Pin pitch |
+| `legsoutside` | `true` | Pins positioned outside package body |
+
