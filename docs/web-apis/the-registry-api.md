@@ -50,8 +50,10 @@ The following endpoints are available:
 | `/packages/list`           | List your packages                                           |
 | `/package_releases/create` | Create a new release (version) of a package                  |
 | `/package_releases/update` | Update a package release, e.g. to lock it from modifications |
-| `/package_releases/get`    | Get a package release                                        |
-| `/package_releases/list`   | List package releases for a package                          |
+| [`/package_releases/get`](./package-releases-get-api) | Get a package release                                        |
+| [`/package_releases/list`](./package-releases-list-api) | List package releases for a package                          |
+
+To learn how to find `package_id`, `package_release_id`, and latest release versions, see [Finding Package Releases](./finding-package-releases).
 
 More information about our Advanced Registry API is coming soon, including a full OpenAPI specification!
 

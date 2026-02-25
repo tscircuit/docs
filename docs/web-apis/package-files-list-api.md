@@ -95,3 +95,7 @@ Package release not found:
   }
 }
 ```
+
+## Finding `package_release_id` and latest versions
+
+If you are not sure which release to query, see [Finding Package Releases](./finding-package-releases).
