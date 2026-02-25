@@ -1,0 +1,381 @@
+---
+title: ESP32-WROOM-32 WiFi Development Board
+description: Build a complete ESP32-WROOM-32 development board with USB programming, power regulation, and GPIO breakout using JLCPCB-available components.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+In this tutorial we'll design a complete ESP32-WROOM-32 WiFi development board. Unlike tutorials that use the raw ESP32-D0WD die, we're using the **ESP32-WROOM-32 module** — a pre-certified module that integrates the chip, 4MB flash, and antenna. It's the go-to choice for production boards and is readily stocked on JLCPCB (~$2.50).
+
+The final board includes:
+- **ESP32-WROOM-32** wireless module (JLCPCB: C82899)
+- **AMS1117-3.3** LDO regulator — USB 5V → 3.3V (JLCPCB: C6186)
+- **CH340C** USB-to-UART bridge for programming (JLCPCB: C84681)
+- **USB Type-C** connector for power and firmware upload
+- BOOT and RST tactile buttons
+- Status LED on GPIO2
+- 2×19 pin headers exposing all usable GPIOs
+
+Here's the complete board:
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="55mm" height="65mm">
+      {/* ESP32-WROOM-32 module */}
+      <chip
+        name="U1"
+        footprint="esp32-wroom-32"
+        manufacturerPartNumber="C82899"
+        pinLabels={{
+          "1": "GND", "2": "3V3", "3": "EN",
+          "4": "IO36", "5": "IO39", "6": "IO34", "7": "IO35",
+          "8": "IO32", "9": "IO33", "10": "IO25", "11": "IO26",
+          "12": "IO27", "13": "IO14", "14": "IO12", "15": "GND2",
+          "16": "IO13", "23": "IO15", "24": "IO2", "25": "IO0",
+          "26": "IO4", "27": "IO16", "28": "IO17", "29": "IO5",
+          "30": "IO18", "31": "IO19", "32": "IO21",
+          "33": "RXD0", "34": "TXD0",
+          "35": "IO22", "36": "IO23", "37": "GND3", "38": "GND4",
+        }}
+        pcbX={0} pcbY={5} schX={0} schY={0}
+      />
+
+      {/* AMS1117-3.3 LDO regulator */}
+      <chip
+        name="U2"
+        footprint="sot223"
+        manufacturerPartNumber="C6186"
+        pinLabels={{ "1": "GND", "2": "OUT", "3": "IN", "4": "OUT2" }}
+        pcbX={-18} pcbY={-20} schX={-10} schY={3}
+      />
+      <capacitor name="C1" capacitance="100nF" footprint="0402"
+        pcbX={-22} pcbY={-16} schX={-13} schY={3} />
+      <capacitor name="C2" capacitance="10uF" footprint="0805"
+        pcbX={-14} pcbY={-16} schX={-10} schY={6} />
+      <capacitor name="C3" capacitance="100nF" footprint="0402"
+        pcbX={-18} pcbY={-14} schX={-7} schY={6} />
+
+      {/* USB Type-C connector */}
+      <chip
+        name="J1"
+        footprint="usb-c-16p"
+        manufacturerPartNumber="C165948"
+        pinLabels={{
+          "1": "GND", "4": "VBUS", "6": "DP1", "7": "DN1",
+          "9": "VBUS2", "11": "DP2", "12": "DN2",
+          "14": "GND2", "15": "GND3", "16": "GND4",
+        }}
+        pcbX={-18} pcbY={28} schX={-10} schY={-6}
+      />
+
+      {/* CH340C USB-UART bridge */}
+      <chip
+        name="U3"
+        footprint="soic16"
+        manufacturerPartNumber="C84681"
+        pinLabels={{
+          "2": "TXD", "3": "RXD", "4": "V3",
+          "5": "UD_P", "6": "UD_N",
+          "8": "GND", "9": "VCC",
+        }}
+        pcbX={18} pcbY={-20} schX={10} schY={3}
+      />
+      <capacitor name="C4" capacitance="100nF" footprint="0402"
+        pcbX={22} pcbY={-16} schX={10} schY={6} />
+      <capacitor name="C5" capacitance="100nF" footprint="0402"
+        pcbX={24} pcbY={-16} schX={13} schY={6} />
+
+      {/* RST button + 10k pull-up */}
+      <resistor name="R1" resistance="10k" footprint="0402"
+        pcbX={-8} pcbY={-24} schX={-5} schY={-3} />
+      <pushbutton name="SW1" footprint="tact-sw-4p"
+        pcbX={-8} pcbY={-18} schX={-5} schY={-6} />
+
+      {/* BOOT button + 10k pull-up */}
+      <resistor name="R2" resistance="10k" footprint="0402"
+        pcbX={8} pcbY={-24} schX={5} schY={-3} />
+      <pushbutton name="SW2" footprint="tact-sw-4p"
+        pcbX={8} pcbY={-18} schX={5} schY={-6} />
+
+      {/* Status LED on GPIO2 */}
+      <resistor name="R3" resistance="330" footprint="0402"
+        pcbX={16} pcbY={13} schX={7} schY={-3} />
+      <led name="D1" footprint="0402" color="blue"
+        pcbX={16} pcbY={10} schX={7} schY={-6} />
+
+      {/* GPIO breakout headers */}
+      <pinheader name="JP1" pinCount={19} footprint="pinrow19"
+        pcbX={-24} pcbY={0} pcbRotation={90} schX={-16} schY={0} />
+      <pinheader name="JP2" pinCount={19} footprint="pinrow19"
+        pcbX={24} pcbY={0} pcbRotation={90} schX={16} schY={0} />
+
+      {/* === POWER === */}
+      <trace from=".J1 > .VBUS"  to=".U2 > .IN" />
+      <trace from=".J1 > .VBUS2" to=".U2 > .IN" />
+      <trace from=".U2 > .IN"   to=".C1 > .pos" />
+      <trace from=".C1 > .neg"  to="net.GND" />
+      <trace from=".U2 > .OUT"  to="net.3V3" />
+      <trace from=".U2 > .OUT2" to="net.3V3" />
+      <trace from=".U2 > .GND"  to="net.GND" />
+      <trace from=".C2 > .pos"  to="net.3V3" />
+      <trace from=".C2 > .neg"  to="net.GND" />
+      <trace from=".C3 > .pos"  to="net.3V3" />
+      <trace from=".C3 > .neg"  to="net.GND" />
+      <trace from=".J1 > .GND"  to="net.GND" />
+      <trace from=".J1 > .GND2" to="net.GND" />
+      <trace from=".J1 > .GND3" to="net.GND" />
+      <trace from=".J1 > .GND4" to="net.GND" />
+
+      {/* === ESP32 POWER === */}
+      <trace from=".U1 > .3V3"  to="net.3V3" />
+      <trace from=".U1 > .GND"  to="net.GND" />
+      <trace from=".U1 > .GND2" to="net.GND" />
+      <trace from=".U1 > .GND3" to="net.GND" />
+      <trace from=".U1 > .GND4" to="net.GND" />
+
+      {/* === RST BUTTON (EN pin, active-high with 10k pull-up) === */}
+      <trace from=".R1 > .pin1"  to="net.3V3" />
+      <trace from=".R1 > .pin2"  to=".U1 > .EN" />
+      <trace from=".SW1 > .pin1" to=".U1 > .EN" />
+      <trace from=".SW1 > .pin2" to="net.GND" />
+
+      {/* === BOOT BUTTON (IO0, hold low during reset to enter flash mode) === */}
+      <trace from=".R2 > .pin1"  to="net.3V3" />
+      <trace from=".R2 > .pin2"  to=".U1 > .IO0" />
+      <trace from=".SW2 > .pin1" to=".U1 > .IO0" />
+      <trace from=".SW2 > .pin2" to="net.GND" />
+
+      {/* === CH340C USB-UART === */}
+      <trace from=".J1 > .DP1"   to=".U3 > .UD_P" />
+      <trace from=".J1 > .DN1"   to=".U3 > .UD_N" />
+      <trace from=".U3 > .VCC"   to="net.3V3" />
+      <trace from=".U3 > .GND"   to="net.GND" />
+      <trace from=".C4 > .pos"   to="net.3V3" />
+      <trace from=".C4 > .neg"   to="net.GND" />
+      <trace from=".U3 > .V3"    to=".C5 > .pos" />
+      <trace from=".C5 > .neg"   to="net.GND" />
+      <trace from=".U3 > .TXD"   to=".U1 > .RXD0" />
+      <trace from=".U3 > .RXD"   to=".U1 > .TXD0" />
+
+      {/* === STATUS LED === */}
+      <trace from=".U1 > .IO2"   to=".R3 > .pin1" />
+      <trace from=".R3 > .pin2"  to=".D1 > .anode" />
+      <trace from=".D1 > .cathode" to="net.GND" />
+
+      {/* === LEFT GPIO HEADER === */}
+      <trace from=".JP1 > .pin1"  to="net.3V3" />
+      <trace from=".JP1 > .pin2"  to="net.GND" />
+      <trace from=".JP1 > .pin3"  to=".U1 > .IO36" />
+      <trace from=".JP1 > .pin4"  to=".U1 > .IO39" />
+      <trace from=".JP1 > .pin5"  to=".U1 > .IO34" />
+      <trace from=".JP1 > .pin6"  to=".U1 > .IO35" />
+      <trace from=".JP1 > .pin7"  to=".U1 > .IO32" />
+      <trace from=".JP1 > .pin8"  to=".U1 > .IO33" />
+      <trace from=".JP1 > .pin9"  to=".U1 > .IO25" />
+      <trace from=".JP1 > .pin10" to=".U1 > .IO26" />
+      <trace from=".JP1 > .pin11" to=".U1 > .IO27" />
+      <trace from=".JP1 > .pin12" to=".U1 > .IO14" />
+      <trace from=".JP1 > .pin13" to=".U1 > .IO12" />
+      <trace from=".JP1 > .pin14" to=".U1 > .IO13" />
+      <trace from=".JP1 > .pin15" to=".U1 > .IO15" />
+      <trace from=".JP1 > .pin16" to=".U1 > .IO2" />
+      <trace from=".JP1 > .pin17" to=".U1 > .IO0" />
+      <trace from=".JP1 > .pin18" to=".U1 > .IO4" />
+      <trace from=".JP1 > .pin19" to=".U1 > .IO16" />
+
+      {/* === RIGHT GPIO HEADER === */}
+      <trace from=".JP2 > .pin1"  to="net.3V3" />
+      <trace from=".JP2 > .pin2"  to="net.GND" />
+      <trace from=".JP2 > .pin3"  to=".U1 > .IO17" />
+      <trace from=".JP2 > .pin4"  to=".U1 > .IO5" />
+      <trace from=".JP2 > .pin5"  to=".U1 > .IO18" />
+      <trace from=".JP2 > .pin6"  to=".U1 > .IO19" />
+      <trace from=".JP2 > .pin7"  to=".U1 > .IO21" />
+      <trace from=".JP2 > .pin8"  to=".U1 > .RXD0" />
+      <trace from=".JP2 > .pin9"  to=".U1 > .TXD0" />
+      <trace from=".JP2 > .pin10" to=".U1 > .IO22" />
+      <trace from=".JP2 > .pin11" to=".U1 > .IO23" />
+      <trace from=".JP2 > .pin12" to=".U1 > .EN" />
+      <trace from=".JP2 > .pin13" to="net.GND" />
+      <trace from=".JP2 > .pin14" to="net.GND" />
+      <trace from=".JP2 > .pin15" to="net.GND" />
+      <trace from=".JP2 > .pin16" to="net.GND" />
+      <trace from=".JP2 > .pin17" to="net.GND" />
+      <trace from=".JP2 > .pin18" to="net.GND" />
+      <trace from=".JP2 > .pin19" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Building It Step by Step
+
+Open [snippets.tscircuit.com](https://snippets.tscircuit.com) and create a new snippet to follow along.
+
+### Step 1: Board and ESP32 Module
+
+Start with the board frame and drop in the ESP32-WROOM-32 module. The module's castellated pins use a 2mm pitch and expose 38 connections:
+
+```tsx
+export default () => {
+  return (
+    <board width="55mm" height="65mm">
+      <chip
+        name="U1"
+        footprint="esp32-wroom-32"
+        manufacturerPartNumber="C82899"
+        pinLabels={{
+          "1": "GND", "2": "3V3", "3": "EN",
+          "4": "IO36", "5": "IO39", "6": "IO34", "7": "IO35",
+          "8": "IO32", "9": "IO33", "10": "IO25", "11": "IO26",
+          "12": "IO27", "13": "IO14", "14": "IO12", "15": "GND2",
+          "16": "IO13", "23": "IO15", "24": "IO2", "25": "IO0",
+          "26": "IO4", "27": "IO16", "28": "IO17", "29": "IO5",
+          "30": "IO18", "31": "IO19", "32": "IO21",
+          "33": "RXD0", "34": "TXD0",
+          "35": "IO22", "36": "IO23", "37": "GND3", "38": "GND4",
+        }}
+        pcbX={0} pcbY={5}
+      />
+    </board>
+  )
+}
+```
+
+### Step 2: Power Regulation
+
+The AMS1117-3.3 steps USB's 5V down to a stable 3.3V. It needs a 100nF input bypass, 10μF output bulk cap for stability, and a second 100nF output decoupling cap:
+
+```tsx
+{/* AMS1117-3.3 SOT-223 */}
+<chip
+  name="U2"
+  footprint="sot223"
+  manufacturerPartNumber="C6186"
+  pinLabels={{ "1": "GND", "2": "OUT", "3": "IN", "4": "OUT2" }}
+  pcbX={-18} pcbY={-20}
+/>
+<capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={-22} pcbY={-16} />
+<capacitor name="C2" capacitance="10uF"  footprint="0805" pcbX={-14} pcbY={-16} />
+<capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={-18} pcbY={-14} />
+
+{/* Power traces */}
+<trace from=".J1 > .VBUS" to=".U2 > .IN" />
+<trace from=".U2 > .OUT"  to="net.3V3" />
+<trace from=".U2 > .GND"  to="net.GND" />
+<trace from=".U1 > .3V3"  to="net.3V3" />
+```
+
+### Step 3: USB Type-C + CH340C
+
+The CH340C handles USB-to-UART so you can flash firmware without an external programmer. Connect USB D+/D- to the CH340C, then cross-connect the UART lines to the ESP32 (CH340C TX → ESP32 RX, CH340C RX → ESP32 TX):
+
+```tsx
+<chip name="J1" footprint="usb-c-16p" manufacturerPartNumber="C165948"
+  pinLabels={{ "4": "VBUS", "6": "DP1", "7": "DN1", "9": "VBUS2",
+               "1": "GND", "14": "GND2", "15": "GND3", "16": "GND4" }}
+  pcbX={-18} pcbY={28}
+/>
+<chip name="U3" footprint="soic16" manufacturerPartNumber="C84681"
+  pinLabels={{ "2": "TXD", "3": "RXD", "4": "V3",
+               "5": "UD_P", "6": "UD_N", "8": "GND", "9": "VCC" }}
+  pcbX={18} pcbY={-20}
+/>
+<capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={22} pcbY={-16} />
+<capacitor name="C5" capacitance="100nF" footprint="0402" pcbX={24} pcbY={-16} />
+
+<trace from=".J1 > .DP1"  to=".U3 > .UD_P" />
+<trace from=".J1 > .DN1"  to=".U3 > .UD_N" />
+<trace from=".U3 > .VCC"  to="net.3V3" />
+<trace from=".U3 > .V3"   to=".C5 > .pos" />  {/* 100nF very close to pin 4 */}
+<trace from=".U3 > .TXD"  to=".U1 > .RXD0" />
+<trace from=".U3 > .RXD"  to=".U1 > .TXD0" />
+```
+
+### Step 4: BOOT and RST Buttons
+
+Both buttons need 10kΩ pull-ups to 3.3V. Press RST to reboot. Hold BOOT then press RST to enter download mode:
+
+```tsx
+{/* RST — pulls EN low */}
+<resistor name="R1" resistance="10k" footprint="0402" pcbX={-8} pcbY={-24} />
+<pushbutton name="SW1" footprint="tact-sw-4p" pcbX={-8} pcbY={-18} />
+<trace from=".R1 > .pin1"  to="net.3V3" />
+<trace from=".R1 > .pin2"  to=".U1 > .EN" />
+<trace from=".SW1 > .pin1" to=".U1 > .EN" />
+<trace from=".SW1 > .pin2" to="net.GND" />
+
+{/* BOOT — pulls IO0 low */}
+<resistor name="R2" resistance="10k" footprint="0402" pcbX={8} pcbY={-24} />
+<pushbutton name="SW2" footprint="tact-sw-4p" pcbX={8} pcbY={-18} />
+<trace from=".R2 > .pin1"  to="net.3V3" />
+<trace from=".R2 > .pin2"  to=".U1 > .IO0" />
+<trace from=".SW2 > .pin1" to=".U1 > .IO0" />
+<trace from=".SW2 > .pin2" to="net.GND" />
+```
+
+### Step 5: Status LED
+
+GPIO2 drives a blue LED through a 330Ω resistor. At 3.3V this gives ~6mA, well within the ESP32's 12mA GPIO limit:
+
+```tsx
+<resistor name="R3" resistance="330" footprint="0402" pcbX={16} pcbY={13} />
+<led name="D1" footprint="0402" color="blue" pcbX={16} pcbY={10} />
+<trace from=".U1 > .IO2"    to=".R3 > .pin1" />
+<trace from=".R3 > .pin2"   to=".D1 > .anode" />
+<trace from=".D1 > .cathode" to="net.GND" />
+```
+
+### Step 6: GPIO Breakout Headers
+
+Two 19-pin 2.54mm headers expose all usable GPIOs plus power rails — the same layout as most commercial ESP32 dev boards:
+
+```tsx
+<pinheader name="JP1" pinCount={19} footprint="pinrow19"
+  pcbX={-24} pcbY={0} pcbRotation={90} />
+<pinheader name="JP2" pinCount={19} footprint="pinrow19"
+  pcbX={24}  pcbY={0} pcbRotation={90} />
+
+{/* Left header: 3V3, GND, IO36–IO16 */}
+<trace from=".JP1 > .pin1" to="net.3V3" />
+<trace from=".JP1 > .pin2" to="net.GND" />
+<trace from=".JP1 > .pin3" to=".U1 > .IO36" />
+{/* ... continue for all GPIOs ... */}
+```
+
+## Bill of Materials (JLCPCB)
+
+All parts are stocked for turn-key SMT assembly:
+
+| Ref | Component | JLCPCB # | Qty |
+|-----|-----------|----------|-----|
+| U1 | ESP32-WROOM-32 | C82899 | 1 |
+| U2 | AMS1117-3.3 SOT-223 | C6186 | 1 |
+| U3 | CH340C SOIC-16 | C84681 | 1 |
+| J1 | USB Type-C 16P | C165948 | 1 |
+| SW1, SW2 | 6mm tact switch | C318884 | 2 |
+| D1 | Blue LED 0402 | C72043 | 1 |
+| C1,C3,C4,C5 | 100nF 0402 | C1525 | 4 |
+| C2 | 10μF 0805 | C17024 | 1 |
+| R1, R2 | 10kΩ 0402 | C25804 | 2 |
+| R3 | 330Ω 0402 | C23138 | 1 |
+| JP1, JP2 | 2.54mm 19-pin header | — | 2 |
+
+**Estimated cost:** ~$8–12 for 5 assembled boards via JLCPCB SMT service.
+
+## Flashing Firmware
+
+1. Plug in USB-C
+2. Hold **BOOT**, press and release **RST**, release **BOOT**
+3. `esptool.py --port /dev/ttyUSB0 write_flash 0x0 firmware.bin`
+4. Press **RST** to boot
+
+## Next Steps
+
+- Add a **LiPo charger** (TP4056, C16058) and JST battery connector for portable use
+- Swap USB-C for **micro-USB** (C319752) if you prefer a legacy connector
+- Add an **I2C OLED** header (4-pin on IO21/IO22) for a display
+- Browse the [tscircuit registry](https://tscircuit.com) for more ESP32 examples
