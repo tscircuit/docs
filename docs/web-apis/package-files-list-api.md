@@ -7,7 +7,7 @@ description: List files in a package release from the tscircuit registry API
 
 List all files for a package release.
 
-Base URL: `https://registry-api.tscircuit.com`
+Base URL: `https://api.tscircuit.com`
 
 Auth header:
 

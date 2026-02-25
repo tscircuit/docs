@@ -7,7 +7,7 @@ description: Download package file contents from the tscircuit registry API
 
 Download a single file from a package release.
 
-Base URL: `https://registry-api.tscircuit.com`
+Base URL: `https://api.tscircuit.com`
 
 Auth header:
 
