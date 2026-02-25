@@ -43,9 +43,9 @@ The following endpoints are available:
 
 | Endpoint                   | Purpose                                                      |
 | -------------------------- | ------------------------------------------------------------ |
-| `/package_files/list`      | List all the files in a package                              |
+| [`/package_files/list`](./package-files-list-api) | List all the files in a package                              |
 | `/package_files/create`    | Add a file to a package                                      |
-| `/package_files/download`  | Download a file from a package                               |
+| [`/package_files/download`](./package-files-download-api) | Download a file from a package                               |
 | `/packages/search`         | Search for a package                                         |
 | `/packages/list`           | List your packages                                           |
 | `/package_releases/create` | Create a new release (version) of a package                  |
