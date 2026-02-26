@@ -35,7 +35,7 @@ for dynamic loading and execution, e.g. we use it in our [tscircuit/import](http
 
 ## Advanced Registry Endpoints
 
-You can use your tscircuit CLI token to use the advanced API at `https://registry-api.tscircuit.com`.
+You can use your tscircuit CLI token to use the advanced API at `https://api.tscircuit.com`.
 
 You can get a tscircuit auth token with `tsci auth print-token`. After you get this token, you just need to add the `Authorization: Bearer ${token}` header to each API request.
 
@@ -43,15 +43,17 @@ The following endpoints are available:
 
 | Endpoint                   | Purpose                                                      |
 | -------------------------- | ------------------------------------------------------------ |
-| `/package_files/list`      | List all the files in a package                              |
+| [`/package_files/list`](./package-files-list-api) | List all the files in a package                              |
 | `/package_files/create`    | Add a file to a package                                      |
-| `/package_files/download`  | Download a file from a package                               |
+| [`/package_files/download`](./package-files-download-api) | Download a file from a package                               |
 | `/packages/search`         | Search for a package                                         |
 | `/packages/list`           | List your packages                                           |
 | `/package_releases/create` | Create a new release (version) of a package                  |
 | `/package_releases/update` | Update a package release, e.g. to lock it from modifications |
-| `/package_releases/get`    | Get a package release                                        |
-| `/package_releases/list`   | List package releases for a package                          |
+| [`/package_releases/get`](./package-releases-get-api) | Get a package release                                        |
+| [`/package_releases/list`](./package-releases-list-api) | List package releases for a package                          |
+
+To learn how to find `package_id`, `package_release_id`, and latest release versions, see [Finding Package Releases](./finding-package-releases).
 
 More information about our Advanced Registry API is coming soon, including a full OpenAPI specification!
 
