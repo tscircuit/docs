@@ -1,12 +1,10 @@
 ---
-title: Bounties and Sponsorship
-description: Understand how tscircuit bounties and contributor sponsorships are awarded
+title: Sponsorships
+description: Understand how tscircuit contributor sponsorships are awarded
 ---
 
-tscircuit has thousands of dollars (USD) of bounties opened every month in over
-50 new weekly issues. We also automatically sponsor regular contributors
-hundreds of dollars each based on their contributions. All of this activity is
-tracked in the open-source
+tscircuit automatically sponsors regular contributors based on the impact of
+their work. This activity is tracked in the open-source
 [contribution-tracker](https://github.com/tscircuit/contribution-tracker),
 which powers [contributions.tscircuit.com](https://contributions.tscircuit.com)
 and resets every Wednesday.
@@ -26,20 +24,11 @@ and resets every Wednesday.
   [contribution-tracker repo](https://github.com/tscircuit/contribution-tracker)
   if you want to dig deeper into past activity.
 
-Many people follow the [bounties channel on discord](https://discord.com/channels/1233487248129921135/1301957862762872832) or our [bounty board](https://console.algora.io/org/tscircuit/bounties?status=open)
-to find issues to contribute to, but **this is actually the hardest way to get bounties!**
-
-:::tip
-
-You can quickly find issues (with or without bounties) by [spinning the wheel of issues](https://issues.tscircuit.com/)
-
-:::
-
-**The easiest way to get bounties and sponsorship is to _actually use tscircuit and try to build a circuit_.** When you
-find something confusing or buggy, create an issue. When you create an issue that
-gets bountied, you get extra points on the contribution tracker and you become
-the best person to fix the issue because you understand it so well! If you
-continually do this, you'll find that there are infinite issues to be done!
+**The best way to increase sponsorship eligibility is to consistently contribute
+high-impact improvements.** A great approach is to actively use tscircuit,
+report confusing or buggy behavior, and submit fixes for the issues you uncover.
+Contributors who repeatedly do this tend to build deep product context and
+deliver meaningful improvements over time.
 
 ## How sponsorship amounts are calculated
 
