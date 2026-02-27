@@ -16,8 +16,8 @@ Below is a reference example that demonstrates how constraints are used within a
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview defaultView="pcb" code={`
-
-  /**
+  
+   /**
    * A switch shaft you can use to connect a pluggable Kailh socket.
    */
   const KeyswitchSocket = (props: {
@@ -27,13 +27,13 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
     layer?: "top" | "bottom"
   }) => (
     <chip
-      {...props}
-      cadModel={{
-        objUrl: "/easyeda/C5184526",
-      }}
+      name={props.name}
+      pcbX={props.pcbX}
+      pcbY={props.pcbY}
+      layer={props.layer}
       footprint={
         <footprint>
-          {/* <silkscreentext text={props.name} /> */}
+         {/* <silkscreentext text={props.name} /> */}
           <smtpad
             shape="rect"
             width="2.55mm"
