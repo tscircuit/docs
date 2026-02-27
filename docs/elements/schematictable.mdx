@@ -1,0 +1,80 @@
+---
+title: <schematictable />
+description: >-
+  Draw tables within schematics.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<schematictable />` element is a primitive drawing component used to create tabular data in schematic representations. It's useful for creating pin tables, component specifications, or any structured data in your schematics.
+
+<CircuitPreview 
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <schematictable
+      schX={0}
+      schY={0}
+      borderWidth={0.05}
+      fontSize={0.3}
+      cellPadding={0.15}
+    >
+      <schematicrow height={0.6}>
+        <schematiccell text="Component" />
+        <schematiccell text="Value" horizontalAlign="center" />
+        <schematiccell text="Package" />
+      </schematicrow>
+      <schematicrow height={0.6}>
+        <schematiccell text="R1" />
+        <schematiccell text="10k" horizontalAlign="center" />
+        <schematiccell text="0805" />
+      </schematicrow>
+      <schematicrow height={0.6}>
+        <schematiccell text="C1" />
+        <schematiccell text="100nF" horizontalAlign="center" />
+        <schematiccell text="0402" />
+      </schematicrow>
+      <schematicrow height={0.6}>
+        <schematiccell text="U1" colSpan={3} horizontalAlign="center" text="ATmega328P" />
+      </schematicrow>
+    </schematictable>
+  </board>
+)
+`} />
+
+## Props
+
+### Schematictable Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| schX | distance | No | - | X position of the table center in schematic coordinates |
+| schY | distance | No | - | Y position of the table center in schematic coordinates |
+| cellPadding | distance | No | - | Padding inside each cell |
+| borderWidth | distance | No | - | Width of the table border |
+| anchor | enum | No | "center" | Anchor position (e.g., "center", "left", "top-left") |
+| fontSize | distance | No | - | Font size for cell text |
+
+### Schematicrow Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| height | distance | No | 1 | Height of the row |
+
+### Schematiccell Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| text | string | No | - | Text content of the cell (alternative to children) |
+| children | string | No | - | Text content of the cell |
+| horizontalAlign | "left" \| "center" \| "right" | No | "center" | Horizontal text alignment |
+| verticalAlign | "top" \| "middle" \| "bottom" | No | "middle" | Vertical text alignment |
+| fontSize | distance | No | - | Font size for cell text |
+| rowSpan | number | No | 1 | Number of rows the cell spans |
+| colSpan | number | No | 1 | Number of columns the cell spans |
+| width | distance | No | - | Width of the cell |
