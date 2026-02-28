@@ -54,24 +54,3 @@ export default () => (
 | `mirrored`         | boolean | Optional. When true, mirrors the text horizontally.                                                                  |
 | `rotation`         | number  | Optional. Rotation angle in degrees.                                                                                 |
 
-## Knockout
-
-The `knockout` prop removes copper underneath the text, creating a clear readable area. This is useful when text is placed over a copper pour — without knockout, the text would blend into the surrounding copper and become invisible.
-
-<CircuitPreview
-  hideSchematicTab
-  defaultView="pcb"
-  code={`
-export default () => (
-  <board width="12mm" height="10mm">
-    <footprint>
-      <coppertext text="GND" pcbX="-2.5" pcbY="0" fontSize="1.5mm" knockout />
-      <coppertext text="VCC" pcbX="2.5" pcbY="0" fontSize="1.5mm" />
-    </footprint>
-  </board>
-)
-`}
-/>
-
-The left text (`GND`) has `knockout` enabled — copper is removed underneath making it stand out. The right text (`VCC`) renders as solid copper.
-
