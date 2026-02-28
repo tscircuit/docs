@@ -8,12 +8,19 @@ description: Generate schematic and PCB snapshots for regression tests
 ## Usage
 
 ```bash
-tsci snapshot [options]
+tsci snapshot [options] [path]
 ```
 
 ### Options
 - `-u, --update` – write new snapshots to disk.
+- `--force-update` – force writing snapshots even when no visual diff is detected.
 - `--3d` – also generate 3D preview snapshots.
+- `--pcb-only` – generate only PCB snapshots.
+- `--schematic-only` – generate only schematic snapshots.
+- `--disable-parts-engine` – disable the parts engine while rendering snapshots.
+
+### Arguments
+- `[path]` – optional file path, directory, or glob pattern used to limit what gets snapshotted.
 
 ### Which files are snapped?
 The command searches the current project for:
