@@ -22,9 +22,23 @@ The `<coppertext />` element places text directly on the copper layer of a PCB. 
   defaultView="pcb"
   code={`
 export default () => (
-  <board width="10mm" height="10mm">
+  <board width="14mm" height="14mm">
     <footprint>
+      {/* basic label */}
       <coppertext text="U1" pcbX="0" pcbY="0" fontSize="1mm" />
+
+      {/* knockout example */}
+      <coppertext text="GND" pcbX="-4" pcbY="0" fontSize="1mm" knockout />
+
+      {/* bottom‑layer only */}
+      <coppertext text="BOT" pcbX="0" pcbY="3" fontSize="1mm" layers={["bottom"]} />
+
+      {/* text on both layers */}
+      <coppertext text="BOTH" pcbX="0" pcbY="-3" fontSize="1mm" layers={["top","bottom"]} />
+
+      {/* rotated labels */}
+      <coppertext text="45°" pcbX="3" pcbY="-3" fontSize="1mm" rotation={45} />
+      <coppertext text="90°" pcbX="3" pcbY="3" fontSize="1mm" rotation={90} />
     </footprint>
   </board>
 )
@@ -67,35 +81,3 @@ export default () => (
 
 The left text (`GND`) has `knockout` enabled — copper is removed underneath making it stand out. The right text (`VCC`) renders as solid copper.
 
-## Layer Selection
-
-By default, copper text renders on the `top` layer. Use the `layers` prop to place text on the bottom or both layers:
-
-```tsx
-{/* Text on the bottom copper layer */}
-<coppertext text="BOT" pcbX="0" pcbY="0" fontSize="1mm" layers={["bottom"]} />
-
-{/* Text on both top and bottom layers */}
-<coppertext text="BOTH" pcbX="0" pcbY="0" fontSize="1mm" layers={["top", "bottom"]} />
-```
-
-## Rotation
-
-Use the `rotation` prop to angle text on the copper layer:
-
-<CircuitPreview
-  hideSchematicTab
-  defaultView="pcb"
-  code={`
-export default () => (
-  <board width="14mm" height="14mm">
-    <footprint>
-      <coppertext text="0°" pcbX="-3" pcbY="-3" fontSize="1mm" />
-      <coppertext text="45°" pcbX="3" pcbY="-3" fontSize="1mm" rotation={45} />
-      <coppertext text="90°" pcbX="-3" pcbY="3" fontSize="1mm" rotation={90} />
-      <coppertext text="180°" pcbX="3" pcbY="3" fontSize="1mm" rotation={180} />
-    </footprint>
-  </board>
-)
-`}
-/>
