@@ -151,3 +151,18 @@ between boards. Customize with:
 - `boardGap` (defaults to `tabWidth` if not set)
 
 Set `panelizationMethod="none"` to disable tabs and mouse bites.
+
+## Subcircuit Caching
+
+The `_subcircuitCachingEnabled` property allows you to enable or disable caching of subcircuits within a panel to improve performance when working with large components:
+
+```tsx
+<panel _subcircuitCachingEnabled={true}>
+  {/* board definitions */}
+</panel>
+```
+
+- `_subcircuitCachingEnabled={true}`: Enables caching of subcircuits for better performance
+- `_subcircuitCachingEnabled={false}`: Disables caching (default behavior)
+
+This is especially useful when panels contain many subcircuits or complex hierarchical designs where the same components are reused multiple times.
