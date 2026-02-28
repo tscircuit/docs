@@ -1,0 +1,101 @@
+---
+title: <coppertext />
+description: >-
+  The `<coppertext />` element is used to add text directly to the copper layer
+  of a PCB.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<coppertext />` element places text directly on the copper layer of a PCB. Unlike silkscreen text, copper text becomes part of the electrical layer and is etched into the board during fabrication. Common use cases include:
+
+- **Reference designators** on the copper layer
+- **Polarity indicators** (e.g., `+`, `-`)
+- **Net labels** like `GND` or `VCC`
+- **Logos or branding** embedded in copper
+- **Version numbers** etched into the board
+
+<CircuitPreview
+  hideSchematicTab
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <footprint>
+      <coppertext text="U1" pcbX="0" pcbY="0" fontSize="1mm" />
+    </footprint>
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property           | Type    | Description                                                                                                          |
+|--------------------|---------|----------------------------------------------------------------------------------------------------------------------|
+| `text`             | string  | The text string to display.                                                                                          |
+| `pcbX`             | length  | X coordinate of the text position on the PCB.                                                                        |
+| `pcbY`             | length  | Y coordinate of the text position on the PCB.                                                                        |
+| `anchorAlignment`  | enum    | Alignment of the text. One of `"center"`, `"top_left"`, `"top_right"`, `"bottom_left"`, `"bottom_right"`. Defaults to `"center"`. |
+| `font`             | enum    | Optional. The font type, e.g. `"tscircuit2024"`.                                                                     |
+| `fontSize`         | length  | Optional. The size of the font.                                                                                      |
+| `layers`           | array   | Optional. The copper layers to render on. Defaults to `["top"]`.                                                     |
+| `knockout`         | boolean | Optional. When true, removes copper under the text (creates a clear area).                                           |
+| `mirrored`         | boolean | Optional. When true, mirrors the text horizontally.                                                                  |
+| `rotation`         | number  | Optional. Rotation angle in degrees.                                                                                 |
+
+## Knockout
+
+The `knockout` prop removes copper underneath the text, creating a clear readable area. This is useful when text is placed over a copper pour — without knockout, the text would blend into the surrounding copper and become invisible.
+
+<CircuitPreview
+  hideSchematicTab
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="12mm" height="10mm">
+    <footprint>
+      <coppertext text="GND" pcbX="-2.5" pcbY="0" fontSize="1.5mm" knockout />
+      <coppertext text="VCC" pcbX="2.5" pcbY="0" fontSize="1.5mm" />
+    </footprint>
+  </board>
+)
+`}
+/>
+
+The left text (`GND`) has `knockout` enabled — copper is removed underneath making it stand out. The right text (`VCC`) renders as solid copper.
+
+## Layer Selection
+
+By default, copper text renders on the `top` layer. Use the `layers` prop to place text on the bottom or both layers:
+
+```tsx
+{/* Text on the bottom copper layer */}
+<coppertext text="BOT" pcbX="0" pcbY="0" fontSize="1mm" layers={["bottom"]} />
+
+{/* Text on both top and bottom layers */}
+<coppertext text="BOTH" pcbX="0" pcbY="0" fontSize="1mm" layers={["top", "bottom"]} />
+```
+
+## Rotation
+
+Use the `rotation` prop to angle text on the copper layer:
+
+<CircuitPreview
+  hideSchematicTab
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="14mm" height="14mm">
+    <footprint>
+      <coppertext text="0°" pcbX="-3" pcbY="-3" fontSize="1mm" />
+      <coppertext text="45°" pcbX="3" pcbY="-3" fontSize="1mm" rotation={45} />
+      <coppertext text="90°" pcbX="-3" pcbY="3" fontSize="1mm" rotation={90} />
+      <coppertext text="180°" pcbX="3" pcbY="3" fontSize="1mm" rotation={180} />
+    </footprint>
+  </board>
+)
+`}
+/>
