@@ -18,7 +18,14 @@ tsci install [packageSpec]
 
 Install all project dependencies:
 ```bash
-tsci install
+$ tsci install
+Found existing package.json.
+Installing dependencies using bun...
+> bun install
+bun install v1.3.3 (274e01c7)
+
+Checked 307 installs across 338 packages (no changes) [121.00ms]
+Dependencies installed successfully.
 ```
 
 Install a specific package from a GitHub URL:
