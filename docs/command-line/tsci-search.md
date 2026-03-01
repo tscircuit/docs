@@ -5,6 +5,14 @@ description: Discover footprints and packages across the tscircuit ecosystem
 
 `tsci search` finds footprints and packages from across the tscircuit ecosystem.
 
+### Options
+- `--kicad` – search KiCad footprints
+- `--jlcpcb` – search JLCPCB components
+- `--lcsc` – alias for `--jlcpcb`
+- `--tscircuit` – search tscircuit registry packages
+
+When no filter options are provided, all sources are searched.
+
 ## Usage
 
 ```bash
