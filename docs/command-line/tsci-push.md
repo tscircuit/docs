@@ -9,6 +9,20 @@ tscircuit code, like React code, is distributed as a "package". `tsci push` uplo
 
 After publishing, you can use the [tsci add](https://docs.tscircuit.com/command-line/tsci-add) command to install your package as part of a larger circuit.
 
+## Usage
+
+```bash
+tsci push [file] [options]
+```
+
+### Arguments
+- `file` *(optional)* – path to the package file
+
+### Options
+- `--private` – make the package private
+- `--version-tag <tag>` – publish as a non-latest version using the provided tag
+- `--include-dist` – include the `dist/` directory in the push
+
 After running `tsci push` you can see your package on your tscircuit registry page. Packages default to private visibility, but you can change this from your registry page to enable sharing your package with the broader ecosystem.
 
 import tsciPushImage from "../../static/img/tsci-push.png"
