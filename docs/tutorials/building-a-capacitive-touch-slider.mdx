@@ -1,0 +1,184 @@
+---
+title: Building a Capacitive Touch Slider
+description: >-
+  Learn how to design a capacitive touch slider PCB element in tscircuit using
+  polygon smtpads with solder mask and connect it to a microcontroller.
+---
+
+## Overview
+
+Capacitive touch sliders are used in consumer electronics for volume controls,
+brightness sliders, and scroll wheels. They detect changes in capacitance when a
+finger approaches a set of exposed or solder-mask-covered copper pads.
+
+In this tutorial we'll build a five-pad capacitive touch slider using tscircuit,
+connect it to an ATtiny85 microcontroller, and explore how the
+`coveredWithSolderMask` property works.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## The Finished Circuit
+
+<TscircuitIframe defaultView="pcb" code={`
+export default () => {
+  // Five slider pads — progressively taller toward the center
+  const pads = [
+    { name: "PAD1", pcbX: -8, width: 2.5, height: 6  },
+    { name: "PAD2", pcbX: -4, width: 2.5, height: 8  },
+    { name: "PAD3", pcbX:  0, width: 2.5, height: 10 },
+    { name: "PAD4", pcbX:  4, width: 2.5, height: 8  },
+    { name: "PAD5", pcbX:  8, width: 2.5, height: 6  },
+  ]
+
+  return (
+    <board width="30mm" height="20mm">
+      {pads.map(({ name, pcbX, width, height }) => (
+        <smtpad
+          key={name}
+          name={name}
+          shape="rect"
+          width={\`\${width}mm\`}
+          height={\`\${height}mm\`}
+          pcbX={\`\${pcbX}mm\`}
+          pcbY="0mm"
+          layer="top"
+          coveredWithSolderMask
+          portHints={[name.toLowerCase()]}
+        />
+      ))}
+
+      <chip
+        name="U1"
+        footprint="soic8"
+        pcbX="0mm"
+        pcbY="-7mm"
+        connections={{
+          pin1: ".PAD1",
+          pin2: ".PAD2",
+          pin3: ".PAD3",
+          pin5: ".PAD4",
+          pin6: ".PAD5",
+          pin4: "net.GND",
+          pin8: "net.VCC",
+        }}
+      />
+    </board>
+  )
+}
+`} />
+
+## Why `coveredWithSolderMask`?
+
+Normally, copper pads are left uncovered so solder will bond to them.  For a
+capacitive touch element we **don't** want bare copper — we want the green
+solder-mask layer to act as a thin dielectric between the finger and the pad.
+
+Setting `coveredWithSolderMask` on an `<smtpad />` tells tscircuit to apply
+solder mask over the copper area.  The underlying `circuit-json` property is
+`is_covered_with_solder_mask: true`, which renderers use to draw the pad in the
+correct layer colour and suppress solder paste generation.
+
+```tsx
+<smtpad
+  shape="rect"
+  width="2.5mm"
+  height="8mm"
+  coveredWithSolderMask   // ← covers the pad with solder mask
+  portHints={["pad2"]}
+/>
+```
+
+## Step-by-Step Breakdown
+
+### 1. Define the Pad Array
+
+We describe each pad by its horizontal position and its height.  The diamond
+shape (short → tall → short) makes the slider easy to touch at any position:
+
+```tsx
+const pads = [
+  { name: "PAD1", pcbX: -8, width: 2.5, height: 6  },
+  { name: "PAD2", pcbX: -4, width: 2.5, height: 8  },
+  { name: "PAD3", pcbX:  0, width: 2.5, height: 10 },
+  { name: "PAD4", pcbX:  4, width: 2.5, height: 8  },
+  { name: "PAD5", pcbX:  8, width: 2.5, height: 6  },
+]
+```
+
+### 2. Render the Pads
+
+Map over the array and render one `<smtpad />` per element.  The
+`coveredWithSolderMask` prop ensures no solder paste is generated and the
+pad colour reflects the soldermask layer:
+
+```tsx
+{pads.map(({ name, pcbX, width, height }) => (
+  <smtpad
+    key={name}
+    name={name}
+    shape="rect"
+    width={`${width}mm`}
+    height={`${height}mm`}
+    pcbX={`${pcbX}mm`}
+    pcbY="0mm"
+    layer="top"
+    coveredWithSolderMask
+    portHints={[name.toLowerCase()]}
+  />
+))}
+```
+
+### 3. Connect to a Microcontroller
+
+Each pad is wired to a GPIO pin on the ATtiny85 (SOIC-8) using tscircuit
+`connections`:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pcbX="0mm"
+  pcbY="-7mm"
+  connections={{
+    pin1: ".PAD1",
+    pin2: ".PAD2",
+    pin3: ".PAD3",
+    pin5: ".PAD4",
+    pin6: ".PAD5",
+    pin4: "net.GND",
+    pin8: "net.VCC",
+  }}
+/>
+```
+
+## Polygon Pads
+
+Rectangular pads work well for basic sliders, but you can also use polygon
+shapes for curved or tapered designs.  Replace `shape="rect"` with
+`shape="polygon"` and supply a `points` array (in mm, relative to the pad
+origin):
+
+```tsx
+<smtpad
+  name="PAD_CUSTOM"
+  shape="polygon"
+  points={[
+    { x: -1.5, y: -5 },
+    { x:  1.5, y: -5 },
+    { x:  2.5, y:  5 },
+    { x: -2.5, y:  5 },
+  ]}
+  pcbX="0mm"
+  pcbY="0mm"
+  layer="top"
+  coveredWithSolderMask
+  portHints={["pad"]}
+/>
+```
+
+## Next Steps
+
+- Increase sensitivity by making pads larger or moving them closer together
+- Use a mutual-capacitance controller (e.g., AT42QT2100) instead of MCU GPIO
+  sensing for better noise immunity
+- Try a circular pad arrangement to create a touch wheel
