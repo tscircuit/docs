@@ -21,7 +21,7 @@ To contribute to tscircuit, you need to make [Pull Requests](https://docs.github
 
 :::tip
 
-You can quickly find issues (with or without bounties) by [spinning the wheel of issues](https://issues.tscircuit.com/)
+You can quickly find issues (with or without sponsorships) by [spinning the wheel of issues](https://issues.tscircuit.com/)
 
 :::
 
