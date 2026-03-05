@@ -52,6 +52,8 @@ The following endpoints are available:
 | `/package_releases/update` | Update a package release, e.g. to lock it from modifications |
 | [`/package_releases/get`](./package-releases-get-api) | Get a package release                                        |
 | [`/package_releases/list`](./package-releases-list-api) | List package releases for a package                          |
+| [`/package_builds/create`](./package-builds-create-api) | Create a one-off build for a package release                |
+| [`/package_builds/get`](./package-builds-get-api) | Get status and log stream URL for a package build           |
 
 To learn how to find `package_id`, `package_release_id`, and latest release versions, see [Finding Package Releases](./finding-package-releases).
 
