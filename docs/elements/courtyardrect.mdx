@@ -1,0 +1,61 @@
+---
+title: <courtyardrect />
+description: Draw rectangular IPC courtyard markings around a footprint body.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+Use `<courtyardrect />` to create rectangular courtyard boundaries for packages with rectangular bodies.
+
+## Basic Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="26mm" height="20mm">
+    <footprint name="U1" pcbX={0} pcbY={0}>
+      <smtpad shape="rect" width={1.2} height={2} pcbX={-4} pcbY={0} portHints={["1"]} />
+      <smtpad shape="rect" width={1.2} height={2} pcbX={4} pcbY={0} portHints={["2"]} />
+      <courtyardrect
+        pcbX={0}
+        pcbY={0}
+        width={12}
+        height={8}
+        strokeWidth={0.1}
+      />
+    </footprint>
+  </board>
+)
+`}
+/>
+
+## Dashed Courtyard Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm">
+    <footprint name="J1" pcbX={0} pcbY={0}>
+      <platedhole pcbX={-3} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+      <platedhole pcbX={3} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+      <courtyardrect
+        pcbX={0}
+        pcbY={0}
+        width={14}
+        height={10}
+        strokeWidth={0.1}
+        isStrokeDashed
+      />
+    </footprint>
+  </board>
+)
+`}
+/>

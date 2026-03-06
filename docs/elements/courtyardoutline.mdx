@@ -1,0 +1,67 @@
+---
+title: <courtyardoutline />
+description: Draw custom polygon courtyard boundaries for irregular package geometry.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+Use `<courtyardoutline />` when your footprint needs a non-rectangular, non-circular courtyard shape.
+
+## Basic Outline Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm">
+    <footprint name="U1" pcbX={0} pcbY={0}>
+      <smtpad shape="rect" width={1.2} height={1.8} pcbX={-4} pcbY={-2} portHints={["1"]} />
+      <smtpad shape="rect" width={1.2} height={1.8} pcbX={-4} pcbY={2} portHints={["2"]} />
+      <smtpad shape="rect" width={1.2} height={1.8} pcbX={4} pcbY={-2} portHints={["3"]} />
+      <smtpad shape="rect" width={1.2} height={1.8} pcbX={4} pcbY={2} portHints={["4"]} />
+      <courtyardoutline
+        points={[
+          { x: -6, y: -5 },
+          { x: 6, y: -5 },
+          { x: 6, y: 5 },
+          { x: 0, y: 7 },
+          { x: -6, y: 5 },
+        ]}
+        strokeWidth={0.1}
+      />
+    </footprint>
+  </board>
+)
+`}
+/>
+
+## Filled Outline Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="28mm" height="22mm">
+    <footprint name="ANT1" pcbX={0} pcbY={0}>
+      <smtpad shape="rect" width={2.5} height={1.5} pcbX={0} pcbY={-3} portHints={["1"]} />
+      <courtyardoutline
+        points={[
+          { x: -7, y: -5 },
+          { x: 7, y: -5 },
+          { x: 7, y: 4 },
+          { x: 0, y: 7 },
+          { x: -7, y: 4 },
+        ]}
+        isFilled
+      />
+    </footprint>
+  </board>
+)
+`}
+/>
