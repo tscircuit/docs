@@ -1,0 +1,138 @@
+---
+title: <connector />
+description: A general-purpose connector component for board-to-board, cable, and edge interfaces.
+---
+
+## Overview
+
+A `<connector />` represents a physical connector on your board, such as a USB receptacle, wire terminal, or board-to-board header. It behaves similarly to `<chip />` for placement and footprint handling, but is specialized for connector use cases.
+
+Connectors support:
+
+- Custom pin naming via `pinLabels`
+- Explicit internal shorting via `internallyConnectedPins`
+- Schematic pin styling and arrangement controls
+- Optional connector `standard` hints (currently `"usb_c"` and `"m2"`)
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="40mm" height="40mm">
+      <connector
+        name="J1"
+        manufacturerPartNumber="AF_QTZB1_0"
+        pinLabels={{
+          pin1: ["VCC"],
+          pin2: ["D_NEG"],
+          pin3: ["D_POS"],
+          pin4: ["GND"],
+          pin5: ["EH1"],
+          pin6: ["EH2"],
+        }}
+        footprint={
+          <footprint>
+            <hole pcbX="-2.5mm" pcbY="-2.125mm" diameter="1.3mm" />
+            <hole pcbX="2.5mm" pcbY="-2.125mm" diameter="1.3mm" />
+            <smtpad
+              portHints={["pin1"]}
+              pcbX="-3.5mm"
+              pcbY="1.575mm"
+              width="1.1mm"
+              height="3.8mm"
+              shape="rect"
+            />
+            <smtpad
+              portHints={["pin2"]}
+              pcbX="-1mm"
+              pcbY="1.575mm"
+              width="1.1mm"
+              height="3.8mm"
+              shape="rect"
+            />
+            <smtpad
+              portHints={["pin3"]}
+              pcbX="1mm"
+              pcbY="1.575mm"
+              width="1.1mm"
+              height="3.8mm"
+              shape="rect"
+            />
+            <smtpad
+              portHints={["pin4"]}
+              pcbX="3.5mm"
+              pcbY="1.575mm"
+              width="1.1mm"
+              height="3.8mm"
+              shape="rect"
+            />
+            <smtpad
+              portHints={["pin5"]}
+              pcbX="7.15mm"
+              pcbY="-1.475mm"
+              width="1.8mm"
+              height="4mm"
+              shape="rect"
+            />
+            <smtpad
+              portHints={["pin6"]}
+              pcbX="-7.15mm"
+              pcbY="-1.475mm"
+              width="1.8mm"
+              height="4mm"
+              shape="rect"
+            />
+          </footprint>
+        }
+      />
+    </board>
+  )
+  `}
+/>
+
+This example is adapted from the core test for connector cable insertion center behavior: [connector-cable-insertion-center.test.tsx](https://github.com/tscircuit/core/blob/09243a083fae6aacad06b31b4439c58e722dffd0/tests/components/normal-components/connector-cable-insertion-center.test.tsx).
+
+## Cable insertion center
+
+When a connector footprint is rendered, tscircuit computes `pcb_component.cable_insertion_center` for the connector in circuit JSON. This gives a useful reference point for cable entry direction, annotation, or automation workflows.
+
+In the linked test, the computed cable insertion center is validated and then visualized as a small PCB note rectangle.
+
+## Properties
+
+The TypeScript interface for `<connector />` is defined in [`@tscircuit/props`](https://github.com/tscircuit/props/blob/main/lib/components/connector.ts):
+
+```ts
+export interface ConnectorProps extends CommonComponentProps {
+  manufacturerPartNumber?: string
+  pinLabels?: Record<
+    number | SchematicPinLabel,
+    SchematicPinLabel | SchematicPinLabel[]
+  >
+  schPinStyle?: SchematicPinStyle
+  schPinSpacing?: number | string
+  schWidth?: number | string
+  schHeight?: number | string
+  schDirection?: "left" | "right"
+  schPortArrangement?: SchematicPortArrangement
+  internallyConnectedPins?: (string | number)[][]
+  standard?: "usb_c" | "m2"
+}
+```
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `manufacturerPartNumber` | `string` | Manufacturer part number for the connector. |
+| `pinLabels` | `Record<number \| SchematicPinLabel, SchematicPinLabel \| SchematicPinLabel[]>` | Maps connector pins to one or more net labels. |
+| `schPinStyle` | `SchematicPinStyle` | Schematic rendering style for pins. |
+| `schPinSpacing` | `number \| string` | Pin spacing in schematic symbol. |
+| `schWidth` | `number \| string` | Schematic symbol width. |
+| `schHeight` | `number \| string` | Schematic symbol height. |
+| `schDirection` | `"left" \| "right"` | Direction of the connector symbol pins. |
+| `schPortArrangement` | `SchematicPortArrangement` | Schematic port layout strategy. |
+| `internallyConnectedPins` | `(string \| number)[][]` | Pin groups treated as internally shorted. |
+| `standard` | `"usb_c" \| "m2"` | Optional connector standard hint. |
+
+Like most components, `<connector />` also accepts common placement and PCB props from `CommonComponentProps` such as `pcbX`, `pcbY`, `rotation`, and `footprint`.
