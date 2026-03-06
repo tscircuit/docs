@@ -19,8 +19,8 @@ Use `<courtyardcircle />` inside a `<footprint />` to define circular courtyard 
 export default () => (
   <board width="20mm" height="20mm">
     <footprint name="U1" pcbX={0} pcbY={0}>
-      <smtpad shape="rect" width={1.2} height={1.6} pcbX={-2} pcbY={0} portHints={["1"]} />
-      <smtpad shape="rect" width={1.2} height={1.6} pcbX={2} pcbY={0} portHints={["2"]} />
+      <platedhole pcbX={-2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+      <platedhole pcbX={2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
       <courtyardcircle pcbX={0} pcbY={0} radius={4} strokeWidth={0.1} />
     </footprint>
   </board>
