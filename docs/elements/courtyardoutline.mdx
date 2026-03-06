@@ -22,10 +22,10 @@ export default () => (
       name="U1"
       footprint={
         <footprint>
-          <platedhole pcbX={-4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
-          <platedhole pcbX={-4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
-          <platedhole pcbX={4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
-          <platedhole pcbX={4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={-4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={-4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
           <courtyardoutline
             points={[
               { x: -6, y: -5 },
@@ -57,7 +57,7 @@ export default () => (
       name="ANT1"
       footprint={
         <footprint>
-          <platedhole pcbX={0} pcbY={-3} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={0} pcbY={-3} outerDiameter={2.2} holeDiameter={1.1} />
           <courtyardoutline
             points={[
               { x: -7, y: -5 },

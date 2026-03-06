@@ -22,8 +22,8 @@ export default () => (
       name="U1"
       footprint={
         <footprint>
-          <platedhole pcbX={-2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
-          <platedhole pcbX={2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={-2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
           <courtyardcircle pcbX={0} pcbY={0} radius={4} strokeWidth={0.1} />
         </footprint>
       }
@@ -46,7 +46,7 @@ export default () => (
       name="TP1"
       footprint={
         <footprint>
-          <platedhole pcbX={0} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
           <courtyardcircle
             pcbX={0}
             pcbY={0}
