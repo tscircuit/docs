@@ -18,22 +18,27 @@ Use `<courtyardoutline />` when your footprint needs a non-rectangular, non-circ
   code={`
 export default () => (
   <board width="30mm" height="24mm">
-    <footprint name="U1" pcbX={0} pcbY={0}>
-      <platedhole pcbX={-4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
-      <platedhole pcbX={-4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
-      <platedhole pcbX={4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
-      <platedhole pcbX={4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
-      <courtyardoutline
-        points={[
-          { x: -6, y: -5 },
-          { x: 6, y: -5 },
-          { x: 6, y: 5 },
-          { x: 0, y: 7 },
-          { x: -6, y: 5 },
-        ]}
-        strokeWidth={0.1}
-      />
-    </footprint>
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole pcbX={-4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole pcbX={-4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole pcbX={4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole pcbX={4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
+          <courtyardoutline
+            points={[
+              { x: -6, y: -5 },
+              { x: 6, y: -5 },
+              { x: 6, y: 5 },
+              { x: 0, y: 7 },
+              { x: -6, y: 5 },
+            ]}
+            strokeWidth={0.1}
+          />
+        </footprint>
+      }
+    />
   </board>
 )
 `}
@@ -48,19 +53,24 @@ export default () => (
   code={`
 export default () => (
   <board width="28mm" height="22mm">
-    <footprint name="ANT1" pcbX={0} pcbY={0}>
-      <platedhole pcbX={0} pcbY={-3} outerDiameter={2.2} holeDiameter={1.1} />
-      <courtyardoutline
-        points={[
-          { x: -7, y: -5 },
-          { x: 7, y: -5 },
-          { x: 7, y: 4 },
-          { x: 0, y: 7 },
-          { x: -7, y: 4 },
-        ]}
-        isFilled
-      />
-    </footprint>
+    <chip
+      name="ANT1"
+      footprint={
+        <footprint>
+          <platedhole pcbX={0} pcbY={-3} outerDiameter={2.2} holeDiameter={1.1} />
+          <courtyardoutline
+            points={[
+              { x: -7, y: -5 },
+              { x: 7, y: -5 },
+              { x: 7, y: 4 },
+              { x: 0, y: 7 },
+              { x: -7, y: 4 },
+            ]}
+            isFilled
+          />
+        </footprint>
+      }
+    />
   </board>
 )
 `}
