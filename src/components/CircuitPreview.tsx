@@ -90,6 +90,7 @@ export default function CircuitPreview({
   rightView,
   showSimulationGraph = false,
   verticalStack = false,
+  showCourtyards = false,
 }: {
   code?: string
   showTabs?: boolean
@@ -110,6 +111,7 @@ export default function CircuitPreview({
   projectBaseUrl?: string
   showSimulationGraph?: boolean
   verticalStack?: boolean
+  showCourtyards?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -146,7 +148,14 @@ export default function CircuitPreview({
     ? fsMap || code
     : code || Object.values(fsMap ?? {})[0]
 
-  const pcbUrl = useMemo(() => createSvgUrl(fsMapOrCode, "pcb"), [fsMapOrCode])
+  const pcbUrl = useMemo(() => {
+    const basePcbUrl = createSvgUrl(fsMapOrCode, "pcb")
+
+    if (!showCourtyards) return basePcbUrl
+
+    const separator = basePcbUrl.includes("?") ? "&" : "?"
+    return `${basePcbUrl}${separator}show_courtyards=true`
+  }, [fsMapOrCode, showCourtyards])
   console.log(fsMapOrCode)
   const schUrl = useMemo(
     () =>
