@@ -1,0 +1,63 @@
+---
+title: <courtyardcircle />
+description: Draw circular IPC courtyard markings around footprint features.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+Use `<courtyardcircle />` inside a `<footprint />` to define circular courtyard boundaries and clearance regions.
+
+## Basic Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+          <platedhole shape="circle" pcbX={2.5} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+          <courtyardcircle pcbX={0} pcbY={0} radius={4} strokeWidth={0.1} />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+## Filled Circle Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="18mm" height="18mm">
+    <chip
+      name="TP1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={2.2} holeDiameter={1.1} />
+          <courtyardcircle
+            pcbX={0}
+            pcbY={0}
+            radius={3.2}
+            strokeWidth={0.1}
+            isFilled
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
