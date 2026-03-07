@@ -1,0 +1,103 @@
+---
+title: Creating a Capacitive Touch Slider Element
+description: Learn how to build a capacitive touch slider footprint using polygon smtpads and solder mask coverage in tscircuit.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+A capacitive touch slider is a touch input element made from multiple conductive pads.
+As a finger moves across the pads, firmware can estimate position and create a smooth slider interaction for brightness, volume, menu navigation, and more.
+
+In this tutorial, we'll build a slider footprint using multiple `polygon` `<smtpad />` elements and cover them with solder mask.
+
+## Build the Slider Footprint
+
+The example below creates 7 interleaved diamond/rectangle polygon pads in one custom footprint.
+Each pad is exposed electrically as a separate channel (`S1` to `S7`), but visually appears under solder mask as a clean touch area.
+
+<TscircuitIframe
+  defaultView="pcb"
+  code={`
+const createDiamondPad = (x: number, port: string) => (
+  <smtpad
+    shape="polygon"
+    layer="top"
+    portHints={[port]}
+    coverWithSolderMask
+    points={[
+      { x: x - 1.8, y: 0 },
+      { x, y: 2.2 },
+      { x: x + 1.8, y: 0 },
+      { x, y: -2.2 },
+    ]}
+  />
+)
+
+const createBridgePad = (x: number, port: string) => (
+  <smtpad
+    shape="polygon"
+    layer="top"
+    portHints={[port]}
+    coverWithSolderMask
+    points={[
+      { x: x - 0.7, y: 1.4 },
+      { x: x + 0.7, y: 1.4 },
+      { x: x + 0.7, y: -1.4 },
+      { x: x - 0.7, y: -1.4 },
+    ]}
+  />
+)
+
+export default () => (
+  <board width="40mm" height="16mm">
+    <chip
+      name="TS1"
+      pcbX={0}
+      pcbY={0}
+      schX={0}
+      schY={0}
+      footprint={
+        <footprint>
+          {createDiamondPad(-9, "S1")}
+          {createBridgePad(-7.5, "S1")}
+          {createDiamondPad(-6, "S2")}
+          {createBridgePad(-4.5, "S2")}
+          {createDiamondPad(-3, "S3")}
+          {createBridgePad(-1.5, "S3")}
+          {createDiamondPad(0, "S4")}
+          {createBridgePad(1.5, "S4")}
+          {createDiamondPad(3, "S5")}
+          {createBridgePad(4.5, "S5")}
+          {createDiamondPad(6, "S6")}
+          {createBridgePad(7.5, "S6")}
+          {createDiamondPad(9, "S7")}
+        </footprint>
+      }
+      connections={{
+        S1: "net.SLIDER_1",
+        S2: "net.SLIDER_2",
+        S3: "net.SLIDER_3",
+        S4: "net.SLIDER_4",
+        S5: "net.SLIDER_5",
+        S6: "net.SLIDER_6",
+        S7: "net.SLIDER_7",
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+## What `coverWithSolderMask` / `covered_with_solder_mask` Does
+
+- In tscircuit JSX, you set `coverWithSolderMask` on each `<smtpad />`.
+- In generated PCB JSON, this is represented as `covered_with_solder_mask`.
+- This keeps the copper pad under solder mask instead of exposing bare metal.
+- For capacitive touch, this is useful because the user touches the solder mask surface while capacitive coupling still works through the mask.
+
+## Final Result
+
+This design produces a compact capacitive slider footprint made from repeated polygon pads arranged into a continuous touch strip.
+In PCB view, you get a smooth slider geometry with each segment separately routable to a sensing channel.
