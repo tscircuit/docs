@@ -29,6 +29,7 @@ its position on the board:
 | -------- | ----------- | ------------- |
 | `pcbX`   | Set the center X position of the element | `0` |
 | `pcbY`   | Set the center Y position of the element | `0` |
+| `pcbPositionAnchor` | Choose which point of the footprint `pcbX`/`pcbY` should attach to (pin names like `"pin1"` or boundaries like `"top_left"`) | `"center"` |
 | `pcbRotation` | Set the rotation of the element | `"90deg"` |
 | `layer` | Place the element on the top (default) or bottom copper layer | `"bottom"` |
 
@@ -47,6 +48,50 @@ export default () => (
       pcbY="2.5mm"
       pcbRotation="90deg"
       layer="bottom"
+    />
+  </board>
+)
+
+`} />
+
+### Anchoring PCB position with `pcbPositionAnchor`
+
+By default, `pcbX`/`pcbY` position a component by its center. Use `pcbPositionAnchor` when you want to align a specific pin or a specific footprint boundary point to your coordinates.
+
+Common anchors include:
+
+- Pin anchors: `"pin1"`, `"pin2"`, etc.
+- Boundary anchors: `"top_left"`, `"top_center"`, `"top_right"`, `"center_left"`, `"center"`, `"center_right"`, `"bottom_left"`, `"bottom_center"`, `"bottom_right"`
+
+<CircuitPreview leftView="code" rightView="pcb" code={`
+
+export default () => (
+  <board width="40mm" height="22mm">
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0402"
+      pcbX={8}
+      pcbY={14}
+      pcbPositionAnchor="pin1"
+    />
+
+    <resistor
+      name="R2"
+      resistance="1k"
+      footprint="0402"
+      pcbX={20}
+      pcbY={14}
+      pcbPositionAnchor="center"
+    />
+
+    <resistor
+      name="R3"
+      resistance="1k"
+      footprint="0402"
+      pcbX={32}
+      pcbY={14}
+      pcbPositionAnchor="top_left"
     />
   </board>
 )
