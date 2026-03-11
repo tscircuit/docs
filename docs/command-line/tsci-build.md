@@ -89,40 +89,6 @@ Preview target selection uses this precedence:
 2. `mainEntrypoint`
 3. The first successful build
 
-### Examples
-
-These examples show which image files each flag combination selects. Use `--preview-images` or `--all-images` to choose which build outputs receive those files.
-
-```bash
-tsci build --svgs
-```
-
-Writes `dist/<outputDir>/pcb.svg` and `dist/<outputDir>/schematic.svg` for the selected build outputs.
-
-```bash
-tsci build --pngs
-```
-
-Writes only `dist/<outputDir>/3d.png` for the selected build outputs.
-
-```bash
-tsci build --3d --pcb-only
-```
-
-Writes `dist/<outputDir>/pcb.svg` and `dist/<outputDir>/3d.png` for the selected build outputs.
-
-```bash
-tsci build --preview-images
-```
-
-Writes `dist/<outputDir>/pcb.svg`, `dist/<outputDir>/schematic.svg`, and `dist/<outputDir>/3d.png` for one selected build.
-
-```bash
-tsci build --all-images --pngs
-```
-
-Writes only `dist/<outputDir>/3d.png` for every successful build output.
-
 ## Output Directory Structure
 
 When using various build options, the output structure looks like:
@@ -131,9 +97,9 @@ When using various build options, the output structure looks like:
 dist/
 ├── my-circuit/
 │   ├── circuit.json          # Always generated for that build output
-│   ├── pcb.svg               # When SVG generation includes PCB
-│   ├── schematic.svg         # When SVG generation includes schematic
-│   ├── 3d.png                # When image generation includes 3D
+│   ├── pcb.svg               # With --preview-images/--all-images, --svgs, --pcb-svgs, etc.
+│   ├── schematic.svg         # With --preview-images/--all-images, --svgs, --schematic-svgs, etc
+│   ├── 3d.png                # With --preview-images/--all-images, --pngs, or --3d
 │   ├── 3d.glb                # With --glbs
 │   └── kicad/
 │       ├── my-circuit.kicad_sch   # With --kicad-project
