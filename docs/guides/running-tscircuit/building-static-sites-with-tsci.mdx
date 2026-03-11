@@ -24,7 +24,7 @@ Run the build command from the root of your project:
 npx tsci build --site
 ```
 
-The CLI resolves your entrypoint, evaluates every circuit, and then writes a static site to `dist/site/` alongside the usual `dist/circuit.json` outputs. The generated folder contains:
+The CLI resolves your entrypoint, evaluates every circuit, and then writes a static site to `dist/site/` alongside the usual `dist/<outputDir>/circuit.json` outputs. The generated folder contains:
 
 - `index.html` – a ready-to-host viewer.
 - `lib/…/circuit.json` – one JSON file per design so the viewer can lazy load each project.
@@ -65,4 +65,3 @@ Because the output is plain HTML/JS/CSS, you can host it almost anywhere:
 - **S3/CloudFront or static buckets** – upload the generated files with `aws s3 sync dist s3://your-bucket`.
 
 Once deployed, the site stays fast and inexpensive to serve because no server-side rendering or API proxy is required—the viewer fetches the prebuilt `circuit.json` files directly from storage.
-
