@@ -1,0 +1,271 @@
+---
+title: Building a Capacitive Touch Slider
+description: Learn how to create a capacitive touch slider using polygon SMT pads with solder mask coverage in tscircuit.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+A capacitive touch slider detects finger position along a linear or rotary surface without moving parts. The design uses copper pads covered with solder mask — the solder mask acts as a thin dielectric layer, enabling capacitive coupling between the user's finger and the copper electrode underneath.
+
+This tutorial walks through creating a 5-segment linear capacitive touch slider with diamond-shaped polygon pads.
+
+## How Capacitive Touch Works
+
+```
+  Finger (conductor)
+  ──────────────────────
+  Solder mask (dielectric)   ← coveredWithSolderMask={true}
+  ══════════════════════
+  Copper pad (electrode)
+  ──────────────────────
+  PCB substrate (FR4)
+```
+
+When a finger moves over the solder mask, it changes the capacitance of the pad underneath. A microcontroller reads each pad's capacitance and interpolates finger position.
+
+## Creating the Slider Footprint
+
+The key building block is `<smtpad shape="polygon" coveredWithSolderMask={true} />`. The `coveredWithSolderMask` prop:
+- Sets `is_covered_with_solder_mask: true` in the circuit JSON
+- Prevents solder paste from being generated (no `pcb_solder_paste` elements)
+- The pad remains electrically connected but is physically covered by solder mask
+
+<TscircuitIframe
+  defaultView="pcb"
+  code={`
+// Helper: diamond-shaped polygon centered at (offsetX, offsetY)
+const diamond = (halfW, halfH, offsetX = 0, offsetY = 0) => [
+  { x: offsetX,        y: offsetY + halfH },
+  { x: offsetX + halfW, y: offsetY        },
+  { x: offsetX,        y: offsetY - halfH },
+  { x: offsetX - halfW, y: offsetY        },
+]
+
+export default () => (
+  <board width="20mm" height="10mm">
+    <chip
+      name="SLIDER"
+      footprint={
+        <footprint>
+          {[0, 1, 2, 3, 4].map(i => {
+            const offsetX = (i - 2) * 3.0  // 3mm spacing
+            return (
+              <smtpad
+                key={i}
+                name={"pad" + (i + 1)}
+                shape="polygon"
+                points={diamond(1.2, 2.5, offsetX, 0)}
+                portHints={["pin" + (i + 1)]}
+                coveredWithSolderMask={true}
+              />
+            )
+          })}
+        </footprint>
+      }
+      connections={{
+        pin1: "net.TOUCH1",
+        pin2: "net.TOUCH2",
+        pin3: "net.TOUCH3",
+        pin4: "net.TOUCH4",
+        pin5: "net.TOUCH5",
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+## Key Properties
+
+| Property | Description |
+|----------|-------------|
+| `shape="polygon"` | Defines an arbitrary polygon shape using `points` |
+| `points` | Array of `{ x, y }` objects defining the polygon vertices (in mm) |
+| `coveredWithSolderMask={true}` | Covers the pad with solder mask (no solder paste generated) |
+| `portHints` | Connects the pad to a named port on the chip |
+
+## Using Solder Mask Margin
+
+You can fine-tune the solder mask opening with `solderMaskMargin`. A **negative** margin means the solder mask extends inward (larger coverage), while a **positive** value creates a larger opening:
+
+```tsx
+<smtpad
+  shape="rect"
+  width="4mm"
+  height="4mm"
+  portHints={["pad1"]}
+  coveredWithSolderMask={true}
+  solderMaskMargin={-0.1}  // 0.1mm inset — mask extends slightly beyond pad
+/>
+```
+
+## Other Pad Shapes for Touch Sliders
+
+### Rectangular Pads
+
+Simpler rectangular pads work well when pad-to-pad separation is less critical:
+
+<TscircuitIframe
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="26mm" height="8mm">
+    <chip
+      name="TS1"
+      footprint={
+        <footprint>
+          {[0, 1, 2, 3].map(i => (
+            <smtpad
+              key={i}
+              name={"seg" + (i + 1)}
+              shape="rect"
+              width="4mm"
+              height="5mm"
+              portHints={["pin" + (i + 1)]}
+              pcbX={(i - 1.5) * 6 + "mm"}
+              coveredWithSolderMask={true}
+            />
+          ))}
+        </footprint>
+      }
+      connections={{
+        pin1: "net.S1",
+        pin2: "net.S2",
+        pin3: "net.S3",
+        pin4: "net.S4",
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+### Circle Pads (Discrete Touch Buttons)
+
+Round pads are great for discrete touch points or when aesthetics matter:
+
+<TscircuitIframe
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="30mm" height="8mm">
+    <chip
+      name="TS2"
+      footprint={
+        <footprint>
+          {[0, 1, 2, 3, 4].map(i => (
+            <smtpad
+              key={i}
+              name={"btn" + (i + 1)}
+              shape="circle"
+              radius="2mm"
+              portHints={["pin" + (i + 1)]}
+              pcbX={(i - 2) * 5 + "mm"}
+              coveredWithSolderMask={true}
+            />
+          ))}
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+## Connecting to a Microcontroller
+
+Here's a complete example connecting a 4-segment touch slider to an RP2040 chip via capacitive touch-capable GPIO pins:
+
+<TscircuitIframe
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="40mm" height="30mm">
+    {/* Capacitive touch slider */}
+    <chip
+      name="SLIDER"
+      schX={-8}
+      footprint={
+        <footprint>
+          {[0, 1, 2, 3].map(i => {
+            const hw = 1.2, hh = 2.5
+            const ox = (i - 1.5) * 3.0
+            return (
+              <smtpad
+                key={i}
+                name={"p" + (i + 1)}
+                shape="polygon"
+                points={[
+                  { x: ox,      y: hh  },
+                  { x: ox + hw, y: 0   },
+                  { x: ox,      y: -hh },
+                  { x: ox - hw, y: 0   },
+                ]}
+                portHints={["pin" + (i + 1)]}
+                coveredWithSolderMask={true}
+              />
+            )
+          })}
+        </footprint>
+      }
+      connections={{
+        pin1: "net.TCH0",
+        pin2: "net.TCH1",
+        pin3: "net.TCH2",
+        pin4: "net.TCH3",
+      }}
+    />
+    {/* MCU */}
+    <chip
+      name="U1"
+      schX={4}
+      pinLabels={{
+        pin1: "GP26",
+        pin2: "GP27",
+        pin3: "GP28",
+        pin4: "GP29",
+        pin5: "GND",
+        pin6: "3V3",
+      }}
+      connections={{
+        GP26: "net.TCH0",
+        GP27: "net.TCH1",
+        GP28: "net.TCH2",
+        GP29: "net.TCH3",
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+## Circuit JSON Output
+
+When rendered, each covered pad produces a `pcb_smtpad` element with `is_covered_with_solder_mask: true`:
+
+```json
+{
+  "type": "pcb_smtpad",
+  "shape": "polygon",
+  "layer": "top",
+  "is_covered_with_solder_mask": true,
+  "points": [
+    { "x": -6, "y": 2.5 },
+    { "x": -4.8, "y": 0 },
+    { "x": -6, "y": -2.5 },
+    { "x": -7.2, "y": 0 }
+  ]
+}
+```
+
+Note: No `pcb_solder_paste` elements are generated for covered pads — this is correct since you don't want solder paste on touch sensor pads.
+
+## Summary
+
+- Use `<smtpad shape="polygon" coveredWithSolderMask={true} />` for capacitive touch electrodes
+- The `points` array defines the electrode shape in mm (relative to footprint origin)
+- Diamond/rhombus shapes improve sensitivity and reduce inter-electrode crosstalk
+- Multiple pads in a linear arrangement form a slider; firmware reads capacitance per pad
+
