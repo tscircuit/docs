@@ -75,3 +75,84 @@ export default () => (
 )
 `}
 />
+
+## Anchor Alignment Examples
+
+Use `anchorAlignment` to control which point of the outline's bounding box is
+placed at the `pcbX`/`pcbY` anchor. This is helpful when you want to define an
+outline using only positive coordinates (e.g. `{ x: 0, y: 0 }` to
+`{ x: w, y: h }`) but still position it relative to a footprint origin.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="70mm" height="26mm">
+    <chip
+      name="CENTER"
+      pcbX={-20}
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            pcbX={0}
+            pcbY={0}
+            anchorAlignment="center"
+            outline={[
+              { x: 0, y: 0 },
+              { x: 10, y: 0 },
+              { x: 10, y: 6 },
+              { x: 0, y: 6 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+
+    <chip
+      name="TOP_LEFT"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            pcbX={0}
+            pcbY={0}
+            anchorAlignment="top_left"
+            outline={[
+              { x: 0, y: 0 },
+              { x: 10, y: 0 },
+              { x: 10, y: 6 },
+              { x: 0, y: 6 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+
+    <chip
+      name="BOTTOM_RIGHT"
+      pcbX={20}
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            pcbX={0}
+            pcbY={0}
+            anchorAlignment="bottom_right"
+            outline={[
+              { x: 0, y: 0 },
+              { x: 10, y: 0 },
+              { x: 10, y: 6 },
+              { x: 0, y: 6 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
