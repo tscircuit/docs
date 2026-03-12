@@ -78,10 +78,9 @@ export default () => (
 
 ## Anchor Alignment Examples
 
-Use `anchorAlignment` to control which point of the outline's bounding box is
-placed at the `pcbX`/`pcbY` anchor. This is helpful when you want to define an
-outline using only positive coordinates (e.g. `{ x: 0, y: 0 }` to
-`{ x: w, y: h }`) but still position it relative to a footprint origin.
+`<courtyardoutline />` draws the polygon you provide in footprint coordinates.
+To make the footprint origin act like a specific “anchor” (center, top-left,
+bottom-right, etc), translate the outline points accordingly.
 
 <CircuitPreview
   showCourtyards
@@ -89,70 +88,55 @@ outline using only positive coordinates (e.g. `{ x: 0, y: 0 }` to
   hideSchematicTab
   hide3DTab
   code={`
-export default () => (
-  <board width="70mm" height="26mm">
-    <chip
-      name="CENTER"
-      pcbX={-20}
-      footprint={
-        <footprint>
-          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
-          <courtyardoutline
-            pcbX={0}
-            pcbY={0}
-            anchorAlignment="center"
-            outline={[
-              { x: 0, y: 0 },
-              { x: 10, y: 0 },
-              { x: 10, y: 6 },
-              { x: 0, y: 6 },
-            ]}
-          />
-        </footprint>
-      }
-    />
+export default () => {
+  const W = 10
+  const H = 6
 
-    <chip
-      name="TOP_LEFT"
-      footprint={
-        <footprint>
-          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
-          <courtyardoutline
-            pcbX={0}
-            pcbY={0}
-            anchorAlignment="top_left"
-            outline={[
-              { x: 0, y: 0 },
-              { x: 10, y: 0 },
-              { x: 10, y: 6 },
-              { x: 0, y: 6 },
-            ]}
-          />
-        </footprint>
-      }
-    />
+  const rect = [
+    { x: 0, y: 0 },
+    { x: W, y: 0 },
+    { x: W, y: H },
+    { x: 0, y: H },
+  ]
 
-    <chip
-      name="BOTTOM_RIGHT"
-      pcbX={20}
-      footprint={
-        <footprint>
-          <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
-          <courtyardoutline
-            pcbX={0}
-            pcbY={0}
-            anchorAlignment="bottom_right"
-            outline={[
-              { x: 0, y: 0 },
-              { x: 10, y: 0 },
-              { x: 10, y: 6 },
-              { x: 0, y: 6 },
-            ]}
-          />
-        </footprint>
-      }
-    />
-  </board>
-)
+  const translate = (outline, dx, dy) =>
+    outline.map((p) => ({ x: p.x + dx, y: p.y + dy }))
+
+  return (
+    <board width="70mm" height="26mm">
+      <chip
+        name="CENTER"
+        pcbX={-20}
+        footprint={
+          <footprint>
+            <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+            <courtyardoutline outline={translate(rect, -W / 2, -H / 2)} />
+          </footprint>
+        }
+      />
+
+      <chip
+        name="TOP_LEFT"
+        footprint={
+          <footprint>
+            <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+            <courtyardoutline outline={translate(rect, 0, -H)} />
+          </footprint>
+        }
+      />
+
+      <chip
+        name="BOTTOM_RIGHT"
+        pcbX={20}
+        footprint={
+          <footprint>
+            <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+            <courtyardoutline outline={translate(rect, -W, 0)} />
+          </footprint>
+        }
+      />
+    </board>
+  )
+}
 `}
 />
