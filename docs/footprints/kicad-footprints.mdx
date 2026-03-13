@@ -32,36 +32,13 @@ You can browse the official KiCad footprint libraries to discover valid `<Librar
 
 ## kicadFootprintStrings
 
-`kicadFootprintStrings` is a strongly-typed object exported from `tscircuit` that maps every valid KiCad footprint path to its `kicad:`-prefixed string. It gives you TypeScript autocomplete and compile-time safety when specifying KiCad footprints.
+For TypeScript autocomplete and compile-time validation, use the `kicadFootprintStrings` object:
 
 ```tsx
 import { kicadFootprintStrings } from "tscircuit"
 
-export default () => (
-  <board width="10mm" height="10mm">
-    <resistor
-      name="R1"
-      resistance="10k"
-      footprint={kicadFootprintStrings["Resistor_SMD/R_0402_1005Metric"]}
-      pcbX={0}
-    />
-  </board>
-)
+<resistor footprint={kicadFootprintStrings["Resistor_SMD/R_0402_1005Metric"]} />
+// → footprint="kicad:Resistor_SMD/R_0402_1005Metric"
 ```
 
-The object has the shape `Record<KicadPath, "kicad:{KicadPath}">`, so:
-
-```ts
-kicadFootprintStrings["Resistor_SMD/R_0402_1005Metric"]
-// → "kicad:Resistor_SMD/R_0402_1005Metric"
-```
-
-### Why use it over a plain string?
-
-| | Plain string | `kicadFootprintStrings` |
-|---|---|---|
-| TypeScript autocomplete | via `footprint=""` prop | via object key lookup |
-| Compile-time validation | no | yes — invalid keys are a type error |
-| Runtime safety | fails at render with 404 | can throw early with a clear error |
-
-Using `kicadFootprintStrings` means a typo in a footprint name is caught at compile time rather than silently failing at render time.
+Invalid keys are caught as type errors at compile time.
