@@ -29,3 +29,16 @@ The text after `kicad:` follows the same convention as KiCad's `.pretty` directo
 ### Official KiCad footprint libraries
 
 You can browse the official KiCad footprint libraries to discover valid `<Library>/<FootprintName>` values to use with the `kicad:` prefix. See: [KiCad Footprints (GitLab)](https://gitlab.com/kicad/libraries/kicad-footprints).
+
+## kicadFootprintStrings
+
+For TypeScript autocomplete and compile-time validation, use the `kicadFootprintStrings` object:
+
+```tsx
+import { kicadFootprintStrings } from "tscircuit"
+
+<resistor footprint={kicadFootprintStrings["Resistor_SMD/R_0402_1005Metric"]} />
+// → footprint="kicad:Resistor_SMD/R_0402_1005Metric"
+```
+
+Invalid keys are caught as type errors at compile time.
