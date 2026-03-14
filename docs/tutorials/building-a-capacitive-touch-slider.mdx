@@ -1,0 +1,199 @@
+---
+title: Building a Capacitive Touch Slider
+description: Learn how to create a capacitive touch slider element using polygon smtpads with solder mask coverage in tscircuit.
+---
+
+## Overview
+
+A capacitive touch slider is a common UI element in embedded electronics: the user slides their finger over a surface and the firmware detects which segment is being touched. Each segment is a copper pad covered by a thin layer of solder mask — the solder mask insulates the finger from direct electrical contact while still allowing capacitance to be sensed.
+
+This tutorial shows how to build a 5-segment diamond-shaped capacitive touch slider footprint using polygon `<smtpad>` elements with `coveredWithSolderMask`.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## The Finished Design
+
+<TscircuitIframe
+  defaultView="pcb"
+  code={`
+export default () => {
+  const segmentCount = 5
+  const spacing = 3.0  // mm between segment centers
+
+  const diamondPoints = (cx: number, cy: number, hw: number, hh: number) => [
+    { x: cx,      y: cy + hh },
+    { x: cx + hw, y: cy      },
+    { x: cx,      y: cy - hh },
+    { x: cx - hw, y: cy      },
+  ]
+
+  return (
+    <board width="20mm" height="10mm">
+      <chip
+        name="U1"
+        footprint={
+          <footprint>
+            {Array.from({ length: segmentCount }, (_, i) => {
+              const cx = (i - Math.floor(segmentCount / 2)) * spacing
+              return (
+                <smtpad
+                  key={i}
+                  shape="polygon"
+                  layer="top"
+                  pcbX={cx}
+                  pcbY={0}
+                  portHints={[\`pin\${i + 1}\`]}
+                  coveredWithSolderMask={true}
+                  points={diamondPoints(0, 0, 1.2, 1.8)}
+                />
+              )
+            })}
+          </footprint>
+        }
+      />
+    </board>
+  )
+}
+`}
+/>
+
+## How It Works
+
+### Polygon SMT Pads
+
+The `polygon` shape lets you define pads with arbitrary outlines using a list of `{ x, y }` points. Here we use diamond (rhombus) shapes — they tile neatly in a row with no gaps and give the sensor good directional sensitivity:
+
+```tsx
+<smtpad
+  shape="polygon"
+  layer="top"
+  pcbX={0}
+  pcbY={0}
+  portHints={["pin1"]}
+  points={[
+    { x:  0,   y:  1.8 },  // top
+    { x:  1.2, y:  0   },  // right
+    { x:  0,   y: -1.8 },  // bottom
+    { x: -1.2, y:  0   },  // left
+  ]}
+/>
+```
+
+### Solder Mask Coverage
+
+The `coveredWithSolderMask` prop tells the PCB to apply green solder mask over the copper pad. This is essential for capacitive sensing — without it the pad would be exposed copper and would behave like a contact button rather than a capacitive sensor:
+
+```tsx
+<smtpad
+  shape="polygon"
+  layer="top"
+  coveredWithSolderMask={true}
+  points={...}
+/>
+```
+
+You can also control the margin of the solder mask opening (for pads you want exposed):
+
+```tsx
+<smtpad
+  shape="rect"
+  width="2mm"
+  height="1mm"
+  layer="top"
+  solderMaskMargin="0.1mm"  // 0.1mm expansion around the pad opening
+/>
+```
+
+### Connecting to a Touch IC
+
+In a real design you would connect each pad's `portHint` to a pin on a capacitive touch controller such as the Azoteq IQS5xx or TI FDC2214:
+
+```tsx
+<chip
+  name="U1"
+  footprint={<footprint> ... </footprint>}
+  connections={{
+    pin1: "net.CS0",
+    pin2: "net.CS1",
+    pin3: "net.CS2",
+    pin4: "net.CS3",
+    pin5: "net.CS4",
+  }}
+/>
+```
+
+## Full Example
+
+Below is a complete board with the touch slider footprint and connection annotations:
+
+<TscircuitIframe
+  defaultView="pcb"
+  code={`
+export default () => {
+  const segmentCount = 5
+  const spacing = 3.0
+
+  const diamondPoints = (hw: number, hh: number) => [
+    { x:  0,  y:  hh },
+    { x:  hw, y:   0 },
+    { x:  0,  y: -hh },
+    { x: -hw, y:   0 },
+  ]
+
+  return (
+    <board width="22mm" height="12mm">
+      <chip
+        name="SLIDER"
+        footprint={
+          <footprint>
+            {Array.from({ length: segmentCount }, (_, i) => {
+              const cx = (i - 2) * spacing
+              return (
+                <smtpad
+                  key={i}
+                  shape="polygon"
+                  layer="top"
+                  pcbX={cx}
+                  pcbY={0}
+                  portHints={[\`pin\${i + 1}\`]}
+                  coveredWithSolderMask={true}
+                  points={diamondPoints(1.2, 1.8)}
+                />
+              )
+            })}
+          </footprint>
+        }
+        connections={{
+          pin1: "net.CS0",
+          pin2: "net.CS1",
+          pin3: "net.CS2",
+          pin4: "net.CS3",
+          pin5: "net.CS4",
+        }}
+      />
+    </board>
+  )
+}
+`}
+/>
+
+## Solder Mask Rendering
+
+When you export your design or view it in 3D, the solder mask coverage is rendered as a green overlay on each segment. This gives you an accurate preview of how the finished PCB will look and lets you verify the sensor geometry before ordering.
+
+## Key Properties Reference
+
+| Property | Type | Description |
+|---|---|---|
+| `shape` | `"polygon"` | Selects the polygon pad type |
+| `points` | `Array<{x, y}>` | Vertices of the pad outline in mm, relative to `pcbX`/`pcbY` |
+| `coveredWithSolderMask` | `boolean` | Apply solder mask over this pad (capacitive sensing, bridging pads) |
+| `solderMaskMargin` | `Distance` | Expand the solder mask opening around the pad edge |
+| `layer` | `"top" \| "bottom"` | PCB copper layer |
+| `portHints` | `string[]` | Logical port names used for routing |
+
+## Next Steps
+
+- Connect your slider to a capacitive touch IC in your schematic
+- Use the `solderMaskMargin` prop to fine-tune the dielectric gap for your sensing requirements
+- Explore the [smtpad element reference](/docs/footprints/smtpad) for all available properties and shapes

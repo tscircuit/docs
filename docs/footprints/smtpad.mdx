@@ -52,11 +52,13 @@ Each smtpad shape has different properties.
 | cornerRadius | rect         | Optional. Corner radius for rectangular pads                                |
 | radius      | circle, pill | The radius of the pad (for circle) or corner radius (for pill)              |
 | points      | polygon      | An array of `{ x, y }` coordinates describing the polygon vertices          |
-| ccwRotation | rect         | Counter-clockwise rotation angle in degrees                                 |
+| ccwRotation | rect, rotated_rect | Counter-clockwise rotation angle in degrees                            |
 | portHints   | all          | Array of port names that this pad connects to                               |
 | pcbX        | all          | X position of the pad center on the PCB                                     |
 | pcbY        | all          | Y position of the pad center on the PCB                                     |
 | layer       | all          | Which layer the pad is on (`"top"` or `"bottom"`)                           |
+| coveredWithSolderMask | all | Cover the pad with solder mask (useful for capacitive touch sensors)   |
+| solderMaskMargin | all    | Expand the solder mask opening around the pad edge (e.g. `"0.1mm"`)        |
 
 ## Example: Rectangular Pad with Rounded Corners
 
@@ -89,7 +91,7 @@ Use the `cornerRadius` property on rectangular pads to round their corners.
 
 ## Example: Polygon Pad
 
-Here’s an example of using a **polygon smtpad** 
+Here’s an example of using a **polygon smtpad**
 
 <CircuitPreview
   defaultView="pcb"
@@ -99,20 +101,20 @@ Here’s an example of using a **polygon smtpad**
     <board width="10mm" height="10mm">
       <chip name="U1" footprint={
         <footprint>
-          <smtpad 
+          <smtpad
             pcbX="0mm"
             pcbY="0mm"
-            shape="polygon" 
-            layer="top" 
-            portHints={["pin1"]} 
-            points={[ 
-              { x: -2, y:  2 }, 
-              { x:  1, y:  2 }, 
-              { x:  2, y:  1 }, 
-              { x:  2, y: -1 }, 
-              { x:  1, y: -2 }, 
-              { x: -2, y: -2 }, 
-            ]} 
+            shape="polygon"
+            layer="top"
+            portHints={["pin1"]}
+            points={[
+              { x: -2, y:  2 },
+              { x:  1, y:  2 },
+              { x:  2, y:  1 },
+              { x:  2, y: -1 },
+              { x:  1, y: -2 },
+              { x: -2, y: -2 },
+            ]}
           />
         </footprint>
       } />
@@ -120,3 +122,41 @@ Here’s an example of using a **polygon smtpad**
   )
   `}
 />
+
+## Example: Solder Mask Coverage
+
+Use `coveredWithSolderMask={true}` to apply a solder mask layer over the pad. This is commonly used for **capacitive touch sensors**, where the pad must be insulated from direct finger contact while still detecting capacitive changes through the thin mask layer.
+
+<CircuitPreview
+  defaultView="pcb"
+  browser3dView={false}
+  code={`
+  export default () => (
+    <board width="20mm" height="10mm">
+      <chip name="U1" footprint={
+        <footprint>
+          {[-6, -3, 0, 3, 6].map((cx, i) => (
+            <smtpad
+              key={i}
+              pcbX={cx}
+              pcbY={0}
+              shape="polygon"
+              layer="top"
+              portHints={[\`pin\${i+1}\`]}
+              coveredWithSolderMask={true}
+              points={[
+                { x:  0,   y:  1.8 },
+                { x:  1.2, y:  0   },
+                { x:  0,   y: -1.8 },
+                { x: -1.2, y:  0   },
+              ]}
+            />
+          ))}
+        </footprint>
+      } />
+    </board>
+  )
+  `}
+/>
+
+See the [capacitive touch slider tutorial](/docs/tutorials/building-a-capacitive-touch-slider) for a complete worked example.
