@@ -1,0 +1,149 @@
+---
+title: Creating a Capacitive Touch Element
+description: Learn how to design a capacitive touch slider using polygon smtpads with solder mask coverage in tscircuit.
+---
+
+## Overview
+
+Capacitive touch sensors detect touch by measuring changes in electrical capacitance. When a finger approaches a copper pad covered with a thin dielectric material (such as solder mask), the added capacitance can be detected by a touch controller IC.
+
+In tscircuit, you can create capacitive touch elements using **polygon smtpads** with the `coveredWithSolderMask` property. The solder mask acts as the dielectric layer — your finger touches the PCB surface rather than bare copper, which protects the circuit and enables reliable capacitive sensing.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Simple Capacitive Touch Pad
+
+A basic capacitive touch pad is just an smtpad with `coveredWithSolderMask` set to `true`. No solder mask opening is created, so the copper is fully covered by the green soldermask layer.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="15mm" height="15mm">
+    <chip name="U1" footprint={
+      <footprint>
+        <smtpad
+          pcbX="0mm"
+          pcbY="0mm"
+          layer="top"
+          shape="circle"
+          radius="5mm"
+          portHints={["touch"]}
+          coveredWithSolderMask={true}
+        />
+      </footprint>
+    } />
+  </board>
+)
+`}
+/>
+
+## Capacitive Touch Slider
+
+A linear touch slider uses multiple polygon pads arranged in a row. Each pad connects to a separate sense channel on a touch controller IC (e.g., Microchip MTCH101, Azoteq IQS5xx). By reading which pads have increased capacitance, the controller can determine finger position along the slider.
+
+The design below creates a 5-segment linear slider — each segment is a diamond-shaped polygon pad that interlocks with its neighbors for smooth touch detection.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+// 5-segment capacitive touch slider using polygon smtpads
+// Each pad connects to a separate sense channel on a touch controller IC
+
+const padWidth = 3
+const padHeight = 5
+const halfW = padWidth / 2
+const halfH = padHeight / 2
+const spacing = 3.2
+
+// Diamond polygon points for each sensor pad
+const diamondPoints = [
+  { x: 0, y: halfH },
+  { x: halfW, y: 0 },
+  { x: 0, y: -halfH },
+  { x: -halfW, y: 0 },
+]
+
+export default () => (
+  <board width="22mm" height="10mm">
+    <chip name="U1" footprint={
+      <footprint>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <smtpad
+            key={i}
+            pcbX={\`\${(i - 2) * spacing}mm\`}
+            pcbY="0mm"
+            layer="top"
+            shape="polygon"
+            points={diamondPoints.map(p => ({ x: p.x, y: p.y }))}
+            portHints={[\`sense\${i + 1}\`]}
+            coveredWithSolderMask={true}
+          />
+        ))}
+      </footprint>
+    } />
+  </board>
+)
+`}
+/>
+
+## Two-Dimensional Touch Pad
+
+You can extend the pattern to a 2D touch surface using a grid of polygon pads. This enables X/Y position detection over an area.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+// 3x3 capacitive touch matrix
+const GRID_SIZE = 3
+const CELL_SPACING = 4
+
+export default () => (
+  <board width="16mm" height="16mm">
+    <chip name="U1" footprint={
+      <footprint>
+        {Array.from({ length: GRID_SIZE }, (_, row) =>
+          Array.from({ length: GRID_SIZE }, (_, col) => (
+            <smtpad
+              key={\`\${row}-\${col}\`}
+              pcbX={\`\${(col - 1) * CELL_SPACING}mm\`}
+              pcbY={\`\${(row - 1) * CELL_SPACING}mm\`}
+              layer="top"
+              shape="rect"
+              width="3mm"
+              height="3mm"
+              cornerRadius={0.5}
+              portHints={[\`r\${row + 1}c\${col + 1}\`]}
+              coveredWithSolderMask={true}
+            />
+          ))
+        )}
+      </footprint>
+    } />
+  </board>
+)
+`}
+/>
+
+## Design Guidelines
+
+When designing capacitive touch elements:
+
+- **Solder mask thickness**: Standard PCB solder mask is 0.01–0.02 mm thick. Thinner mask = higher sensitivity but lower noise immunity.
+- **Pad size**: Larger pads increase sensitivity but reduce spatial resolution. Typical finger-sized pads are 5–15 mm in diameter.
+- **Ground pour**: Add a ground plane under the touch pads with a small gap (0.2–0.5 mm) to control the pad's baseline capacitance.
+- **Touch controller**: Connect each pad to a dedicated capacitive sense pin on an IC such as the Microchip MTCH101, Azoteq IQS5xx series, or TI FDC1004.
+
+## Properties
+
+The `coveredWithSolderMask` and `solderMaskMargin` properties are available on all smtpad shapes:
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `coveredWithSolderMask` | `boolean` | When `true`, no solder mask opening is generated — the pad is covered by solder mask, acting as a dielectric layer for capacitive sensing |
+| `solderMaskMargin` | `Distance` | Positive: solder mask opening is larger than the pad (exposes more copper). Negative: soldermask covers the pad edges. Useful for fine-tuning capacitive sensitivity |
+
+## Related
+
+- [`<smtpad />`](/footprints/smtpad) — Full smtpad documentation with all shape options
+- [`<testpoint />`](/elements/testpoint) — Test point pads for probing
