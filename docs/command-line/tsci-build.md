@@ -29,6 +29,10 @@ For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 #### Error Handling
 - `--ignore-errors` – do not exit with code `1` on evaluation errors.
 - `--ignore-warnings` – suppress warning messages.
+- `--ignore-netlist-drc` – ignore netlist DRC errors and warnings.
+- `--ignore-pin-specification-drc` – ignore pin-specification DRC errors and warnings.
+- `--ignore-placement-drc` – ignore placement DRC errors and warnings.
+- `--ignore-routing-drc` – ignore routing DRC errors and warnings.
 - `--ignore-config` – ignore options from `tscircuit.config.json`.
 
 #### Build Control
