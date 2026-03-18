@@ -12,16 +12,12 @@ After publishing, you can use the [tsci add](https://docs.tscircuit.com/command-
 ## Usage
 
 ```bash
-tsci push [file] [options]
+tsci push [options]
 ```
 
-### Arguments
-- `file` *(optional)* – path to the package file
+## Options
 
-### Options
-- `--private` – make the package private
-- `--version-tag <tag>` – publish as a non-latest version using the provided tag
-- `--include-dist` – include the `dist/` directory in the push
+- `--compress` – Compresses the payload before upload. This is useful for large projects and slower connections because it reduces upload size.
 
 After running `tsci push` you can see your package on your tscircuit registry page. Packages default to private visibility, but you can change this from your registry page to enable sharing your package with the broader ecosystem.
 

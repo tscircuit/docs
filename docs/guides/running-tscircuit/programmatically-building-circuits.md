@@ -9,14 +9,14 @@ For most users, there is no need to programmatically build circuits, you can use
 
 If you're not using Typescript or prefer a "zero-installation" setup, you can fully build your circuits with complex parameters using the [Registry API](../../web-apis/the-registry-api.md)
 
-## Using `@tscircuit/core` directly
+## Using `RootCircuit` Directly
 
-`@tscircuit/core` is the core library for tscircuit, it converts React code into [Circuit JSON](https://github.com/tscircuit/circuit-json), a universally intermediary format that represents an electronic device.
+`RootCircuit` from `tscircuit` converts React code into [Circuit JSON](https://github.com/tscircuit/circuit-json), a universal intermediary format that represents an electronic device.
 
-Here's an example of how to use `@tscircuit/core` directly to build a circuit into Circuit JSON:
+Here's an example of how to use `RootCircuit` directly to build a circuit into Circuit JSON:
 
 ```tsx
-import { RootCircuit } from "@tscircuit/core"
+import { RootCircuit } from "tscircuit"
 
 const circuit = new RootCircuit()
 

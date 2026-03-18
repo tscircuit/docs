@@ -13,7 +13,7 @@ This guide walks you through the process of adding a tscircuit package to KiCad 
 
 ## Step 1: Find the KiCad PCM URL
 
-Navigate to your tscircuit package page on [tscircuit.com](https://tscircuit.com). In the **Releases** section on the right sidebar, you'll find a **KiCad PCM URL** link.
+Navigate to your tscircuit package page on [tscircuit.com](https://tscircuit.com). In the **Releases** section on the right sidebar, you'll find a **KiCad PCM URL** link. If you don't see this link, enable `kicadPcm` in your tscircuit config (see [tscircuit config](https://docs.tscircuit.com/guides/tscircuit-essentials/tscircuit-config)).
 
 ![Find the KiCad PCM URL link on the tscircuit package page](/img/guides/using-pcm-url/01-find-pcm-url-on-package-page.png)
 

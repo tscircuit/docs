@@ -15,13 +15,24 @@ tsci build [file] [options]
 - `file` *(optional)* – path to a source file or directory. If omitted, the command searches for a project entrypoint such as `index.tsx` or the `mainEntrypoint` defined in `tscircuit.config.json`. In addition, all files matching the `*.circuit.tsx` pattern are built automatically.
 
 ### Output
-Output files are placed in a `dist/` directory relative to your project. The main entrypoint produces `dist/circuit.json`. Each `*.circuit.tsx` file generates its own subdirectory. For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
+Output files are placed in a `dist/` directory relative to your project. Each successful build writes to its own output directory:
+
+- `dist/<outputDir>/circuit.json`
+- `dist/<outputDir>/pcb.svg`
+- `dist/<outputDir>/schematic.svg`
+- `dist/<outputDir>/3d.png`
+
+For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 
 ### Options
 
 #### Error Handling
 - `--ignore-errors` – do not exit with code `1` on evaluation errors.
 - `--ignore-warnings` – suppress warning messages.
+- `--ignore-netlist-drc` – ignore netlist DRC errors and warnings.
+- `--ignore-pin-specification-drc` – ignore pin-specification DRC errors and warnings.
+- `--ignore-placement-drc` – ignore placement DRC errors and warnings.
+- `--ignore-routing-drc` – ignore routing DRC errors and warnings.
 - `--ignore-config` – ignore options from `tscircuit.config.json`.
 
 #### Build Control
@@ -33,8 +44,15 @@ Output files are placed in a `dist/` directory relative to your project. The mai
 #### Output Formats
 
 ##### Images & 3D Models
-- `--preview-images` – generate preview images (PCB SVG, schematic SVG, 3D PNG) for the preview entrypoint.
-- `--all-images` – generate preview images for every successful build output.
+- `--preview-images` – generate images for one selected build output.
+- `--all-images` – generate images for every successful build output.
+- `--pngs` – Generate PNG outputs during build generation`.
+- `--svgs` – generate both `pcb.svg` and `schematic.svg`.
+- `--pcb-svgs` – generate only `pcb.svg`.
+- `--schematic-svgs` – generate only `schematic.svg`.
+- `--3d` – include `3d.png` while keeping the default SVG behavior.
+- `--pcb-only` – generate only `pcb.svg` from the selected SVG outputs.
+- `--schematic-only` – generate only `schematic.svg` from the selected SVG outputs.
 - `--preview-gltf` – generate a GLTF file from the preview entrypoint.
 - `--glbs` – generate GLB 3D model files for every successful build output.
 
@@ -58,6 +76,27 @@ Output files are placed in a `dist/` directory relative to your project. The mai
 
 Use this command before publishing or in CI to ensure your circuits evaluate correctly.
 
+## Image generation behavior
+
+`--preview-images` and `--all-images` choose which build outputs receive images:
+
+- `--preview-images` writes image files for one selected build.
+- `--all-images` writes image files for every successful build.
+
+The image selection flags choose which files are written for each selected build:
+
+- If you do not pass any image selection flags, the default image set is `pcb.svg`, `schematic.svg`, and `3d.png`.
+- If you pass any image selection flags, those flags explicitly control which files are written.
+- `--pcb-only` and `--schematic-only` filter SVG outputs.
+- `--3d` can be combined with the newer flags and adds `3d.png`.
+- Use the image selection flags with either `--preview-images` or `--all-images`.
+
+Preview target selection uses this precedence:
+
+1. `previewComponentPath`
+2. `mainEntrypoint`
+3. The first successful build
+
 ## Output Directory Structure
 
 When using various build options, the output structure looks like:
@@ -65,10 +104,10 @@ When using various build options, the output structure looks like:
 ```text
 dist/
 ├── my-circuit/
-│   ├── circuit.json          # Always generated
-│   ├── pcb.svg               # With --preview-images or --all-images
-│   ├── schematic.svg         # With --preview-images or --all-images
-│   ├── 3d.png                # With --preview-images or --all-images
+│   ├── circuit.json          # Always generated for that build output
+│   ├── pcb.svg               # With --preview-images/--all-images, --svgs, --pcb-svgs, etc.
+│   ├── schematic.svg         # With --preview-images/--all-images, --svgs, --schematic-svgs, etc
+│   ├── 3d.png                # With --preview-images/--all-images, --pngs, or --3d
 │   ├── 3d.glb                # With --glbs
 │   └── kicad/
 │       ├── my-circuit.kicad_sch   # With --kicad-project
