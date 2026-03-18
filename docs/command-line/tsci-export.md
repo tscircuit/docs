@@ -28,6 +28,7 @@ tsci export <file> [options]
 ### Options
 - `-f, --format <format>`: Output format (defaults to "json")
 - `-o, --output <path>`: Custom output file path
+- `--disable-parts-engine`: Disable the parts engine during circuit evaluation
 
 ## Supported Formats
 
@@ -35,14 +36,20 @@ The following export formats are supported:
 
 | Format | Description |
 |--------|-------------|
+| `json` | Circuit JSON format (alias for `circuit-json`) |
 | `circuit-json`| Circuit JSON format |
 | `schematic-svg` | Schematic view as SVG |
 | `pcb-svg` | PCB layout as SVG |
+| `gerbers` | Gerber fabrication files (zipped) |
 | `readable-netlist` | Human-readable netlist |
 | `specctra-dsn` | Specctra DSN format for autorouting |
 | `gltf` | Text-based 3D scene (glTF 2.0) that references board meshes and textures |
 | `glb` | Binary glTF bundle that packs geometry, materials, and textures into a single file |
+| `kicad_sch` | KiCad schematic file |
+| `kicad_pcb` | KiCad PCB layout file |
+| `kicad_zip` | Zipped KiCad project (schematic + PCB) |
 | `kicad-library` | KiCad library with symbols, footprints, and 3D models (see [Exporting KiCad Library](../guides/kicad/exporting-kicad-library.md)) |
+| `spice` | SPICE netlist with simulation results exported as `.spice.cir` and `.csv` |
 
 ## Examples
 
