@@ -59,7 +59,11 @@ For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 ##### KiCad Export
 - `--kicad-project` – generate KiCad project directories (`.kicad_sch`, `.kicad_pcb`, `.kicad_pro`) for each successful build output.
 - `--kicad-library` – generate KiCad symbol/footprint library in `dist/kicad-library`.
+- `--kicad-library-name <name>` – specify the name of the KiCad library.
 - `--kicad-pcm` – generate KiCad PCM (Plugin and Content Manager) assets in `dist/pcm`.
+
+##### Diagnostics
+- `--profile` – log per-circuit `circuit.json` generation time during build.
 
 ##### Library & Site Generation
 - `--transpile` – transpile the entry file to JavaScript for use as a library.

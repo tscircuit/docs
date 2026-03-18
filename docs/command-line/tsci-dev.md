@@ -7,8 +7,21 @@ sidebar_position: 2
 `tsci dev` runs a web server that lets you see a preview of your electronics
 in your web browser.
 
+## Usage
+
+```bash
+tsci dev [file] [options]
+```
+
+### Arguments
+- `file` *(optional)* – path to a package file or directory
+
+### Options
+- `-p, --port <number>` – port to run the server on (default: `3020`)
+- `--kicad-pcm` – enable KiCad PCM proxy server at `/pcm/*`
+
 After you run `tsci dev` you should see a preview of your entrypoint file in
-your web browser on https://localhost:3020
+your web browser on http://localhost:3020
 
 ![tsci dev result](../../static/img/tsci-dev.png)
 

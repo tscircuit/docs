@@ -14,6 +14,10 @@ basic files needed to start developing a board, including:
 
 You can run the command interactively or pass `-y` to accept all defaults.
 
+### Options
+- `-y, --yes` – use defaults and skip prompts
+- `--no-install` – skip installing dependencies after initialization
+
 ```bash
 mkdir my-circuit
 cd my-circuit
@@ -21,6 +25,8 @@ cd my-circuit
 tsci init
 # or skip prompts
 tsci init -y
+# skip dependency installation
+tsci init -y --no-install
 ```
 
 After initialization you will see a directory structure similar to the following:
