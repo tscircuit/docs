@@ -33,21 +33,38 @@ tsci --help
 
 Usage: tsci [options] [command]
 
-CLI for developing tscircuit snippets
+CLI for developing tscircuit packages
 
 # Options:
-#   -V, --version            output the version number
-#   -h, --help               display help for command
+#   -h, --help                   display help for command
 
 # Commands:
-#   init                     Initialize a new TSCircuit project in the current directory
-#   dev [options] [file]     Start development server for a snippet
-#   clone <snippet>          Clone a snippet from the registry
-#   auth                     Login/logout
-#   login                    Login to tscircuit registry
-#   config                   Manage tscircuit CLI configuration
-#   export [options] <file>  Export tscircuit code to various formats
-#   help [command]           display help for command
+#   init [options] [directory]   Initialize a new TSCircuit project
+#   dev [options] [file]         Start development server for a package
+#   clone [options] [package]    Clone a package from the registry
+#   push [options] [file]        Save package code to Registry API
+#   auth                         Login/logout
+#   login                        Login to tscircuit registry
+#   logout                       Logout from tscircuit registry
+#   config                       Manage tscircuit CLI configuration
+#   export [options] <file>      Export tscircuit code to various formats
+#   build [options] [file]       Run tscircuit eval and output circuit json
+#   transpile [file]             Transpile TypeScript/TSX to JavaScript
+#   add <packageSpec>            Add a tscircuit component package
+#   remove <component>           Remove a tscircuit component package
+#   snapshot [options] [path]    Generate schematic/PCB snapshots
+#   setup                        Setup utilities like GitHub Actions
+#   install [packageSpec]        Install project dependencies or a package
+#   upgrade                      Upgrade CLI to the latest version
+#   doctor                       Run diagnostic checks
+#   check                        Partially build and validate circuit artifacts
+#   registry                     Manage tscircuit registry resources
+#   search [options] <query...>  Search for footprints, CAD models, or packages
+#   import [options] <query...>  Search/import components from JLCPCB or registry
+#   convert [options] <file>     Convert .kicad_mod to a tscircuit component
+#   simulate                     Run a simulation
+#   version [options]            Print CLI version
+#   help [command]               display help for command
 ```
 
 You can also run `tsci` without any arguments to start the interactive CLI.
@@ -57,12 +74,19 @@ tsci
 
 # ? Choose command ›
 # ❯   tsci init - Initialize a new TSCircuit project in the current directory
-#     tsci dev - Start development server for a snippet
-#     tsci clone - Clone a snippet from the registry
+#     tsci dev - Start development server for a package
+#     tsci clone - Clone a package from the registry
+#     tsci push - Save package code to Registry API
 #     tsci auth - Login/logout
 #     tsci login - Login to tscircuit registry
+#     tsci logout - Logout from tscircuit registry
 #     tsci config - Manage tscircuit CLI configuration
 #     tsci export - Export tscircuit code to various formats
+#     tsci build - Run tscircuit eval and output circuit json
+#     tsci add - Add a tscircuit component package
+#     tsci snapshot - Generate schematic and PCB snapshots
+#     tsci doctor - Run diagnostic checks
+#     tsci search - Search for footprints, CAD models or packages
 ```
 
 ### Creating a new project
