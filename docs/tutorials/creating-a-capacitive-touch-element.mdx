@@ -1,0 +1,241 @@
+---
+title: Creating a Capacitive Touch Element
+description: Learn how to create capacitive touch pads using polygon SMT pads with solder mask in tscircuit. Build a single touch button and a multi-finger touch surface.
+---
+
+## Overview
+
+Capacitive touch elements detect a finger's presence through a change in electrical capacitance.
+On a PCB, this is achieved with copper pads covered by a thin solder mask (solder resist) layer.
+The solder mask acts as a dielectric — your finger changes the pad's capacitance relative to ground,
+which a touch controller IC detects.
+
+tscircuit supports **polygon-shaped SMT pads** with `coveredWithSolderMask` control, making it
+straightforward to create custom touch sensor geometries.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## How It Works
+
+```
+Copper pad  →  Solder mask (dielectric)  →  Air gap  →  Finger
+                    ↕ capacitance change detected by IC
+```
+
+Key properties for capacitive touch pads:
+
+| Property | Value | Purpose |
+|---|---|---|
+| `shape` | `"polygon"` | Custom pad outline for touch geometry |
+| `coveredWithSolderMask` | `true` | Apply solder mask over pad (enables capacitive sensing) |
+| `layer` | `"top"` | Place on top copper layer |
+
+## Single Capacitive Touch Button
+
+The simplest touch element: a single diamond-shaped pad covered with solder mask.
+Polygon pads let you match common touch-IC footprint patterns.
+
+<TscircuitIframe defaultView="pcb" code={`
+export default () => {
+  const size = 8 // mm
+  const half = size / 2
+
+  return (
+    <board width="20mm" height="20mm">
+      <smtpad
+        name="TOUCH1"
+        shape="polygon"
+        points={[
+          { x: 0, y: half },
+          { x: half, y: 0 },
+          { x: 0, y: -half },
+          { x: -half, y: 0 },
+        ]}
+        coveredWithSolderMask={true}
+        layer="top"
+        portHints={["pin1"]}
+      />
+    </board>
+  )
+}
+`} />
+
+The `points` array defines the polygon vertices in millimeters, relative to the pad center.
+The diamond shape maximises the sensing area while providing clear visual boundaries.
+
+## Multi-Pad Touch Surface
+
+A practical touch surface with multiple sensing pads and spacing between them to reduce
+cross-talk. Each pad connects to a separate channel on a touch controller IC.
+
+<TscircuitIframe defaultView="pcb" code={`
+const NUM_PADS = 4
+const PAD_SIZE = 7   // mm
+const SPACING = 1.5  // mm between pads
+
+export default () => {
+  const half = PAD_SIZE / 2
+  const pitch = PAD_SIZE + SPACING
+  const totalWidth = NUM_PADS * pitch - SPACING + 8
+  const startX = -(NUM_PADS - 1) * pitch / 2
+
+  const diamondPoints = [
+    { x: 0, y: half },
+    { x: half, y: 0 },
+    { x: 0, y: -half },
+    { x: -half, y: 0 },
+  ]
+
+  return (
+    <board
+      width={\`\${totalWidth}mm\`}
+      height="20mm"
+    >
+      {Array.from({ length: NUM_PADS }).map((_, i) => (
+        <smtpad
+          key={\`tp\${i + 1}\`}
+          name={\`TOUCH\${i + 1}\`}
+          shape="polygon"
+          points={diamondPoints.map(p => ({ x: p.x + startX + i * pitch, y: p.y }))}
+          coveredWithSolderMask={true}
+          layer="top"
+          portHints={[\`pin\${i + 1}\`]}
+        />
+      ))}
+    </board>
+  )
+}
+`} />
+
+## Custom Polygon Shapes
+
+Polygon pads aren't limited to diamonds. You can define any convex or concave shape
+to match your product's industrial design. Here is a rounded-corner approximation
+using an octagon:
+
+<TscircuitIframe defaultView="pcb" code={`
+// Octagon approximates a circular pad with polygon support
+function octagonPoints(radius: number) {
+  const s = radius * Math.sin(Math.PI / 8) * 2
+  const d = radius * Math.cos(Math.PI / 8)
+  return [
+    {x: s / 2, y: d},
+    {x: d, y: s / 2},
+    {x: d, y: -s / 2},
+    {x: s / 2, y: -d},
+    {x: -s / 2, y: -d},
+    {x: -d, y: -s / 2},
+    {x: -d, y: s / 2},
+    {x: -s / 2, y: d},
+  ]
+}
+
+export default () => (
+  <board width="25mm" height="25mm">
+    <smtpad
+      name="TOUCH1"
+      shape="polygon"
+      points={octagonPoints(9)}
+      coveredWithSolderMask={true}
+      layer="top"
+      portHints={["pin1"]}
+    />
+  </board>
+)
+`} />
+
+## Connecting to a Touch Controller
+
+Each touch pad connects to a dedicated channel on a capacitive touch IC.
+Here's a minimal wiring example with a 4-channel touch controller:
+
+```tsx
+export default () => {
+  const pitch = 8.5
+  const start = -(3 * pitch) / 2
+  const half = 3.5
+
+  const diamondPoints = [
+    { x: 0, y: half },
+    { x: half, y: 0 },
+    { x: 0, y: -half },
+    { x: -half, y: 0 },
+  ]
+
+  return (
+    <board width="50mm" height="30mm">
+      {/* 4 touch pads */}
+      {[0, 1, 2, 3].map((i) => (
+        <smtpad
+          key={`tp${i}`}
+          name={`TOUCH${i + 1}`}
+          shape="polygon"
+          points={diamondPoints.map((p) => ({
+            x: p.x + start + i * pitch,
+            y: p.y + 8,
+          }))}
+          coveredWithSolderMask={true}
+          layer="top"
+          portHints={[`net.CH${i}`]}
+        />
+      ))}
+
+      {/* Touch controller IC */}
+      <chip
+        name="U1"
+        pcbX={0}
+        pcbY={-5}
+        schX={0}
+        schY={0}
+        footprint="soic8"
+        pinLabels={{
+          pin1: "CH0",
+          pin2: "CH1",
+          pin3: "CH2",
+          pin4: "CH3",
+          pin5: "GND",
+          pin6: "VDD",
+          pin7: "SDA",
+          pin8: "SCL",
+        }}
+        connections={{
+          CH0: "net.CH0",
+          CH1: "net.CH1",
+          CH2: "net.CH2",
+          CH3: "net.CH3",
+        }}
+      />
+    </board>
+  )
+}
+```
+
+## Design Tips
+
+**Pad size and shape**
+- Larger pads give stronger signal but may cause false triggers if spaced too tightly
+- Diamond and octagon shapes work well as they pack efficiently while providing clear finger targets
+- Typical pad size for a button: 6–12 mm across
+
+**Solder mask thickness**
+- Thinner solder mask = stronger capacitive signal
+- Standard thickness (~25–50 µm) works for most designs
+- Request "thin solder mask" from your PCB fab for highest sensitivity
+
+**Spacing between pads**
+- Use 1–2 mm gaps between adjacent sensing pads to reduce cross-talk
+- Route sense traces on an inner layer or use a ground guard ring between pads
+
+**Ground plane**
+- Place a ground plane on the layer directly below the touch pads
+- This creates a controlled reference capacitance for more predictable sensing
+- Keep ground plane at least 0.5 mm inset from pad edges
+
+**Trace routing**
+- Keep sense traces short and shielded from high-frequency signals
+- Use ground-guard traces (same layer) around sense traces to minimise noise pickup
+
+## Related Resources
+
+- [circuit-json pcb_smtpad spec](https://github.com/tscircuit/circuit-json/blob/main/src/pcb/pcb_smtpad.ts) — full type definition including `covered_with_solder_mask` and `shape: "polygon"`
+- [Building a Capacitive Touch Slider](./building-a-capacitive-touch-slider) — linear slider layout using rectangular pads
