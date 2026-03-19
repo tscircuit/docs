@@ -1,0 +1,95 @@
+---
+title: Building a Capacitive Touch Slider
+description: Learn how to create a capacitive touch slider using polygon SMT pads with solder mask coverage in tscircuit.
+---
+
+## Overview
+
+This tutorial shows you how to build a capacitive touch slider using tscircuit. Capacitive touch sliders use conductive pads covered by a thin layer of solder mask (solder resist) as the sensing surface. When a finger approaches, the change in capacitance is detected by a touch controller IC.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Basic Capacitive Touch Pad
+
+The key is using `polygon` shaped SMT pads with the `coveredWithSolderMask` property set to `true`. This tells the manufacturer to apply solder mask over the pad, creating an insulating layer that enables capacitive sensing.
+
+<TscircuitIframe defaultView="pcb" code={`
+export default () => {
+  return (
+    <board width="30mm" height="15mm">
+      <smtpad
+        name="TP1"
+        shape="rect"
+        pcbX={0}
+        pcbY={0}
+        width="10mm"
+        height="10mm"
+        portHints={["pin1"]}
+        coveredWithSolderMask={true}
+        layer="top"
+      />
+    </board>
+  )
+}
+`} />
+
+## 5-Segment Capacitive Touch Slider
+
+A slider consists of multiple sensing segments arranged in a line. Each segment connects to a touch controller that measures capacitance changes as a finger moves across.
+
+<TscircuitIframe defaultView="pcb" code={`
+const SEGMENT_WIDTH = 8
+const SEGMENT_HEIGHT = 6
+const GAP = 1
+const NUM_SEGMENTS = 5
+
+export default () => {
+  const totalWidth = NUM_SEGMENTS * SEGMENT_WIDTH + (NUM_SEGMENTS - 1) * GAP
+  const startX = -(totalWidth / 2) + SEGMENT_WIDTH / 2
+
+  return (
+    <board
+      width={\`\${totalWidth + 4}mm\`}
+      height={\`\${SEGMENT_HEIGHT + 6}mm\`}
+    >
+      {Array.from({ length: NUM_SEGMENTS }).map((_, i) => (
+        <smtpad
+          key={\`seg\${i + 1}\`}
+          name={\`TP\${i + 1}\`}
+          shape="rect"
+          pcbX={\`\${startX + i * (SEGMENT_WIDTH + GAP)}mm\`}
+          pcbY="0mm"
+          width={\`\${SEGMENT_WIDTH}mm\`}
+          height={\`\${SEGMENT_HEIGHT}mm\`}
+          portHints={[\`pin\${i + 1}\`]}
+          coveredWithSolderMask={true}
+          layer="top"
+        />
+      ))}
+    </board>
+  )
+}
+`} />
+
+## Key Properties
+
+| Property | Value | Description |
+|---|---|---|
+| `shape` | `"rect"` or `"polygon"` | Pad shape — use rect for simple segments |
+| `coveredWithSolderMask` | `true` | Enables solder mask over the pad for capacitive sensing |
+| `layer` | `"top"` | Place pads on the top copper layer |
+
+## How Capacitive Touch Works on PCBs
+
+1. **Conductive pad**: Copper pad etched on the PCB surface
+2. **Solder mask layer**: A thin (typically 25-75μm) dielectric coating applied over the pad
+3. **Capacitance change**: A nearby finger increases the capacitance of the pad-to-ground system
+4. **Touch controller**: An IC (e.g., Microchip MTCH series, Cypress CapSense) measures this change and reports touch position
+
+## Tips for Good Capacitive Touch Performance
+
+- Keep the solder mask thin (request thin solder mask from your PCB fab)
+- Route sense traces away from high-frequency signals
+- Add a ground plane on the bottom layer beneath the pads
+- Space segments 0.5–1mm apart to avoid crosstalk
+- Connect each pad to a dedicated touch controller channel
