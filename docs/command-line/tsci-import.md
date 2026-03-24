@@ -18,7 +18,7 @@ tsci import <query> [options]
 - `--jlcpcb` – search JLCPCB components only
 - `--lcsc` – alias for `--jlcpcb`
 - `--tscircuit` – search tscircuit registry packages only
-- `--download` – download JLCPCB 3D model assets (`.obj` and `.step` files) and localize them in the component file
+- `--download` – download JLCPCB 3D model assets (`.obj` and `.step` files) and reference them locally in the component
 
 When no filter options are provided, both JLCPCB and the tscircuit registry are searched.
 
