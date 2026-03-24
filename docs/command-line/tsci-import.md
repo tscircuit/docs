@@ -45,7 +45,7 @@ $ tsci import "C16040" --jlcpcb
 ✔ Imported /home/rushabh/testing/imports/MCP4822_E_SN.tsx
 ```
 
-Download 3D model assets and localize them in the component:
+Download 3D model assets (.obj and .step) alongside the component:
 ```bash
 $ tsci import "C2934569" --jlcpcb --download
 ✔ Imported imports/ESP32_C3_MINI_1_H4/ESP32_C3_MINI_1_H4.tsx
