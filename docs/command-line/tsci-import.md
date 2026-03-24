@@ -18,6 +18,7 @@ tsci import <query> [options]
 - `--jlcpcb` – search JLCPCB components only
 - `--lcsc` – alias for `--jlcpcb`
 - `--tscircuit` – search tscircuit registry packages only
+- `--download` – download JLCPCB 3D model assets (`.obj` and `.step` files) and reference them locally in the component
 
 When no filter options are provided, both JLCPCB and the tscircuit registry are searched.
 
@@ -42,6 +43,12 @@ Search only JLCPCB:
 ```bash
 $ tsci import "C16040" --jlcpcb
 ✔ Imported /home/rushabh/testing/imports/MCP4822_E_SN.tsx
+```
+
+Download 3D model assets (.obj and .step) alongside the component:
+```bash
+$ tsci import "C2934569" --jlcpcb --download
+✔ Imported imports/ESP32_C3_MINI_1_H4/ESP32_C3_MINI_1_H4.tsx
 ```
 
 Search only the tscircuit registry:
