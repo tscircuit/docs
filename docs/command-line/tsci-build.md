@@ -38,6 +38,7 @@ For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 #### Build Control
 - `--ci` – run install and optional prebuild/build commands (or default CI build).
 - `--disable-pcb` – disable PCB outputs.
+- `--routing-disabled` – disable routing during circuit generation.
 - `--disable-parts-engine` – disable the parts engine.
 - `--concurrency <number>` – number of files to build in parallel (default: 1).
 
@@ -46,18 +47,22 @@ For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 ##### Images & 3D Models
 - `--preview-images` – generate images for one selected build output.
 - `--all-images` – generate images for every successful build output.
-- `--pngs` – Generate PNG outputs during build generation`.
+- `--pngs` – generate PNG outputs during build generation.
+- `--pcb-png` – generate PCB PNG outputs during build generation.
 - `--svgs` – generate both `pcb.svg` and `schematic.svg`.
 - `--pcb-svgs` – generate only `pcb.svg`.
 - `--schematic-svgs` – generate only `schematic.svg`.
-- `--3d` – include `3d.png` while keeping the default SVG behavior.
+- `--3d-png` – generate `3d.png`.
+- `--3d` – alias for `--3d-png`.
 - `--pcb-only` – generate only `pcb.svg` from the selected SVG outputs.
 - `--schematic-only` – generate only `schematic.svg` from the selected SVG outputs.
 - `--preview-gltf` – generate a GLTF file from the preview entrypoint.
 - `--glbs` – generate GLB 3D model files for every successful build output.
+- `--show-courtyards` – show courtyard outlines in PCB SVG outputs.
 
 ##### KiCad Export
 - `--kicad-project` – generate KiCad project directories (`.kicad_sch`, `.kicad_pcb`, `.kicad_pro`) for each successful build output.
+- `--kicad-project-zip` – generate a zipped KiCad project for each successful build output.
 - `--kicad-library` – generate KiCad symbol/footprint library in `dist/kicad-library`.
 - `--kicad-library-name <name>` – specify the name of the KiCad library.
 - `--kicad-pcm` – generate KiCad PCM (Plugin and Content Manager) assets in `dist/pcm`.
@@ -69,6 +74,10 @@ For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 - `--transpile` – transpile the entry file to JavaScript for use as a library.
 - `--site` – generate a static site in the dist directory.
 - `--use-cdn-javascript` – use CDN-hosted JavaScript instead of bundled standalone file for `--site`.
+
+##### Injecting Props
+- `--inject-props <json>` – inject JSON props into the built file's default export.
+- `--inject-props-file <path>` – load injected props JSON from a file.
 
 ### Targeting specific sources
 - `tsci build path/to/file.circuit.tsx` – builds the given file, even if it does not match the `includeBoardFiles` glob in `tscircuit.config.json`.

@@ -18,6 +18,11 @@ tsci snapshot [options] [path]
 - `--pcb-only` – generate only PCB snapshots.
 - `--schematic-only` – generate only schematic snapshots.
 - `--disable-parts-engine` – disable the parts engine while rendering snapshots.
+- `--show-courtyards` – show courtyard outlines in PCB snapshots.
+- `--camera-preset <preset>` – choose the camera angle preset for 3D snapshots. This also implies `--3d`.
+- `--ci` – enable CI mode and generate diff artifacts.
+- `--test` – enable test mode and generate diff artifacts.
+- `--concurrency <number>` – number of files to snapshot in parallel (default: `1`).
 
 ### Arguments
 - `[path]` – optional file path, directory, or glob pattern used to limit what gets snapshotted.
