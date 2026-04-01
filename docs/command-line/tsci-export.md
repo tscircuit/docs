@@ -29,6 +29,7 @@ tsci export <file> [options]
 - `-f, --format <format>`: Output format (defaults to "json")
 - `-o, --output <path>`: Custom output file path
 - `--disable-parts-engine`: Disable the parts engine during circuit evaluation
+- `--show-courtyards`: Show courtyard outlines in PCB SVG output
 
 ## Supported Formats
 
@@ -66,6 +67,12 @@ tsci export circuit.tsx -f schematic-svg
 Export PCB layout with custom output path:
 ```bash
 tsci export circuit.tsx -f pcb-svg -o my-pcb-layout.svg
+```
+
+Export PCB SVG with courtyard outlines:
+
+```bash
+tsci export circuit.tsx -f pcb-svg --show-courtyards
 ```
 
 Export to Specctra DSN format:
