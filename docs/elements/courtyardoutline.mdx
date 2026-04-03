@@ -75,3 +75,112 @@ export default () => (
 )
 `}
 />
+
+## Anchor Alignment Examples
+
+The board's `anchorAlignment` property controls the origin point used for component positioning. These examples show courtyard outlines with different anchor alignments configured.
+
+### Center Anchor (Default)
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm" anchorAlignment="center">
+    <chip
+      name="U1"
+      pcbX={0}
+      pcbY={0}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width={1.2} height={2} pcbX={-3} pcbY={0} portHints={["1"]} />
+          <smtpad shape="rect" width={1.2} height={2} pcbX={3} pcbY={0} portHints={["2"]} />
+          <courtyardoutline
+            outline={[
+              { x: -5, y: -4 },
+              { x: 5, y: -4 },
+              { x: 5, y: 3 },
+              { x: 0, y: 5 },
+              { x: -5, y: 3 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Top-Left Anchor
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm" anchorAlignment="top_left">
+    <chip
+      name="U1"
+      pcbX={15}
+      pcbY={12}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width={1.2} height={2} pcbX={-3} pcbY={0} portHints={["1"]} />
+          <smtpad shape="rect" width={1.2} height={2} pcbX={3} pcbY={0} portHints={["2"]} />
+          <courtyardoutline
+            outline={[
+              { x: -5, y: -4 },
+              { x: 5, y: -4 },
+              { x: 5, y: 3 },
+              { x: 0, y: 5 },
+              { x: -5, y: 3 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Bottom-Right Anchor
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm" anchorAlignment="bottom_right">
+    <chip
+      name="U1"
+      pcbX={-15}
+      pcbY={-12}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width={1.2} height={2} pcbX={-3} pcbY={0} portHints={["1"]} />
+          <smtpad shape="rect" width={1.2} height={2} pcbX={3} pcbY={0} portHints={["2"]} />
+          <courtyardoutline
+            outline={[
+              { x: -5, y: -4 },
+              { x: 5, y: -4 },
+              { x: 5, y: 3 },
+              { x: 0, y: 5 },
+              { x: -5, y: 3 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>

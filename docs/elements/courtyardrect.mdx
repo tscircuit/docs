@@ -71,3 +71,88 @@ export default () => (
 )
 `}
 />
+
+## Anchor Alignment Examples
+
+The board's `anchorAlignment` property controls which point on the board is used as the origin for positioning. This affects where courtyard rects appear relative to the board.
+
+### Center Anchor (Default)
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm" anchorAlignment="center">
+    <chip
+      name="U1"
+      pcbX={0}
+      pcbY={0}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width={1.2} height={2} pcbX={-2.5} pcbY={0} portHints={["1"]} />
+          <smtpad shape="rect" width={1.2} height={2} pcbX={2.5} pcbY={0} portHints={["2"]} />
+          <courtyardrect pcbX={0} pcbY={0} width={8} height={5} strokeWidth={0.1} />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Top-Left Anchor
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm" anchorAlignment="top_left">
+    <chip
+      name="U1"
+      pcbX={15}
+      pcbY={12}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width={1.2} height={2} pcbX={-2.5} pcbY={0} portHints={["1"]} />
+          <smtpad shape="rect" width={1.2} height={2} pcbX={2.5} pcbY={0} portHints={["2"]} />
+          <courtyardrect pcbX={0} pcbY={0} width={8} height={5} strokeWidth={0.1} />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Bottom-Right Anchor
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm" anchorAlignment="bottom_right">
+    <chip
+      name="U1"
+      pcbX={-15}
+      pcbY={-12}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width={1.2} height={2} pcbX={-2.5} pcbY={0} portHints={["1"]} />
+          <smtpad shape="rect" width={1.2} height={2} pcbX={2.5} pcbY={0} portHints={["2"]} />
+          <courtyardrect pcbX={0} pcbY={0} width={8} height={5} strokeWidth={0.1} />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
