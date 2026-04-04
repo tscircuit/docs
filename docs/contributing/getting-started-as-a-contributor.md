@@ -30,6 +30,26 @@ You can quickly find issues (with or without bounties) by [spinning the wheel of
 1. Make sure bun is installed on your system
 2. Make sure you've signed up at [tscircuit.com](https://tscircuit.com) and have followed a tutorial in the docs to create a circuit board
 
+## Contribution Philosophy: Practice Being a User
+
+The best contributors spend time using tscircuit like real users do.
+
+- Build something practical, then notice where AI struggles to produce useful results.
+- Watch for places where the UI feels confusing, unclear, or hard to navigate.
+- Report and fix obvious bugs you hit while trying to complete a normal task.
+
+If you need project ideas, try cloning a real product you already use in daily life.
+Look around your desk or home for small electronic devices and recreate one as a board:
+
+- a fan
+- a rice cooker
+- a keyboard
+- a phone charger
+- a digital weighing scale
+- a smart lock
+
+This "practice being a user" approach quickly reveals high-impact improvements.
+
 ## Recommended Contribution Order
 
 We recommend the following order for contributing to tscircuit. Contributing to repositories in this order will make sure you have a good understanding of the tscircuit ecosystem.
