@@ -33,6 +33,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
 | `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
 | `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
+| `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
 | `outline` | `Array<{ x: number, y: number }>` | Supply a custom polygon to replace the default rectangular outline. |
@@ -259,6 +260,29 @@ Usually you'll want to use an autorouter preset:
 For complex boards with over 50 traces, you should use `autorouter="auto-cloud"`
 to take advantage of tscircuit's cloud autorouters, which internally use the popular
 [freerouting](https://github.com/freerouting/freerouting) library.
+
+### Tuning Router Work with `autorouterEffortLevel`
+
+`autorouterEffortLevel` lets you request more routing work from supported
+autorouters. The current values in [`@tscircuit/props`](https://www.npmjs.com/package/@tscircuit/props)
+are:
+
+- `"1x"` (fastest)
+- `"2x"`
+- `"5x"`
+- `"10x"`
+- `"100x"` (slowest / highest effort)
+
+Use lower values while iterating quickly, then increase effort for dense boards
+or final route attempts.
+
+```tsx
+<board width="30mm" height="20mm" autorouter="auto-cloud" autorouterEffortLevel="10x">
+  <chip name="U1" footprint="qfn32" pcbX={-4} pcbY={0} />
+  <chip name="U2" footprint="qfn32" pcbX={4} pcbY={0} />
+  <trace from=".U1 > .pin1" to=".U2 > .pin1" />
+</board>
+```
 
 You can also specify a custom autorouter object to use your own autorouter.
 
