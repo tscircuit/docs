@@ -10,6 +10,7 @@ description: Discover footprints and packages across the tscircuit ecosystem
 - `--jlcpcb` – search JLCPCB components
 - `--lcsc` – alias for `--jlcpcb`
 - `--tscircuit` – search tscircuit registry packages
+- `--json` – output search results as JSON
 
 When no filter options are provided, all sources are searched.
 
@@ -35,3 +36,41 @@ Found 11 package(s) in the tscircuit registry:
 ```
 
 Use any search term to discover related footprints or published projects.
+
+### JSON Output Example
+
+You can output search results as JSON by using the `--json` flag.
+
+```bash
+$ tsci search --jlcpcb "RP2040" --json
+```
+
+```json
+{
+  "query": "RP2040",
+  "results": [
+    {
+      "source": "jlcpcb",
+      "lcsc": 2040,
+      "mfr": "RP2040",
+      "package": "LQFN-56(7x7)",
+      "is_basic": false,
+      "is_preferred": false,
+      "description": "",
+      "stock": 42449,
+      "price": 0.872857143
+    },
+    {
+      "source": "jlcpcb",
+      "lcsc": 5350143,
+      "mfr": "RP2040-Zero",
+      "package": "-",
+      "is_basic": false,
+      "is_preferred": false,
+      "description": "",
+      "stock": 51,
+      "price": 5.091428571
+    }
+  ]
+}
+```
