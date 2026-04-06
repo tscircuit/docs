@@ -48,6 +48,12 @@ Look around your desk or home for small electronic devices and recreate one as a
 - a digital weighing scale
 - a smart lock
 
+:::tip Need an idea?
+
+Try picking a random idea from [electronics-ideas/IDEAS.txt](https://github.com/tscircuit/electronics-ideas/blob/main/IDEAS.txt).
+
+:::
+
 This "practice being a user" approach quickly reveals high-impact improvements.
 
 ## Recommended Contribution Order
