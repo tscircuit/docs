@@ -133,10 +133,35 @@ You can provide a STEP model to the `<cadmodel />` element by setting the `stepF
 When providing a STEP model, the STEP model will be used when exporting to STEP to
 preserve the exact geometry of the model.
 
-> **Example coming soon!**
+<CircuitPreview
+  splitView
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  mainComponentPath="index.tsx"
+  fsMap={{
+    "index.tsx": `
+import soic8StepUrl from "./models/soic8.step"
 
-
-
+export default () => (
+  <board>
+    <chip
+      name="U1"
+      footprint="soic8"
+      cadModel={
+        <cadmodel
+          modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.step"
+          stepFileUrl={soic8StepUrl}
+        />
+      }
+    />
+  </board>
+)
+`,
+    "./models/soic8.step": "__STATIC_ASSET__",
+  }}
+/>
 
 ### Translucent Model in cadmodel
 
