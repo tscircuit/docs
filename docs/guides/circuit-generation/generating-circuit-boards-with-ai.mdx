@@ -1,12 +1,12 @@
 ---
 title: Generating Circuit Boards with AI
 sidebar_position: 1
-description: Learn how to use AI assistants like Claude to help design and generate circuit boards in tscircuit
+description: Learn how to use AI assistants with the tscircuit skill to design and generate circuit boards in tscircuit
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview";
 
-AI assistants like Claude can help you design and generate circuit boards more quickly by understanding your requirements, searching for components, and writing tscircuit code. This guide walks you through setting up your project for AI-assisted circuit design.
+AI assistants can help you design and generate circuit boards more quickly by understanding your requirements, searching for components, and writing tscircuit code. This guide walks you through setting up your project for AI-assisted circuit design.
 
 ## Step 1: Choose Your Form Factor
 
@@ -39,17 +39,22 @@ export default () => (
 
 The `ArduinoShield` component automatically includes the correct mounting holes, header connectors, and board dimensions to fit standard Arduino boards.
 
-## Step 2: Configure Your AI Assistant
+## Step 2: Install the tscircuit Skill
 
-To help AI assistants understand how to work with tscircuit, you'll need to provide them with:
+Install the `tscircuit` skill so your AI assistant has the context it needs to
+design boards with tscircuit:
 
-1. **Project Context** - Information about what you're building
-2. **tscircuit Syntax Primer** - Documentation on how to use tscircuit elements
-3. **tscircuit CLI Primer** - Information about available command-line tools, this will allow your tool to search
+```bash
+npx skills add tscircuit/skill
+```
 
-We recommend creating an `AGENTS.md` file in your project root that contains all this information. You can download our template below:
+The skill lives in the [tscircuit/skill](https://github.com/tscircuit/skill)
+repository, and it includes the syntax, CLI workflows, and design patterns the
+AI needs to build a board from scratch.
 
-TODO add AGENTS.md template download link here!
+Once the skill is installed, describe the board you want to build, your form
+factor, and any constraints. The AI can then search for parts, write circuit
+code, and iterate on the design with the right tscircuit context.
 
 ## Step 3: How AI Assists with Circuit Design
 
