@@ -103,6 +103,7 @@ export default () => (
 | `cadModel` | `CadModelProp` | 3D model reference for visualization |
 | [`internallyConnectedPins`](#internally-connected-pins) | `(string \\| number)[][]` | Groups of internally connected pins |
 | [`externallyConnectedPins`](#externally-connected-pins) | `string[][]` | Groups of pins to be externally connected |
+| [`noConnect`](#no-connect-pins) | `string[]` | Pins intentionally left unconnected (do-not-connect) |
 | [`obstructsWithinBounds`](#obstructswithinbounds) | `boolean` | Whether component blocks placement within its bounds |
 | `noSchematicRepresentation` | `boolean` | Omit from schematic view |
 | `doNotPlace` | `boolean` | Exclude from PCB placement |
@@ -564,6 +565,29 @@ export default () => (
         ["GND", "DISCH"],
         ["TRIG", "VCC"]
       ]}
+    />
+  </board>
+)
+
+`} />
+
+### No-Connect Pins
+
+Use `noConnect` to mark pins that are intentionally left unconnected. This is a shorthand for do-not-connect pins without repeating `pinAttributes` entries.
+
+<CircuitPreview defaultView="code" code={`
+
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "DISCH",
+        pin8: "RESET",
+      }}
+      noConnect={["DISCH", "pin8"]}
     />
   </board>
 )
