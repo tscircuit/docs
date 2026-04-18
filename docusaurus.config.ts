@@ -67,6 +67,10 @@ const config: Config = {
       {
         redirects: [
           {
+            to: "/elements/copperpour",
+            from: "/elements/groundplane",
+          },
+          {
             to: "/guides/running-tscircuit/programmatically-building-circuits",
             from: "/guides/programmatically-building-circuits",
           },
