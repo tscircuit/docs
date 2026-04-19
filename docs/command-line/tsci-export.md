@@ -41,6 +41,7 @@ The following export formats are supported:
 | `circuit-json`| Circuit JSON format |
 | `schematic-svg` | Schematic view as SVG |
 | `pcb-svg` | PCB layout as SVG |
+| `assembly-svg` | Assembly view as SVG |
 | `gerbers` | Gerber fabrication files (zipped) |
 | `readable-netlist` | Human-readable netlist |
 | `specctra-dsn` | Specctra DSN format for autorouting |
@@ -63,6 +64,12 @@ tsci export circuit.tsx
 Export as schematic SVG:
 ```bash
 tsci export circuit.tsx -f schematic-svg
+```
+
+Export as assembly SVG:
+
+```bash
+tsci export circuit.tsx -f assembly-svg
 ```
 
 Export PCB layout with custom output path:
@@ -102,14 +109,6 @@ tsci export circuit.tsx --format glb
 The `glb` format wraps the same data into a single binary so you can upload one file to a web viewer (for example, https://gltf.report/ or `model-viewer`). This is handy for sharing previews or attaching a lightweight CAD model to a manufacturing request.
 
 Both commands work with `.tsx` source files as well as `.circuit.json` files, so you can export whichever representation you already have. Each command writes the 3D model next to the input file unless you override the location with `--output <path>`.
-
-### Export as STEP
-
-```bash
-tsci export circuit.tsx --format step
-```
-
-This produces a `.step` file that can be imported into most mechanical CAD tools.
 
 ## Output Files
 
