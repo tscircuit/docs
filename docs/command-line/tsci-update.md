@@ -19,17 +19,28 @@ tsci update [packageSpec]
 Update a specific package:
 
 ```bash
-$ tsci update @tscircuit/math-utils
-Updating @tscircuit/math-utils...
-> bun update @tscircuit/math-utils
-✓ Updated @tscircuit/math-utils successfully
+$ tsci update @tscircuit/seveibar/PICO_W
+Updating @tsci/seveibar.PICO_W...
+> bun update @tsci/seveibar.PICO_W
+bun update v1.3.11 (af24e281)
+
+installed @tsci/seveibar.PICO_W@0.1.0
+
+1 package installed [1095.00ms]
+✓ Updated @tsci/seveibar.PICO_W successfully
 ```
 
 Update all tscircuit packages:
 
 ```bash
 $ tsci update
-Updating 2 packages: @tscircuit/math-utils @tscircuit/props...
-> bun update @tscircuit/math-utils @tscircuit/props
+Updating 2 packages: @tsci/seveibar.HS91L02W2C01 @tsci/seveibar.PICO_W...
+> bun update @tsci/seveibar.HS91L02W2C01 @tsci/seveibar.PICO_W
+bun update v1.3.11 (af24e281)
+
+installed @tsci/seveibar.HS91L02W2C01@0.0.1
+installed @tsci/seveibar.PICO_W@0.1.0
+
+2 packages installed [567.00ms]
 ✓ Updated all tscircuit packages successfully
 ```
