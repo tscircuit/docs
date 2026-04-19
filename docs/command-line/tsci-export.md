@@ -110,6 +110,14 @@ The `glb` format wraps the same data into a single binary so you can upload one 
 
 Both commands work with `.tsx` source files as well as `.circuit.json` files, so you can export whichever representation you already have. Each command writes the 3D model next to the input file unless you override the location with `--output <path>`.
 
+### Export as STEP
+
+```bash
+tsci export circuit.tsx --format step
+```
+
+This produces a `.step` file that can be imported into most mechanical CAD tools.
+
 ## Output Files
 
 By default, the exported file will be saved in the same directory as the input file, with a filename based on the input filename and the chosen format. For example:
