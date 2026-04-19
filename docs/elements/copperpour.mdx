@@ -47,7 +47,7 @@ few traces stitching components back to ground.
 | -------- | ----------- | ------- |
 | `connectsTo` | Net that the pour is tied to. Often `net.GND` or `net.VCC`. | `"net.GND"` |
 | `layer` | PCB layer for the pour (`"top"`, `"bottom"`, or an inner layer name). | `"top"` |
-| `unbroken` | If true, indicates the pour should remain unbroken when it is processed or rendered. | `true` |
+| `unbroken` | If true, indicates that traces from other nets should not travel through this pour. | `true` |
 | `clearance` | Default minimum distance between the pour and other features (e.g. pads, traces, board edge). This is used as a fallback for specific margin properties. Defaults to `0.2mm`. | `"0.3mm"` |
 | `padMargin` | Minimum distance from component pads. Overrides `clearance`. | `"0.4mm"` |
 | `traceMargin` | Minimum distance from traces on other nets. Overrides `clearance`. | `"0.1mm"` |
