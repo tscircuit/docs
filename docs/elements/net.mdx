@@ -43,8 +43,12 @@ source)
 
 | Property | Description |
 | -------- | ----------- |
-| `isForPower`  | The net is used to deliver power ("V5", "V3_3") |  
-| `isGround` | The net is used as a ground path |
+| `name` | Name of the net (e.g. `"V5"`, `"V3_3"`, `"GND"`) |
+| `connectsTo` | Port selector (or list of selectors) that should be connected to this net |
+| `routingPhaseIndex` | Optional routing phase index for autorouting (can be `null`) |
+| `highlightColor` | Optional color used by viewers to highlight the net |
+| `isPowerNet` | Marks the net as a power rail (e.g. `"V5"`, `"V3_3"`) |
+| `isGroundNet` | Marks the net as ground |
 
 ## Implicit Nets
 
