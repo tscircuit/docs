@@ -41,11 +41,13 @@ The following export formats are supported:
 | `circuit-json`| Circuit JSON format |
 | `schematic-svg` | Schematic view as SVG |
 | `pcb-svg` | PCB layout as SVG |
+| `assembly-svg` | Assembly view as SVG |
 | `gerbers` | Gerber fabrication files (zipped) |
 | `readable-netlist` | Human-readable netlist |
 | `specctra-dsn` | Specctra DSN format for autorouting |
 | `gltf` | Text-based 3D scene (glTF 2.0) that references board meshes and textures |
 | `glb` | Binary glTF bundle that packs geometry, materials, and textures into a single file |
+| `step` | STEP 3D model (ISO-10303-21) for high-fidelity CAD integration |
 | `kicad_sch` | KiCad schematic file |
 | `kicad_pcb` | KiCad PCB layout file |
 | `kicad_zip` | Zipped KiCad project (schematic + PCB) |
@@ -62,6 +64,12 @@ tsci export circuit.tsx
 Export as schematic SVG:
 ```bash
 tsci export circuit.tsx -f schematic-svg
+```
+
+Export as assembly SVG:
+
+```bash
+tsci export circuit.tsx -f assembly-svg
 ```
 
 Export PCB layout with custom output path:
@@ -82,7 +90,7 @@ tsci export circuit.tsx -f specctra-dsn
 
 ## Exporting 3D models
 
-Use the `gltf` or `glb` formats when you want a 3D representation of your board for use in CAD tools, AR viewers, or when embedding on the web.
+Use the `gltf`, `glb`, or `step` formats when you want a 3D representation of your board for use in CAD tools, AR viewers, or when embedding on the web.
 
 ### Export as glTF
 
@@ -101,6 +109,14 @@ tsci export circuit.tsx --format glb
 The `glb` format wraps the same data into a single binary so you can upload one file to a web viewer (for example, https://gltf.report/ or `model-viewer`). This is handy for sharing previews or attaching a lightweight CAD model to a manufacturing request.
 
 Both commands work with `.tsx` source files as well as `.circuit.json` files, so you can export whichever representation you already have. Each command writes the 3D model next to the input file unless you override the location with `--output <path>`.
+
+### Export as STEP
+
+```bash
+tsci export circuit.tsx --format step
+```
+
+This produces a `.step` file that can be imported into most mechanical CAD tools.
 
 ## Output Files
 
