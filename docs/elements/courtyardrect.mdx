@@ -71,3 +71,212 @@ export default () => (
 )
 `}
 />
+
+## Anchor Alignment Examples
+
+By default `<courtyardrect />` is positioned by its **center** (`pcbX`/`pcbY`).
+You can use the edge-anchor props to position the courtyard by a specific edge
+instead — tscircuit automatically shifts the center so the named edge lands on
+the given coordinate.
+
+| Prop | Anchor point |
+|------|-------------|
+| `pcbX` / `pcbY` | Center of the rectangle (default) |
+| `pcbLeftEdgeX` | Left edge at the given X |
+| `pcbRightEdgeX` | Right edge at the given X |
+| `pcbTopEdgeY` | Top edge at the given Y |
+| `pcbBottomEdgeY` | Bottom edge at the given Y |
+
+### Center anchor (default)
+
+`pcbX={0} pcbY={0}` — the rectangle is centred on the origin.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" pcbX={0} pcbY={0} width={2} height={2} portHints={["1"]} />
+          <courtyardrect
+            pcbX={0}
+            pcbY={0}
+            width={10}
+            height={8}
+            strokeWidth={0.1}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Left-edge anchor
+
+`pcbLeftEdgeX={-5}` — the left edge of the courtyard is pinned to x = −5 mm.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" pcbX={0} pcbY={0} width={2} height={2} portHints={["1"]} />
+          <courtyardrect
+            pcbLeftEdgeX={-5}
+            pcbY={0}
+            width={10}
+            height={8}
+            strokeWidth={0.1}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Right-edge anchor
+
+`pcbRightEdgeX={5}` — the right edge of the courtyard is pinned to x = 5 mm.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" pcbX={0} pcbY={0} width={2} height={2} portHints={["1"]} />
+          <courtyardrect
+            pcbRightEdgeX={5}
+            pcbY={0}
+            width={10}
+            height={8}
+            strokeWidth={0.1}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Top-edge anchor
+
+`pcbTopEdgeY={-4}` — the top edge of the courtyard is pinned to y = −4 mm
+(PCB Y-axis points downward, so negative Y is toward the top of the board).
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" pcbX={0} pcbY={0} width={2} height={2} portHints={["1"]} />
+          <courtyardrect
+            pcbX={0}
+            pcbTopEdgeY={-4}
+            width={10}
+            height={8}
+            strokeWidth={0.1}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Bottom-edge anchor
+
+`pcbBottomEdgeY={4}` — the bottom edge of the courtyard is pinned to y = 4 mm.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" pcbX={0} pcbY={0} width={2} height={2} portHints={["1"]} />
+          <courtyardrect
+            pcbX={0}
+            pcbBottomEdgeY={4}
+            width={10}
+            height={8}
+            strokeWidth={0.1}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Corner anchor (combined edge props)
+
+Use two edge props together to anchor by a corner. Here the top-left corner is
+pinned to (−5, −4).
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" pcbX={0} pcbY={0} width={2} height={2} portHints={["1"]} />
+          <courtyardrect
+            pcbLeftEdgeX={-5}
+            pcbTopEdgeY={-4}
+            width={10}
+            height={8}
+            strokeWidth={0.1}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
