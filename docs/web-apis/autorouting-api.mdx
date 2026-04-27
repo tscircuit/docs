@@ -17,9 +17,12 @@ subcircuits, and disable autorouting entirely.
 This page provides details on the autorouting cloud API so you can import your
 own cloud autorouter.
 
-## Using Custom Autorouters
+If you want to use an autorouter library directly inside tscircuit instead of
+calling a server, see [Create or Use a Custom Autorouter](../advanced/create-or-use-custom-autorouter.mdx).
 
-Here's an example of how a customer autorouter can be configured with tscircuit:
+## Using a Custom Autorouter Server
+
+Here's an example of how a custom autorouter server can be configured with tscircuit:
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
