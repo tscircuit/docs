@@ -1,0 +1,490 @@
+---
+title: Create or Use a Custom Autorouter
+description: Use a custom autorouter directly from tscircuit code with algorithmFn.
+---
+
+import CircuitExample from "@site/src/components/CircuitPreview"
+
+export const customAutorouterFiles = {
+  "index.circuit.tsx": `import { SimpleCustomAutorouter } from "./src/simple-custom-autorouter"
+
+const LEFT_HEADER_X = -13
+const RIGHT_HEADER_X = 13
+
+export default () => (
+  <board
+    width="34mm"
+    height="22mm"
+    layers={4}
+    minTraceWidth={0.18}
+    nominalTraceWidth={0.22}
+    minViaPadDiameter={0.55}
+    minViaHoleDiameter={0.3}
+    pcbStyle={{
+      viaPadDiameter: 0.55,
+      viaHoleDiameter: 0.3,
+    }}
+    autorouter={{
+      algorithmFn: async (simpleRouteJson) =>
+        new SimpleCustomAutorouter(simpleRouteJson),
+    }}
+  >
+    <pinheader
+      name="J_LEFT"
+      pinCount={4}
+      pitch="2.54mm"
+      pcbX={LEFT_HEADER_X}
+      pcbY={0}
+      pcbOrientation="vertical"
+      schX={-5}
+      schY={0}
+      schFacingDirection="right"
+    />
+    <pinheader
+      name="J_RIGHT"
+      pinCount={4}
+      pitch="2.54mm"
+      pcbX={RIGHT_HEADER_X}
+      pcbY={0}
+      pcbOrientation="vertical"
+      schX={5}
+      schY={0}
+      schFacingDirection="left"
+    />
+
+    <hole name="CENTER_MOUNT" diameter="3.2mm" pcbX={0} pcbY={0} />
+
+    <silkscreentext
+      text="CUSTOM ROUTER"
+      pcbX={0}
+      pcbY={9}
+      fontSize="1mm"
+      anchorAlignment="center"
+    />
+
+    <trace from=".J_LEFT > .pin1" to=".J_RIGHT > .pin4" />
+    <trace from=".J_LEFT > .pin2" to=".J_RIGHT > .pin3" />
+    <trace from=".J_LEFT > .pin3" to=".J_RIGHT > .pin2" />
+    <trace from=".J_LEFT > .pin4" to=".J_RIGHT > .pin1" />
+  </board>
+)`,
+  "src/simple-custom-autorouter.ts": `import type {
+  AutorouterCompleteEvent,
+  AutorouterErrorEvent,
+  AutorouterProgressEvent,
+  GenericLocalAutorouter,
+  Obstacle,
+  SimpleRouteConnection,
+  SimpleRouteJson,
+  SimplifiedPcbTrace,
+} from "tscircuit"
+
+type Handler<T> = (event: T) => void
+type Layer = string
+
+interface Point {
+  x: number
+  y: number
+  layer?: string
+  pointId?: string
+  pcb_port_id?: string
+}
+
+const TRACE_CLEARANCE = 0.35
+const HEADER_ESCAPE = 2.1
+const LANE_SPACING = 0.65
+
+export class SimpleCustomAutorouter implements GenericLocalAutorouter {
+  readonly input: SimpleRouteJson
+  isRouting = false
+
+  private completeHandlers: Array<Handler<AutorouterCompleteEvent>> = []
+  private errorHandlers: Array<Handler<AutorouterErrorEvent>> = []
+  private progressHandlers: Array<Handler<AutorouterProgressEvent>> = []
+  private cachedTraces: SimplifiedPcbTrace[] | null = null
+
+  constructor(input: SimpleRouteJson) {
+    this.input = input
+  }
+
+  on(event: "complete", callback: Handler<AutorouterCompleteEvent>): void
+  on(event: "error", callback: Handler<AutorouterErrorEvent>): void
+  on(event: "progress", callback: Handler<AutorouterProgressEvent>): void
+  on(
+    event: "complete" | "error" | "progress",
+    callback:
+      | Handler<AutorouterCompleteEvent>
+      | Handler<AutorouterErrorEvent>
+      | Handler<AutorouterProgressEvent>,
+  ): void {
+    if (event === "complete") {
+      this.completeHandlers.push(callback as Handler<AutorouterCompleteEvent>)
+      return
+    }
+    if (event === "error") {
+      this.errorHandlers.push(callback as Handler<AutorouterErrorEvent>)
+      return
+    }
+    this.progressHandlers.push(callback as Handler<AutorouterProgressEvent>)
+  }
+
+  start(): void {
+    if (this.isRouting) return
+
+    this.isRouting = true
+    this.emitProgress(0, "building custom Manhattan routes")
+
+    setTimeout(() => {
+      if (!this.isRouting) return
+
+      try {
+        const traces = this.solveSync()
+        this.isRouting = false
+        this.emitProgress(1, "custom autorouter complete")
+        this.emitComplete(traces)
+      } catch (error) {
+        this.isRouting = false
+        this.emitError(error)
+      }
+    }, 0)
+  }
+
+  stop(): void {
+    this.isRouting = false
+  }
+
+  solveSync(): SimplifiedPcbTrace[] {
+    if (this.cachedTraces) return this.cachedTraces
+
+    this.cachedTraces = this.input.connections.flatMap((connection, index) => {
+      if (connection.pointsToConnect.length < 2) return []
+
+      const route = routeConnection(this.input, connection, index)
+
+      return [
+        {
+          type: "pcb_trace" as const,
+          pcb_trace_id: connection.source_trace_id ?? \`custom_trace_\${index}\`,
+          connection_name: connection.name,
+          route,
+        },
+      ]
+    })
+
+    return this.cachedTraces
+  }
+
+  private emitComplete(traces: SimplifiedPcbTrace[]) {
+    for (const handler of this.completeHandlers) {
+      handler({ type: "complete", traces })
+    }
+  }
+
+  private emitError(error: unknown) {
+    const normalizedError =
+      error instanceof Error ? error : new Error(String(error))
+
+    for (const handler of this.errorHandlers) {
+      handler({ type: "error", error: normalizedError })
+    }
+  }
+
+  private emitProgress(progress: number, phase: string) {
+    for (const handler of this.progressHandlers) {
+      handler({
+        type: "progress",
+        steps: Math.round(progress * this.input.connections.length),
+        progress,
+        phase,
+      })
+    }
+  }
+}
+
+function routeConnection(
+  input: SimpleRouteJson,
+  connection: SimpleRouteConnection,
+  connectionIndex: number,
+): SimplifiedPcbTrace["route"] {
+  const width = getTraceWidth(input, connection)
+  const layer = getRouteLayer(input, connectionIndex)
+  const route: SimplifiedPcbTrace["route"] = []
+
+  for (let i = 0; i < connection.pointsToConnect.length - 1; i += 1) {
+    const start = connection.pointsToConnect[i]!
+    const end = connection.pointsToConnect[i + 1]!
+    const section = routeBetweenPoints({
+      input,
+      connection,
+      connectionIndex,
+      start,
+      end,
+      layer,
+      width,
+    })
+
+    route.push(...(i === 0 ? section : section.slice(1)))
+  }
+
+  return compactWires(route)
+}
+
+function routeBetweenPoints({
+  input,
+  connection,
+  connectionIndex,
+  start,
+  end,
+  layer,
+  width,
+}: {
+  input: SimpleRouteJson
+  connection: SimpleRouteConnection
+  connectionIndex: number
+  start: Point
+  end: Point
+  layer: Layer
+  width: number
+}): SimplifiedPcbTrace["route"] {
+  const direction = end.x >= start.x ? 1 : -1
+  const laneNumber = Math.floor(connectionIndex / 2)
+  const side = connectionIndex % 2 === 0 ? 1 : -1
+  const escape = HEADER_ESCAPE + laneNumber * LANE_SPACING
+  const entryX = clamp(
+    start.x + direction * escape,
+    input.bounds.minX,
+    input.bounds.maxX,
+  )
+  const exitX = clamp(
+    end.x - direction * escape,
+    input.bounds.minX,
+    input.bounds.maxX,
+  )
+  const laneY = getBypassLaneY({
+    input,
+    connection,
+    start,
+    end,
+    side,
+    laneNumber,
+  })
+
+  return compactWires([
+    wire(start.x, start.y, layer, width),
+    wire(entryX, start.y, layer, width),
+    wire(entryX, laneY, layer, width),
+    wire(exitX, laneY, layer, width),
+    wire(exitX, end.y, layer, width),
+    wire(end.x, end.y, layer, width),
+  ])
+}
+
+function getBypassLaneY({
+  input,
+  connection,
+  start,
+  end,
+  side,
+  laneNumber,
+}: {
+  input: SimpleRouteJson
+  connection: SimpleRouteConnection
+  start: Point
+  end: Point
+  side: 1 | -1
+  laneNumber: number
+}) {
+  const routeMinX = Math.min(start.x, end.x)
+  const routeMaxX = Math.max(start.x, end.x)
+  const connectionIds = getConnectionIds(connection)
+  const blockingObstacles = input.obstacles.filter(
+    (obstacle) =>
+      !isObstacleConnectedTo(connectionIds, obstacle) &&
+      obstacle.center.x + obstacle.width / 2 >= routeMinX &&
+      obstacle.center.x - obstacle.width / 2 <= routeMaxX,
+  )
+
+  const obstacleTop =
+    Math.max(
+      ...blockingObstacles.map(
+        (obstacle) => obstacle.center.y + obstacle.height / 2,
+      ),
+      Math.max(start.y, end.y),
+    ) + TRACE_CLEARANCE
+
+  const obstacleBottom =
+    Math.min(
+      ...blockingObstacles.map(
+        (obstacle) => obstacle.center.y - obstacle.height / 2,
+      ),
+      Math.min(start.y, end.y),
+    ) - TRACE_CLEARANCE
+
+  const offset = laneNumber * LANE_SPACING
+  const desiredY = side > 0 ? obstacleTop + offset : obstacleBottom - offset
+  const boardMargin = TRACE_CLEARANCE * 2
+
+  return clamp(
+    desiredY,
+    input.bounds.minY + boardMargin,
+    input.bounds.maxY - boardMargin,
+  )
+}
+
+function getTraceWidth(
+  input: SimpleRouteJson,
+  connection: SimpleRouteConnection,
+) {
+  return toNumber(
+    connection.width ??
+      connection.nominalTraceWidth ??
+      input.nominalTraceWidth ??
+      input.minTraceWidth,
+  )
+}
+
+function getRouteLayer(input: SimpleRouteJson, connectionIndex: number): Layer {
+  const layerNames = getLayerNames(input.layerCount)
+  return layerNames[connectionIndex % layerNames.length] ?? "top"
+}
+
+function getLayerNames(layerCount: number) {
+  if (layerCount <= 1) return ["top"]
+  if (layerCount === 2) return ["top", "bottom"]
+
+  const layerNames = ["top"]
+  for (let i = 1; i < layerCount - 1; i += 1) {
+    layerNames.push(\`inner\${i}\`)
+  }
+  layerNames.push("bottom")
+  return layerNames
+}
+
+function getConnectionIds(connection: SimpleRouteConnection) {
+  return new Set(
+    [
+      connection.name,
+      connection.source_trace_id,
+      ...connection.pointsToConnect.flatMap((point) => [
+        point.pointId,
+        point.pcb_port_id,
+      ]),
+    ].filter((value): value is string => Boolean(value)),
+  )
+}
+
+function isObstacleConnectedTo(connectionIds: Set<string>, obstacle: Obstacle) {
+  return obstacle.connectedTo.some((id) => connectionIds.has(id))
+}
+
+function compactWires(route: SimplifiedPcbTrace["route"]) {
+  const compacted: SimplifiedPcbTrace["route"] = []
+
+  for (const point of route) {
+    const previous = compacted[compacted.length - 1]
+    if (
+      previous?.route_type === "wire" &&
+      point.route_type === "wire" &&
+      previous.x === point.x &&
+      previous.y === point.y &&
+      previous.layer === point.layer
+    ) {
+      continue
+    }
+
+    compacted.push(point)
+  }
+
+  return compacted
+}
+
+function wire(x: number, y: number, layer: Layer, width: number) {
+  return {
+    route_type: "wire" as const,
+    x,
+    y,
+    layer,
+    width,
+  }
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function toNumber(value: number | string) {
+  if (typeof value === "number") return value
+
+  const parsed = Number.parseFloat(value)
+  if (Number.isFinite(parsed)) return parsed
+
+  throw new Error(\`Expected a numeric route width, got "\${value}"\`)
+}`,
+}
+
+Use `algorithmFn` when you want to create or use a custom autorouter in your
+tscircuit project without running a separate autorouter server. The function
+receives the board's `SimpleRouteJson` routing problem and returns a
+`GenericLocalAutorouter`.
+
+This example recreates the
+[`tscircuit/example-custom-autorouter`](https://github.com/tscircuit/example-custom-autorouter)
+project. The board is a four-wire crossover adapter. The custom router draws
+Manhattan routes, cycles traces across the available layers, and uses obstacles
+from the `SimpleRouteJson` input to route around the center mounting hole.
+
+<CircuitExample
+  defaultView="pcb"
+  fsMap={customAutorouterFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Use an Autorouter in a Board
+
+Pass an object with `algorithmFn` to the `autorouter` prop. The function can
+construct your own router, call a library, or wrap an existing routing
+implementation:
+
+```tsx
+<board
+  autorouter={{
+    algorithmFn: async (simpleRouteJson) =>
+      new SimpleCustomAutorouter(simpleRouteJson),
+  }}
+>
+  {/* components and traces */}
+</board>
+```
+
+`algorithmFn` receives a `SimpleRouteJson` object. Return an object that
+implements `GenericLocalAutorouter`, usually with these methods:
+
+- `start()` to begin asynchronous routing and emit a `complete` event
+- `stop()` to cancel routing
+- `on("progress" | "complete" | "error", callback)` to report router state
+- `solveSync()` to return `SimplifiedPcbTrace[]` synchronously when supported
+
+## Create a Router
+
+The router output is a list of simplified PCB traces. Each trace should use the
+source trace ID when one is present, then return a route made of `wire` and
+optional `via` points.
+
+The example's `SimpleCustomAutorouter` is intentionally small, but it shows the
+full shape: event handlers, sync solving, trace IDs, route widths, layer
+selection, obstacle checks, and progress/error reporting.
+
+## Run the Example Locally
+
+```bash
+git clone https://github.com/tscircuit/example-custom-autorouter
+cd example-custom-autorouter
+bun install
+bun run typecheck
+bun run build
+```
+
+Use `bun run dev` to open the interactive tscircuit viewer.
+
+For a custom autorouter that runs as an HTTP service instead of inside the
+tscircuit process, see the [Autorouting API](../web-apis/autorouting-api.mdx#using-a-custom-autorouter-server).
