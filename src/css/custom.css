@@ -96,7 +96,7 @@ div {
   opacity: 0;
   padding: 0.4rem;
   position: absolute;
-  right: calc((var(--ifm-pre-padding) / 2) + 2.125rem);
+  right: calc((var(--ifm-pre-padding) / 2) + 4.25rem);
   top: calc(var(--ifm-pre-padding) / 2);
   transition: opacity var(--ifm-transition-fast) ease-in-out;
   z-index: 10;
