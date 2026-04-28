@@ -4,11 +4,24 @@ import {
   getCompressedBase64SnippetString,
 } from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
-import CodeBlock from "@theme/CodeBlock"
-import { useWindowSize } from "@docusaurus/theme-common"
+import { usePrismTheme, useWindowSize } from "@docusaurus/theme-common"
+import useIsBrowser from "@docusaurus/useIsBrowser"
+import { Editor as LiveCodeEditor } from "react-live"
 import TscircuitIframe from "./TscircuitIframe"
+
+const trimCodeString = (value?: string) => value?.trim() ?? ""
+
+const trimFsMap = (value?: Record<string, string>) =>
+  value
+    ? Object.fromEntries(
+        Object.entries(value).map(([filename, fileCode]) => [
+          filename,
+          trimCodeString(fileCode),
+        ]),
+      )
+    : value
 
 const Tab = ({
   label,
@@ -115,9 +128,27 @@ export default function CircuitPreview({
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
+  const prismTheme = usePrismTheme()
+  const isBrowser = useIsBrowser()
+  const [editableCode, setEditableCode] = useState(trimCodeString(code))
+  const [editableFsMap, setEditableFsMap] = useState(trimFsMap(fsMap))
   const [currentFile, setCurrentFile] = useState<string>(
     entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
   )
+
+  useEffect(() => {
+    setEditableCode(trimCodeString(code))
+  }, [code])
+
+  useEffect(() => {
+    setEditableFsMap(trimFsMap(fsMap))
+  }, [fsMap])
+
+  useEffect(() => {
+    setCurrentFile(
+      entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
+    )
+  }, [entrypoint, fsMap, mainComponentPath])
 
   let _showTabs = showTabs
   let _splitView = splitView
@@ -143,10 +174,27 @@ export default function CircuitPreview({
   const [view, setView] = useState<
     "pcb" | "schematic" | "code" | "3d" | "runframe" | "pinout"
   >(rightView ?? _defaultView)
-  const hasMultipleFiles = Object.keys(fsMap ?? {}).length > 1
+  const hasMultipleFiles = Object.keys(editableFsMap ?? {}).length > 1
+  const activeCode =
+    editableFsMap?.[currentFile] ??
+    editableCode ??
+    Object.values(editableFsMap ?? {})[0] ??
+    ""
   const fsMapOrCode = hasMultipleFiles
-    ? fsMap || code
-    : code || Object.values(fsMap ?? {})[0]
+    ? editableFsMap || editableCode
+    : activeCode || Object.values(editableFsMap ?? {})[0]
+
+  const updateCurrentCode = (nextCode: string) => {
+    if (hasMultipleFiles && currentFile) {
+      setEditableFsMap((prev) => ({
+        ...(prev ?? {}),
+        [currentFile]: nextCode,
+      }))
+      return
+    }
+
+    setEditableCode(nextCode)
+  }
 
   const pcbUrl = useMemo(() => {
     const basePcbUrl = createSvgUrl(fsMapOrCode, "pcb")
@@ -156,7 +204,6 @@ export default function CircuitPreview({
     const separator = basePcbUrl.includes("?") ? "&" : "?"
     return `${basePcbUrl}${separator}show_courtyards=true`
   }, [fsMapOrCode, showCourtyards])
-  console.log(fsMapOrCode)
   const schUrl = useMemo(
     () =>
       createSvgUrl(fsMapOrCode, showSimulationGraph ? "schsim" : "schematic", {
@@ -164,7 +211,6 @@ export default function CircuitPreview({
       }),
     [fsMapOrCode, showSimulationGraph],
   )
-  console.log(schUrl)
   const pinoutUrl = useMemo(
     () => createSvgUrl(fsMapOrCode, "pinout"),
     [fsMapOrCode],
@@ -175,8 +221,8 @@ export default function CircuitPreview({
     }
 
     // If fsMap is provided, use fs_map parameter instead of code
-    if (fsMap) {
-      const fsMapJson = JSON.stringify(fsMap)
+    if (editableFsMap) {
+      const fsMapJson = JSON.stringify(editableFsMap)
       // Use browser-compatible base64 encoding
       const encodedFsMap = btoa(
         encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
@@ -206,10 +252,16 @@ export default function CircuitPreview({
     }
 
     const encodedCode = encodeURIComponent(
-      getCompressedBase64SnippetString(code),
+      getCompressedBase64SnippetString(activeCode),
     )
     return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&code=${encodedCode}`
-  }, [code, browser3dView, fsMap])
+  }, [
+    activeCode,
+    browser3dView,
+    editableFsMap,
+    mainComponentPath,
+    projectBaseUrl,
+  ])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
@@ -276,7 +328,7 @@ export default function CircuitPreview({
           `flex-inline justify-start gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-white" : "bg-slate-800"} p-1 gap-2`,
         )}
       >
-        {Object.keys(fsMap ?? {}).map((filename) => (
+        {Object.keys(editableFsMap ?? {}).map((filename) => (
           <FileTab
             key={filename}
             filename={filename}
@@ -286,6 +338,23 @@ export default function CircuitPreview({
         ))}
       </div>
     </div>
+  )
+
+  const codeEditorElm = (
+    <LiveCodeEditor
+      key={String(isBrowser)}
+      code={activeCode}
+      language="tsx"
+      theme={prismTheme}
+      onChange={updateCurrentCode}
+      className={tw("w-full min-w-0 theme-code-block")}
+      style={{
+        font: "var(--ifm-code-font-size) / var(--ifm-pre-line-height) var(--ifm-font-family-monospace)",
+        background: "var(--prism-background-color)",
+        color: "var(--prism-color)",
+        minHeight: "100%",
+      }}
+    />
   )
 
   if (leftView || rightView) {
@@ -303,14 +372,7 @@ export default function CircuitPreview({
                 `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 ${borderCss} ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
               )}
             >
-              <CodeBlock
-                className={tw(
-                  "w-full rounded-none shadow-none p-0 m-0 min-w-0",
-                )}
-                language="tsx"
-              >
-                {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
-              </CodeBlock>
+              {codeEditorElm}
             </div>
           </div>
         )
@@ -381,12 +443,7 @@ export default function CircuitPreview({
           }`,
         )}
       >
-        <CodeBlock
-          className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
-          language="tsx"
-        >
-          {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
-        </CodeBlock>
+        {codeEditorElm}
       </div>
     </div>
   )
@@ -445,7 +502,7 @@ export default function CircuitPreview({
         )}
       />
       {showRunFrame && view === "runframe" && (
-        <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
+        <TscircuitIframe fsMap={editableFsMap} entrypoint={entrypoint} />
       )}
     </div>
   )
