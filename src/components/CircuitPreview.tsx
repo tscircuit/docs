@@ -162,12 +162,15 @@ export default function CircuitPreview({
     Record<string, string> | undefined
   >(() => (fsMap ? { ...fsMap } : undefined))
   const [editingFiles, setEditingFiles] = useState<Record<string, boolean>>({})
+  const [hasEditedCode, setHasEditedCode] = useState(false)
   const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     setEditableCode(code ?? Object.values(fsMap ?? {})[0] ?? "")
     setEditableFsMap(fsMap ? { ...fsMap } : undefined)
     setEditingFiles({})
+    setHasEditedCode(false)
+    setLoadingUrls({})
     setCurrentFile(
       entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
     )
@@ -276,6 +279,8 @@ export default function CircuitPreview({
   ])
 
   useEffect(() => {
+    if (!hasEditedCode) return
+
     setLoadingUrls((prev) => ({
       ...prev,
       [pcbUrl]: true,
@@ -283,7 +288,7 @@ export default function CircuitPreview({
       [pinoutUrl]: true,
       [threeDUrl]: true,
     }))
-  }, [pcbUrl, schUrl, pinoutUrl, threeDUrl])
+  }, [hasEditedCode, pcbUrl, schUrl, pinoutUrl, threeDUrl])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
@@ -299,6 +304,8 @@ export default function CircuitPreview({
   }
 
   const updateCurrentCode = (value: string) => {
+    setHasEditedCode(true)
+
     if (editableFsMap && currentFile) {
       setEditableFsMap((prev) => ({ ...(prev ?? {}), [currentFile]: value }))
       return
@@ -364,7 +371,7 @@ export default function CircuitPreview({
     imageClassName: string
     hidden?: boolean
   }) => {
-    const isLoading = loadingUrls[src] ?? true
+    const isLoading = loadingUrls[src] ?? false
 
     return (
       <div
