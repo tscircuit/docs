@@ -1,3 +1,3 @@
 # [docs.tscircuit.com](https://docs.tscircuit.com)
 
-the tscircuit docs
+The [tscircuit](https://github.com/tscircuit/tscircuit) docs
