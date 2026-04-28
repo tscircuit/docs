@@ -127,6 +127,36 @@ export default () => (
   }}
 />
 
+## Importing local STEP models
+
+You can import a local `.step` file the same way as any other static model asset,
+then pass the imported URL to `modelUrl`.
+
+<CircuitPreview
+  splitView
+  defaultView='3d'
+  hidePCBTab
+  hideSchematicTab
+  browser3dView={false}
+  mainComponentPath='index.tsx'
+  fsMap={{
+    "index.tsx": `
+import soic8StepUrl from "./models/soic8.step"
+
+export default () => (
+  <board>
+    <chip
+      name="U1"
+      footprint="soic8"
+      cadModel={<cadmodel modelUrl={soic8StepUrl} />}
+    />
+  </board>
+)
+`,
+"./models/soic8.step": "__STATIC_ASSET__"
+  }}
+/>
+
 ## Providing a STEP model
 
 You can provide a STEP model to the `<cadmodel />` element by setting the `modelUrl`.
