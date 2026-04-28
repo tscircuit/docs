@@ -78,6 +78,42 @@ const FileTab = ({
   )
 }
 
+const EditCodeButton = ({ onClick }: { onClick: () => void }) => {
+  const { isDarkTheme } = useColorMode()
+
+  return (
+    <button
+      type="button"
+      className={tw(
+        `absolute top-2 right-11 z-10 flex h-8 w-8 items-center justify-center rounded border transition-colors ${
+          !isDarkTheme
+            ? "border-slate-200 bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+            : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+        }`,
+      )}
+      onClick={onClick}
+      aria-label="Edit circuit source"
+      title="Edit circuit source"
+    >
+      <svg
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
+    </button>
+  )
+}
+
 export default function CircuitPreview({
   code,
   showTabs = true,
@@ -308,18 +344,8 @@ export default function CircuitPreview({
             aria-label="Editable circuit source"
           />
         ) : (
-          <div
-            className={tw("w-full min-h-[320px] cursor-text")}
-            onClick={startEditingCurrentFile}
-            onKeyDown={(event) => {
-              if (event.key.length === 1 || event.key === "Enter") {
-                startEditingCurrentFile()
-              }
-            }}
-            role="textbox"
-            tabIndex={0}
-            aria-label="Circuit source. Click or type to edit."
-          >
+          <div className={tw("relative w-full min-h-[320px]")}>
+            <EditCodeButton onClick={startEditingCurrentFile} />
             <CodeBlock
               className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
               language="tsx"
