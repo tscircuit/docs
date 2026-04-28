@@ -4,11 +4,19 @@ import {
   getCompressedBase64SnippetString,
 } from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
 import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "./TscircuitIframe"
+
+type CircuitPreviewView =
+  | "code"
+  | "pcb"
+  | "schematic"
+  | "3d"
+  | "runframe"
+  | "pinout"
 
 const Tab = ({
   label,
@@ -70,6 +78,35 @@ const FileTab = ({
   )
 }
 
+const EditCodeButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <button
+      type="button"
+      className="circuit-preview-edit-button"
+      onClick={onClick}
+      aria-label="Edit circuit source"
+      title="Edit circuit source"
+    >
+      <svg
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        width="1.125rem"
+        height="1.125rem"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="circuit-preview-edit-button-icon"
+      >
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
+    </button>
+  )
+}
+
 export default function CircuitPreview({
   code,
   showTabs = true,
@@ -94,7 +131,7 @@ export default function CircuitPreview({
 }: {
   code?: string
   showTabs?: boolean
-  defaultView?: "code" | "pcb" | "schematic" | "pinout"
+  defaultView?: CircuitPreviewView
   splitView?: boolean
   showRunFrame?: boolean
   hideSchematicTab?: boolean
@@ -106,8 +143,8 @@ export default function CircuitPreview({
   mainComponentPath?: string
   schematicOnly?: boolean
   browser3dView?: boolean
-  leftView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
-  rightView?: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout"
+  leftView?: CircuitPreviewView
+  rightView?: CircuitPreviewView
   projectBaseUrl?: string
   showSimulationGraph?: boolean
   verticalStack?: boolean
@@ -118,6 +155,26 @@ export default function CircuitPreview({
   const [currentFile, setCurrentFile] = useState<string>(
     entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
   )
+  const [editableCode, setEditableCode] = useState(
+    code ?? Object.values(fsMap ?? {})[0] ?? "",
+  )
+  const [editableFsMap, setEditableFsMap] = useState<
+    Record<string, string> | undefined
+  >(() => (fsMap ? { ...fsMap } : undefined))
+  const [editingFiles, setEditingFiles] = useState<Record<string, boolean>>({})
+  const [hasEditedCode, setHasEditedCode] = useState(false)
+  const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    setEditableCode(code ?? Object.values(fsMap ?? {})[0] ?? "")
+    setEditableFsMap(fsMap ? { ...fsMap } : undefined)
+    setEditingFiles({})
+    setHasEditedCode(false)
+    setLoadingUrls({})
+    setCurrentFile(
+      entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
+    )
+  }, [code, entrypoint, fsMap, mainComponentPath])
 
   let _showTabs = showTabs
   let _splitView = splitView
@@ -140,13 +197,15 @@ export default function CircuitPreview({
     _hide3DTab = ![leftView, rightView].includes("3d")
   }
 
-  const [view, setView] = useState<
-    "pcb" | "schematic" | "code" | "3d" | "runframe" | "pinout"
-  >(rightView ?? _defaultView)
-  const hasMultipleFiles = Object.keys(fsMap ?? {}).length > 1
+  const [view, setView] = useState<CircuitPreviewView>(
+    rightView ?? _defaultView,
+  )
+  const hasMultipleFiles = Object.keys(editableFsMap ?? {}).length > 1
   const fsMapOrCode = hasMultipleFiles
-    ? fsMap || code
-    : code || Object.values(fsMap ?? {})[0]
+    ? editableFsMap || editableCode
+    : editableFsMap?.[currentFile] ||
+      Object.values(editableFsMap ?? {})[0] ||
+      editableCode
 
   const pcbUrl = useMemo(() => {
     const basePcbUrl = createSvgUrl(fsMapOrCode, "pcb")
@@ -156,7 +215,6 @@ export default function CircuitPreview({
     const separator = basePcbUrl.includes("?") ? "&" : "?"
     return `${basePcbUrl}${separator}show_courtyards=true`
   }, [fsMapOrCode, showCourtyards])
-  console.log(fsMapOrCode)
   const schUrl = useMemo(
     () =>
       createSvgUrl(fsMapOrCode, showSimulationGraph ? "schsim" : "schematic", {
@@ -164,7 +222,6 @@ export default function CircuitPreview({
       }),
     [fsMapOrCode, showSimulationGraph],
   )
-  console.log(schUrl)
   const pinoutUrl = useMemo(
     () => createSvgUrl(fsMapOrCode, "pinout"),
     [fsMapOrCode],
@@ -175,8 +232,8 @@ export default function CircuitPreview({
     }
 
     // If fsMap is provided, use fs_map parameter instead of code
-    if (fsMap) {
-      const fsMapJson = JSON.stringify(fsMap)
+    if (editableFsMap) {
+      const fsMapJson = JSON.stringify(editableFsMap)
       // Use browser-compatible base64 encoding
       const encodedFsMap = btoa(
         encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
@@ -200,21 +257,155 @@ export default function CircuitPreview({
         project_base_url: encodeURIComponent(projectBaseUrl),
       }
       const queryString = Object.entries(params)
+        .filter(([, value]) => value !== undefined)
         .map(([key, value]) => `${key}=${value}`)
         .join("&")
       return `${baseUrl}?${queryString}`
     }
 
     const encodedCode = encodeURIComponent(
-      getCompressedBase64SnippetString(code),
+      getCompressedBase64SnippetString(
+        typeof fsMapOrCode === "string" ? fsMapOrCode : editableCode,
+      ),
     )
     return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&code=${encodedCode}`
-  }, [code, browser3dView, fsMap])
+  }, [
+    editableCode,
+    editableFsMap,
+    fsMapOrCode,
+    browser3dView,
+    mainComponentPath,
+    projectBaseUrl,
+  ])
+
+  useEffect(() => {
+    if (!hasEditedCode) return
+
+    setLoadingUrls((prev) => ({
+      ...prev,
+      [pcbUrl]: true,
+      [schUrl]: true,
+      [pinoutUrl]: true,
+      [threeDUrl]: true,
+    }))
+  }, [hasEditedCode, pcbUrl, schUrl, pinoutUrl, threeDUrl])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
   const tabContentHeightCss =
     _showTabs && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
+
+  const currentCode = editableFsMap?.[currentFile] ?? editableCode
+  const currentFileKey = currentFile ?? "__code"
+  const isEditingCurrentFile = editingFiles[currentFileKey] ?? false
+
+  const startEditingCurrentFile = () => {
+    setEditingFiles((prev) => ({ ...prev, [currentFileKey]: true }))
+  }
+
+  const updateCurrentCode = (value: string) => {
+    setHasEditedCode(true)
+
+    if (editableFsMap && currentFile) {
+      setEditableFsMap((prev) => ({ ...(prev ?? {}), [currentFile]: value }))
+      return
+    }
+
+    setEditableCode(value)
+  }
+
+  const markLoaded = (url: string) => {
+    setLoadingUrls((prev) => ({ ...prev, [url]: false }))
+  }
+
+  const renderCodePane = (borderCss = "border-r") => (
+    <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
+      {hasMultipleFiles && fileTabsElm}
+      <div
+        className={tw(
+          `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 ${borderCss} ${
+            !isDarkTheme ? "border-gray-200" : "border-gray-700"
+          }`,
+        )}
+      >
+        {isEditingCurrentFile ? (
+          <textarea
+            className={tw(
+              `w-full min-h-[320px] resize-y border-0 rounded-none shadow-none p-4 m-0 font-mono text-sm leading-6 outline-none ${
+                !isDarkTheme
+                  ? "bg-white text-slate-950"
+                  : "bg-slate-950 text-slate-100"
+              }`,
+            )}
+            value={currentCode}
+            onChange={(event) => updateCurrentCode(event.target.value)}
+            spellCheck={false}
+            autoFocus
+            aria-label="Editable circuit source"
+          />
+        ) : (
+          <div
+            className={`${tw("relative w-full min-h-[320px]")} circuit-preview-code-block`}
+          >
+            <EditCodeButton onClick={startEditingCurrentFile} />
+            <CodeBlock
+              className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
+              language="tsx"
+            >
+              {currentCode.trim()}
+            </CodeBlock>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  const renderPreviewImage = ({
+    src,
+    alt,
+    imageClassName,
+    hidden = false,
+  }: {
+    src: string
+    alt: string
+    imageClassName: string
+    hidden?: boolean
+  }) => {
+    const isLoading = loadingUrls[src] ?? false
+
+    return (
+      <div
+        className={tw(
+          `relative w-full ${tabContentHeightCss} ${hidden ? "hidden" : ""}`,
+        )}
+      >
+        <img
+          src={src}
+          alt={alt}
+          onLoad={() => markLoaded(src)}
+          onError={() => markLoaded(src)}
+          className={tw(
+            `${imageClassName} h-full transition-opacity duration-200 ${
+              isLoading ? "opacity-40" : "opacity-100"
+            }`,
+          )}
+        />
+        {isLoading && (
+          <div
+            className={tw(
+              `absolute top-2 left-2 rounded px-2 py-1 text-xs font-medium ${
+                !isDarkTheme
+                  ? "bg-white text-slate-600"
+                  : "bg-slate-900 text-slate-200"
+              }`,
+            )}
+          >
+            loading...
+          </div>
+        )}
+      </div>
+    )
+  }
 
   const tabsElm = (
     <div className={tw("flex justify-end px-2")}>
@@ -289,32 +480,20 @@ export default function CircuitPreview({
   )
 
   if (leftView || rightView) {
-    const renderView = (
-      v: "code" | "pcb" | "schematic" | "3d" | "runframe" | "pinout",
-      side: "left" | "right",
-    ) => {
+    const renderView = (v: CircuitPreviewView, side: "left" | "right") => {
       const borderCss = side === "left" ? "border-r" : "border-l"
       if (v === "code") {
-        return (
-          <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
-            {hasMultipleFiles && side === "left" && fileTabsElm}
-            <div
-              className={tw(
-                `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 ${borderCss} ${!isDarkTheme ? "border-gray-200" : "border-gray-700"}`,
-              )}
-            >
-              <CodeBlock
-                className={tw(
-                  "w-full rounded-none shadow-none p-0 m-0 min-w-0",
-                )}
-                language="tsx"
-              >
-                {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
-              </CodeBlock>
-            </div>
-          </div>
-        )
+        return renderCodePane(borderCss)
       }
+
+      const src =
+        v === "pcb"
+          ? pcbUrl
+          : v === "schematic"
+            ? schUrl
+            : v === "pinout"
+              ? pinoutUrl
+              : threeDUrl
 
       return (
         <div
@@ -328,29 +507,19 @@ export default function CircuitPreview({
             }`,
           )}
         >
-          <img
-            src={
+          {renderPreviewImage({
+            src,
+            alt: `${v.toUpperCase()} Circuit Preview`,
+            imageClassName: `w-full m-0 object-contain ${
               v === "pcb"
-                ? pcbUrl
+                ? "bg-black flex items-center justify-center"
                 : v === "schematic"
-                  ? schUrl
+                  ? "bg-[#F5F1ED]"
                   : v === "pinout"
-                    ? pinoutUrl
-                    : threeDUrl
-            }
-            alt={`${v.toUpperCase()} Circuit Preview`}
-            className={tw(
-              `w-full ${tabContentHeightCss} m-0 object-contain ${
-                v === "pcb"
-                  ? "bg-black flex items-center justify-center"
-                  : v === "schematic"
-                    ? "bg-[#F5F1ED]"
-                    : v === "pinout"
-                      ? "bg-white"
-                      : "bg-white object-cover"
-              }`,
-            )}
-          />
+                    ? "bg-white"
+                    : "bg-white object-cover"
+            }`,
+          })}
         </div>
       )
     }
@@ -369,27 +538,11 @@ export default function CircuitPreview({
     )
   }
 
-  const CodeView = (view === "code" ||
-    shouldSplitCode ||
-    (!_showTabs && windowSize === "mobile")) && (
-    <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
-      {hasMultipleFiles && fileTabsElm}
-      <div
-        className={tw(
-          `flex flex-1 overflow-x-auto overflow-y-auto m-0 p-0 border-r ${
-            !isDarkTheme ? "border-gray-200" : "border-gray-700"
-          }`,
-        )}
-      >
-        <CodeBlock
-          className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
-          language="tsx"
-        >
-          {fsMap?.[currentFile]?.trim() || code?.trim() || ""}
-        </CodeBlock>
-      </div>
-    </div>
-  )
+  const CodeView =
+    (view === "code" ||
+      shouldSplitCode ||
+      (!_showTabs && windowSize === "mobile")) &&
+    renderCodePane("border-r")
 
   const ImageView = (view === "pcb" ||
     view === "schematic" ||
@@ -408,42 +561,31 @@ export default function CircuitPreview({
       )}
     >
       {_showTabs && shouldSplitCode && tabsElm}
-      <img
-        src={pcbUrl}
-        alt="PCB Circuit Preview"
-        className={tw(
-          `w-full ${tabContentHeightCss} m-0 object-contain bg-black flex items-center justify-center ${
-            view !== "pcb" ? "hidden" : ""
-          }`,
-        )}
-      />
-      <img
-        src={schUrl}
-        alt="Schematic Circuit Preview"
-        className={tw(
-          `w-full ${tabContentHeightCss} m-0 object-contain bg-[#F5F1ED] ${
-            view !== "schematic" ? "hidden" : ""
-          }`,
-        )}
-      />
-      <img
-        src={pinoutUrl}
-        alt="Pinout Circuit Preview"
-        className={tw(
-          `w-full ${tabContentHeightCss} m-0 object-contain bg-white ${
-            view !== "pinout" ? "hidden" : ""
-          }`,
-        )}
-      />
-      <img
-        src={threeDUrl}
-        alt="3D Circuit Preview"
-        className={tw(
-          `w-full ${tabContentHeightCss} m-0 object-cover bg-white ${
-            view !== "3d" ? "hidden" : ""
-          }`,
-        )}
-      />
+      {renderPreviewImage({
+        src: pcbUrl,
+        alt: "PCB Circuit Preview",
+        hidden: view !== "pcb",
+        imageClassName:
+          "w-full m-0 object-contain bg-black flex items-center justify-center",
+      })}
+      {renderPreviewImage({
+        src: schUrl,
+        alt: "Schematic Circuit Preview",
+        hidden: view !== "schematic",
+        imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
+      })}
+      {renderPreviewImage({
+        src: pinoutUrl,
+        alt: "Pinout Circuit Preview",
+        hidden: view !== "pinout",
+        imageClassName: "w-full m-0 object-contain bg-white",
+      })}
+      {renderPreviewImage({
+        src: threeDUrl,
+        alt: "3D Circuit Preview",
+        hidden: view !== "3d",
+        imageClassName: "w-full m-0 object-cover bg-white",
+      })}
       {showRunFrame && view === "runframe" && (
         <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
       )}

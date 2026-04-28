@@ -85,6 +85,44 @@ div {
   margin: 0;
 }
 
+.circuit-preview-edit-button {
+  align-items: center;
+  background: var(--prism-background-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-global-radius);
+  color: var(--prism-color);
+  display: flex;
+  line-height: 0;
+  opacity: 0;
+  padding: 0.4rem;
+  position: absolute;
+  right: calc((var(--ifm-pre-padding) / 2) + 4.25rem + 5px);
+  top: calc(var(--ifm-pre-padding) / 2);
+  transition: opacity var(--ifm-transition-fast) ease-in-out;
+  z-index: 10;
+}
+
+.circuit-preview-edit-button-icon {
+  color: var(--ifm-color-emphasis-900);
+  height: 1.125rem;
+  opacity: inherit;
+  transition: all var(--ifm-transition-fast) ease;
+  width: 1.125rem;
+}
+
+[data-theme="dark"] .circuit-preview-edit-button-icon {
+  color: var(--ifm-color-emphasis-800);
+}
+
+.circuit-preview-code-block:hover .circuit-preview-edit-button {
+  opacity: 0.55;
+}
+
+.circuit-preview-edit-button:focus-visible,
+.circuit-preview-edit-button:hover {
+  opacity: 1 !important;
+}
+
 figure {
   display: flex;
   flex-direction: column;
