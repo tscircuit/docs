@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useColorMode } from "../hooks/use-color-mode"
 import { usePrismTheme, useWindowSize } from "@docusaurus/theme-common"
 import useIsBrowser from "@docusaurus/useIsBrowser"
-import { Editor as LiveCodeEditor } from "react-live"
+import { Editor } from "react-live"
 import TscircuitIframe from "./TscircuitIframe"
 
 const trimCodeString = (value?: string) => value?.trim() ?? ""
@@ -22,6 +22,69 @@ const trimFsMap = (value?: Record<string, string>) =>
         ]),
       )
     : value
+
+const useEditableCircuitSource = ({
+  code,
+  fsMap,
+  entrypoint,
+  mainComponentPath,
+}: {
+  code?: string
+  fsMap?: Record<string, string>
+  entrypoint?: string
+  mainComponentPath?: string
+}) => {
+  const [editableCode, setEditableCode] = useState(trimCodeString(code))
+  const [editableFsMap, setEditableFsMap] = useState(trimFsMap(fsMap))
+  const [currentFile, setCurrentFile] = useState<string>(
+    entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
+  )
+
+  useEffect(() => {
+    setEditableCode(trimCodeString(code))
+  }, [code])
+
+  useEffect(() => {
+    setEditableFsMap(trimFsMap(fsMap))
+  }, [fsMap])
+
+  useEffect(() => {
+    setCurrentFile(
+      entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
+    )
+  }, [entrypoint, fsMap, mainComponentPath])
+
+  const hasMultipleFiles = Object.keys(editableFsMap ?? {}).length > 1
+  const activeCode =
+    editableFsMap?.[currentFile] ??
+    editableCode ??
+    Object.values(editableFsMap ?? {})[0] ??
+    ""
+
+  const updateCurrentCode = (nextCode: string) => {
+    const editableFilename =
+      currentFile ?? Object.keys(editableFsMap ?? {})[0] ?? undefined
+
+    if (editableFsMap && editableFilename) {
+      setEditableFsMap((prev) => ({
+        ...(prev ?? {}),
+        [editableFilename]: nextCode,
+      }))
+      return
+    }
+
+    setEditableCode(nextCode)
+  }
+
+  return {
+    activeCode,
+    currentFile,
+    editableFsMap,
+    hasMultipleFiles,
+    setCurrentFile,
+    updateCurrentCode,
+  }
+}
 
 const Tab = ({
   label,
@@ -130,25 +193,19 @@ export default function CircuitPreview({
   const windowSize = useWindowSize()
   const prismTheme = usePrismTheme()
   const isBrowser = useIsBrowser()
-  const [editableCode, setEditableCode] = useState(trimCodeString(code))
-  const [editableFsMap, setEditableFsMap] = useState(trimFsMap(fsMap))
-  const [currentFile, setCurrentFile] = useState<string>(
-    entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
-  )
-
-  useEffect(() => {
-    setEditableCode(trimCodeString(code))
-  }, [code])
-
-  useEffect(() => {
-    setEditableFsMap(trimFsMap(fsMap))
-  }, [fsMap])
-
-  useEffect(() => {
-    setCurrentFile(
-      entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
-    )
-  }, [entrypoint, fsMap, mainComponentPath])
+  const {
+    activeCode,
+    currentFile,
+    editableFsMap,
+    hasMultipleFiles,
+    setCurrentFile,
+    updateCurrentCode,
+  } = useEditableCircuitSource({
+    code,
+    fsMap,
+    entrypoint,
+    mainComponentPath,
+  })
 
   let _showTabs = showTabs
   let _splitView = splitView
@@ -174,27 +231,9 @@ export default function CircuitPreview({
   const [view, setView] = useState<
     "pcb" | "schematic" | "code" | "3d" | "runframe" | "pinout"
   >(rightView ?? _defaultView)
-  const hasMultipleFiles = Object.keys(editableFsMap ?? {}).length > 1
-  const activeCode =
-    editableFsMap?.[currentFile] ??
-    editableCode ??
-    Object.values(editableFsMap ?? {})[0] ??
-    ""
   const fsMapOrCode = hasMultipleFiles
-    ? editableFsMap || editableCode
+    ? editableFsMap || activeCode
     : activeCode || Object.values(editableFsMap ?? {})[0]
-
-  const updateCurrentCode = (nextCode: string) => {
-    if (hasMultipleFiles && currentFile) {
-      setEditableFsMap((prev) => ({
-        ...(prev ?? {}),
-        [currentFile]: nextCode,
-      }))
-      return
-    }
-
-    setEditableCode(nextCode)
-  }
 
   const pcbUrl = useMemo(() => {
     const basePcbUrl = createSvgUrl(fsMapOrCode, "pcb")
@@ -341,19 +380,13 @@ export default function CircuitPreview({
   )
 
   const codeEditorElm = (
-    <LiveCodeEditor
+    <Editor
       key={String(isBrowser)}
       code={activeCode}
       language="tsx"
       theme={prismTheme}
       onChange={updateCurrentCode}
-      className={tw("w-full min-w-0 theme-code-block")}
-      style={{
-        font: "var(--ifm-code-font-size) / var(--ifm-pre-line-height) var(--ifm-font-family-monospace)",
-        background: "var(--prism-background-color)",
-        color: "var(--prism-color)",
-        minHeight: "100%",
-      }}
+      className={tw("w-full min-w-0 theme-code-block font-mono")}
     />
   )
 
