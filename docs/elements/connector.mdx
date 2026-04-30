@@ -16,6 +16,21 @@ Connectors support:
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
+## Standard Connector Example
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="30mm" height="20mm">
+      <connector name="J_USB" standard="usb_c" />
+    </board>
+  )
+  `}
+/>
+
+## Custom Footprint Example
+
 <CircuitPreview
   defaultView="pcb"
   code={`
