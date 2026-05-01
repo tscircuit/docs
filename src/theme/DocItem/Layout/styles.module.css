@@ -18,7 +18,7 @@
   right: 0;
 }
 
-.docItemWithButton :global(.markdown) > :global(h1):first-child {
+.docItemWithButton :global(.markdown) > :global(h1):first-of-type {
   padding-right: 180px;
 }
 
@@ -32,7 +32,7 @@
     position: relative;
   }
 
-  .docItemWithButton :global(.markdown) > :global(h1):first-child {
+  .docItemWithButton :global(.markdown) > :global(h1):first-of-type {
     padding-right: 0;
     margin-bottom: 0.75rem;
   }
