@@ -30,9 +30,6 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | Prop | Type | Description |
 | --- | --- | --- |
 | `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
-| `square` | `boolean` | When the board is autosized, force the resulting outline to be square. |
-| `emptyArea` | `string` | Target empty board area when autosizing, for example `"20%"` or `"22mm^2"`. |
-| `filledArea` | `string` | Target filled board area when autosizing, for example `"20%"` or `"22mm^2"`. |
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
 | `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
 | `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
@@ -58,7 +55,6 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `doubleSidedAssembly` | `boolean` | Whether the board should be assembled on both sides. Defaults to false. |
 | `boardAnchorPosition` | `{ x: number, y: number }` | Moves the board's anchor point to the specified coordinates. |
 | `anchorAlignment` | `'center' \| 'top_left' \| 'top_right' \| 'bottom_left' \| 'bottom_right' \| 'center_left' \| 'center_right' \| 'top_center' \| 'bottom_center'` | Preferred prop for choosing which part of the board should sit on `boardAnchorPosition`. |
-| `boardAnchorAlignment` | `'center' \| 'top_left' \| 'top_right' \| 'bottom_left' \| 'bottom_right' \| 'center_left' \| 'center_right' \| 'top_center' \| 'bottom_center'` | Sets which part of the board the anchor point refers to. |
 | `manualEdits` | `object` | Apply a serialized set of manual routing or layout edits to the board. |
 | `defaultTraceWidth` | `string \| number` | Default width for traces within this board. |
 | `minTraceWidth` | `string \| number` | Minimum allowed trace width for routing. |
@@ -70,7 +66,6 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `minBoardEdgeClearance` | `string \| number` | Minimum clearance between routed copper features and the board edge. |
 | `minViaHoleDiameter` | `string \| number` | Smallest via drill diameter the router may use. |
 | `minViaPadDiameter` | `string \| number` | Smallest via pad diameter the router may use. |
-| `pcbRouteCache` | `object` | Reuse cached routing results for faster repeated builds. |
 | `partsEngine` | `object` | Override the parts lookup engine used to resolve bill of materials. |
 | `circuitJson` | `any[]` | Provide precompiled circuit JSON to embed or reuse as the board contents. |
 | `pcbStyle` | `object` | Style configuration object for PCB elements. See [Global Silkscreen Text Size](#global-silkscreen-text-size-adjustment) below. |
@@ -426,7 +421,6 @@ You can control the board's position and alignment using anchor properties:
 
 - `boardAnchorPosition`: Moves the board's anchor point to the specified coordinates
 - `anchorAlignment`: Preferred prop for choosing which part of the board the anchor point refers to
-- `boardAnchorAlignment`: Legacy alias that remains supported
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
