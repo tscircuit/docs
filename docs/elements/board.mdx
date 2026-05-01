@@ -30,12 +30,20 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | Prop | Type | Description |
 | --- | --- | --- |
 | `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
+| `square` | `boolean` | When the board is autosized, force the resulting outline to be square. |
+| `emptyArea` | `string` | Target empty board area when autosizing, for example `"20%"` or `"22mm^2"`. |
+| `filledArea` | `string` | Target filled board area when autosizing, for example `"20%"` or `"22mm^2"`. |
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
 | `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
 | `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
+| `autorouterVersion` | `'v1' \| 'v2' \| 'v3' \| 'v4' \| 'v5' \| 'latest'` | Pin routing to a specific autorouter implementation when comparing routing behavior across versions. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
+| `bomDisabled` | `boolean` | Skip bill-of-material generation for this board. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
+| `schAutoLayoutEnabled` | `boolean` | Enable automatic schematic layout for supported grouped circuits. |
+| `schTraceAutoLabelEnabled` | `boolean` | Automatically create schematic net labels for complex traces. |
+| `schMaxTraceDistance` | `string \| number` | Maximum span a schematic trace can travel before the auto layout prefers labels or different routing. |
 | `outline` | `Array<{ x: number, y: number }>` | Supply a custom polygon to replace the default rectangular outline. |
 | `outlineOffsetX`, `outlineOffsetY` | `string \| number` | Offset a custom outline relative to the bounding box origin. |
 | `material` | `'fr4' \| 'fr1'` | PCB substrate material. Defaults to 'fr4'. |
@@ -49,9 +57,22 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `bottomSilkscreenColor` | `string` | Color of the bottom silkscreen. |
 | `doubleSidedAssembly` | `boolean` | Whether the board should be assembled on both sides. Defaults to false. |
 | `boardAnchorPosition` | `{ x: number, y: number }` | Moves the board's anchor point to the specified coordinates. |
+| `anchorAlignment` | `'center' \| 'top_left' \| 'top_right' \| 'bottom_left' \| 'bottom_right' \| 'center_left' \| 'center_right' \| 'top_center' \| 'bottom_center'` | Preferred prop for choosing which part of the board should sit on `boardAnchorPosition`. |
 | `boardAnchorAlignment` | `'center' \| 'top_left' \| 'top_right' \| 'bottom_left' \| 'bottom_right' \| 'center_left' \| 'center_right' \| 'top_center' \| 'bottom_center'` | Sets which part of the board the anchor point refers to. |
+| `manualEdits` | `object` | Apply a serialized set of manual routing or layout edits to the board. |
 | `defaultTraceWidth` | `string \| number` | Default width for traces within this board. |
 | `minTraceWidth` | `string \| number` | Minimum allowed trace width for routing. |
+| `nominalTraceWidth` | `string \| number` | Preferred trace width used by routers when no trace-specific width is set. |
+| `minViaHoleEdgeToViaHoleEdgeClearance` | `string \| number` | Minimum drill-edge clearance between vias. |
+| `minPlatedHoleDrillEdgeToDrillEdgeClearance` | `string \| number` | Minimum drill-edge clearance between plated holes. |
+| `minTraceToPadEdgeClearance` | `string \| number` | Minimum copper-to-pad-edge clearance during routing. |
+| `minPadEdgeToPadEdgeClearance` | `string \| number` | Minimum pad-edge clearance between nearby pads. |
+| `minBoardEdgeClearance` | `string \| number` | Minimum clearance between routed copper features and the board edge. |
+| `minViaHoleDiameter` | `string \| number` | Smallest via drill diameter the router may use. |
+| `minViaPadDiameter` | `string \| number` | Smallest via pad diameter the router may use. |
+| `pcbRouteCache` | `object` | Reuse cached routing results for faster repeated builds. |
+| `partsEngine` | `object` | Override the parts lookup engine used to resolve purchasable components. |
+| `circuitJson` | `any[]` | Provide precompiled circuit JSON to embed or reuse as the board contents. |
 | `pcbStyle` | `object` | Style configuration object for PCB elements. See [Global Silkscreen Text Size](#global-silkscreen-text-size-adjustment) below. |
 
 ### Customizing the Size of the Board
@@ -404,7 +425,8 @@ export default () => (
 You can control the board's position and alignment using anchor properties:
 
 - `boardAnchorPosition`: Moves the board's anchor point to the specified coordinates
-- `boardAnchorAlignment`: Sets which part of the board the anchor point refers to
+- `anchorAlignment`: Preferred prop for choosing which part of the board the anchor point refers to
+- `boardAnchorAlignment`: Legacy alias that remains supported
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
@@ -412,7 +434,7 @@ You can control the board's position and alignment using anchor properties:
       width="10mm" 
       height="10mm"
       boardAnchorPosition={{x:0, y:0}} 
-      boardAnchorAlignment="bottom_left"
+      anchorAlignment="bottom_left"
     >
     <resistor resistance="1k" footprint="0402" name="R1" pcbX={2} pcbY={2} />
 
@@ -430,7 +452,7 @@ You can control the board's position and alignment using anchor properties:
 // This moves the board's center to position (1,2)
 <board 
   boardAnchorPosition={{x:1, y:2}} 
-  boardAnchorAlignment="center"  // Try changing this to other values
+  anchorAlignment="center"  // Try changing this to other values
   width="10mm" 
   height="10mm"
 >
@@ -439,7 +461,7 @@ You can control the board's position and alignment using anchor properties:
 ```
 
 #### How Anchoring Works
-- The `boardAnchorAlignment` determines which point on the board is considered the anchor point
+- The `anchorAlignment` prop determines which point on the board is considered the anchor point
 - The `boardAnchorPosition` moves that anchor point to the specified (x,y) coordinates
 
 **Example Alignments**:
