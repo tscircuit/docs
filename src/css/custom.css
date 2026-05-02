@@ -1109,7 +1109,7 @@ article,
   position: relative;
   display: inline-block;
   margin-right: 2rem;
-  margin-top: -2.8rem;
+  margin-top: 0;
 }
 
 .copy-page-button-wrapper {
