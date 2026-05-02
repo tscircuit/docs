@@ -44,6 +44,73 @@ export default () => (
 `}
 />
 
+## Component Anchor Examples
+
+Use `pcbPositionAnchor` on the component that owns the footprint when the same
+custom courtyard outline needs to land on the board from different footprint
+anchor points.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="38mm" height="22mm">
+    <chip
+      name="U1"
+      pcbX={10}
+      pcbY={11}
+      pcbPositionAnchor="center"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-3} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={3} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            strokeWidth={0.1}
+            outline={[
+              { x: -5, y: -3 },
+              { x: 5, y: -3 },
+              { x: 5, y: 2 },
+              { x: 2, y: 4 },
+              { x: -5, y: 2 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+
+    <chip
+      name="U2"
+      pcbX={24}
+      pcbY={7}
+      pcbPositionAnchor="bottom_left"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-3} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={3} pcbY={0} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            strokeWidth={0.1}
+            outline={[
+              { x: -5, y: -3 },
+              { x: 5, y: -3 },
+              { x: 5, y: 2 },
+              { x: 2, y: 4 },
+              { x: -5, y: 2 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+
+    <silkscreentext text="center" pcbX={10} pcbY={5} fontSize={1} anchorAlignment="center" />
+    <silkscreentext text="bottom_left" pcbX={29} pcbY={5} fontSize={1} anchorAlignment="center" />
+  </board>
+)
+`}
+/>
+
 ## Filled Outline Example
 
 <CircuitPreview
