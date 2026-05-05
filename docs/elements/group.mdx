@@ -173,6 +173,56 @@ already exists, tscircuit uses it instead of creating a duplicate.
 `schHeight` work on collapsed groups the same way they work on chip schematic
 boxes.
 
+## Example: LED matrix module
+
+Collapsed schematic boxes are useful when a group contains repetitive internal
+circuits. This 2x2 LED matrix exposes row and column pins while hiding the
+individual LEDs in the schematic.
+
+<CircuitPreview
+  alwaysShowCode
+  defaultView="schematic"
+  hidePcbTab
+  code={`
+  export default () => (
+    <board width="30mm" height="18mm" routingDisabled>
+      <group
+        name="MATRIX"
+        showAsSchematicBox
+        schTitle="2x2 LED Matrix"
+      >
+        <port name="ROW1" direction="left" />
+        <port name="ROW2" direction="left" />
+        <port name="COL1" direction="left" />
+        <port name="COL2" direction="left" />
+
+        <led
+          name="D1"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D2"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D3"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D4"
+          color="red"
+          footprint="0603"
+        />
+      </group>
+
+    </board>
+  )
+  `}
+/>
+
 ## Moving multiple components via a `<group />`
 
 `<group />` elements can be used to move multiple components at once.
