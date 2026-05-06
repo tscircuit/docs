@@ -176,7 +176,7 @@ boxes.
 ## Example: LED matrix module
 
 Collapsed schematic boxes are useful when a group contains repetitive internal
-circuits. This 2x2 LED matrix exposes row and column pins while hiding the
+circuits. This 3x3 LED matrix exposes row and column pins while hiding the
 individual LEDs in the schematic.
 
 <CircuitPreview
@@ -185,16 +185,28 @@ individual LEDs in the schematic.
   hidePcbTab
   code={`
   export default () => (
-    <board width="30mm" height="18mm" routingDisabled>
+    <board width="34mm" height="22mm" routingDisabled>
       <group
         name="MATRIX"
         showAsSchematicBox
-        schTitle="2x2 LED Matrix"
+        schTitle="3x3 LED Matrix"
+        schPinArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["ROW1", "ROW2", "ROW3"],
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["COL1", "COL2", "COL3"],
+          },
+        }}
       >
-        <port name="ROW1" direction="left" />
-        <port name="ROW2" direction="left" />
-        <port name="COL1" direction="left" />
-        <port name="COL2" direction="left" />
+        <port name="ROW1" />
+        <port name="ROW2" />
+        <port name="ROW3" />
+        <port name="COL1" />
+        <port name="COL2" />
+        <port name="COL3" />
 
         <led
           name="D1"
@@ -216,8 +228,32 @@ individual LEDs in the schematic.
           color="red"
           footprint="0603"
         />
+        <led
+          name="D5"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D6"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D7"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D8"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D9"
+          color="red"
+          footprint="0603"
+        />
       </group>
-
     </board>
   )
   `}
