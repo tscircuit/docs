@@ -3,7 +3,7 @@ title: tsci snapshot
 description: Generate schematic and PCB snapshots for regression tests
 ---
 
-`tsci snapshot` renders your boards to SVG images and compares them with saved snapshots.
+`tsci snapshot` renders schematic and PCB SVG images and compares them with saved snapshots. It does not generate 3D snapshots unless you explicitly pass `--3d`.
 
 ## Usage
 
@@ -14,7 +14,7 @@ tsci snapshot [options] [path]
 ### Options
 - `-u, --update` – write new snapshots to disk.
 - `--force-update` – force writing snapshots even when no visual diff is detected.
-- `--3d` – also generate 3D preview snapshots.
+- `--3d` – generate schematic, PCB, and 3D preview snapshots.
 - `--pcb-only` – generate only PCB snapshots.
 - `--schematic-only` – generate only schematic snapshots.
 - `--disable-parts-engine` – disable the parts engine while rendering snapshots.
@@ -42,6 +42,8 @@ __snapshots__/test.board-pcb.snap.svg
 __snapshots__/test.board-schematic.snap.svg
 ```
 
-If `--3d` is specified, a `-3d.snap.svg` is also produced.
+By default, only the PCB and schematic snapshots are produced.
+
+If `--3d` is specified, the command produces PCB, schematic, and 3D snapshots
 
 Running without `--update` verifies that the generated output matches the existing snapshots. Differences cause a non-zero exit code.
