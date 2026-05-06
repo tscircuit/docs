@@ -110,6 +110,154 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | `pcbPackGap` | `number \| string` | Gap used when `pcbPack` is enabled. |
 | `schMatchAdapt` | `boolean` | In schematic flex layouts, match the adaptive flex sizing of PCB contents. |
 
+## Showing a group as a schematic box
+
+Use `showAsSchematicBox` to collapse a group into one schematic box with named
+pins. This is useful for modules and reusable blocks where the internal
+implementation should stay hidden in the schematic.
+
+Only direct child `<port />` elements are shown as box pins. Internal components
+and connectivity still exist for PCB and netlist generation, but their schematic
+symbols, traces, labels, and primitives are hidden inside the collapsed box.
+
+<CircuitPreview
+  alwaysShowCode
+  defaultView="schematic"
+  hidePcbTab
+  code={`
+  export default () => (
+    <board width="20mm" height="12mm" routingDisabled>
+      <group name="FILTER" showAsSchematicBox schTitle="RC Filter">
+        <port name="VIN" direction="left" />
+        <port name="VOUT" direction="right" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
+        <capacitor name="C1" capacitance="100nF" footprint="0402" />
+      </group>
+    </board>
+  )
+  `}
+/>
+
+External components can connect to a collapsed group with the group name and
+direct port name:
+
+```tsx
+<resistor
+  name="R_LOAD"
+  resistance="10k"
+  footprint="0402"
+  connections={{ pin1: "FILTER.VOUT", pin2: "net.GND" }}
+/>
+```
+
+### Creating ports from `connections`
+
+For collapsed groups, each key in `connections` becomes an external box pin and
+each value points to the internal target. If a matching direct `<port />`
+already exists, tscircuit uses it instead of creating a duplicate.
+
+```tsx
+<group
+  name="PULLUP"
+  showAsSchematicBox
+  connections={{
+    IO: "R1.pin1",
+    VCC: "R1.pin2",
+  }}
+>
+  <resistor name="R1" resistance="10k" footprint="0402" />
+</group>
+```
+
+`schPinArrangement`, `schPinSpacing`, `schPinStyle`, `schWidth`, and
+`schHeight` work on collapsed groups the same way they work on chip schematic
+boxes.
+
+## Example: LED matrix module
+
+Collapsed schematic boxes are useful when a group contains repetitive internal
+circuits. This 3x3 LED matrix exposes row and column pins while hiding the
+individual LEDs in the schematic.
+
+<CircuitPreview
+  alwaysShowCode
+  defaultView="schematic"
+  hidePcbTab
+  code={`
+  export default () => (
+    <board width="34mm" height="22mm" routingDisabled>
+      <group
+        name="MATRIX"
+        showAsSchematicBox
+        schTitle="3x3 LED Matrix"
+        schPinArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["ROW1", "ROW2", "ROW3"],
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["COL1", "COL2", "COL3"],
+          },
+        }}
+      >
+        <port name="ROW1" />
+        <port name="ROW2" />
+        <port name="ROW3" />
+        <port name="COL1" />
+        <port name="COL2" />
+        <port name="COL3" />
+
+        <led
+          name="D1"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D2"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D3"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D4"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D5"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D6"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D7"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D8"
+          color="red"
+          footprint="0603"
+        />
+        <led
+          name="D9"
+          color="red"
+          footprint="0603"
+        />
+      </group>
+    </board>
+  )
+  `}
+/>
 
 ## Moving multiple components via a `<group />`
 
