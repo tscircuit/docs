@@ -1,0 +1,116 @@
+---
+title: <coppertext />
+description: Add text directly as copper on one or more PCB layers.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<coppertext />` element places text directly into the copper of your PCB.
+This is useful for copper labels, exposed branding, test labels, or markings
+that should become part of the copper geometry instead of silkscreen.
+
+Unlike `<pcbnotetext />`, copper text is part of the conductive copper layer and
+can be placed on one or more layers.
+
+## Basic Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <coppertext
+      pcbX={0}
+      pcbY={0}
+      text="GND"
+      fontSize="2mm"
+      layer="top"
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+## Examples
+
+### Top and Bottom Copper Labels
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="40mm" height="24mm">
+    <coppertext
+      pcbX={-10}
+      pcbY={0}
+      text="TOP"
+      fontSize="2mm"
+      layer="top"
+      anchorAlignment="center"
+    />
+    <coppertext
+      pcbX={10}
+      pcbY={0}
+      text="BOT"
+      fontSize="2mm"
+      layer="bottom"
+      mirrored
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+### Knockout Copper Text
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="40mm" height="20mm">
+    <coppertext
+      pcbX={0}
+      pcbY={0}
+      text="KNOCKOUT"
+      fontSize="4mm"
+      layer="top"
+      knockout
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `text` | `string` | Yes | - | Text content to render as copper |
+| `pcbX` | `distance` | No | - | X position on the PCB |
+| `pcbY` | `distance` | No | - | Y position on the PCB |
+| `layer` | `string` | No | - | Single PCB layer for the copper text |
+| `layers` | `string[]` | No | - | Multiple PCB layers to place the same text on |
+| `fontSize` | `distance` | No | - | Font size |
+| `font` | `"tscircuit2024"` | No | `"tscircuit2024"` | Font family |
+| `anchorAlignment` | `nine-point anchor` | No | `"center"` | Alignment relative to the anchor position |
+| `mirrored` | `boolean` | No | `false` | Mirror the text, useful for bottom-layer copper |
+| `knockout` | `boolean` | No | `false` | Render the text as a cutout/negative shape in surrounding copper |
+| `pcbRotation` | `angle` | No | `0` | Rotation of the text on the PCB |
+
+## Notes
+
+- Use `layer` for a single target layer and `layers` when you want the same
+  text repeated on multiple copper layers.
+- If you want non-conductive labeling, use `<pcbnotetext />` instead of
+  `<coppertext />`.

@@ -1,0 +1,185 @@
+---
+title: <autoroutingphase />
+description: Split PCB routing into ordered phases and reroute a region after an earlier route pass.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+export const squigglyAutorouterFile = `import type { SimpleRouteJson } from "tscircuit"
+
+type Point = { x: number; y: number; layer?: string }
+
+const wire = (point: Point, width: number) => ({
+  route_type: "wire" as const,
+  x: point.x,
+  y: point.y,
+  width,
+  layer: point.layer ?? "top",
+})
+
+export const createSquigglyAutorouter = async (
+  simpleRouteJson: SimpleRouteJson,
+) => {
+  let complete: ((event: any) => void) | undefined
+
+  const solveSync = () =>
+    simpleRouteJson.connections.map((connection) => {
+      const [start, end] = connection.pointsToConnect as [Point, Point]
+      const width = connection.nominalTraceWidth ?? 0.15
+      const dx = end.x - start.x
+      const dy = end.y - start.y
+      const length = Math.hypot(dx, dy) || 1
+      const normal = { x: -dy / length, y: dx / length }
+      const waveCount = 4
+      const amplitude = 0.65
+
+      return {
+        type: "pcb_trace",
+        pcb_trace_id: connection.name + "_squiggle",
+        connection_name: connection.source_trace_id ?? connection.name,
+        route: Array.from({ length: 49 }, (_, i) => {
+          const t = i / 48
+          const offset = Math.sin(t * Math.PI * 2 * waveCount) * amplitude
+          return wire(
+            {
+              x: start.x + dx * t + normal.x * offset,
+              y: start.y + dy * t + normal.y * offset,
+              layer: start.layer ?? end.layer,
+            },
+            width,
+          )
+        }),
+      }
+    })
+
+  return {
+    isRouting: false,
+    on: (event: string, callback: any) => {
+      if (event === "complete") complete = callback
+    },
+    start: () => complete?.({ type: "complete", traces: solveSync() }),
+    stop: () => {},
+    solveSync,
+  } as any
+}
+`
+
+export const withRerouteFiles = {
+  "with-reroute.circuit.tsx": `import { createSquigglyAutorouter } from "./demo-autorouter"
+
+export default () => (
+  <board width="18mm" height="12mm">
+    <testpoint name="T1" pcbX={-7} pcbY={3} padDiameter="0.8mm" />
+    <testpoint name="T2" pcbX={7} pcbY={3} padDiameter="0.8mm" />
+    <testpoint name="M1" pcbX={-7} pcbY={0} padDiameter="0.8mm" />
+    <testpoint name="M2" pcbX={7} pcbY={0} padDiameter="0.8mm" />
+    <testpoint name="B1" pcbX={-7} pcbY={-3} padDiameter="0.8mm" />
+    <testpoint name="B2" pcbX={7} pcbY={-3} padDiameter="0.8mm" />
+
+    <autoroutingphase
+      reroute
+      region={{
+        shape: "rect",
+        minX: 0,
+        maxX: 8,
+        minY: -5,
+        maxY: 5,
+      }}
+      autorouter={{
+        algorithmFn: createSquigglyAutorouter,
+      }}
+    />
+
+    <trace from="T1.pin1" to="T2.pin1" />
+    <trace from="M1.pin1" to="M2.pin1" />
+    <trace from="B1.pin1" to="B2.pin1" />
+  </board>
+)`,
+  "demo-autorouter.ts": squigglyAutorouterFile,
+}
+
+export const withoutRerouteCode = `export default () => (
+  <board width="18mm" height="12mm">
+    <testpoint name="T1" pcbX={-7} pcbY={3} padDiameter="0.8mm" />
+    <testpoint name="T2" pcbX={7} pcbY={3} padDiameter="0.8mm" />
+    <testpoint name="M1" pcbX={-7} pcbY={0} padDiameter="0.8mm" />
+    <testpoint name="M2" pcbX={7} pcbY={0} padDiameter="0.8mm" />
+    <testpoint name="B1" pcbX={-7} pcbY={-3} padDiameter="0.8mm" />
+    <testpoint name="B2" pcbX={7} pcbY={-3} padDiameter="0.8mm" />
+
+    <trace from="T1.pin1" to="T2.pin1" />
+    <trace from="M1.pin1" to="M2.pin1" />
+    <trace from="B1.pin1" to="B2.pin1" />
+  </board>
+)`
+
+The `<autoroutingphase />` element lets you split PCB autorouting into ordered
+passes. Use it when some traces should route before others, when a net should be
+routed in a dedicated pass, or when you want to reroute only a region after an
+earlier route is complete.
+
+## Reroute a Region
+
+Add a normal phase first, assign traces or nets to that phase with
+`routingPhaseIndex`, then add a later phase with `reroute` and a rectangular
+`region`. The reroute phase uses the routes from previous phases, extracts the
+connections that cross the region, and replaces the route inside that rectangle.
+
+### Without Reroute
+
+This board uses the default autorouter for phase `0`.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={withoutRerouteCode}
+/>
+
+### With Reroute
+
+Adding the second phase reroutes only the right half of the board. The second
+phase uses a custom autorouter that returns a squiggly line, so the changed
+route segment is easy to see.
+
+<CircuitPreview
+  defaultView="pcb"
+  fsMap={withRerouteFiles}
+  entrypoint="with-reroute.circuit.tsx"
+/>
+
+In this example, the default routing pass routes the three traces across the
+board. The reroute phase does not need traces assigned to it because `reroute`
+creates a reroute pass from the previous output. Only routes crossing the
+rectangle from `x=0` to `x=8` and `y=-5` to `y=5` are reconsidered.
+
+## Assign Traces and Nets to Phases
+
+Use `routingPhaseIndex` on a `<trace />` to put that trace into a phase:
+
+```tsx
+<autoroutingphase phaseIndex={0} />
+<trace from="U1.pin1" to="U2.pin1" routingPhaseIndex={0} />
+```
+
+You can also assign a `<net />` to a phase. Traces connected to that net inherit
+the net's routing phase unless the trace sets its own `routingPhaseIndex`.
+
+```tsx
+<autoroutingphase phaseIndex={0} />
+<net name="GND" routingPhaseIndex={0} />
+<trace from="C1.pin1" to="net.GND" />
+```
+
+Phases run in ascending `phaseIndex` order. Traces and nets without a
+`routingPhaseIndex` run after numbered phases.
+
+## Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `phaseIndex` | `number` | The routing pass configured by this element. Matches `routingPhaseIndex` on traces and nets. |
+| `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
+| `reroute` | `boolean` | Makes this phase reroute traces produced by earlier phases instead of routing newly assigned traces. |
+| `region` | `{ shape: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reroute. Required for `reroute`. |
+
+For custom phase autorouters with `algorithmFn`, see
+[Create or Use a Custom Autorouter](../advanced/create-or-use-custom-autorouter.mdx).
