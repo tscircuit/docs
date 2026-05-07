@@ -853,7 +853,7 @@ article h4 {
 
 /* Force center all documentation content */
 .col:not(.col--3) {
-  max-width: 1000px !important;
+  max-width: 1200px !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -898,10 +898,10 @@ article h4 {
       div,
       article
     )[class*="generatedIndexPage"] {
-    max-width: 1000px !important;
+    max-width: 1200px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 1000px !important;
+    width: 1200px !important;
   }
 }
 
