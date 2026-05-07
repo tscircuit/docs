@@ -1,0 +1,91 @@
+---
+title: <autoroutingphase />
+sidebar_position: 2
+description: Split PCB routing into ordered phases and reroute a region after an earlier route pass.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+The `<autoroutingphase />` element lets you split PCB autorouting into ordered
+passes. Use it when some traces should route before others, when a net should be
+routed in a dedicated pass, or when you want to reroute only a region after an
+earlier route is complete.
+
+## Reroute a Region
+
+Add a normal phase first, assign traces or nets to that phase with
+`routingPhaseIndex`, then add a later phase with `reroute` and a rectangular
+`region`. The reroute phase uses the routes from previous phases, extracts the
+connections that cross the region, and replaces the route inside that rectangle.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+  export default () => (
+    <board width="18mm" height="12mm">
+      <resistor name="T1" resistance="1k" footprint="0402" pcbX={-7} pcbY={3} />
+      <resistor name="T2" resistance="1k" footprint="0402" pcbX={7} pcbY={3} />
+      <resistor name="M1" resistance="1k" footprint="0402" pcbX={-7} pcbY={0} />
+      <resistor name="M2" resistance="1k" footprint="0402" pcbX={7} pcbY={0} />
+      <resistor name="B1" resistance="1k" footprint="0402" pcbX={-7} pcbY={-3} />
+      <resistor name="B2" resistance="1k" footprint="0402" pcbX={7} pcbY={-3} />
+
+      <autoroutingphase phaseIndex={0} />
+
+      <autoroutingphase
+        phaseIndex={1}
+        reroute
+        region={{
+          shape: "rect",
+          minX: -2,
+          maxX: 2,
+          minY: -1,
+          maxY: 1,
+        }}
+      />
+
+      <trace from="T1.pin1" to="T2.pin1" routingPhaseIndex={0} />
+      <trace from="M1.pin1" to="M2.pin1" routingPhaseIndex={0} />
+      <trace from="B1.pin1" to="B2.pin1" routingPhaseIndex={0} />
+    </board>
+  )
+  `}
+/>
+
+In this example, phase `0` routes the three traces across the board. Phase `1`
+does not need traces assigned to it because `reroute` creates a reroute pass from
+the previous output. Only routes crossing the rectangle from `x=-2` to `x=2` and
+`y=-1` to `y=1` are reconsidered.
+
+## Assign Traces and Nets to Phases
+
+Use `routingPhaseIndex` on a `<trace />` to put that trace into a phase:
+
+```tsx
+<autoroutingphase phaseIndex={0} />
+<trace from="U1.pin1" to="U2.pin1" routingPhaseIndex={0} />
+```
+
+You can also assign a `<net />` to a phase. Traces connected to that net inherit
+the net's routing phase unless the trace sets its own `routingPhaseIndex`.
+
+```tsx
+<autoroutingphase phaseIndex={0} />
+<net name="GND" routingPhaseIndex={0} />
+<trace from="C1.pin1" to="net.GND" />
+```
+
+Phases run in ascending `phaseIndex` order. Traces and nets without a
+`routingPhaseIndex` run after numbered phases.
+
+## Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `phaseIndex` | `number` | The routing pass configured by this element. Matches `routingPhaseIndex` on traces and nets. |
+| `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
+| `reroute` | `boolean` | Makes this phase reroute traces produced by earlier phases instead of routing newly assigned traces. |
+| `region` | `{ shape: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reroute. Required for `reroute`. |
+
+For custom phase autorouters with `algorithmFn`, see
+[Create or Use a Custom Autorouter](../advanced/create-or-use-custom-autorouter.mdx).
