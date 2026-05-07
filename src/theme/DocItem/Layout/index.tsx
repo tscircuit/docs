@@ -1,5 +1,4 @@
 import React, { type ReactNode } from "react"
-import clsx from "clsx"
 import { useWindowSize } from "@docusaurus/theme-common"
 import { useDoc } from "@docusaurus/plugin-content-docs/client"
 import DocItemPaginator from "@theme/DocItem/Paginator"
@@ -45,7 +44,7 @@ export default function DocItemLayout({ children }: Props): ReactNode {
   const { metadata } = useDoc()
   return (
     <div className="row">
-      <div className={clsx("col", !docTOC.hidden && styles.docItemCol)}>
+      <div className="col">
         <ContentVisibility metadata={metadata} />
         <DocVersionBanner />
         <div className={styles.docItemContainer}>
