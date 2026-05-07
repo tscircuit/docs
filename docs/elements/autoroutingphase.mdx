@@ -26,18 +26,24 @@ export const createSquigglyAutorouter = async (
     simpleRouteJson.connections.map((connection) => {
       const [start, end] = connection.pointsToConnect as [Point, Point]
       const width = connection.nominalTraceWidth ?? 0.15
+      const dx = end.x - start.x
+      const dy = end.y - start.y
+      const length = Math.hypot(dx, dy) || 1
+      const normal = { x: -dy / length, y: dx / length }
+      const waveCount = 4
+      const amplitude = 0.65
 
       return {
         type: "pcb_trace",
         pcb_trace_id: connection.name + "_squiggle",
         connection_name: connection.source_trace_id ?? connection.name,
-        route: Array.from({ length: 7 }, (_, i) => {
-          const t = i / 6
-          const offset = i === 0 || i === 6 ? 0 : i % 2 ? -0.8 : 0.8
+        route: Array.from({ length: 49 }, (_, i) => {
+          const t = i / 48
+          const offset = Math.sin(t * Math.PI * 2 * waveCount) * amplitude
           return wire(
             {
-              x: start.x + (end.x - start.x) * t,
-              y: start.y + (end.y - start.y) * t + offset,
+              x: start.x + dx * t + normal.x * offset,
+              y: start.y + dy * t + normal.y * offset,
               layer: start.layer ?? end.layer,
             },
             width,
