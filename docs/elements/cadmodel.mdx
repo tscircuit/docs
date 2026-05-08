@@ -138,21 +138,27 @@ preserve the exact geometry of the model.
   hidePCBTab
   hideSchematicTab
   browser3dView={false}
-  code={`
-  export default () => (
-    <board>
-      <chip
-        name="U1"
-        footprint="soic8"
-        cadModel={
-          <cadmodel
-            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.step"
-          />
-        }
-      />
-    </board>
-  )
-  `}
+  mainComponentPath="index.tsx"
+  fsMap={{
+    "index.tsx": `
+import soic8StepUrl from "./models/soic8.step"
+
+export default () => (
+  <board>
+    <chip
+      name="U1"
+      footprint="soic8"
+      cadModel={
+        <cadmodel
+          modelUrl={soic8StepUrl}
+        />
+      }
+    />
+  </board>
+)
+`,
+    "./models/soic8.step": `__STATIC_ASSET__`
+  }}
 />
 
 ### Translucent Model in cadmodel
