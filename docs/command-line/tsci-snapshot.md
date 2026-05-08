@@ -3,7 +3,7 @@ title: tsci snapshot
 description: Generate schematic and PCB snapshots for regression tests
 ---
 
-`tsci snapshot` renders schematic and PCB SVG images and compares them with saved snapshots. It does not generate 3D snapshots unless you explicitly pass `--3d`.
+`tsci snapshot` renders your boards to SVG images and compares them with saved snapshots.
 
 ## Usage
 
