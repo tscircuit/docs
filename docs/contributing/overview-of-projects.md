@@ -4,8 +4,10 @@ sidebar_position: 2
 description: Explore the key tscircuit repositories including core libraries, tools, and web components that power the ecosystem.
 ---
 
-For a workflow-oriented overview of the tools users interact with directly,
-see [User-Facing Tools](./user-facing-tools.md).
+This page lists the major public repositories in the tscircuit ecosystem. If you
+are choosing where to make a contribution, see the
+[Contributor Repository Map](./contributor-repository-map.md) for a practical
+guide to which repository owns each part of the project.
 
 | Repo                                                                          | Description                                                                                    | Open Issues                                                                                                                                 |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
