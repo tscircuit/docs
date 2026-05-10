@@ -1,0 +1,221 @@
+---
+title: Draw Any Letter With LEDs
+description: Build a reusable LedLetter component that lays out capital A-Z letters with 0603 LEDs and one resistor per LED.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial shows how to create a reusable `LedLetter` component. The component
+takes a capital letter, converts it into a 5 by 7 pixel font, and places one LED
+for every lit pixel.
+
+The intended usage is:
+
+```tsx
+<LedLetter letter="A" power="net.power" gnd="net.gnd" />
+```
+
+The component below supports capital `A` through `Z`, uses small SMD LEDs, and
+adds one current-limiting resistor for every LED. The PCB layout is generated
+from simple grid math, and the schematic is automatically spread into readable
+rows so larger letters do not stack every LED and resistor in one place.
+
+<TscircuitIframe code={`
+type PixelFont = Record<string, string[]>
+
+const FONT: PixelFont = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  G: ["01111", "10000", "10000", "10011", "10001", "10001", "01111"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  J: ["00111", "00010", "00010", "00010", "10010", "10010", "01100"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+  Q: ["01110", "10001", "10001", "10001", "10101", "10010", "01101"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+  W: ["10001", "10001", "10001", "10101", "10101", "10101", "01010"],
+  X: ["10001", "10001", "01010", "00100", "01010", "10001", "10001"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  Z: ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
+}
+
+type Pixel = {
+  row: number
+  col: number
+}
+
+const getPixelsForLetter = (letter: string): Pixel[] => {
+  const rows = FONT[letter.toUpperCase()]
+  if (!rows) {
+    throw new Error("LedLetter only supports capital A-Z letters")
+  }
+
+  const pixels: Pixel[] = []
+  rows.forEach((rowPattern, row) => {
+    rowPattern.split("").forEach((cell, col) => {
+      if (cell === "1") {
+        pixels.push({ row, col })
+      }
+    })
+  })
+
+  return pixels
+}
+
+type LedLetterProps = {
+  letter: string
+  power: string
+  gnd: string
+  name?: string
+  pcbX?: number
+  pcbY?: number
+  schX?: number
+  schY?: number
+  pitch?: number
+  ledFootprint?: "0402" | "0603"
+  resistorFootprint?: "0402" | "0603"
+  resistance?: string
+}
+
+export const LedLetter = ({
+  letter,
+  power,
+  gnd,
+  name = "LEDLETTER",
+  pcbX = 0,
+  pcbY = 0,
+  schX = 0,
+  schY = 0,
+  pitch = 3,
+  ledFootprint = "0603",
+  resistorFootprint = "0603",
+  resistance = "1k",
+}: LedLetterProps) => {
+  const pixels = getPixelsForLetter(letter)
+  const columns = 5
+  const rows = 7
+  const schematicColumns = 8
+
+  return (
+    <>
+      {pixels.map(({ row, col }, index) => {
+        const componentNumber = index + 1
+        const ledName = name + "_D" + componentNumber
+        const resistorName = name + "_R" + componentNumber
+        const ledPcbX = pcbX + (col - (columns - 1) / 2) * pitch
+        const ledPcbY = pcbY + ((rows - 1) / 2 - row) * pitch
+        const resistorPcbX = ledPcbX - pitch * 0.42
+        const schematicX = schX + (index % schematicColumns) * 2
+        const schematicY = schY - Math.floor(index / schematicColumns) * 1.4
+
+        return (
+          <group key={ledName}>
+            <resistor
+              name={resistorName}
+              footprint={resistorFootprint}
+              resistance={resistance}
+              pcbX={resistorPcbX}
+              pcbY={ledPcbY}
+              schX={schematicX}
+              schY={schematicY}
+            />
+            <led
+              name={ledName}
+              footprint={ledFootprint}
+              color="red"
+              pcbX={ledPcbX}
+              pcbY={ledPcbY}
+              schX={schematicX + 0.9}
+              schY={schematicY}
+            />
+            <trace from={power} to={"." + resistorName + " .pos"} />
+            <trace from={"." + resistorName + " .neg"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={gnd} />
+          </group>
+        )
+      })}
+    </>
+  )
+}
+
+export default () => (
+  <board width="26mm" height="34mm" routingDisabled>
+    <LedLetter letter="A" power="net.V5" gnd="net.GND" />
+  </board>
+)
+`} />
+
+## How the layout works
+
+The font is a small `Record<string, string[]>` where each letter is seven rows
+tall and five columns wide. Each `1` becomes an LED. Each `0` is left empty.
+
+For every lit pixel, the component calculates the PCB position like this:
+
+```ts
+const ledPcbX = pcbX + (col - (columns - 1) / 2) * pitch
+const ledPcbY = pcbY + ((rows - 1) / 2 - row) * pitch
+```
+
+That keeps the letter centered around `pcbX` and `pcbY`, regardless of which
+letter is selected. Increasing `pitch` makes the letter larger. Decreasing it
+makes the LEDs tighter.
+
+## Current limiting
+
+Every LED gets its own resistor:
+
+```tsx
+<trace from={power} to={"." + resistorName + " .pos"} />
+<trace from={"." + resistorName + " .neg"} to={"." + ledName + " .pos"} />
+<trace from={"." + ledName + " .neg"} to={gnd} />
+```
+
+This makes the electrical path:
+
+```txt
+power -> resistor -> LED -> ground
+```
+
+The default is a `1k` resistor and `0603` footprints for both the LED and the
+resistor. You can switch to `0402` parts when you want a smaller, denser letter:
+
+```tsx
+<LedLetter
+  letter="K"
+  power="net.V5"
+  gnd="net.GND"
+  ledFootprint="0402"
+  resistorFootprint="0402"
+  pitch={2.2}
+/>
+```
+
+## Reusing the component
+
+Use a different `name` for every instance so the generated component names stay
+unique:
+
+```tsx
+<LedLetter name="LEFT_A" letter="A" power="net.V5" gnd="net.GND" pcbX={-12} />
+<LedLetter name="RIGHT_Z" letter="Z" power="net.V5" gnd="net.GND" pcbX={12} />
+```
+
+The same font map can be adjusted later if you want a more rounded or condensed
+style. The placement math does not need to change because it only depends on the
+row and column of each lit pixel.
