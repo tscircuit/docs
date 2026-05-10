@@ -1,0 +1,241 @@
+---
+title: Using SparkFun MicroMod M.2 Connectors
+description: Document the MicroMod connector pins, carrier-board responsibilities, and tscircuit patterns for building boards around SparkFun MicroMod processor modules.
+---
+
+SparkFun MicroMod processor boards plug into a 75-position M.2 edge connector.
+The connector lets you design one carrier board and swap processor modules, as
+long as your carrier follows the MicroMod signal assignments and voltage rules.
+
+This guide shows how to model that connector in tscircuit, how to name the most
+important nets, and what to check before routing a carrier board.
+
+## References
+
+Keep these SparkFun references open while you build a carrier:
+
+- [MicroMod interface pin descriptions](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
+- [MicroMod M.2 pinout](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pinout.pdf)
+- [MicroMod graphical datasheet](https://cdn.sparkfun.com/assets/learn_tutorials/1/1/8/9/MicroMod_General_Pinout_v10_Graphical_Datasheet.pdf)
+- [SparkFun MicroMod overview](https://www.sparkfun.com/micromod)
+- [Getting started with MicroMod](https://learn.sparkfun.com/tutorials/getting-started-with-micromod)
+
+## Connector Model
+
+Use `<connector standard="m2" />` for the physical connector and add MicroMod
+pin labels for the nets your carrier uses. You do not have to label every pin on
+the first pass, but naming power, USB, reset, boot, and the buses you route makes
+the design much easier to review.
+
+```tsx
+export default () => (
+  <board width="55mm" height="45mm">
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      schWidth="18mm"
+      schHeight="32mm"
+      pinLabels={{
+        1: ["GND"],
+        2: ["3V3"],
+        3: ["USB_D_P"],
+        4: ["3V3_EN"],
+        5: ["USB_D_N"],
+        6: ["RESET_N"],
+        7: ["GND"],
+        8: ["G11", "SWO"],
+        9: ["USB_VIN"],
+        10: ["D0"],
+        11: ["BOOT"],
+        12: ["I2C_SDA"],
+        13: ["UART_RTS1"],
+        14: ["I2C_SCL"],
+        15: ["UART_CTS1"],
+        16: ["I2C_INT_N"],
+        17: ["UART_TX1"],
+        18: ["D1", "CAM_TRIG"],
+        19: ["UART_RX1"],
+        20: ["UART_RX2"],
+        21: ["SWDCK"],
+        22: ["UART_TX2"],
+        23: ["SWDIO"],
+        32: ["PWM0"],
+        34: ["A0"],
+        36: ["GND"],
+        38: ["A1"],
+        39: ["GND"],
+        40: ["G0", "BUS0"],
+        41: ["CAN_RX"],
+        42: ["G1", "BUS1"],
+        43: ["CAN_TX"],
+        44: ["G2", "BUS2"],
+        45: ["GND"],
+        46: ["G3", "BUS3"],
+        47: ["PWM1"],
+        48: ["G4", "BUS4"],
+        49: ["BATT_VIN_DIV3"],
+        50: ["AUD_BCLK", "PCM_CLK", "I2S_SCK", "PDM_CLK"],
+        51: ["I2C_SDA1"],
+        52: ["AUD_LRCLK", "PCM_SYNC", "I2S_WS", "PDM_DATA"],
+        53: ["I2C_SCL1"],
+        54: ["AUD_IN", "PCM_IN", "I2S_IN", "CAM_PCLK"],
+        55: ["SPI_CS_N"],
+        56: ["AUD_OUT", "PCM_OUT", "I2S_OUT", "CAM_MCLK"],
+        57: ["SPI_SCK"],
+        58: ["AUD_MCLK"],
+        59: ["SPI_COPI"],
+        60: ["SPI_SCK1", "SDIO_CLK"],
+        61: ["SPI_CIPO"],
+        62: ["SPI_COPI1", "SDIO_CMD"],
+        63: ["G10", "ADC_D_P", "CAM_VSYNC"],
+        64: ["SPI_CIPO1", "SDIO_DATA0"],
+        65: ["G9", "ADC_D_N", "CAM_HSYNC"],
+        66: ["SDIO_DATA1"],
+        67: ["G8"],
+        68: ["SDIO_DATA2"],
+        69: ["G7", "BUS7"],
+        70: ["SPI_CS1_N", "SDIO_DATA3"],
+        71: ["G6", "BUS6"],
+        72: ["RTC_3V_BATT"],
+        73: ["G5", "BUS5"],
+        74: ["3V3"],
+        75: ["GND"],
+      }}
+    />
+  </board>
+);
+```
+
+The labels above follow the MicroMod pinout from the processor-board point of
+view. In tscircuit, prefer net names that are legal identifiers and easy to
+search, such as `USB_D_P` instead of `USB_D+`, `RESET_N` instead of `RESET#`,
+and `3V3` instead of `3.3V`.
+
+## Carrier Board Responsibilities
+
+A MicroMod carrier board is not just a breakout. The carrier owns the physical
+connectors, power input, pullups, and protection around the processor module.
+
+| Area             | Carrier-board guidance                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Main power       | Provide a stable 3.3 V rail on `3V3` and route all `GND` pins to the ground return.                                                         |
+| USB power        | Route `USB_VIN` only where the processor module needs USB 5 V. Treat it as a USB 2.0 4.8-5.2 V input.                                       |
+| Enable           | If you use `3V3_EN`, add the carrier-side pullup and clamp expected by the MicroMod spec.                                                   |
+| RTC backup       | `RTC_3V_BATT` is optional and may be left unconnected when your carrier does not provide a coin cell or backup battery.                     |
+| Reset and boot   | `RESET_N` and `BOOT` are open-drain active-low signals. Use momentary buttons to ground when you want physical reset or boot-mode controls. |
+| I2C              | Put I2C pullups on the carrier, because the spec describes the I2C lines as open drain with carrier-board pullups.                          |
+| Analog inputs    | Keep `A0`, `A1`, and battery sense signals inside the processor module's 0-3.3 V input range.                                               |
+| Differential USB | Route `USB_D_P` and `USB_D_N` as a matched pair and avoid long stubs.                                                                       |
+
+## Routing Common Carrier Features
+
+### USB-C For Device USB
+
+Most MicroMod carriers expose USB for power, programming, or serial output.
+Keep the USB connector close enough that `USB_D_P` and `USB_D_N` can route
+cleanly.
+
+```tsx
+export default () => (
+  <board width="55mm" height="45mm">
+    <connector name="J_MICROMOD" standard="m2" />
+    <connector name="J_USB" standard="usb_c" />
+
+    <trace from=".J_USB .D_P" to=".J_MICROMOD .USB_D_P" />
+    <trace from=".J_USB .D_N" to=".J_MICROMOD .USB_D_N" />
+    <trace from=".J_USB .VBUS" to=".J_MICROMOD .USB_VIN" />
+    <trace from=".J_USB .GND" to=".J_MICROMOD .GND" />
+  </board>
+);
+```
+
+### Reset And Boot Buttons
+
+Reset and boot are active-low, open-drain style signals. A simple carrier can
+bring each one to a normally-open pushbutton that shorts the signal to ground.
+
+```tsx
+export default () => (
+  <board width="55mm" height="45mm">
+    <connector name="J_MICROMOD" standard="m2" />
+    <pushbutton name="SW_RESET" />
+    <pushbutton name="SW_BOOT" />
+
+    <trace from=".SW_RESET .pin1" to=".J_MICROMOD .RESET_N" />
+    <trace from=".SW_RESET .pin2" to=".J_MICROMOD .GND" />
+
+    <trace from=".SW_BOOT .pin1" to=".J_MICROMOD .BOOT" />
+    <trace from=".SW_BOOT .pin2" to=".J_MICROMOD .GND" />
+  </board>
+);
+```
+
+### I2C Peripheral Bus
+
+The primary I2C bus is useful for sensors, displays, and carrier-board
+peripherals. Add pullups on the carrier and connect peripheral pins to the
+MicroMod `I2C_SDA` and `I2C_SCL` nets.
+
+```tsx
+export default () => (
+  <board width="55mm" height="45mm">
+    <connector name="J_MICROMOD" standard="m2" />
+    <chip
+      name="U_SENSOR"
+      manufacturerPartNumber="BME280"
+      pinLabels={{
+        1: "GND",
+        2: "3V3",
+        3: "I2C_SDA",
+        4: "I2C_SCL",
+      }}
+    />
+    <resistor name="R_SDA_PULLUP" resistance="4.7k" />
+    <resistor name="R_SCL_PULLUP" resistance="4.7k" />
+
+    <trace from=".J_MICROMOD .I2C_SDA" to=".U_SENSOR .I2C_SDA" />
+    <trace from=".J_MICROMOD .I2C_SCL" to=".U_SENSOR .I2C_SCL" />
+    <trace from=".R_SDA_PULLUP .pin1" to=".J_MICROMOD .I2C_SDA" />
+    <trace from=".R_SDA_PULLUP .pin2" to=".J_MICROMOD .3V3" />
+    <trace from=".R_SCL_PULLUP .pin1" to=".J_MICROMOD .I2C_SCL" />
+    <trace from=".R_SCL_PULLUP .pin2" to=".J_MICROMOD .3V3" />
+  </board>
+);
+```
+
+## Pin Planning Checklist
+
+Before you start routing, decide which MicroMod groups your carrier actually
+needs.
+
+| Need                              | Prefer these MicroMod nets                                                    |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| USB device/programming            | `USB_D_P`, `USB_D_N`, `USB_VIN`, `GND`                                        |
+| Debug/programming                 | `SWDIO`, `SWDCK`, `GND`, optionally `RESET_N`                                 |
+| Primary serial                    | `UART_TX1`, `UART_RX1`, optionally `UART_RTS1`, `UART_CTS1`                   |
+| Sensors and low-speed peripherals | `I2C_SDA`, `I2C_SCL`, optionally `I2C_INT_N`                                  |
+| Fast peripherals                  | `SPI_COPI`, `SPI_CIPO`, `SPI_SCK`, `SPI_CS_N`                                 |
+| SDIO or secondary SPI             | `SPI_SCK1`, `SPI_COPI1`, `SPI_CIPO1`, `SPI_CS1_N`, `SDIO_DATA1`, `SDIO_DATA2` |
+| Audio or PDM microphone           | `AUD_MCLK`, `AUD_OUT`, `AUD_IN`, `AUD_LRCLK`, `AUD_BCLK`                      |
+| Camera-style signals              | `CAM_MCLK`, `CAM_PCLK`, `CAM_HSYNC`, `CAM_VSYNC`, `CAM_TRIG`                  |
+| Simple controls                   | `D0`, `D1`, `G0` through `G11`, `PWM0`, `PWM1`                                |
+| Analog sensing                    | `A0`, `A1`, `BATT_VIN_DIV3`                                                   |
+
+Unused MicroMod pins can usually remain unconnected on the carrier, but avoid
+reusing a pin for a different purpose than the MicroMod spec unless the
+processor module explicitly supports that alternate function.
+
+## Review Checklist
+
+Before sending a MicroMod carrier for fabrication, check:
+
+- Every `3V3` and `GND` pin has a clear connection to the carrier power system.
+- USB differential traces are short, paired, and not routed through unnecessary
+  vias.
+- I2C pullups are present on the carrier when I2C is used.
+- `RESET_N` and `BOOT` buttons pull to ground, not to 3.3 V.
+- Analog inputs never exceed 3.3 V.
+- The board outline and keepout around the M.2 connector leave room for the
+  MicroMod module to insert and sit flat.
+- Optional signals such as RTC backup, secondary I2C, SDIO, audio, camera, and
+  CAN are only routed when the carrier actually supports them.
