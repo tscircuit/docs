@@ -1,0 +1,276 @@
+---
+title: ESP32 Module Schematic
+description: Build a schematic-only ESP32-WROOM style module circuit with USB power, USB-UART programming, reset, boot, and strapping resistors.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+This tutorial builds a schematic-only ESP32 module circuit similar to the
+minimum system around an ESP32-WROOM module. The goal is to show the electrical
+blocks clearly before doing any PCB placement or RF layout work.
+
+The circuit includes:
+
+- USB-C 5 V input
+- A 3.3 V regulator and bulk/decoupling capacitors
+- An ESP32-WROOM style module symbol
+- A CP2102N-style USB-UART bridge
+- EN reset and IO0 boot buttons
+- Pullups and pulldowns for the common boot strapping pins
+
+:::tip
+This is intentionally a schematic-first example. Before manufacturing a board,
+copy the exact module, USB-UART bridge, regulator, and antenna layout guidance
+from the vendor datasheets.
+:::
+
+## Complete Schematic
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="80mm" height="55mm">
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C Receptacle"
+      footprint="soic16"
+      schX={-8}
+      schY={2}
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "GND",
+        pin3: "D+",
+        pin4: "D-",
+        pin5: "CC1",
+        pin6: "CC2",
+        pin7: "SHIELD",
+      }}
+      schPinArrangement={{
+        leftSide: { pins: ["VBUS", "D+", "D-", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["GND", "SHIELD"], direction: "top-to-bottom" },
+      }}
+      connections={{
+        VBUS: "net.VBUS_5V",
+        GND: "net.GND",
+        SHIELD: "net.GND",
+        "D+": "net.USB_DP",
+        "D-": "net.USB_DM",
+        CC1: "net.USB_CC1",
+        CC2: "net.USB_CC2",
+      }}
+    />
+
+    <resistor name="RCC1" resistance="5.1k" footprint="0603" schX={-11} schY={-1.2} connections={{ pin1: "net.USB_CC1", pin2: "net.GND" }} />
+    <resistor name="RCC2" resistance="5.1k" footprint="0603" schX={-9} schY={-1.2} connections={{ pin1: "net.USB_CC2", pin2: "net.GND" }} />
+
+    <chip
+      name="U1"
+      manufacturerPartNumber="3.3V LDO Regulator"
+      footprint="sot223"
+      schX={-3.5}
+      schY={2.2}
+      pinLabels={{
+        pin1: "IN",
+        pin2: "GND",
+        pin3: "OUT",
+      }}
+      schPinArrangement={{
+        leftSide: { pins: ["IN"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["GND"], direction: "left-to-right" },
+        rightSide: { pins: ["OUT"], direction: "top-to-bottom" },
+      }}
+      connections={{
+        IN: "net.VBUS_5V",
+        GND: "net.GND",
+        OUT: "net.V3_3",
+      }}
+    />
+
+    <capacitor name="CIN" capacitance="10uF" footprint="0603" schX={-4.8} schY={0.2} connections={{ pos: "net.VBUS_5V", neg: "net.GND" }} />
+    <capacitor name="COUT" capacitance="10uF" footprint="0603" schX={-2.2} schY={0.2} connections={{ pos: "net.V3_3", neg: "net.GND" }} />
+    <capacitor name="CDEC1" capacitance="100nF" footprint="0603" schX={2.6} schY={4.4} connections={{ pos: "net.V3_3", neg: "net.GND" }} />
+    <capacitor name="CDEC2" capacitance="100nF" footprint="0603" schX={4.2} schY={4.4} connections={{ pos: "net.V3_3", neg: "net.GND" }} />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="CP2102N USB-UART Bridge"
+      footprint="qfn28"
+      schX={-0.5}
+      schY={-3.2}
+      schWidth={4}
+      schHeight={4.5}
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "VDD",
+        pin3: "GND",
+        pin4: "D+",
+        pin5: "D-",
+        pin6: "TXD",
+        pin7: "RXD",
+        pin8: "DTR",
+        pin9: "RTS",
+      }}
+      schPinArrangement={{
+        leftSide: { pins: ["VBUS", "D+", "D-"], direction: "top-to-bottom" },
+        topSide: { pins: ["VDD"], direction: "left-to-right" },
+        rightSide: { pins: ["TXD", "RXD", "DTR", "RTS"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["GND"], direction: "left-to-right" },
+      }}
+      connections={{
+        VBUS: "net.VBUS_5V",
+        VDD: "net.V3_3",
+        GND: "net.GND",
+        "D+": "net.USB_DP",
+        "D-": "net.USB_DM",
+        TXD: "net.UART_TX",
+        RXD: "net.UART_RX",
+        DTR: "net.USB_DTR",
+        RTS: "net.USB_RTS",
+      }}
+    />
+
+    <chip
+      name="U3"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="dip40"
+      schX={6}
+      schY={0}
+      schWidth={5}
+      schHeight={7}
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "EN",
+        pin3: "GND",
+        pin4: "IO0",
+        pin5: "IO2",
+        pin6: "IO4",
+        pin7: "IO5",
+        pin8: "IO12",
+        pin9: "IO15",
+        pin10: "RXD0",
+        pin11: "TXD0",
+        pin12: "IO18",
+        pin13: "IO19",
+        pin14: "IO21",
+        pin15: "IO22",
+        pin16: "IO23",
+      }}
+      schPinArrangement={{
+        leftSide: { pins: ["3V3", "EN", "IO0", "RXD0", "TXD0"], direction: "top-to-bottom" },
+        rightSide: { pins: ["IO2", "IO4", "IO5", "IO12", "IO15", "IO18", "IO19", "IO21", "IO22", "IO23"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["GND"], direction: "left-to-right" },
+      }}
+      connections={{
+        "3V3": "net.V3_3",
+        GND: "net.GND",
+        EN: "net.ESP_EN",
+        IO0: "net.ESP_IO0",
+        IO2: "net.ESP_IO2",
+        IO5: "net.ESP_IO5",
+        IO12: "net.ESP_IO12",
+        IO15: "net.ESP_IO15",
+        RXD0: "net.UART_TX",
+        TXD0: "net.UART_RX",
+      }}
+    />
+
+    <resistor name="REN" resistance="10k" footprint="0603" schX={2.7} schY={2.2} connections={{ pin1: "net.V3_3", pin2: "net.ESP_EN" }} />
+    <capacitor name="CEN" capacitance="100nF" footprint="0603" schX={2.7} schY={0.8} connections={{ pos: "net.ESP_EN", neg: "net.GND" }} />
+    <pushbutton name="SW_RESET" footprint="pushbutton" schX={1.1} schY={1.5} connections={{ pin1: "net.ESP_EN", pin2: "net.GND" }} />
+
+    <resistor name="RBOOT" resistance="10k" footprint="0603" schX={2.7} schY={-1.1} connections={{ pin1: "net.V3_3", pin2: "net.ESP_IO0" }} />
+    <pushbutton name="SW_BOOT" footprint="pushbutton" schX={1.1} schY={-1.1} connections={{ pin1: "net.ESP_IO0", pin2: "net.GND" }} />
+
+    <resistor name="RIO2" resistance="10k" footprint="0603" schX={9.9} schY={2.2} connections={{ pin1: "net.V3_3", pin2: "net.ESP_IO2" }} />
+    <resistor name="RIO5" resistance="10k" footprint="0603" schX={9.9} schY={0.8} connections={{ pin1: "net.V3_3", pin2: "net.ESP_IO5" }} />
+    <resistor name="RIO12" resistance="10k" footprint="0603" schX={9.9} schY={-0.6} connections={{ pin1: "net.ESP_IO12", pin2: "net.GND" }} />
+    <resistor name="RIO15" resistance="10k" footprint="0603" schX={9.9} schY={-2.0} connections={{ pin1: "net.ESP_IO15", pin2: "net.GND" }} />
+
+    <chip
+      name="Q1"
+      manufacturerPartNumber="Auto-reset NPN"
+      footprint="sot23"
+      schX={3.2}
+      schY={-4.6}
+      pinLabels={{ pin1: "B", pin2: "E", pin3: "C" }}
+      schPinArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["E"], direction: "left-to-right" },
+      }}
+      connections={{ B: "net.USB_RTS", C: "net.ESP_EN", E: "net.GND" }}
+    />
+
+    <chip
+      name="Q2"
+      manufacturerPartNumber="Boot-mode NPN"
+      footprint="sot23"
+      schX={6.0}
+      schY={-4.6}
+      pinLabels={{ pin1: "B", pin2: "E", pin3: "C" }}
+      schPinArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["E"], direction: "left-to-right" },
+      }}
+      connections={{ B: "net.USB_DTR", C: "net.ESP_IO0", E: "net.GND" }}
+    />
+
+  </board>
+)
+`}
+/>
+
+## How the Blocks Fit Together
+
+### USB-C Input
+
+`J1` brings in `VBUS_5V`, `USB_DP`, `USB_DM`, and the two CC pins. The two
+5.1 k resistors on `CC1` and `CC2` advertise the board as a USB device that
+wants 5 V from a USB-C host or charger.
+
+### 3.3 V Rail
+
+The ESP32 module and USB-UART bridge both run from `V3_3`. The regulator input
+and output capacitors keep the rail stable, while the extra 100 nF capacitors
+show the local bypass capacitors that should be placed near the IC power pins in
+a PCB layout.
+
+### USB-UART Programming
+
+The CP2102N-style bridge converts USB data to `UART_TX` and `UART_RX`. Those nets
+cross into the ESP32 module as `RXD0` and `TXD0`, which is the serial bootloader
+interface used for flashing firmware.
+
+### Reset and Boot
+
+`EN` has a 10 k pullup and a small capacitor to ground for power-on reset. The
+reset button pulls `ESP_EN` low manually. `IO0` has a pullup and a boot button
+that pulls it low, putting the ESP32 into its serial bootloader when reset.
+
+The two small NPN transistors show the common auto-reset circuit used by USB-UART
+bridges. Host tools can toggle `DTR` and `RTS` so firmware uploads do not require
+pressing both buttons by hand.
+
+### Strapping Pins
+
+`IO2`, `IO5`, `IO12`, and `IO15` are represented with explicit pull resistors so
+the schematic makes the boot-mode assumptions visible. Check the datasheet for
+the exact ESP32 variant before changing these values or reusing the pattern on a
+custom module.
+
+## PCB Follow-up Checklist
+
+Before turning this schematic into a PCB:
+
+- Use the exact ESP32 module footprint and keepout from the module vendor.
+- Keep copper, ground pours, and tall components out of the antenna keepout.
+- Place regulator and ESP32 decoupling capacitors close to the relevant pins.
+- Route USB D+ and D- as a controlled differential pair when possible.
+- Confirm the EN, IO0, and strapping resistor values against the module
+  datasheet.
+- Add ESD protection on USB for production hardware.
