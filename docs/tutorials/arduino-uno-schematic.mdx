@@ -1,0 +1,352 @@
+---
+title: Arduino Uno Schematic
+description: Build a schematic-only Arduino Uno style circuit with an ATmega328P, USB-serial bridge, power rails, reset circuit, crystal, headers, and ICSP connector.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+This tutorial builds a schematic-only Arduino Uno style board. It is modeled
+after the public Uno Rev3 architecture: an ATmega328P application
+microcontroller, a USB-to-serial interface, reset circuitry, oscillator parts,
+power headers, digital headers, analog headers, and ICSP access.
+
+The official Arduino UNO R3 documentation identifies the ATmega328P as the main
+microcontroller and notes that Rev3 replaced the ATmega8U2 USB-to-serial chip
+with an ATmega16U2. For a production clone or shield-compatible board, always
+compare against the official Arduino schematic and pinout before manufacturing.
+
+## Complete Schematic
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="95mm" height="65mm">
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-B Receptacle"
+      footprint="soic8"
+      schX={-10}
+      schY={2}
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "D-",
+        pin3: "D+",
+        pin4: "GND",
+        pin5: "SHIELD",
+      }}
+      schPinArrangement={{
+        leftSide: { pins: ["VBUS", "D-", "D+"], direction: "top-to-bottom" },
+        rightSide: { pins: ["GND", "SHIELD"], direction: "top-to-bottom" },
+      }}
+      connections={{
+        VBUS: "net.USB_5V",
+        "D-": "net.USB_DM",
+        "D+": "net.USB_DP",
+        GND: "net.GND",
+        SHIELD: "net.GND",
+      }}
+    />
+
+    <chip
+      name="J2"
+      manufacturerPartNumber="Barrel Jack"
+      footprint="pinrow2"
+      schX={-10}
+      schY={-2.2}
+      pinLabels={{ pin1: "VIN", pin2: "GND" }}
+      schPinArrangement={{
+        leftSide: { pins: ["VIN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["GND"], direction: "top-to-bottom" },
+      }}
+      connections={{ VIN: "net.VIN", GND: "net.GND" }}
+    />
+
+    <chip
+      name="U1"
+      manufacturerPartNumber="5V Regulator"
+      footprint="sot223"
+      schX={-5.8}
+      schY={-1.2}
+      pinLabels={{ pin1: "IN", pin2: "GND", pin3: "OUT" }}
+      schPinArrangement={{
+        leftSide: { pins: ["IN"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["GND"], direction: "left-to-right" },
+        rightSide: { pins: ["OUT"], direction: "top-to-bottom" },
+      }}
+      connections={{ IN: "net.VIN", GND: "net.GND", OUT: "net.V5" }}
+    />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="3.3V Regulator"
+      footprint="sot23"
+      schX={-5.8}
+      schY={-4.0}
+      pinLabels={{ pin1: "IN", pin2: "GND", pin3: "OUT" }}
+      schPinArrangement={{
+        leftSide: { pins: ["IN"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["GND"], direction: "left-to-right" },
+        rightSide: { pins: ["OUT"], direction: "top-to-bottom" },
+      }}
+      connections={{ IN: "net.V5", GND: "net.GND", OUT: "net.V3_3" }}
+    />
+
+    <diode name="D1" footprint="0603" schX={-7.9} schY={1.0} connections={{ anode: "net.USB_5V", cathode: "net.V5" }} />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" schX={-7.8} schY={-2.8} connections={{ pos: "net.VIN", neg: "net.GND" }} />
+    <capacitor name="C2" capacitance="10uF" footprint="0603" schX={-3.8} schY={-2.8} connections={{ pos: "net.V5", neg: "net.GND" }} />
+    <capacitor name="C3" capacitance="1uF" footprint="0603" schX={-3.8} schY={-5.3} connections={{ pos: "net.V3_3", neg: "net.GND" }} />
+
+    <chip
+      name="U3"
+      manufacturerPartNumber="ATmega16U2 USB-Serial"
+      footprint="qfn32"
+      schX={-1.5}
+      schY={3}
+      schWidth={4.2}
+      schHeight={5}
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+        pin3: "D+",
+        pin4: "D-",
+        pin5: "TXD1",
+        pin6: "RXD1",
+        pin7: "RESET",
+        pin8: "XTAL1",
+        pin9: "XTAL2",
+      }}
+      schPinArrangement={{
+        leftSide: { pins: ["D+", "D-", "RESET"], direction: "top-to-bottom" },
+        topSide: { pins: ["VCC"], direction: "left-to-right" },
+        rightSide: { pins: ["TXD1", "RXD1"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["GND", "XTAL1", "XTAL2"], direction: "left-to-right" },
+      }}
+      connections={{
+        VCC: "net.V5",
+        GND: "net.GND",
+        "D+": "net.USB_DP",
+        "D-": "net.USB_DM",
+        TXD1: "net.MCU_RXD",
+        RXD1: "net.MCU_TXD",
+        RESET: "net.USB_MCU_RESET",
+        XTAL1: "net.USB_XTAL1",
+        XTAL2: "net.USB_XTAL2",
+      }}
+    />
+
+    <crystal name="Y1" frequency="16MHz" schX={-1.5} schY={0.0} connections={{ pin1: "net.USB_XTAL1", pin2: "net.USB_XTAL2" }} />
+    <capacitor name="C4" capacitance="22pF" footprint="0603" schX={-2.6} schY={-1.1} connections={{ pos: "net.USB_XTAL1", neg: "net.GND" }} />
+    <capacitor name="C5" capacitance="22pF" footprint="0603" schX={-0.4} schY={-1.1} connections={{ pos: "net.USB_XTAL2", neg: "net.GND" }} />
+
+    <chip
+      name="U4"
+      manufacturerPartNumber="ATmega328P-PU"
+      footprint="dip28"
+      schX={5.0}
+      schY={1.0}
+      schWidth={5.5}
+      schHeight={8}
+      pinLabels={{
+        pin1: "RESET",
+        pin2: "D0_RX",
+        pin3: "D1_TX",
+        pin4: "D2",
+        pin5: "D3_PWM",
+        pin6: "D4",
+        pin7: "VCC",
+        pin8: "GND",
+        pin9: "XTAL1",
+        pin10: "XTAL2",
+        pin11: "D5_PWM",
+        pin12: "D6_PWM",
+        pin13: "D7",
+        pin14: "D8",
+        pin15: "D9_PWM",
+        pin16: "D10_SS_PWM",
+        pin17: "D11_MOSI_PWM",
+        pin18: "D12_MISO",
+        pin19: "D13_SCK",
+        pin20: "AVCC",
+        pin21: "AREF",
+        pin22: "GND2",
+        pin23: "A0",
+        pin24: "A1",
+        pin25: "A2",
+        pin26: "A3",
+        pin27: "A4_SDA",
+        pin28: "A5_SCL",
+      }}
+      schPinArrangement={{
+        leftSide: { pins: ["RESET", "D0_RX", "D1_TX", "D2", "D3_PWM", "D4", "D5_PWM", "D6_PWM", "D7"], direction: "top-to-bottom" },
+        rightSide: { pins: ["D8", "D9_PWM", "D10_SS_PWM", "D11_MOSI_PWM", "D12_MISO", "D13_SCK", "A0", "A1", "A2", "A3", "A4_SDA", "A5_SCL"], direction: "top-to-bottom" },
+        topSide: { pins: ["VCC", "AVCC", "AREF"], direction: "left-to-right" },
+        bottomSide: { pins: ["GND", "GND2", "XTAL1", "XTAL2"], direction: "left-to-right" },
+      }}
+      connections={{
+        RESET: "net.RESET",
+        D0_RX: "net.MCU_RXD",
+        D1_TX: "net.MCU_TXD",
+        D2: "net.D2",
+        D3_PWM: "net.D3",
+        D4: "net.D4",
+        D5_PWM: "net.D5",
+        D6_PWM: "net.D6",
+        D7: "net.D7",
+        D8: "net.D8",
+        D9_PWM: "net.D9",
+        D10_SS_PWM: "net.D10_SS",
+        D11_MOSI_PWM: "net.D11_MOSI",
+        D12_MISO: "net.D12_MISO",
+        D13_SCK: "net.D13_SCK",
+        A0: "net.A0",
+        A1: "net.A1",
+        A2: "net.A2",
+        A3: "net.A3",
+        A4_SDA: "net.A4_SDA",
+        A5_SCL: "net.A5_SCL",
+        VCC: "net.V5",
+        AVCC: "net.V5",
+        AREF: "net.AREF",
+        GND: "net.GND",
+        GND2: "net.GND",
+        XTAL1: "net.MAIN_XTAL1",
+        XTAL2: "net.MAIN_XTAL2",
+      }}
+    />
+
+    <crystal name="Y2" frequency="16MHz" schX={3.0} schY={-4.2} connections={{ pin1: "net.MAIN_XTAL1", pin2: "net.MAIN_XTAL2" }} />
+    <capacitor name="C6" capacitance="22pF" footprint="0603" schX={1.8} schY={-5.3} connections={{ pos: "net.MAIN_XTAL1", neg: "net.GND" }} />
+    <capacitor name="C7" capacitance="22pF" footprint="0603" schX={4.2} schY={-5.3} connections={{ pos: "net.MAIN_XTAL2", neg: "net.GND" }} />
+    <capacitor name="C8" capacitance="100nF" footprint="0603" schX={6.8} schY={5.8} connections={{ pos: "net.V5", neg: "net.GND" }} />
+    <capacitor name="C9" capacitance="100nF" footprint="0603" schX={8.2} schY={5.8} connections={{ pos: "net.AREF", neg: "net.GND" }} />
+
+    <resistor name="RRESET" resistance="10k" footprint="0603" schX={1.5} schY={5.2} connections={{ pin1: "net.V5", pin2: "net.RESET" }} />
+    <capacitor name="CAUTO" capacitance="100nF" footprint="0603" schX={0.1} schY={4.7} connections={{ pos: "net.USB_MCU_RESET", neg: "net.RESET" }} />
+    <pushbutton name="SW_RESET" footprint="pushbutton" schX={1.5} schY={3.6} connections={{ pin1: "net.RESET", pin2: "net.GND" }} />
+
+    <led name="L13" color="yellow" footprint="0603" schX={10.4} schY={2.6} />
+    <resistor name="RL13" resistance="1k" footprint="0603" schX={9.0} schY={2.6} connections={{ pin1: "net.D13_SCK", pin2: ".L13 > .pos" }} />
+    <trace from=".L13 > .neg" to="net.GND" />
+
+    <chip
+      name="JPOWER"
+      manufacturerPartNumber="Power Header"
+      footprint="pinrow8"
+      schX={-0.5}
+      schY={-6.2}
+      pinLabels={{ pin1: "RESET", pin2: "3V3", pin3: "5V", pin4: "GND", pin5: "GND2", pin6: "VIN", pin7: "IOREF", pin8: "NC" }}
+      schPinArrangement={{
+        topSide: { pins: ["RESET", "3V3", "5V", "GND", "GND2", "VIN", "IOREF", "NC"], direction: "left-to-right" },
+      }}
+      connections={{ RESET: "net.RESET", "3V3": "net.V3_3", "5V": "net.V5", GND: "net.GND", GND2: "net.GND", VIN: "net.VIN", IOREF: "net.V5" }}
+    />
+
+    <chip
+      name="JDIGITAL"
+      manufacturerPartNumber="Digital Header"
+      footprint="pinrow10"
+      schX={12.5}
+      schY={1.0}
+      pinLabels={{ pin1: "D0_RX", pin2: "D1_TX", pin3: "D2", pin4: "D3", pin5: "D4", pin6: "D5", pin7: "D6", pin8: "D7", pin9: "D8", pin10: "D9" }}
+      schPinArrangement={{
+        leftSide: { pins: ["D0_RX", "D1_TX", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"], direction: "top-to-bottom" },
+      }}
+      connections={{ D0_RX: "net.MCU_RXD", D1_TX: "net.MCU_TXD", D2: "net.D2", D3: "net.D3", D4: "net.D4", D5: "net.D5", D6: "net.D6", D7: "net.D7", D8: "net.D8", D9: "net.D9" }}
+    />
+
+    <chip
+      name="JIO"
+      manufacturerPartNumber="SPI Digital Header"
+      footprint="pinrow8"
+      schX={12.5}
+      schY={-3.6}
+      pinLabels={{ pin1: "D10_SS", pin2: "D11_MOSI", pin3: "D12_MISO", pin4: "D13_SCK", pin5: "GND", pin6: "AREF", pin7: "SDA", pin8: "SCL" }}
+      schPinArrangement={{
+        leftSide: { pins: ["D10_SS", "D11_MOSI", "D12_MISO", "D13_SCK", "GND", "AREF", "SDA", "SCL"], direction: "top-to-bottom" },
+      }}
+      connections={{ D10_SS: "net.D10_SS", D11_MOSI: "net.D11_MOSI", D12_MISO: "net.D12_MISO", D13_SCK: "net.D13_SCK", GND: "net.GND", AREF: "net.AREF", SDA: "net.A4_SDA", SCL: "net.A5_SCL" }}
+    />
+
+    <chip
+      name="JANALOG"
+      manufacturerPartNumber="Analog Header"
+      footprint="pinrow6"
+      schX={10.0}
+      schY={-6.2}
+      pinLabels={{ pin1: "A0", pin2: "A1", pin3: "A2", pin4: "A3", pin5: "A4_SDA", pin6: "A5_SCL" }}
+      schPinArrangement={{
+        topSide: { pins: ["A0", "A1", "A2", "A3", "A4_SDA", "A5_SCL"], direction: "left-to-right" },
+      }}
+      connections={{ A0: "net.A0", A1: "net.A1", A2: "net.A2", A3: "net.A3", A4_SDA: "net.A4_SDA", A5_SCL: "net.A5_SCL" }}
+    />
+
+    <chip
+      name="JICSP"
+      manufacturerPartNumber="2x3 ICSP Header"
+      footprint="pinrow6"
+      schX={7.7}
+      schY={-6.2}
+      pinLabels={{ pin1: "MISO", pin2: "VCC", pin3: "SCK", pin4: "MOSI", pin5: "RESET", pin6: "GND" }}
+      schPinArrangement={{
+        topSide: { pins: ["MISO", "VCC", "SCK", "MOSI", "RESET", "GND"], direction: "left-to-right" },
+      }}
+      connections={{ MISO: "net.D12_MISO", VCC: "net.V5", SCK: "net.D13_SCK", MOSI: "net.D11_MOSI", RESET: "net.RESET", GND: "net.GND" }}
+    />
+
+  </board>
+)
+`}
+/>
+
+## What This Schematic Represents
+
+### Power Entry and Rails
+
+The Uno-style power section accepts `VIN` from a barrel jack and `USB_5V` from
+USB. The simplified diode path shows USB feeding the 5 V rail, while the 5 V
+regulator path shows external input feeding the board. A separate 3.3 V
+regulator provides the lower-voltage rail used by shields.
+
+### USB-to-Serial Interface
+
+Rev3 boards use a USB-to-serial microcontroller instead of a simple UART bridge.
+This tutorial models that block as `U3`, connected to USB D+/D- on one side and
+the ATmega328P serial pins on the other. Its reset coupling capacitor drives the
+main MCU reset net during uploads.
+
+### ATmega328P Core
+
+`U4` is the main application microcontroller. The tutorial keeps the Arduino
+names next to the MCU pins (`D0_RX`, `D13_SCK`, `A4_SDA`, and so on) so the
+schematic reads like the board headers and like Arduino code.
+
+### Reset, Crystal, and AREF
+
+The reset pullup, reset button, 16 MHz crystal, crystal load capacitors, and AREF
+capacitor are modeled explicitly because they are the first support parts to
+check when bringing up an ATmega328P board.
+
+### Headers
+
+The power, digital, analog, and ICSP headers expose the same logical nets as the
+microcontroller. This makes it easy to add shields, LEDs, sensors, or SPI devices
+in a follow-up tutorial without hiding the connection path.
+
+## Production Checklist
+
+Before turning this into a real Uno-compatible PCB:
+
+- Compare every net against the official Arduino UNO R3 schematic.
+- Use the exact USB connector, regulator, ATmega328P package, and USB-serial
+  package footprints selected for your board.
+- Add the full USB protection, power-selection, and regulator details required
+  by your parts.
+- Place crystal load capacitors close to the relevant MCU pins.
+- Keep the ICSP header orientation and digital/analog header order compatible
+  with shields.
+- Confirm whether you want the through-hole ATmega328P Uno style or the SMD Uno
+  R3 style before layout.
