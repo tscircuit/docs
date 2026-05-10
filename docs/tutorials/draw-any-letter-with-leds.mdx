@@ -14,7 +14,7 @@ for every lit pixel.
 The intended usage is:
 
 ```tsx
-<LedLetter letter="A" power="net.power" gnd="net.gnd" />
+<LedLetter letter="A" power=".V5 .test" gnd=".GND .test" />
 ```
 
 The component below supports capital `A` through `Z`, uses small SMD LEDs, and
@@ -155,7 +155,27 @@ export const LedLetter = ({
 
 export default () => (
   <board width="26mm" height="34mm">
-    <LedLetter letter="A" power="net.V5" gnd="net.GND" />
+    <testpoint
+      name="V5"
+      footprintVariant="pad"
+      padShape="circle"
+      padDiameter="1.2mm"
+      pcbX={-9}
+      pcbY={13}
+      schX={-1.5}
+      schY={1.5}
+    />
+    <testpoint
+      name="GND"
+      footprintVariant="pad"
+      padShape="circle"
+      padDiameter="1.2mm"
+      pcbX={9}
+      pcbY={13}
+      schX={1.5}
+      schY={1.5}
+    />
+    <LedLetter letter="A" power=".V5 .test" gnd=".GND .test" />
   </board>
 )
 `} />
@@ -198,8 +218,8 @@ resistor. You can switch to `0402` parts when you want a smaller, denser letter:
 ```tsx
 <LedLetter
   letter="K"
-  power="net.V5"
-  gnd="net.GND"
+  power=".V5 .test"  
+  gnd=".GND .test"  
   ledFootprint="0402"
   resistorFootprint="0402"
   pitch={2.2}
@@ -212,8 +232,8 @@ Use a different `name` for every instance so the generated component names stay
 unique:
 
 ```tsx
-<LedLetter name="LEFT_A" letter="A" power="net.V5" gnd="net.GND" pcbX={-12} />
-<LedLetter name="RIGHT_Z" letter="Z" power="net.V5" gnd="net.GND" pcbX={12} />
+<LedLetter name="LEFT_A" letter="A" power=".V5 .test" gnd=".GND .test" pcbX={-12} />
+<LedLetter name="RIGHT_Z" letter="Z" power=".V5 .test" gnd=".GND .test" pcbX={12} />
 ```
 
 The same font map can be adjusted later if you want a more rounded or condensed
