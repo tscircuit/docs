@@ -1,0 +1,264 @@
+---
+title: ESP32 PCB Layout and Routing
+description: Learn how to place and route an ESP32 module board in tscircuit with an antenna keepout, short power paths, USB-serial programming, and review checks.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+## Overview
+
+This tutorial turns an ESP32 module schematic into a routed PCB layout. The
+goal is not just to make the autorouter connect every net. A good ESP32 board
+also needs an antenna edge, a quiet 3.3 V supply path, accessible programming
+controls, and routing choices that are easy to inspect before fabrication.
+
+The layout below uses an ESP32-WROOM-style module, USB-C power, a 3.3 V
+regulator, a USB-to-UART bridge, EN and BOOT buttons, and the decoupling and
+pull resistors that belong close to the module. It follows the same placement
+priorities described in Espressif's
+[ESP32 PCB layout guide](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/pcb-layout-design.html)
+and the
+[ESP32-WROOM-32 datasheet](https://documentation.espressif.com/esp32-wroom-32_datasheet_en.html).
+
+<CircuitPreview hide3DTab defaultView="pcb" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+const Esp32Module = (props) => (
+
+<chip
+  footprint="stampreceiver_left14_right14_bottom10_top0_w18mm_p1.27mm"
+  pinLabels={{
+    pin1: ["GND"],
+    pin2: ["VDD"],
+    pin3: ["EN"],
+    pin16: ["IO0"],
+    pin21: ["RXD0"],
+    pin22: ["TXD0"],
+    pin38: ["GND"],
+  }}
+  schPortArrangement={{
+    leftSide: {
+      pins: ["GND", "VDD", "EN"],
+      direction: "top-to-bottom",
+    },
+    rightSide: {
+      pins: ["TXD0", "RXD0", "IO0"],
+      direction: "top-to-bottom",
+    },
+  }}
+  {...props}
+/>
+)
+
+export default () => (
+  <board width="55mm" height="38mm">
+    <Esp32Module name="U1" pcbX={0} pcbY={9} schX={0} schY={2} />
+
+    <SmdUsbC
+      name="J1"
+      pcbX={-20}
+      pcbY={-13}
+      schX={-7}
+      schY={-4}
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+    />
+
+    <chip
+      name="U2"
+      footprint="sot223"
+      pcbX={-8}
+      pcbY={-12}
+      schX={-2}
+      schY={-4}
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VOUT"],
+        pin3: ["VIN"],
+      }}
+    />
+
+    <chip
+      name="U3"
+      footprint="soic16"
+      pcbX={15}
+      pcbY={-7}
+      schX={6}
+      schY={-2}
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["TXD"],
+        pin4: ["RXD"],
+        pin13: ["DTR"],
+        pin14: ["RTS"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "GND"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["TXD", "RXD", "DTR", "RTS"],
+          direction: "top-to-bottom",
+        },
+      }}
+    />
+
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-13} pcbY={-8} />
+    <capacitor name="C2" capacitance="10uF" footprint="0603" pcbX={-3} pcbY={-8} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={-4} pcbY={4} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={15} pcbY={-3} />
+
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-7} pcbY={5} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={8} pcbY={5} />
+    <pushbutton name="SW1" footprint="pushbutton" pcbX={-18} pcbY={7} />
+    <pushbutton name="SW2" footprint="pushbutton" pcbX={18} pcbY={7} />
+
+    <trace from=".J1 .VBUS1" to=".U2 .VIN" />
+    <trace from=".U2 .VOUT" to="net.V3_3" />
+    <trace from=".U1 .VDD" to="net.V3_3" />
+    <trace from=".U3 .VDD" to="net.V3_3" />
+    <trace from=".C1 .pin1" to=".U2 .VIN" />
+    <trace from=".C2 .pin1" to="net.V3_3" />
+    <trace from=".C3 .pin1" to="net.V3_3" />
+    <trace from=".C4 .pin1" to="net.V3_3" />
+
+    <trace from=".U3 .TXD" to=".U1 .RXD0" />
+    <trace from=".U3 .RXD" to=".U1 .TXD0" />
+
+    <trace from=".R1 .pin1" to="net.V3_3" />
+    <trace from=".R1 .pin2" to=".U1 .EN" />
+    <trace from=".SW1 .pin1" to=".U1 .EN" />
+    <trace from=".SW1 .pin2" to="net.GND" />
+
+    <trace from=".R2 .pin1" to="net.V3_3" />
+    <trace from=".R2 .pin2" to=".U1 .IO0" />
+    <trace from=".SW2 .pin1" to=".U1 .IO0" />
+    <trace from=".SW2 .pin2" to="net.GND" />
+
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U2 .GND" to="net.GND" />
+    <trace from=".U3 .GND" to="net.GND" />
+    <trace from=".C1 .pin2" to="net.GND" />
+    <trace from=".C2 .pin2" to="net.GND" />
+    <trace from=".C3 .pin2" to="net.GND" />
+    <trace from=".C4 .pin2" to="net.GND" />
+
+  </board>
+)
+`} />
+
+## Layout Strategy
+
+Start by placing the module, then build the rest of the board around it:
+
+- Put the ESP32 module near the board edge so the antenna end points away from
+  copper, connectors, batteries, and tall metal parts.
+- Keep the antenna side free of traces, vias, copper pour, mounting holes, and
+  silkscreen labels that would encourage parts to be placed there later.
+- Place the regulator between the USB connector and the ESP32 3.3 V pin so the
+  high-current supply path is short and visually obvious.
+- Put the 100 nF module bypass capacitor close to the ESP32 3.3 V and GND pins.
+- Keep EN and IO0 pullups next to the module, then put the physical buttons at
+  the board edges where a user can reach them.
+- Put the USB-to-UART bridge close enough to the module that TX and RX do not
+  cross the regulator output or the antenna area.
+
+In tscircuit, those decisions are encoded with `pcbX`, `pcbY`, and
+`pcbRotation`. The router can only make good choices after the important parts
+are already in good places.
+
+```tsx
+<Esp32Module name="U1" pcbX={0} pcbY={9} />
+<SmdUsbC name="J1" pcbX={-20} pcbY={-13} />
+<chip name="U2" footprint="sot223" pcbX={-8} pcbY={-12} />
+<chip name="U3" footprint="soic16" pcbX={15} pcbY={-7} />
+```
+
+## Antenna Keepout
+
+The ESP32 module is the first part to place because the antenna keepout is the
+least negotiable area of the board. Espressif recommends minimizing base-board
+interference around the module antenna. Treat that area as reserved space:
+
+- Do not route under the antenna.
+- Do not put copper pours under the antenna.
+- Do not place the USB connector, regulator, crystals, shields, or mounting
+  hardware in front of the antenna.
+- If the product enclosure uses metal or a battery, keep those parts away from
+  the antenna end too.
+
+For a small development board, the simplest tactic is to place the antenna end
+flush with, or slightly past, the edge of the PCB. The tutorial board leaves the
+programming, power, and buttons below the module so the top edge remains clear.
+
+## Power Routing
+
+ESP32 modules can draw sharp current bursts during Wi-Fi transmit. Route power
+so the current path is short and easy to review:
+
+- USB VBUS enters at `J1`, then goes directly to the regulator input.
+- The regulator output becomes `net.V3_3`.
+- The ESP32 module, USB-to-UART bridge, and bypass capacitors connect to
+  `net.V3_3`.
+- Every local capacitor returns to `net.GND` with the shortest available route.
+
+```tsx
+<trace from=".J1 .VBUS1" to=".U2 .VIN" />
+<trace from=".U2 .VOUT" to="net.V3_3" />
+<trace from=".U1 .VDD" to="net.V3_3" />
+<trace from=".C3 .pin1" to="net.V3_3" />
+<trace from=".C3 .pin2" to="net.GND" />
+```
+
+Use a wider power trace in a production design when the board editor exposes
+trace width controls for your flow. Even when using autorouting, make the power
+route visible in the placement: connector, regulator, output capacitor, and
+module should form a compact chain.
+
+## Programming Signals
+
+The programming path has three groups:
+
+- UART data: USB bridge TXD to ESP32 RXD0, and USB bridge RXD to ESP32 TXD0.
+- Reset: EN pulled up to 3.3 V and pulled low by the reset button.
+- Boot select: IO0 pulled up to 3.3 V and pulled low by the boot button.
+
+```tsx
+<trace from=".U3 .TXD" to=".U1 .RXD0" />
+<trace from=".U3 .RXD" to=".U1 .TXD0" />
+<trace from=".R1 .pin2" to=".U1 .EN" />
+<trace from=".R2 .pin2" to=".U1 .IO0" />
+```
+
+Keep these traces away from the antenna keepout. They are low speed compared to
+USB, but routing them cleanly makes the board easier to debug with a scope or
+logic analyzer.
+
+## Routing Review Checklist
+
+Before ordering the PCB, inspect the PCB tab and confirm:
+
+- The module antenna area is clear on every copper layer.
+- No trace crosses the antenna edge or runs under the antenna.
+- The 3.3 V path is short from regulator output to ESP32 VDD.
+- The input and output regulator capacitors are beside the regulator pins, not
+  on the opposite side of the board.
+- EN and IO0 have pullups and each button shorts its signal to ground.
+- TXD and RXD are crossed intentionally: bridge TXD goes to ESP32 RXD0, bridge
+  RXD goes to ESP32 TXD0.
+- Ground returns are short, especially beside bypass capacitors.
+- USB, buttons, and headers are reachable after the board is installed in its
+  enclosure.
+
+## Next Steps
+
+After the first routing pass, add the product-specific connectors and repeat
+the same process: place the part where it belongs mechanically, move nearby
+passives next to the pins they support, then add traces. For RF-sensitive ESP32
+boards, keep checking the antenna keepout after every placement change.
