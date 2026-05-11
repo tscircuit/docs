@@ -75,3 +75,118 @@ export default () => (
 )
 `}
 />
+
+## Coordinate Alignment Examples
+
+`<courtyardoutline />` does not use an `anchorAlignment` prop. The outline is
+defined by the points you provide, relative to the footprint's local origin. You
+can choose whichever origin is easiest for the package you are documenting.
+
+The examples below draw the same `8mm x 6mm` courtyard using three different
+coordinate conventions.
+
+### Center-Origin Outline
+
+Use a center-origin outline when the footprint body is naturally centered around
+the component origin.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width="1.5mm" height="1mm" pcbX={-2} pcbY={0} />
+          <smtpad shape="rect" width="1.5mm" height="1mm" pcbX={2} pcbY={0} />
+          <courtyardoutline
+            outline={[
+              { x: -4, y: -3 },
+              { x: 4, y: -3 },
+              { x: 4, y: 3 },
+              { x: -4, y: 3 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Bottom-Left-Origin Outline
+
+Use this style when you are copying dimensions from a datasheet that references
+the lower-left corner of the courtyard.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width="1.5mm" height="1mm" pcbX={2} pcbY={3} />
+          <smtpad shape="rect" width="1.5mm" height="1mm" pcbX={6} pcbY={3} />
+          <courtyardoutline
+            outline={[
+              { x: 0, y: 0 },
+              { x: 8, y: 0 },
+              { x: 8, y: 6 },
+              { x: 0, y: 6 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Top-Right-Origin Outline
+
+Use negative coordinates when the reference point is on the opposite corner of
+the outline, such as a package drawing that dimensions leftward and downward
+from the top-right corner.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="16mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad shape="rect" width="1.5mm" height="1mm" pcbX={-6} pcbY={-3} />
+          <smtpad shape="rect" width="1.5mm" height="1mm" pcbX={-2} pcbY={-3} />
+          <courtyardoutline
+            outline={[
+              { x: -8, y: -6 },
+              { x: 0, y: -6 },
+              { x: 0, y: 0 },
+              { x: -8, y: 0 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
