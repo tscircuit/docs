@@ -1,0 +1,144 @@
+---
+title: Using MicroMod M.2 Connectors
+sidebar_position: 5
+description: Document SparkFun MicroMod-style M.2 connector workflows in tscircuit.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+SparkFun MicroMod processor boards use an M.2 edge connector to plug into carrier boards. In tscircuit, the cleanest way to model this interface is to treat the connector as the boundary between the removable module and the carrier board, then label only the signals your carrier actually uses.
+
+This guide focuses on the carrier-board side: a board with an M.2 socket, power rails, and the peripherals that connect to the MicroMod processor module.
+
+## Choose the connector strategy
+
+Use one of these strategies depending on how exact your board needs to be:
+
+| Strategy | Use when | Notes |
+| --- | --- | --- |
+| `<connector standard="m2" />` | You want a readable schematic and a quick board outline | Good for early design and documentation examples. |
+| Imported KiCad footprint | You need a fabrication-ready connector footprint from a vendor library | Install the library with `tsci add`, then pass the `.kicad_mod` import to the connector's `footprint` prop. |
+| Inline custom footprint | You need to tune pad sizes, keepouts, or mounting geometry directly in JSX | Best when the connector footprint is part of a reusable project template. |
+
+For SparkFun MicroMod carriers, use the official MicroMod pinout as the source of truth, then map the tscircuit connector pins to your board nets with `pinLabels`.
+
+## Start with the signal groups
+
+The MicroMod pinout exposes many signals, but most carrier boards only need a subset. Start by grouping signals by function:
+
+| Group | Typical carrier usage |
+| --- | --- |
+| Power | `3V3`, `GND`, optional battery or enable pins |
+| I2C | Qwiic sensors, displays, and other low-speed peripherals |
+| SPI | Flash, displays, radios, and higher-throughput peripherals |
+| UART | Debug headers, GPS modules, and serial devices |
+| USB | USB connector or programming/debug bridge |
+| GPIO/control | Buttons, LEDs, interrupts, chip selects, reset lines |
+
+Keep the names stable across the project. For example, if the connector pin is labeled `I2C_SDA`, use `net.I2C_SDA` everywhere else rather than mixing `SDA`, `SDA0`, and `I2C_DATA`.
+
+## Carrier board example
+
+This example shows a small MicroMod-style carrier with a temperature sensor on I2C and a status LED. The connector uses a small documented subset of the MicroMod interface so the schematic stays readable.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="60mm" height="30mm">
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      schX={-4}
+      schY={0}
+      pinLabels={{
+        pin1: "GND",
+        pin2: "3V3",
+        pin3: "I2C_SDA",
+        pin4: "I2C_SCL",
+        pin5: "UART_TX",
+        pin6: "UART_RX",
+        pin7: "SPI_SCK",
+        pin8: "SPI_COPI",
+        pin9: "SPI_CIPO",
+        pin10: "RESET",
+        pin11: "GPIO0",
+      }}
+    />
+
+    <chip
+      name="U_TEMP"
+      footprint="soic8"
+      schX={2}
+      schY={1}
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "ADDR",
+        pin3: "INT",
+        pin4: "GND",
+        pin5: "SDA",
+        pin6: "SCL",
+        pin7: "NC",
+        pin8: "NC",
+      }}
+    />
+
+    <resistor name="R_STATUS" resistance="1kohm" footprint="0603" schX={2} schY={-2} />
+    <led name="LED_STATUS" color="green" footprint="0603" schX={4} schY={-2} />
+
+    <trace from="J_MICROMOD.3V3" to="U_TEMP.VCC" />
+    <trace from="J_MICROMOD.GND" to="U_TEMP.GND" />
+    <trace from="J_MICROMOD.I2C_SDA" to="U_TEMP.SDA" />
+    <trace from="J_MICROMOD.I2C_SCL" to="U_TEMP.SCL" />
+
+    <trace from="J_MICROMOD.GPIO0" to="R_STATUS.pin1" />
+    <trace from="R_STATUS.pin2" to="LED_STATUS.pos" />
+    <trace from="LED_STATUS.neg" to="J_MICROMOD.GND" />
+  </board>
+)
+`}
+/>
+
+## Using a real connector footprint
+
+When you are ready to manufacture the carrier, replace the generic connector footprint with the exact M.2 socket footprint you intend to assemble. If the footprint is available from a KiCad library, install that library and import the `.kicad_mod` file:
+
+```bash
+tsci add https://github.com/your-org/micromod-footprints
+```
+
+```tsx
+import micromodSocket from "micromod-footprints/MicroMod.pretty/MicroMod-Processor.kicad_mod"
+
+export default () => (
+  <board width="60mm" height="30mm">
+    <connector
+      name="J_MICROMOD"
+      footprint={micromodSocket}
+      pinLabels={{
+        pin1: "GND",
+        pin2: "3V3",
+        pin3: "I2C_SDA",
+        pin4: "I2C_SCL",
+      }}
+    />
+  </board>
+)
+```
+
+Replace the URL and import path with the connector footprint library you use. The exact import path depends on the package structure after `tsci add` runs. Use your editor autocomplete or inspect the generated `types/` declarations to find the available `.kicad_mod` module names.
+
+## Layout checklist
+
+- Place the M.2 socket first, then route high-use buses like I2C, SPI, USB, and UART away from the connector in short groups.
+- Keep `3V3` and `GND` labels consistent so decoupling capacitors and peripherals share the same nets.
+- Add pull-ups only where the carrier owns them. I2C pull-ups might already exist on a sensor board or Qwiic module.
+- Reserve keepout space around the socket, screw, and insertion area before placing tall components.
+- If the carrier exposes Qwiic, USB, or debug headers, name those nets from the MicroMod signal names so the schematic tells the same story as the connector pinout.
+
+## References
+
+- [SparkFun MicroMod](https://www.sparkfun.com/micromod)
+- [Getting Started with MicroMod](https://learn.sparkfun.com/tutorials/getting-started-with-micromod)
+- [Installing KiCad Libraries](/guides/importing-modules-and-chips/installing-kicad-libraries-from-github)
+- [`<connector />` element](/elements/connector)
