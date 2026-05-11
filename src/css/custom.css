@@ -10,6 +10,7 @@
 :root {
   --ifm-font-family-base: "Google Sans", system-ui, -apple-system, sans-serif;
   --ifm-heading-font-family: "Google Sans", system-ui, -apple-system, sans-serif;
+  --doc-content-max-width: 1100px;
   --ifm-color-primary: #1877f2;
   --ifm-color-primary-dark: #166bda;
   --ifm-color-primary-darker: #1564ce;
@@ -746,10 +747,10 @@ body {
   line-height: 1.2;
   text-align: left;
   white-space: nowrap;
-  max-width: 970px;
+  max-width: var(--doc-content-max-width);
   margin-left: auto;
   margin-right: auto;
-  padding-left: 4rem;
+  padding-left: 5rem;
   padding-right: 2rem;
   box-sizing: border-box;
 }
@@ -853,7 +854,7 @@ article h4 {
 
 /* Force center all documentation content */
 .col:not(.col--3) {
-  max-width: 1000px !important;
+  max-width: var(--doc-content-max-width) !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -898,10 +899,10 @@ article h4 {
       div,
       article
     )[class*="generatedIndexPage"] {
-    max-width: 1000px !important;
+    max-width: var(--doc-content-max-width) !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 1000px !important;
+    width: var(--doc-content-max-width) !important;
   }
 }
 

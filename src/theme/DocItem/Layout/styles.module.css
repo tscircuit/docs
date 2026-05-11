@@ -1,3 +1,18 @@
+.docItemRow {
+  justify-content: center;
+}
+
+.docItemCol {
+  flex: 0 1 var(--doc-content-max-width);
+  max-width: var(--doc-content-max-width) !important;
+  min-width: 0;
+  width: 100%;
+}
+
+.docItemContainer {
+  width: 100%;
+}
+
 .docItemContainer header + *,
 .docItemContainer article > *:first-child {
   margin-top: 0;
@@ -35,11 +50,5 @@
   .docItemWithButton :global(.markdown) > :global(h1):first-child {
     padding-right: 0;
     margin-bottom: 0.75rem;
-  }
-}
-
-@media (min-width: 997px) {
-  .docItemCol {
-    max-width: 75% !important;
   }
 }
