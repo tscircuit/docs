@@ -110,8 +110,9 @@ export default () => (
 ## Step 3: Add the Push Button
 
 Place the push button near the center of the board. One side connects to
-`net.VBUS`; the other side feeds the resistor. In this design, the resistor is
-only energized while the button is pressed.
+`net.VBUS`; the other side creates a switched power net that will feed the
+resistor in the next step. In this design, the resistor is only energized while
+the button is pressed.
 
 <CircuitPreview splitView={false} defaultView="schematic" hidePCBTab hide3DTab code={`
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
@@ -134,7 +135,7 @@ export default () => (
       name="SW1"
       footprint="pushbutton"
       layer="top"
-      connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+      connections={{ pin1: "net.SWITCHED_VBUS", pin2: "net.VBUS" }}
       pcbX={0}
       pcbY={-1}
     />
@@ -317,7 +318,7 @@ When the circuit looks right, export the fabrication files with the tscircuit
 CLI:
 
 ```bash
-tsci export
+tsci export index.tsx -f gerbers
 ```
 
 The generated Gerber files can be uploaded to a PCB manufacturer. For a broader
