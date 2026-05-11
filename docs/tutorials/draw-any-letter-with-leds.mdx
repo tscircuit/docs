@@ -1,0 +1,188 @@
+---
+title: Draw Any Letter with LEDs
+description: Build a reusable LedLetter component that places LEDs along A-Z letter outlines.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial builds a reusable `LedLetter` component that turns any capital
+letter from `A` to `Z` into a small LED sign. The component reads letter stroke
+data from `@tscircuit/alphabet`, samples the strokes into LED positions, and
+adds a current-limiting resistor for every LED.
+
+<CircuitPreview
+  splitView={false}
+  hideSchematicTab
+  defaultView="pcb"
+  code={`
+import { lineAlphabet } from "@tscircuit/alphabet"
+
+type Point = { x: number; y: number }
+type Segment = { x1: number; y1: number; x2: number; y2: number }
+
+type LedLetterProps = {
+  letter: string
+  power?: string
+  ground?: string
+  ledFootprint?: "0402" | "0603"
+  ledSpacing?: number
+  scale?: number
+}
+
+const roundPoint = (point: Point) => ({
+  x: Number(point.x.toFixed(4)),
+  y: Number(point.y.toFixed(4)),
+})
+
+const getLetterPoints = (letter: string, ledSpacing: number) => {
+  const normalizedLetter = letter.toUpperCase()
+
+  if (!/^[A-Z]$/.test(normalizedLetter)) {
+    throw new Error("LedLetter supports one letter from A to Z.")
+  }
+
+  const segments = lineAlphabet[normalizedLetter] as Segment[]
+  const pointsByGridKey = new Map<string, Point>()
+
+  for (const segment of segments) {
+    const dx = segment.x2 - segment.x1
+    const dy = segment.y2 - segment.y1
+    const length = Math.sqrt(dx * dx + dy * dy)
+    const steps = Math.max(1, Math.ceil(length / ledSpacing))
+
+    for (let step = 0; step <= steps; step++) {
+      const t = step / steps
+      const point = roundPoint({
+        x: segment.x1 + dx * t,
+        y: segment.y1 + dy * t,
+      })
+      const gridKey =
+        Math.round(point.x / ledSpacing) + ":" + Math.round(point.y / ledSpacing)
+      pointsByGridKey.set(gridKey, point)
+    }
+  }
+
+  return Array.from(pointsByGridKey.values())
+}
+
+export const LedLetter = ({
+  letter,
+  power = "net.VLED",
+  ground = "net.GND",
+  ledFootprint = "0603",
+  ledSpacing = 0.12,
+  scale = 24,
+}: LedLetterProps) => {
+  const points = getLetterPoints(letter, ledSpacing)
+
+  return (
+    <group name={"LETTER_" + letter.toUpperCase()}>
+      {points.map((point, index) => {
+        const ledName = "LED" + (index + 1)
+        const resistorName = "R" + (index + 1)
+        const x = (point.x - 0.5) * scale
+        const y = (0.5 - point.y) * scale
+
+        return (
+          <group name={"PIXEL" + (index + 1)}>
+            <resistor
+              name={resistorName}
+              resistance="1k"
+              footprint={ledFootprint}
+              pcbX={x - 1.6}
+              pcbY={y}
+              schX={Math.floor(index / 6) * 2}
+              schY={-(index % 6)}
+            />
+            <led
+              name={ledName}
+              color="red"
+              footprint={ledFootprint}
+              pcbX={x + 1.6}
+              pcbY={y}
+              schX={Math.floor(index / 6) * 2 + 0.9}
+              schY={-(index % 6)}
+            />
+            <trace from={power} to={"." + resistorName + " .pos"} />
+            <trace from={"." + resistorName + " .neg"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={ground} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="36mm" height="42mm">
+    <LedLetter letter="A" />
+    <chip
+      name="J1"
+      footprint="pinrow2_p2.54"
+      pinLabels={{
+        pin1: "VLED",
+        pin2: "GND",
+      }}
+      pcbX={0}
+      pcbY={-17}
+      schX={-4}
+      schY={0}
+    />
+    <trace from=".J1 .VLED" to="net.VLED" />
+    <trace from=".J1 .GND" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+## How It Works
+
+`@tscircuit/alphabet` provides normalized line segments for each capital
+letter. `LedLetter` looks up the selected letter, samples points along each
+stroke, removes duplicate points where strokes meet, and converts the normalized
+coordinates into PCB millimeters.
+
+Each sampled point becomes one LED and one resistor:
+
+- `resistor` connects from the shared positive rail to the LED anode.
+- `led` connects from the resistor to the shared ground rail.
+- `trace` elements connect the repeated LED/resistor pairs to `net.VLED` and
+  `net.GND`.
+
+Using one resistor per LED keeps the brightness more consistent than sharing one
+resistor across a whole letter.
+
+## Reuse the Component
+
+To draw a different letter, pass a different capital letter:
+
+```tsx
+<LedLetter letter="R" />
+```
+
+Use a smaller footprint for denser letters:
+
+```tsx
+<LedLetter letter="B" ledFootprint="0402" ledSpacing={0.09} />
+```
+
+Scale the entire glyph up or down with `scale`:
+
+```tsx
+<LedLetter letter="Z" scale={30} />
+```
+
+You can also wire the letter into another circuit by passing the names of your
+existing power and ground nets:
+
+```tsx
+<LedLetter letter="C" power="net.USB_5V" ground="net.GND" />
+```
+
+## Next Steps
+
+Try placing several `LedLetter` components side by side to make a short word.
+For a manufactured board, add mounting holes, a connector, and enough spacing
+around the LEDs for your enclosure or diffuser.
