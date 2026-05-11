@@ -3,12 +3,107 @@ title: Building a Simple USB Flashlight
 description: Learn how to build a simple USB-powered flashlight circuit using tscircuit with a push button, LED, and USB-C connector.
 ---
 
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
 ## Overview
 
 This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+tscircuit. The circuit is intentionally small: USB-C provides 5 V, a push
+button connects that supply to an LED branch, and a resistor limits current
+through the LED.
 
-import TscircuitIframe from "@site/src/components/TscircuitIframe"
+By the end, you will have a compact board with:
+
+- one USB-C connector for power
+- one normally-open push button
+- one current-limiting resistor
+- one red LED
+- traces that complete the switched LED path
+
+## Circuit Plan
+
+The flashlight has two main nets:
+
+- `net.VBUS` carries 5 V from the USB-C connector.
+- `net.GND` returns current to the USB-C connector ground pins.
+
+Pressing `SW1` connects `net.VBUS` to resistor `R1`. The resistor feeds the
+LED anode, and the LED cathode returns to `net.GND`.
+
+## Step 1: Add the Board and USB-C Connector
+
+Start with a narrow board and place the USB-C connector near the bottom edge.
+The connector exposes `VBUS` and `GND` pins, so connect both ground pins to
+`net.GND` and both VBUS pins to `net.VBUS`.
+
+```tsx
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="12mm" height="30mm">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      pcbY={-10}
+      schX={-4}
+    />
+  </board>
+)
+```
+
+## Step 2: Add the Push Button
+
+Place the push button above the connector. One side connects to `net.VBUS`;
+the other side will feed the resistor when the button is pressed.
+
+```tsx
+<pushbutton
+  name="SW1"
+  footprint="pushbutton"
+  layer="top"
+  connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+  pcbX={0}
+  pcbY={-1}
+/>
+```
+
+The selector `.R1 > .pos` points at the positive side of `R1`, letting the
+button connect directly into the LED branch without introducing an extra named
+net.
+
+## Step 3: Add the LED and Current-Limiting Resistor
+
+The resistor protects the LED by limiting current from the USB 5 V rail. This
+example uses `1k`, which is a conservative value for a small indicator-style
+flashlight.
+
+```tsx
+<resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+<led name="LED" color="red" footprint="0603" pcbY={12} />
+```
+
+Keep the resistor and LED above the switch so the board layout follows the
+electrical flow: connector, switch, resistor, LED.
+
+## Step 4: Route the LED Branch
+
+Add traces from the resistor to the LED and from the LED back to ground.
+
+```tsx
+<trace from=".R1 .neg" to=".LED .pos" />
+<trace from=".LED .neg" to="net.GND" />
+```
+
+The first trace connects the resistor output to the LED anode. The second trace
+returns the LED cathode to USB ground, completing the circuit when the button is
+pressed.
+
+## Complete Circuit
 
 <TscircuitIframe defaultView="3d" code={`
 
@@ -16,13 +111,18 @@ import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
   return (
-   <board width="12mm" height="30mm">
+    <board width="12mm" height="30mm">
       <SmdUsbC
-      name="J1"
-      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
-      pcbY={-10}
-      schX={-4}
-    />
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        pcbY={-10}
+        schX={-4}
+      />
       <pushbutton
         name="SW1"
         footprint="pushbutton"
@@ -32,7 +132,6 @@ export default () => {
         pcbY={-1}
       />
       <led name="LED" color="red" footprint="0603" pcbY={12} />
-     
       <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
       <trace from=".R1 .neg" to=".LED .pos" />
       <trace from=".LED .neg" to="net.GND" />
@@ -40,3 +139,16 @@ export default () => {
   )
 }
 `} />
+
+## What to Check in the Preview
+
+Use the preview tabs to inspect the design before fabrication:
+
+- In the schematic view, confirm `J1` supplies `net.VBUS` and `net.GND`.
+- In the PCB view, confirm the USB-C connector sits at the board edge and the
+  LED branch routes cleanly up the board.
+- In the 3D view, confirm the button and LED are on the top side and are easy
+  to access.
+
+If you adapt this design for a brighter LED, recalculate `R1` for the LED
+forward voltage and desired current before sending the PCB out.
