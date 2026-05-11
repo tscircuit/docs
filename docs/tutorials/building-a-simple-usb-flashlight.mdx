@@ -5,15 +5,16 @@ description: Learn how to build a simple USB-powered flashlight circuit using ts
 
 ## Overview
 
-This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+In this tutorial we will build a simple USB-powered flashlight using tscircuit.
+The circuit uses a USB-C connector for power, a push button to switch the light
+on and off, a current-limiting resistor, and an LED.
 
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
+Here is the finished circuit we will build:
+
 <TscircuitIframe defaultView="3d" code={`
-
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
-
 export default () => {
   return (
    <board width="12mm" height="30mm">
@@ -32,7 +33,6 @@ export default () => {
         pcbY={-1}
       />
       <led name="LED" color="red" footprint="0603" pcbY={12} />
-     
       <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
       <trace from=".R1 .neg" to=".LED .pos" />
       <trace from=".LED .neg" to="net.GND" />
@@ -40,3 +40,163 @@ export default () => {
   )
 }
 `} />
+
+---
+
+## Parts List
+
+| Reference | Component | Value / Notes |
+|-----------|-----------|---------------|
+| J1 | USB-C connector (SMD) | `@tsci/seveibar.smd-usb-c` — provides 5 V VBUS and GND |
+| SW1 | Pushbutton | SMD or through-hole pushbutton |
+| R1 | Resistor | 1 kΩ, 0603 package — limits current through the LED |
+| LED | Red LED | 0603 package |
+
+---
+
+## How the Circuit Works
+
+```
+VBUS (5 V) ──► SW1 ──► R1 (1 kΩ) ──► LED ──► GND
+```
+
+1. **USB-C connector (J1)** supplies 5 V on the `VBUS` net and ground on the `GND` net.
+2. **Pushbutton (SW1)** connects `VBUS` to the rest of the circuit. When pressed, current flows; when released, the LED turns off.
+3. **Resistor (R1)** limits the current through the LED. With a 5 V supply and a typical red LED forward voltage of ~2 V, the current is approximately (5 V − 2 V) / 1 kΩ = 3 mA — well within the LED's rating.
+4. **LED** emits light when current flows through it.
+
+---
+
+## Step 1 — Add the USB-C Connector
+
+Start with an empty board and add the USB-C power connector. We import the
+`SmdUsbC` component and connect its power pins to the `VBUS` and `GND` nets.
+
+```tsx
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="12mm" height="30mm">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      pcbY={-10}
+      schX={-4}
+    />
+  </board>
+)
+```
+
+The USB-C connector has two GND pins and two VBUS pins; we tie both pairs
+together to reduce resistance.
+
+---
+
+## Step 2 — Add the Pushbutton
+
+Add a pushbutton switch. One pin connects to `VBUS` and the other connects to
+the positive terminal of the resistor we will add next.
+
+```tsx
+<pushbutton
+  name="SW1"
+  footprint="pushbutton"
+  layer="top"
+  connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+  pcbX={0}
+  pcbY={-1}
+/>
+```
+
+The `".R1 > .pos"` connection string means: "connect to the `.pos` pin of the
+component named `R1`".
+
+---
+
+## Step 3 — Add the Current-Limiting Resistor
+
+Add a 1 kΩ resistor in a 0603 package. Its positive pin is already wired to the
+pushbutton via the connection declared in Step 2.
+
+```tsx
+<resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+```
+
+---
+
+## Step 4 — Add the LED
+
+Add a red LED in a 0603 package.
+
+```tsx
+<led name="LED" color="red" footprint="0603" pcbY={12} />
+```
+
+---
+
+## Step 5 — Connect the Traces
+
+Add two traces to complete the circuit:
+
+- From the negative pin of R1 to the positive pin of the LED.
+- From the negative pin of the LED to the `GND` net.
+
+```tsx
+<trace from=".R1 .neg" to=".LED .pos" />
+<trace from=".LED .neg" to="net.GND" />
+```
+
+---
+
+## Complete Circuit Code
+
+Putting it all together:
+
+```tsx
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        pcbY={-10}
+        schX={-4}
+      />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+      <led name="LED" color="red" footprint="0603" pcbY={12} />
+      <trace from=".R1 .neg" to=".LED .pos" />
+      <trace from=".LED .neg" to="net.GND" />
+    </board>
+  )
+}
+```
+
+---
+
+## Next Steps
+
+- Try changing the LED color (e.g. `color="blue"`) and observe the effect.
+- Swap the 1 kΩ resistor for a lower value (e.g. 470 Ω) to make the LED
+  brighter, or a higher value (e.g. 2.2 kΩ) to dim it.
+- Add a second LED in parallel for more light output.
+- Export the design to Gerber files and order your board from a PCB manufacturer!
