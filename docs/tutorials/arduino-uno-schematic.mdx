@@ -1,0 +1,405 @@
+---
+title: Arduino Uno Reference Schematic
+description: Build a schematic-only Arduino Uno style circuit around an ATmega328P with headers, reset, clock, ICSP, and indicator LEDs.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+This tutorial builds a schematic-only Arduino Uno style circuit in tscircuit.
+It focuses on the ATmega328P core and the headers most sketches expect, without
+trying to clone every part of an official Uno board.
+
+The example includes:
+
+- ATmega328P pin mapping for digital pins `D0` through `D13`
+- analog pins `A0` through `A5`, including the common `SDA` and `SCL` aliases
+- reset pull-up and reset button
+- 16 MHz crystal with load capacitors
+- ICSP programming header
+- `D13` status LED and power LED
+- AREF decoupling
+
+Add a USB-UART interface, regulator, reverse-polarity protection, and exact
+connector footprints when you turn this schematic into a manufactured board.
+
+## Complete Schematic
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+const ATMEGA328P_PIN_LABELS = {
+  pin1: "PC6_RESET",
+  pin2: "PD0_RXD",
+  pin3: "PD1_TXD",
+  pin4: "PD2_D2",
+  pin5: "PD3_D3_PWM",
+  pin6: "PD4_D4",
+  pin7: "VCC",
+  pin8: "GND1",
+  pin9: "PB6_XTAL1",
+  pin10: "PB7_XTAL2",
+  pin11: "PD5_D5_PWM",
+  pin12: "PD6_D6_PWM",
+  pin13: "PD7_D7",
+  pin14: "PB0_D8",
+  pin15: "PB1_D9_PWM",
+  pin16: "PB2_D10_SS",
+  pin17: "PB3_D11_MOSI",
+  pin18: "PB4_D12_MISO",
+  pin19: "PB5_D13_SCK",
+  pin20: "AVCC",
+  pin21: "AREF",
+  pin22: "GND2",
+  pin23: "PC0_A0",
+  pin24: "PC1_A1",
+  pin25: "PC2_A2",
+  pin26: "PC3_A3",
+  pin27: "PC4_A4_SDA",
+  pin28: "PC5_A5_SCL",
+}
+
+const Atmega328p = (props) => (
+  <chip
+    footprint="dip28_w7.62mm"
+    doNotPlace
+    pinLabels={ATMEGA328P_PIN_LABELS}
+    schPinArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: [
+          "PC6_RESET",
+          "PD0_RXD",
+          "PD1_TXD",
+          "PD2_D2",
+          "PD3_D3_PWM",
+          "PD4_D4",
+          "PD5_D5_PWM",
+          "PD6_D6_PWM",
+          "PD7_D7",
+          "PB6_XTAL1",
+          "PB7_XTAL2",
+          "VCC",
+          "GND1",
+        ],
+      },
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: [
+          "PB0_D8",
+          "PB1_D9_PWM",
+          "PB2_D10_SS",
+          "PB3_D11_MOSI",
+          "PB4_D12_MISO",
+          "PB5_D13_SCK",
+          "PC0_A0",
+          "PC1_A1",
+          "PC2_A2",
+          "PC3_A3",
+          "PC4_A4_SDA",
+          "PC5_A5_SCL",
+          "AVCC",
+          "AREF",
+          "GND2",
+        ],
+      },
+    }}
+    connections={{
+      PC6_RESET: "net.RESET",
+      PD0_RXD: "net.D0_RXD",
+      PD1_TXD: "net.D1_TXD",
+      PD2_D2: "net.D2",
+      PD3_D3_PWM: "net.D3_PWM",
+      PD4_D4: "net.D4",
+      PD5_D5_PWM: "net.D5_PWM",
+      PD6_D6_PWM: "net.D6_PWM",
+      PD7_D7: "net.D7",
+      PB0_D8: "net.D8",
+      PB1_D9_PWM: "net.D9_PWM",
+      PB2_D10_SS: "net.D10_SS",
+      PB3_D11_MOSI: "net.D11_MOSI",
+      PB4_D12_MISO: "net.D12_MISO",
+      PB5_D13_SCK: "net.D13_SCK",
+      PC0_A0: "net.A0",
+      PC1_A1: "net.A1",
+      PC2_A2: "net.A2",
+      PC3_A3: "net.A3",
+      PC4_A4_SDA: "net.A4_SDA",
+      PC5_A5_SCL: "net.A5_SCL",
+      PB6_XTAL1: "net.XTAL1",
+      PB7_XTAL2: "net.XTAL2",
+      VCC: "net.V5",
+      AVCC: "net.V5",
+      AREF: "net.AREF",
+      GND1: "net.GND",
+      GND2: "net.GND",
+    }}
+    {...props}
+  />
+)
+
+export default () => (
+  <board width="100mm" height="70mm" routingDisabled>
+    <Atmega328p name="U1" schX={0} schY={0} pcbX={0} pcbY={0} />
+
+    <pinheader
+      name="J_DIGITAL_LOW"
+      pinCount={8}
+      pinLabels={["D0_RXD", "D1_TXD", "D2", "D3_PWM", "D4", "D5_PWM", "D6_PWM", "D7"]}
+      schX={-10}
+      schY={5}
+      pcbX={-35}
+      pcbY={25}
+      doNotPlace
+      connections={{
+        pin1: "net.D0_RXD",
+        pin2: "net.D1_TXD",
+        pin3: "net.D2",
+        pin4: "net.D3_PWM",
+        pin5: "net.D4",
+        pin6: "net.D5_PWM",
+        pin7: "net.D6_PWM",
+        pin8: "net.D7",
+      }}
+    />
+
+    <pinheader
+      name="J_DIGITAL_HIGH"
+      pinCount={8}
+      pinLabels={["D8", "D9_PWM", "D10_SS", "D11_MOSI", "D12_MISO", "D13_SCK", "GND", "AREF"]}
+      schX={10}
+      schY={5}
+      pcbX={35}
+      pcbY={25}
+      doNotPlace
+      connections={{
+        pin1: "net.D8",
+        pin2: "net.D9_PWM",
+        pin3: "net.D10_SS",
+        pin4: "net.D11_MOSI",
+        pin5: "net.D12_MISO",
+        pin6: "net.D13_SCK",
+        pin7: "net.GND",
+        pin8: "net.AREF",
+      }}
+    />
+
+    <pinheader
+      name="J_ANALOG"
+      pinCount={6}
+      pinLabels={["A0", "A1", "A2", "A3", "A4_SDA", "A5_SCL"]}
+      schX={10}
+      schY={-3}
+      pcbX={35}
+      pcbY={0}
+      doNotPlace
+      connections={{
+        pin1: "net.A0",
+        pin2: "net.A1",
+        pin3: "net.A2",
+        pin4: "net.A3",
+        pin5: "net.A4_SDA",
+        pin6: "net.A5_SCL",
+      }}
+    />
+
+    <pinheader
+      name="J_POWER"
+      pinCount={5}
+      pinLabels={["RESET", "3V3", "5V", "GND", "GND"]}
+      schX={-10}
+      schY={-4}
+      pcbX={-35}
+      pcbY={0}
+      doNotPlace
+      connections={{
+        pin1: "net.RESET",
+        pin2: "net.V3V3",
+        pin3: "net.V5",
+        pin4: "net.GND",
+        pin5: "net.GND",
+      }}
+    />
+
+    <pinheader
+      name="J_ICSP"
+      pinCount={6}
+      pinLabels={["MISO", "5V", "SCK", "MOSI", "RESET", "GND"]}
+      schX={10}
+      schY={-9}
+      pcbX={35}
+      pcbY={-25}
+      doNotPlace
+      connections={{
+        pin1: "net.D12_MISO",
+        pin2: "net.V5",
+        pin3: "net.D13_SCK",
+        pin4: "net.D11_MOSI",
+        pin5: "net.RESET",
+        pin6: "net.GND",
+      }}
+    />
+
+    <resistor
+      name="R_RESET"
+      resistance="10k"
+      footprint="0603"
+      schX={-8}
+      schY={-9}
+      pcbX={-35}
+      pcbY={-18}
+      doNotPlace
+      connections={{ pin1: "net.V5", pin2: "net.RESET" }}
+    />
+    <pushbutton
+      name="SW_RESET"
+      footprint="pushbutton"
+      schX={-10}
+      schY={-11}
+      pcbX={-20}
+      pcbY={-18}
+      doNotPlace
+      connections={{
+        pin1: "net.RESET",
+        pin2: "net.RESET",
+        pin3: "net.GND",
+        pin4: "net.GND",
+      }}
+    />
+
+    <crystal
+      name="Y1"
+      frequency="16MHz"
+      loadCapacitance="18pF"
+      footprint="hc49"
+      schX={-4}
+      schY={-11}
+      pcbX={0}
+      pcbY={-24}
+      doNotPlace
+      connections={{ pin1: "net.XTAL1", pin2: "net.XTAL2" }}
+    />
+    <capacitor
+      name="C_XTAL1"
+      capacitance="22pF"
+      footprint="0603"
+      schX={-2}
+      schY={-13}
+      pcbX={-8}
+      pcbY={-30}
+      doNotPlace
+      connections={{ pin1: "net.XTAL1", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C_XTAL2"
+      capacitance="22pF"
+      footprint="0603"
+      schX={0}
+      schY={-13}
+      pcbX={8}
+      pcbY={-30}
+      doNotPlace
+      connections={{ pin1: "net.XTAL2", pin2: "net.GND" }}
+    />
+
+    <capacitor
+      name="C_AREF"
+      capacitance="100nF"
+      footprint="0603"
+      schX={6}
+      schY={-11}
+      pcbX={18}
+      pcbY={-18}
+      doNotPlace
+      connections={{ pin1: "net.AREF", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C_VCC"
+      capacitance="100nF"
+      footprint="0603"
+      schX={-6}
+      schY={8}
+      pcbX={-18}
+      pcbY={18}
+      doNotPlace
+      connections={{ pin1: "net.V5", pin2: "net.GND" }}
+    />
+
+    <resistor
+      name="R_D13"
+      resistance="330ohm"
+      footprint="0603"
+      schX={6}
+      schY={10}
+      pcbX={12}
+      pcbY={18}
+      doNotPlace
+      connections={{ pin1: "net.D13_SCK", pin2: "net.D13_LED" }}
+    />
+    <led
+      name="D13_LED"
+      color="yellow"
+      footprint="0603"
+      schX={8}
+      schY={10}
+      pcbX={22}
+      pcbY={18}
+      doNotPlace
+      connections={{ pos: "net.D13_LED", neg: "net.GND" }}
+    />
+
+    <resistor
+      name="R_PWR"
+      resistance="1k"
+      footprint="0603"
+      schX={-8}
+      schY={10}
+      pcbX={-35}
+      pcbY={18}
+      doNotPlace
+      connections={{ pin1: "net.V5", pin2: "net.POWER_LED" }}
+    />
+    <led
+      name="PWR_LED"
+      color="green"
+      footprint="0603"
+      schX={-10}
+      schY={10}
+      pcbX={-25}
+      pcbY={18}
+      doNotPlace
+      connections={{ pos: "net.POWER_LED", neg: "net.GND" }}
+    />
+  </board>
+)
+`}
+/>
+
+## What Each Section Does
+
+`U1` is the ATmega328P. The pin labels map the DIP package pins to the names you
+see on Arduino Uno headers, so `PD2_D2` goes to digital pin `D2`,
+`PB5_D13_SCK` goes to `D13`, and `PC4_A4_SDA` plus `PC5_A5_SCL` expose I2C.
+
+`J_DIGITAL_LOW`, `J_DIGITAL_HIGH`, and `J_ANALOG` provide the familiar Arduino
+headers. The `J_ICSP` header exposes `MISO`, `MOSI`, `SCK`, `RESET`, 5 V, and
+ground for ISP programming.
+
+`R_RESET` keeps reset high during normal operation. Pressing `SW_RESET` pulls
+`RESET` low. `Y1`, `C_XTAL1`, and `C_XTAL2` provide the classic 16 MHz Uno clock.
+`C_AREF` decouples the analog reference pin, and `C_VCC` is a local supply
+decoupling capacitor for the microcontroller.
+
+`D13_LED` follows the Uno convention of putting a visible LED on digital pin 13.
+`PWR_LED` lights when the 5 V rail is present.
+
+## Next Steps
+
+This is a schematic foundation. For a real Uno-compatible board, add:
+
+- a 5 V regulator and input protection for `VIN` or barrel jack power
+- a USB-UART bridge or USB-capable companion microcontroller
+- exact through-hole or shield header footprints
+- ESD protection and fuse/current limiting for USB power
+- the exact ATmega328P package and part number you plan to assemble
