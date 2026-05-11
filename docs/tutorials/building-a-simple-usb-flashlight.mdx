@@ -6,14 +6,127 @@ description: Learn how to build a simple USB-powered flashlight circuit using ts
 ## Overview
 
 This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+tscircuit. The circuit uses a USB-C connector for power, a push button to
+control the light, a current-limiting resistor, and a red LED as the light
+source.
 
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
-<TscircuitIframe defaultView="3d" code={`
+## Components
 
+| Component | Name | Description |
+|-----------|------|-------------|
+| USB-C Connector | J1 | Provides 5V (VBUS) power from a USB source |
+| Push Button | SW1 | Momentary switch to turn the LED on/off |
+| Resistor | R1 | 1kΩ current-limiting resistor to protect the LED |
+| LED | LED | Red 0603 SMD LED — the flashlight |
+
+## How the Circuit Works
+
+The USB-C connector supplies **5V (VBUS)** and **GND**. When you press the push
+button (SW1), it connects VBUS through the resistor (R1) to the LED's anode.
+The LED's cathode connects back to GND, completing the circuit and lighting up
+the LED.
+
+```text
+VBUS ──── SW1 (button) ──── R1 (1kΩ) ──── LED (+) ──── LED (-) ──── GND
+```
+
+The 1kΩ resistor limits the current through the LED to a safe level. Without
+it, the LED would draw too much current and burn out.
+
+## Step 1: Add the USB-C Connector
+
+The `SmdUsbC` component from the `@tsci/seveibar.smd-usb-c` package provides a
+surface-mount USB-C connector. We connect both VBUS pins together and both GND
+pins together.
+
+<TscircuitIframe defaultView="schematic" code={`
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
+    </board>
+  )
+}
+`} />
 
+## Step 2: Add the Push Button
+
+The push button (SW1) acts as a switch. Pin 2 connects to VBUS (power in), and
+Pin 1 connects to the positive terminal of the resistor R1.
+
+<TscircuitIframe defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+    </board>
+  )
+}
+`} />
+
+## Step 3: Add the Resistor and LED
+
+The resistor R1 (1kΩ) limits the current through the LED. The LED's negative
+terminal connects to GND. We place them on the PCB with specific Y positions to
+keep the layout tidy.
+
+<TscircuitIframe defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+      <led name="LED" color="red" footprint="0603" pcbY={12} />
+      <trace from=".R1 .neg" to=".LED .pos" />
+      <trace from=".LED .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Final Circuit
+
+Here is the complete USB flashlight circuit with all components placed and
+connected. Switch to the **3D** view to see how the board looks when assembled.
+
+<TscircuitIframe defaultView="3d" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 export default () => {
   return (
    <board width="12mm" height="30mm">
@@ -40,3 +153,12 @@ export default () => {
   )
 }
 `} />
+
+## Next Steps
+
+- Try changing the LED color from `"red"` to `"blue"` or `"green"`.
+- Adjust the resistor value: a lower resistance (e.g., `"470"`) will make the
+  LED brighter; a higher value (e.g., `"2.2k"`) will make it dimmer.
+- Add a second LED in parallel for more light output.
+- Explore the [tscircuit playground](https://tscircuit.com/editor) to
+  experiment with the circuit interactively.
