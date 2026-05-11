@@ -1,0 +1,333 @@
+---
+title: ESP32 Module Reference Schematic
+description: Build a schematic-only ESP32-WROOM module circuit with power, boot, reset, programming, and common IO connections.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+This tutorial builds a schematic-only ESP32-WROOM reference circuit in
+tscircuit. It includes the minimum support wiring most ESP32 module boards need:
+
+- 3.3 V power input and local decoupling
+- `EN` reset pull-up and reset button
+- `IO0` boot-strapping pull-up and boot button
+- UART programming header
+- I2C expansion header
+- simple status LED
+
+Use this as a starting schematic, then swap the generic `<chip />` module for an
+imported JLCPCB or KiCad ESP32 module once you have chosen the exact part number.
+
+## Complete Schematic
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+const ESP32_WROOM_PIN_LABELS = {
+  pin1: "GND1",
+  pin2: "3V3",
+  pin3: "EN",
+  pin4: "SENSOR_VP",
+  pin5: "SENSOR_VN",
+  pin6: "IO34",
+  pin7: "IO35",
+  pin8: "IO32",
+  pin9: "IO33",
+  pin10: "IO25",
+  pin11: "IO26",
+  pin12: "IO27",
+  pin13: "IO14",
+  pin14: "IO12",
+  pin15: "GND2",
+  pin16: "IO13",
+  pin17: "SD2",
+  pin18: "SD3",
+  pin19: "CMD",
+  pin20: "CLK",
+  pin21: "SD0",
+  pin22: "SD1",
+  pin23: "IO15",
+  pin24: "IO2",
+  pin25: "IO0",
+  pin26: "IO4",
+  pin27: "IO16",
+  pin28: "IO17",
+  pin29: "IO5",
+  pin30: "IO18",
+  pin31: "IO19",
+  pin32: "NC",
+  pin33: "IO21",
+  pin34: "RXD0",
+  pin35: "TXD0",
+  pin36: "IO22",
+  pin37: "IO23",
+  pin38: "GND3",
+}
+
+const Esp32Wroom = (props) => (
+  <chip
+    footprint="stampboard_left19_right19_top0_bottom0_w30mm_p2.54mm"
+    doNotPlace
+    pinLabels={ESP32_WROOM_PIN_LABELS}
+    schPinArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: [
+          "3V3",
+          "EN",
+          "SENSOR_VP",
+          "SENSOR_VN",
+          "IO34",
+          "IO35",
+          "IO32",
+          "IO33",
+          "IO25",
+          "IO26",
+          "IO27",
+          "IO14",
+          "IO12",
+          "IO13",
+          "IO0",
+        ],
+      },
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: [
+          "TXD0",
+          "RXD0",
+          "IO23",
+          "IO22",
+          "IO21",
+          "IO19",
+          "IO18",
+          "IO5",
+          "IO17",
+          "IO16",
+          "IO4",
+          "IO2",
+          "IO15",
+          "GND1",
+          "GND2",
+          "GND3",
+        ],
+      },
+    }}
+    connections={{
+      "3V3": "net.V3V3",
+      GND1: "net.GND",
+      GND2: "net.GND",
+      GND3: "net.GND",
+      EN: "net.EN",
+      IO0: "net.BOOT",
+      IO2: "net.STATUS_LED",
+      IO21: "net.I2C_SDA",
+      IO22: "net.I2C_SCL",
+      RXD0: "net.UART_TX",
+      TXD0: "net.UART_RX",
+    }}
+    noConnect={[
+      "SENSOR_VP",
+      "SENSOR_VN",
+      "IO34",
+      "IO35",
+      "SD0",
+      "SD1",
+      "SD2",
+      "SD3",
+      "CMD",
+      "CLK",
+      "NC",
+    ]}
+    {...props}
+  />
+)
+
+export default () => (
+  <board width="90mm" height="60mm" routingDisabled>
+    <Esp32Wroom name="U1" schX={0} schY={0} pcbX={0} pcbY={0} />
+
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pinLabels={["3V3", "GND"]}
+      schX={-8}
+      schY={7}
+      pcbX={-35}
+      pcbY={20}
+      doNotPlace
+      connections={{ pin1: "net.V3V3", pin2: "net.GND" }}
+    />
+
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0805"
+      schX={-4}
+      schY={7}
+      pcbX={-20}
+      pcbY={20}
+      doNotPlace
+      connections={{ pin1: "net.V3V3", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C2"
+      capacitance="100nF"
+      footprint="0603"
+      schX={-2}
+      schY={7}
+      pcbX={-10}
+      pcbY={20}
+      doNotPlace
+      connections={{ pin1: "net.V3V3", pin2: "net.GND" }}
+    />
+
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0603"
+      schX={-6}
+      schY={3.5}
+      pcbX={-30}
+      pcbY={5}
+      doNotPlace
+      connections={{ pin1: "net.V3V3", pin2: "net.EN" }}
+    />
+    <pushbutton
+      name="SW1"
+      footprint="pushbutton"
+      schX={-8}
+      schY={2}
+      pcbX={-30}
+      pcbY={-5}
+      doNotPlace
+      connections={{
+        pin1: "net.EN",
+        pin2: "net.EN",
+        pin3: "net.GND",
+        pin4: "net.GND",
+      }}
+    />
+
+    <resistor
+      name="R2"
+      resistance="10k"
+      footprint="0603"
+      schX={-6}
+      schY={0.5}
+      pcbX={-20}
+      pcbY={5}
+      doNotPlace
+      connections={{ pin1: "net.V3V3", pin2: "net.BOOT" }}
+    />
+    <pushbutton
+      name="SW2"
+      footprint="pushbutton"
+      schX={-8}
+      schY={-1}
+      pcbX={-20}
+      pcbY={-5}
+      doNotPlace
+      connections={{
+        pin1: "net.BOOT",
+        pin2: "net.BOOT",
+        pin3: "net.GND",
+        pin4: "net.GND",
+      }}
+    />
+
+    <pinheader
+      name="J2"
+      pinCount={4}
+      pinLabels={["GND", "3V3", "TX_TO_ESP32", "RX_FROM_ESP32"]}
+      schX={8}
+      schY={4}
+      pcbX={35}
+      pcbY={10}
+      doNotPlace
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3V3",
+        pin3: "net.UART_TX",
+        pin4: "net.UART_RX",
+      }}
+    />
+
+    <pinheader
+      name="J3"
+      pinCount={4}
+      pinLabels={["3V3", "GND", "SDA", "SCL"]}
+      schX={8}
+      schY={-1}
+      pcbX={35}
+      pcbY={-10}
+      doNotPlace
+      connections={{
+        pin1: "net.V3V3",
+        pin2: "net.GND",
+        pin3: "net.I2C_SDA",
+        pin4: "net.I2C_SCL",
+      }}
+    />
+
+    <resistor
+      name="R3"
+      resistance="330ohm"
+      footprint="0603"
+      schX={6}
+      schY={-5}
+      pcbX={10}
+      pcbY={-20}
+      doNotPlace
+      connections={{ pin1: "net.V3V3", pin2: "net.STATUS_LED" }}
+    />
+    <led
+      name="D1"
+      color="blue"
+      footprint="0603"
+      schX={8}
+      schY={-5}
+      pcbX={20}
+      pcbY={-20}
+      doNotPlace
+      connections={{ pos: "net.STATUS_LED", neg: "net.GND" }}
+    />
+  </board>
+)
+`}
+/>
+
+## How The Blocks Fit Together
+
+The ESP32 module runs from `net.V3V3`; do not power the module directly from 5 V.
+The `J1` header exposes a 3.3 V rail for this schematic. In a finished board,
+add a 5 V to 3.3 V regulator if your input source is USB or another 5 V supply.
+
+The two capacitors beside the module handle bulk and high-frequency decoupling.
+Place them close to the module's `3V3` and `GND` pins when you later create the
+PCB layout.
+
+`EN` is pulled up with `R1`. Pressing `SW1` pulls `EN` low and resets the module.
+`IO0` is pulled up with `R2`. Holding `SW2` while resetting the module puts the
+ESP32 into its serial bootloader mode.
+
+`J2` is a simple programming header. Connect the adapter's TX output to
+`TX_TO_ESP32`, which reaches the ESP32 `RXD0` pin. Connect the adapter's RX input
+to `RX_FROM_ESP32`, which reaches the ESP32 `TXD0` pin. Add an auto-reset
+circuit later if you want the USB-UART adapter to drive `EN` and `IO0`
+automatically.
+
+`J3` exposes an I2C bus on `IO21` and `IO22`, a common ESP32 convention. `D1`
+is a status LED on `IO2`; move it to another GPIO if your boot mode or module
+variant reserves that pin.
+
+## Next Steps
+
+After the schematic compiles, replace the generic `Esp32Wroom` wrapper with the
+exact ESP32 module package you plan to buy. You can use
+[Importing from JLCPCB](/guides/importing-modules-and-chips/importing-from-jlcpcb)
+to import a stocked part, then keep the same nets and support circuitry.
+
+When turning this into a PCB, keep the ESP32 antenna end clear of copper, planes,
+and board outlines as recommended by the module datasheet.
