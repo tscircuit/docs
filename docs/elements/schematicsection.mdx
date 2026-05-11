@@ -1,0 +1,77 @@
+---
+title: <schematicsection />
+description: >-
+  Group schematic components into labeled regions with automatic dividing lines.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<schematicsection />` groups schematic components into named, labeled regions. Each section draws a bounding box around its member components and renders a display label. When multiple sections exist, automatic dividing lines separate them.
+
+Components opt in to a section by setting `schSectionName` to match the section's `name` prop.
+
+## Basic Example
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="30mm" height="30mm" routingDisabled>
+    <schematicsection name="power" displayName="Power" />
+    <schematicsection name="filter" displayName="Filter" />
+    <schematicsection name="logic" displayName="Logic" />
+    <schematicsection name="output" displayName="Output" />
+
+    {/* top-left */}
+    <capacitor name="C1" capacitance="100uF" footprint="0805" schX={-4} schY={3} schSectionName="power" />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" schX={-2} schY={3} schSectionName="power" />
+
+    {/* top-right */}
+    <resistor name="R1" resistance="10k" footprint="0402" schX={2} schY={3} schSectionName="filter" />
+    <capacitor name="C3" capacitance="10nF" footprint="0402" schX={4} schY={3} schSectionName="filter" />
+
+    {/* bottom-left */}
+    <chip
+      name="U1"
+      footprint="soic8"
+      schX={-3}
+      schY={-2}
+      schSectionName="logic"
+      pinLabels={{ pin1: "GND", pin2: "IN", pin3: "OUT", pin4: "EN", pin5: "NC", pin6: "NC", pin7: "NC", pin8: "VCC" }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["VCC", "EN", "IN", "GND"] },
+        rightSide: { direction: "top-to-bottom", pins: ["OUT", "NC", "NC", "NC"] },
+      }}
+    />
+
+    {/* bottom-right */}
+    <resistor name="R2" resistance="330" footprint="0402" schX={3} schY={-1} schSectionName="output" />
+    <led name="LED1" color="red" footprint="0603" schX={3} schY={-3} schSectionName="output" />
+  </board>
+)
+`} />
+
+## Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `string` | Yes | Identifier matched by `schSectionName` on member components |
+| `displayName` | `string` | No | Label rendered in the top-left corner of the section region |
+
+## Component `schSectionName`
+
+Any component that accepts schematic position props also accepts `schSectionName`. Set it to the `name` of a `<schematicsection />` declared in the same board to include that component in the section.
+
+```tsx
+<resistor
+  name="R1"
+  resistance="1k"
+  footprint="0402"
+  schSectionName="power"
+/>
+```
+
