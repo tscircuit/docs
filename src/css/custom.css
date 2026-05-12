@@ -853,6 +853,7 @@ article h4 {
 
 /* Force center all documentation content */
 .col:not(.col--3) {
+  flex: 0 1 auto !important;
   max-width: 1000px !important;
   margin-left: auto !important;
   margin-right: auto !important;
