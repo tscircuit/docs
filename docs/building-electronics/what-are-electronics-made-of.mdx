@@ -58,7 +58,7 @@ the top layer can pass to the bottom.
 <figcaption>Vias connect different layers of a PCB</figcaption> 
 </figure>
 
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
 
 
 export default () => (
@@ -85,7 +85,7 @@ holes. Chips with big pins that must go through holes are called "through-hole"
 chips, and chips with small
 pins are called "surface-mount" chips.
 
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
 
 export default () => (
   <board width="2mm" height="2mm">
@@ -109,7 +109,7 @@ Unplated holes or "regular holes" are just holes in the printed circuit board
 without any copper around them. They don't electrically connect anything, but
 can be very helpful for mounting the printed circuit board.
 
-<CircuitPreview defaultView="pcb" code={`
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
 
 export default () => (
   <board width="2mm" height="2mm">
