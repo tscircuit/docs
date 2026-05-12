@@ -1,0 +1,215 @@
+---
+title: Draw Any Letter with LEDs
+description: Build a reusable LedLetter component that places LEDs in an A-Z letter pattern.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial builds a reusable `LedLetter` component that turns any capital
+letter from `A` to `Z` into a small LED sign. The component uses a 5x7 bitmap
+font, lays the LEDs out with simple row and column math, and gives every LED its
+own current-limiting resistor.
+
+<CircuitPreview
+  splitView={false}
+  defaultView="pcb"
+  code={`
+type LedFootprint = "0402" | "0603"
+
+type LedLetterProps = {
+  name?: string
+  letter: string
+  power?: string
+  gnd?: string
+  ledFootprint?: LedFootprint
+  ledSpacing?: number
+  resistance?: string
+  pcbX?: number
+  pcbY?: number
+  schX?: number
+  schY?: number
+}
+
+type Pixel = {
+  row: number
+  col: number
+}
+
+const LED_FONT: Record<string, string[]> = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  G: ["01111", "10000", "10000", "10011", "10001", "10001", "01110"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  J: ["00111", "00010", "00010", "00010", "10010", "10010", "01100"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+  Q: ["01110", "10001", "10001", "10001", "10101", "10010", "01101"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+  W: ["10001", "10001", "10001", "10101", "10101", "10101", "01010"],
+  X: ["10001", "10001", "01010", "00100", "01010", "10001", "10001"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  Z: ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
+}
+
+const getLitPixels = (letter: string): Pixel[] => {
+  const normalizedLetter = letter.toUpperCase()
+  const rows = LED_FONT[normalizedLetter]
+
+  if (!rows) {
+    throw new Error("LedLetter supports one capital letter from A to Z.")
+  }
+
+  const pixels: Pixel[] = []
+
+  rows.forEach((rowPattern, row) => {
+    rowPattern.split("").forEach((value, col) => {
+      if (value === "1") {
+        pixels.push({ row, col })
+      }
+    })
+  })
+
+  return pixels
+}
+
+export const LedLetter = ({
+  name,
+  letter,
+  power = "net.VLED",
+  gnd = "net.GND",
+  ledFootprint = "0603",
+  ledSpacing = 2.4,
+  resistance = "1k",
+  pcbX = 0,
+  pcbY = 0,
+  schX = 0,
+  schY = 0,
+}: LedLetterProps) => {
+  const normalizedLetter = letter.toUpperCase()
+  const pixels = getLitPixels(normalizedLetter)
+  const namePrefix = (name ?? normalizedLetter).replace(/[^A-Za-z0-9_]/g, "_")
+  const ledOffset = ledSpacing * 0.22
+  const resistorOffset = ledSpacing * 0.22
+
+  return (
+    <group name={"LED_LETTER_" + namePrefix}>
+      {pixels.map((pixel, index) => {
+        const ledName = "D_" + namePrefix + "_" + (index + 1)
+        const resistorName = "R_" + namePrefix + "_" + (index + 1)
+        const groupName = "PIXEL_" + namePrefix + "_" + (index + 1)
+        const x = pcbX + (pixel.col - 2) * ledSpacing
+        const y = pcbY + (3 - pixel.row) * ledSpacing
+        const schematicCol = Math.floor(index / 7)
+        const schematicRow = index % 7
+        const pairSchX = schX + schematicCol * 2.5
+        const pairSchY = schY - schematicRow * 1.15
+
+        return (
+          <group name={groupName}>
+            <resistor
+              name={resistorName}
+              resistance={resistance}
+              footprint={ledFootprint}
+              pcbX={x - resistorOffset}
+              pcbY={y}
+              schX={pairSchX}
+              schY={pairSchY}
+            />
+            <led
+              name={ledName}
+              color="red"
+              footprint={ledFootprint}
+              pcbX={x + ledOffset}
+              pcbY={y}
+              schX={pairSchX + 1.05}
+              schY={pairSchY}
+            />
+            <trace from={power} to={"." + resistorName + " .pos"} />
+            <trace from={"." + resistorName + " .neg"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={gnd} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="24mm" height="28mm">
+    <LedLetter letter="A" power="net.VLED" gnd="net.GND" />
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pitch="2.54mm"
+      footprint="pinrow2_p2.54"
+      pinLabels={["VLED", "GND"]}
+      showSilkscreenPinLabels
+      pcbX={0}
+      pcbY={-11}
+      schX={-4}
+      schY={1}
+    />
+    <trace from=".J1 .VLED" to="net.VLED" />
+    <trace from=".J1 .GND" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+## How It Works
+
+`LED_FONT` stores every capital letter as seven rows of five characters. A `1`
+means "place an LED here", and a `0` means "leave this position empty".
+
+The component turns each lit pixel into one LED and one resistor:
+
+- `pixel.col` controls the horizontal PCB position.
+- `pixel.row` controls the vertical PCB position.
+- `index` controls the schematic position so the repeated LED/resistor pairs are
+  laid out in neat columns.
+
+Each LED has its own resistor connected from the positive rail to the LED anode.
+This keeps the brightness more consistent than sharing one resistor across the
+whole letter.
+
+## Use the Component
+
+The component accepts the same power and ground net names that the rest of your
+circuit uses:
+
+```tsx
+<LedLetter letter="A" power="net.power" gnd="net.gnd" />
+```
+
+Use a smaller footprint when you want a denser letter:
+
+```tsx
+<LedLetter letter="B" ledFootprint="0402" ledSpacing={1.8} />
+```
+
+Place several letters side by side by giving each one a unique `name` and a
+different `pcbX` position:
+
+```tsx
+<LedLetter name="LEFT_T" letter="T" pcbX={-14} />
+<LedLetter name="CENTER_S" letter="S" pcbX={0} />
+<LedLetter name="RIGHT_C" letter="C" pcbX={14} />
+```
+
+For a manufactured board, add mounting holes, a connector, and enough spacing
+around the LEDs for your enclosure or diffuser.
