@@ -5,10 +5,142 @@ description: Learn how to build a simple USB-powered flashlight circuit using ts
 
 ## Overview
 
-This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+This tutorial walks you through a minimal **USB-powered flashlight**: 5 V from a USB-C receptacle, a tactile switch in series with a **current-limiting resistor** and a **red LED**, all the way back to ground.
 
+You will:
+
+- Place a small **board** and a **USB-C** connector (`SmdUsbC`)
+- Add a **momentary pushbutton** so the LED only lights while you press the switch
+- Size a **1 kΩ** resistor to limit LED current
+- Route **traces** between nets and component pins
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) or [Bun](https://bun.sh/)
+- The [CLI quickstart](/intro/quickstart-cli) (`tsci`) if you want to run the same code locally
+
+## Parts
+
+| Role            | Component / module                          | Notes                                      |
+| --------------- | ------------------------------------------- | ------------------------------------------ |
+| USB power input | `SmdUsbC` from `@tsci/seveibar.smd-usb-c`   | Brings `VBUS` (~5 V) and `GND` to the nets |
+| Switch          | `pushbutton` (`footprint="pushbutton"`)     | Normally open; press to complete the path  |
+| Current limit   | `resistor` `0603` **1 kΩ**                  | In series with the LED                     |
+| Indicator       | `led` `0603` **red**                        | Forward biased when the loop is closed     |
+| Substrate       | `<board width="12mm" height="30mm">`      | Matches the compact layout in the preview |
+
+## How the circuit works
+
+1. **USB-C** exposes `VBUS` and `GND` as named nets (`net.VBUS`, `net.GND`).
+2. One side of the **pushbutton** sits on `net.VBUS`. The other side connects to the **positive** end of the resistor (`R1`).
+3. **R1** limits current into the **LED anode** (positive side). The LED **cathode** returns to `net.GND`.
+4. When you **release** the button, the series path opens and the LED turns off.
+
+## Step 1 — Board outline and USB-C
+
+Start with a board and the USB connector. The `connections` prop ties both `GND` pads and both `VBUS` pads to the same nets so later traces can use `net.VBUS` / `net.GND`.
+
+<TscircuitIframe defaultView="pcb" code={`
+
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+   <board width="12mm" height="30mm">
+      <SmdUsbC
+      name="J1"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbY={-10}
+      schX={-4}
+    />
+    </board>
+  )
+}
+`} />
+
+## Step 2 — Add the switch, resistor, LED, and traces
+
+- **`pushbutton`**: `pin2` goes to `net.VBUS`. `pin1` connects to the **positive** side of `R1` (the resistor’s current enters from the switch).
+- **`resistor` R1**: `1 kΩ` is a safe starting value for a small red LED on 5 V.
+- **`led`**: `0603` red package.
+- **`trace` elements**: connect `R1` negative → LED positive, and LED negative → `net.GND`.
+
+<TscircuitIframe defaultView="schematic" code={`
+
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+   <board width="12mm" height="30mm">
+      <SmdUsbC
+      name="J1"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbY={-10}
+      schX={-4}
+    />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+      <led name="LED" color="red" footprint="0603" pcbY={12} />
+     
+      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+      <trace from=".R1 .neg" to=".LED .pos" />
+      <trace from=".LED .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Schematic (full circuit)
+
+Use the **Schematic** tab to read the same net names and pin labels as in the code.
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+   <board width="12mm" height="30mm">
+      <SmdUsbC
+      name="J1"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbY={-10}
+      schX={-4}
+    />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+      <led name="LED" color="red" footprint="0603" pcbY={12} />
+      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+      <trace from=".R1 .neg" to=".LED .pos" />
+      <trace from=".LED .neg" to="net.GND" />
+    </board>
+  )
+}
+`}
+/>
+
+## Step 3 — 3D view and layout check
+
+Open the **3D** tab to inspect the finished board: USB connector at the top edge, switch near the center, LED toward the bottom.
 
 <TscircuitIframe defaultView="3d" code={`
 
@@ -40,3 +172,15 @@ export default () => {
   )
 }
 `} />
+
+## Try it locally
+
+1. `tsci init` a new project (or open the [tscircuit web editor](https://tscircuit.com/editor)).
+2. Paste the **default export** from the snippets above into `index.tsx`.
+3. Run `tsci dev` and toggle the **schematic**, **PCB**, and **3D** tabs while you edit placement (`pcbX`, `pcbY`, `schX`, …).
+
+## Next steps
+
+- Export **Gerbers** and order a test board using [Ordering prototypes](/building-electronics/ordering-prototypes).
+- Swap the LED color or resistor value and watch brightness change (stay within your LED’s forward voltage / current ratings).
+- Compare with the longer walkthrough style in [Building a 3x5 LED Matrix](./building-led-matrix.mdx) if you want routing practice on a larger board.
