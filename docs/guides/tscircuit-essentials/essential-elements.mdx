@@ -18,7 +18,7 @@ get started building electronics!
 | Element                                      | Description                                                                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | [`<board />`](../../elements/board.mdx)         | The root element of a circuit, defines the size of the board and settings like the autorouting method that should be used |
-| [`<chip />`](../../elements/chip.mdx)           | A packaged integrated circuit (IC).                                                                                       |
+| [`<chip />`](../../elements/chip.mdx)           | A packaged integrated circuit (IC). The most versatile and important element — see the comprehensive section below.       |
 | [`<trace />`](../../elements/trace.mdx)         | Represents a connection between different chips.                                                                          |
 | [`<led />`](../../elements/led.mdx)             | Light emitting diode, a small light often used to represent power or status indicators                                    |
 | [`<resistor />`](../../elements/resistor.mdx)   | Resists the flow of electrical current.                                                                                   |
@@ -42,7 +42,16 @@ export default () => (
 
 ### [`<chip />`](../../elements/chip.mdx)
 
-The `<chip />` element is the most versatile component in tscircuit - it can represent virtually any packaged electronic component. You specify a footprint and pin labels, and can customize how it appears in both schematic and PCB views. Here's a simple example:
+The `<chip />` element is the most versatile and important component in
+tscircuit — it can represent virtually any packaged electronic component:
+ICs, connectors, buttons, crystal oscillators, and more. You specify a
+footprint and pin labels, and tscircuit automatically generates the
+schematic symbol and PCB footprint.
+
+**Why `<chip />` is the most important element:** Most of the components
+you'll use in real designs — microcontrollers, sensors, voltage regulators,
+connectors — are all represented as `<chip />` elements. Mastering `<chip />`
+is key to being productive with tscircuit.
 
 <CircuitPreview defaultView="schematic" code={`
 export default () => (
@@ -64,5 +73,187 @@ export default () => (
     </board>
 )`} />
 
-You can control pin arrangements, add custom footprints, specify internally connected pins, and more. The `<chip />` element is commonly used for ICs, connectors, buttons, and other discrete components.
+**Key chip features:**
+
+- **Any footprint**: Use any JLCPCB part number or footprint string (`soic8`,
+  `tssop20`, `qfn32`, `0805`, etc.)
+- **Custom pin arrangements**: Control which side pins appear on in the
+  schematic with `pinSideMap` or `schematicPinArrangement`
+- **Internally connected pins**: Use `internallyConnectedPins` to tell the
+  autorouter which pins are connected inside the chip
+- **Pin labels**: Set `pinLabels` for beautiful schematic symbols. Prefix
+  with `N_` for active-low pins (e.g. `N_RESET` renders RESET with a bar)
+- **Schematic orientation**: Rotate or flip the schematic symbol with
+  `schematicRotation` and `schematicFlip`
+
+For a deep dive, see the full [`<chip />` documentation](../../elements/chip.mdx).
+
+### [`<trace />`](../../elements/trace.mdx)
+
+Traces are the electrical connections between components. Traces can be
+created by simply connecting a pin to a net, or you can create a trace
+that has a specific path through `pcbTraceProps`.
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+    <board width="12mm" height="10mm">
+      <chip name="U1" footprint="soic8"
+        pinLabels={{ pin1: "VCC", pin2: "", pin3: "", pin4: "",
+                      pin5: "GND", pin6: "", pin7: "", pin8: "OUT" }} />
+      <resistor name="R1" resistance="10k" footprint="0805" pcbX={3} />
+      <trace from=".U1 > .pin8" to=".R1 > .pin1" />
+    </board>
+)`
+} />
+
+### [`<led />`](../../elements/led.mdx)
+
+Light Emitting Diodes (LEDs) are small lights commonly used as power
+indicators, status displays, or decorative elements. tscircuit supports
+standard LEDs through the `<led />` element.
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+    <board width="10mm" height="10mm">
+      <led name="LED1" footprint="0805" />
+    </board>
+)`
+} />
+
+### [`<resistor />`](../../elements/resistor.mdx)
+
+Resistors limit the flow of electrical current. They're one of the most
+fundamental electronic components, used for current limiting, voltage
+division, and pull-up/pull-down configurations.
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+    <board width="10mm" height="10mm">
+      <resistor name="R1" resistance="10k" footprint="0805" />
+    </board>
+)`
+} />
+
+### [`<capacitor />`](../../elements/capacitor.mdx)
+
+Capacitors store and release electrical charge. They're commonly used for
+power supply decoupling, signal filtering, and timing circuits. The
+`<capacitor />` element accepts a capacitance value in farads.
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+    <board width="10mm" height="10mm">
+      <capacitor name="C1" capacitance="0.1uF" footprint="0805" />
+    </board>
+)`
+} />
+
+### [`<diode />`](../../elements/diode.mdx)
+
+Diodes allow current to flow in one direction only. They're essential for
+rectification, reverse polarity protection, and flyback suppression.
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+    <board width="10mm" height="10mm">
+      <diode name="D1" footprint="sod123" />
+    </board>
+)`
+} />
+
+## All Available Elements
+
+tscircuit ships with a comprehensive library of built-in elements. Here's the
+complete list organized by category:
+
+### Passives
+| Element | Description |
+|---|---|
+| [`<resistor />`](../../elements/resistor.mdx) | Current-limiting resistor |
+| [`<capacitor />`](../../elements/capacitor.mdx) | Charge-storing capacitor |
+| [`<inductor />`](../../elements/inductor.mdx) | Magnetic field inductor |
+| [`<diode />`](../../elements/diode.mdx) | One-way current flow |
+| [`<led />`](../../elements/led.mdx) | Light emitting diode |
+| [`<fuse />`](../../elements/fuse.mdx) | Overcurrent protection |
+| [`<potentiometer />`](../../elements/potentiometer.mdx) | Variable resistor |
+| [`<crystal />`](../../elements/crystal.mdx) | Quartz crystal oscillator |
+| [`<resonator />`](../../elements/resonator.mdx) | Ceramic resonator |
+| [`<battery />`](../../elements/battery.mdx) | Battery power source |
+| [`<pushbutton />`](../../elements/pushbutton.mdx) | Momentary push button |
+| [`<switch />`](../../elements/switch.mdx) | Toggle switch |
+| [`<solderjumper />`](../../elements/solderjumper.mdx) | Solder bridge jumper |
+
+### Semiconductors
+| Element | Description |
+|---|---|
+| [`<chip />`](../../elements/chip.mdx) | **Most important** — any packaged component |
+| [`<mosfet />`](../../elements/mosfet.mdx) | MOSFET transistor |
+| [`<transistor />`](../../elements/transistor.mdx) | BJT transistor |
+
+### Connectivity
+| Element | Description |
+|---|---|
+| [`<trace />`](../../elements/trace.mdx) | PCB trace connection |
+| [`<net />`](../../elements/net.mdx) | Named electrical net |
+| [`<netlabel />`](../../elements/netlabel.mdx) | Net label for schematics |
+| [`<port />`](../../elements/port.mdx) | Circuit port/interface |
+| [`<pinheader />`](../../elements/pinheader.mdx) | Pin header connector |
+| [`<connector />`](../../elements/connector.mdx) | Generic connector |
+| [`<via />`](../../elements/via.mdx) | PCB via between layers |
+| [`<jumper />`](../../elements/jumper.mdx) | Wire jumper |
+| [`<testpoint />`](../../elements/testpoint.mdx) | Test point pad |
+
+### PCB Features
+| Element | Description |
+|---|---|
+| [`<board />`](../../elements/board.mdx) | Board outline and settings |
+| [`<hole />`](../../elements/hole.mdx) | Mounting or via hole |
+| [`<cutout />`](../../elements/cutout.mdx) | Board cutout |
+| [`<copperpour />`](../../elements/copperpour.mdx) | Copper fill zone |
+| [`<coppertext />`](../../elements/coppertext.mdx) | Text rendered in copper |
+| [`<footprint />`](../../elements/footprint.mdx) | Custom PCB footprint |
+| [`<fiducial />`](../../elements/fiducial.mdx) | Fiducial marker |
+| [`<breakout />`](../../elements/breakout.mdx) | Breakout tab |
+| [`<breakoutpoint />`](../../elements/breakoutpoint.mdx) | Breakout connection point |
+
+### CAD / 3D
+| Element | Description |
+|---|---|
+| [`<cadmodel />`](../../elements/cadmodel.mdx) | STEP/3D model attachment |
+| [`<cadassembly />`](../../elements/cadassembly.mdx) | Multi-part CAD assembly |
+
+### Schematic Drawing
+| Element | Description |
+|---|---|
+| [`<schematicbox />`](../../elements/schematicrect.mdx) | Schematic rectangle |
+| [`<schematicline />`](../../elements/schematicline.mdx) | Schematic line |
+| [`<schematicpath />`](../../elements/schematicpath.mdx) | Schematic path |
+| [`<schematictext />`](../../elements/schematictext.mdx) | Schematic text label |
+| [`<schematiccircle />`](../../elements/schematiccircle.mdx) | Schematic circle |
+| [`<schematicarc />`](../../elements/schematicarc.mdx) | Schematic arc |
+| [`<schematicsection />`](../../elements/schematicsection.mdx) | Schematic section divider |
+| [`<schematictable />`](../../elements/schematictable.mdx) | Schematic table |
+| [`<courtyardrect />`](../../elements/courtyardrect.mdx) | Courtyard rectangle |
+| [`<courtyardcircle />`](../../elements/courtyardcircle.mdx) | Courtyard circle |
+| [`<courtyardoutline />`](../../elements/courtyardoutline.mdx) | Courtyard outline |
+
+### PCB Drawing
+| Element | Description |
+|---|---|
+| [`<pcbnoteline />`](../../elements/pcbnoteline.mdx) | PCB silkscreen line |
+| [`<pcbnotepath />`](../../elements/pcbnotepath.mdx) | PCB silkscreen path |
+| [`<pcbnoterect />`](../../elements/pcbnoterect.mdx) | PCB silkscreen rectangle |
+| [`<pcbnotetext />`](../../elements/pcbnotetext.mdx) | PCB silkscreen text |
+| [`<pcbnotedimension />`](../../elements/pcbnotedimension.mdx) | PCB dimension marker |
+
+### Structure & Simulation
+| Element | Description |
+|---|---|
+| [`<group />`](../../elements/group.mdx) | Group elements together |
+| [`<subcircuit />`](../../elements/subcircuit.mdx) | Reusable subcircuit |
+| [`<symbol />`](../../elements/symbol.mdx) | Custom schematic symbol |
+| [`<voltageprobe />`](../../elements/voltageprobe.mdx) | Voltage measurement point |
+| [`<voltagesource />`](../../elements/voltagesource.mdx) | Simulation voltage source |
+| [`<analogsimulation />`](../../elements/analogsimulation.mdx) | Analog simulation config |
+| [`<autoroutingphase />`](../../elements/autoroutingphase.mdx) | Autorouting phase config |
 
