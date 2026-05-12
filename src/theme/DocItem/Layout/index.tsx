@@ -56,7 +56,19 @@ export default function DocItemLayout({ children }: Props): ReactNode {
             <div className={styles.docItemWithButton}>
               <DocItemContent>
                 <div className={styles.contentHeader}>
-                  <CopyPageButton />
+                  <div className={styles.contentHeaderActions}>
+                    {metadata.editUrl && (
+                      <a
+                        className={styles.editPageLink}
+                        href={metadata.editUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Edit page
+                      </a>
+                    )}
+                    <CopyPageButton />
+                  </div>
                 </div>
                 {children}
               </DocItemContent>
