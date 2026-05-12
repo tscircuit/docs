@@ -1,0 +1,136 @@
+---
+title: Overview of Tools
+sidebar_position: 6
+description: Explore the user-facing tools in the tscircuit ecosystem — CLI, viewers, converters, and APIs.
+---
+
+tscircuit is not just one tool — it's an ecosystem of libraries, viewers, and
+services that work together to help you design, preview, and manufacture
+circuit boards. This page gives an overview of each user-facing tool and where
+to find it.
+
+## CLI (`tsci`)
+
+The **tscircuit CLI** (`tsci`) is the primary development tool. It provides a
+local development server, build commands, package management, and export
+capabilities.
+
+- **Package:** `@tscircuit/cli`
+- **Repo:** [tscircuit/cli](https://github.com/tscircuit/cli)
+
+```bash
+tsci init my-project    # Start a new tscircuit project
+tsci dev                # Start a local dev server with hot reload
+tsci build              # Generate circuit JSON from source files
+tsci export             # Export to KiCad, Gerber, and other formats
+tsci install @tsci/seveibar.push-button  # Install a component package
+```
+
+See the [Command Line](/command-line) section for full documentation of every
+`tsci` command.
+
+## Core
+
+**`@tscircuit/core`** is the engine that compiles React/TypeScript circuit code
+into Circuit JSON. Every `tsci` project depends on it, and it powers the
+schematic and PCB generation pipeline.
+
+- **Package:** `@tscircuit/core`
+- **Repo:** [tscircuit/core](https://github.com/tscircuit/core)
+
+## Runframe
+
+**Runframe** is a React component that runs tscircuit code inside a web worker.
+It renders schematics, PCB layouts, and 3D views directly in the browser
+without needing a backend.
+
+- **Package:** `@tscircuit/runframe`
+- **Repo:** [tscircuit/runframe](https://github.com/tscircuit/runframe)
+- **Site:** [runframe.tscircuit.com](https://runframe.tscircuit.com)
+
+Runframe is what powers the inline circuit previews you see throughout these
+docs and on [tscircuit.com/editor](https://tscircuit.com/editor).
+
+## PCB Viewer
+
+A React component for viewing PCB layouts rendered from Circuit JSON. Supports
+pan, zoom, layer toggling, and component selection.
+
+- **Package:** `@tscircuit/pcb-viewer`
+- **Repo:** [tscircuit/pcb-viewer](https://github.com/tscircuit/pcb-viewer)
+- **Demo:** [pcb-viewer.vercel.app](https://pcb-viewer.vercel.app)
+
+```tsx
+import { PCBViewer } from "@tscircuit/pcb-viewer"
+
+<PCBViewer circuitJson={myCircuitJson} />
+```
+
+## 3D Viewer
+
+A React component that renders a 3D preview of your circuit board. Essential
+for visualizing the final product before manufacturing.
+
+- **Package:** `@tscircuit/3d-viewer`
+- **Repo:** [tscircuit/3d-viewer](https://github.com/tscircuit/3d-viewer)
+- **Demo:** [tscircuit-3d-viewer.vercel.app](https://tscircuit-3d-viewer.vercel.app)
+
+```tsx
+import { CADViewer } from "@tscircuit/3d-viewer"
+
+<CADViewer circuitJson={myCircuitJson} />
+```
+
+## Circuit JSON
+
+**Circuit JSON** is the low-level circuit representation format that all
+tscircuit tools understand. Think of it as the "assembly language" for
+tscircuit circuits — every React component compiles down to Circuit JSON,
+and every viewer reads Circuit JSON as input.
+
+- **Package:** `@tscircuit/circuit-json`
+- **Repo:** [tscircuit/circuit-json](https://github.com/tscircuit/circuit-json)
+- **Spec:** [circuitjson.com](https://circuitjson.com)
+
+## Circuit-to-SVG
+
+Converts Circuit JSON into schematic, PCB, and assembly SVGs. Useful for
+generating documentation images, sharing designs, or embedding circuit
+previews.
+
+- **Package:** `@tscircuit/circuit-to-svg`
+- **Repo:** [tscircuit/circuit-to-svg](https://github.com/tscircuit/circuit-to-svg)
+
+## EasyEDA Converter
+
+A command-line utility that converts EasyEDA (JLCPCB) PCB footprints into
+tscircuit-compatible Circuit JSON. This lets you reuse the massive library
+of JLCPCB parts in your tscircuit projects.
+
+- **Package:** `@tscircuit/easyeda-converter`
+- **Repo:** [tscircuit/easyeda-converter](https://github.com/tscircuit/easyeda-converter)
+
+```bash
+npx @tscircuit/easyeda-converter --part "C12345" > footprint.json
+```
+
+## Autorouting API
+
+tscircuit provides a web-based autorouting service at
+[autorouting.com](https://autorouting.com) that automatically routes traces
+on your PCB. The [Autorouting API](/web-apis/autorouting-api) lets you submit
+Circuit JSON and receive routed PCB layouts programmatically.
+
+## DSN Converter
+
+Converts Circuit JSON to Spectra DSN format for use with external autorouters.
+
+- **Package:** `@tscircuit/dsn-converter`
+- **Repo:** [tscircuit/dsn-converter](https://github.com/tscircuit/dsn-converter)
+
+---
+
+Each of these tools is open-source and lives under the
+[tscircuit GitHub organization](https://github.com/tscircuit). If you want to
+contribute, check out the [Contributing](/contributing/getting-started-as-a-contributor)
+section.
