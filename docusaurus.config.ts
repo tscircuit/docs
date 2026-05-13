@@ -179,8 +179,8 @@ const config: Config = {
         },
         { to: "https://blog.tscircuit.com", label: "Blog", position: "left" },
         {
-          to: "https://tscircuit.com",
-          label: "Use Online",
+          to: "https://tscircuit.com/editor",
+          label: "Try Online",
           position: "left",
         },
 
