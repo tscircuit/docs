@@ -1,0 +1,75 @@
+---
+title: Ecosystem Tools
+description: Choose the right tscircuit editor, CLI, viewer, converter, API, or package for your project
+sidebar_position: 5
+---
+
+tscircuit is built around one workflow: write electronics in TypeScript/React,
+compile the design into [Circuit JSON](https://github.com/tscircuit/circuit-json),
+then preview, route, export, publish, or embed that circuit data.
+
+Use this page when you are deciding which tscircuit tool to open, install, or
+build with.
+
+## Core workflow
+
+1. Write a circuit with tscircuit elements.
+2. Compile it into Circuit JSON.
+3. Preview the schematic, PCB, and 3D board.
+4. Autoroute traces, export fabrication files, or publish reusable packages.
+
+## Main user-facing tools
+
+| Tool | Use it for | Start here |
+| --- | --- | --- |
+| [tscircuit.com](https://tscircuit.com) | Creating, editing, previewing, sharing, and discovering circuits in the browser. | [Quickstart Web](./quickstart-web.md) |
+| [tscircuit Registry](https://tscircuit.com/trending) | Finding and publishing reusable circuit packages and snippets. | [Registry API](../web-apis/the-registry-api.md) |
+| [`tsci` CLI](https://github.com/tscircuit/cli) | Creating local projects, running a preview server, importing parts, exporting files, and pushing packages. | [Quickstart CLI](./quickstart-cli.md) |
+| [`@tscircuit/core`](https://github.com/tscircuit/core) | Turning React/TypeScript circuit components into Circuit JSON from your own scripts or apps. | [Programmatically building circuits](../guides/running-tscircuit/programmatically-building-circuits.md) |
+| [Circuit JSON](https://github.com/tscircuit/circuit-json) | Moving circuit data between compilers, viewers, autorouters, converters, and exporters. | [Displaying Circuit JSON on a webpage](../guides/running-tscircuit/displaying-circuit-json-on-a-webpage.mdx) |
+| [RunFrame](https://github.com/tscircuit/runframe) | Embedding a runnable tscircuit environment with schematic, PCB, and 3D previews. | [Running tscircuit inside an iframe](../guides/running-tscircuit/running-tscircuit-inside-an-iframe.mdx) |
+| [PCB Viewer](https://github.com/tscircuit/pcb-viewer) | Rendering interactive PCB previews from Circuit JSON. | [Displaying Circuit JSON on a webpage](../guides/running-tscircuit/displaying-circuit-json-on-a-webpage.mdx) |
+| [Schematic Viewer](https://github.com/tscircuit/schematic-viewer) | Rendering schematic previews from Circuit JSON. | [Displaying Circuit JSON on a webpage](../guides/running-tscircuit/displaying-circuit-json-on-a-webpage.mdx) |
+| [3D Viewer](https://github.com/tscircuit/3d-viewer) | Rendering 3D board previews and model output. | [`tsci export`](../command-line/tsci-export.md) |
+| [Autorouting](https://github.com/tscircuit/tscircuit-autorouter) | Automatically routing PCB traces from circuit data. | [Autorouting API](../web-apis/autorouting-api.mdx) |
+| [autorouting.com](https://autorouting.com/autorouters) | Comparing and benchmarking autorouters. | [autorouting.com](https://autorouting.com/autorouters) |
+
+## Viewers and embeds
+
+Use viewers when you already have tscircuit code or Circuit JSON and want to
+show the result in a web interface.
+
+- Use RunFrame when you want a complete browser runtime that can execute
+  tscircuit code and show multiple preview panes.
+- Use PCB Viewer when your app needs a focused board layout view.
+- Use Schematic Viewer when your app needs a focused schematic view.
+- Use 3D Viewer when your app needs a 3D preview or 3D export workflow.
+- Use the iframe integration when you want to embed tscircuit examples without
+  setting up a full React build.
+
+## Converters and exporters
+
+Converters move existing design data into tscircuit. Exporters move tscircuit
+designs into manufacturing, CAD, or other EDA workflows.
+
+| Workflow | Use it for | Start here |
+| --- | --- | --- |
+| JLCPCB and EasyEDA imports | Finding parts, footprints, and 3D models from JLCPCB/LCSC data. | [Importing from JLCPCB](../guides/importing-modules-and-chips/importing-from-jlcpcb.mdx) |
+| KiCad imports | Bringing existing KiCad projects into the tscircuit data model. | [Importing from KiCad](../guides/importing-modules-and-chips/importing-from-kicad.md) |
+| Circuit JSON imports | Turning generated Circuit JSON back into a reusable tscircuit component. | [Importing from Circuit JSON](../guides/importing-modules-and-chips/importing-from-circuit-json.mdx) |
+| CLI imports | Searching JLCPCB and the tscircuit registry from a terminal. | [`tsci import`](../command-line/tsci-import.md) |
+| CLI exports | Exporting Circuit JSON, SVG previews, Gerbers, Specctra DSN, glTF/GLB, STEP, KiCad, or SPICE files. | [`tsci export`](../command-line/tsci-export.md) |
+| Fabrication files | Sending a board to a manufacturer for PCB fabrication and assembly. | [Understanding fabrication files](../guides/understanding-fabrication-files.md) |
+
+## Choosing the right starting point
+
+- Start with [tscircuit.com](https://tscircuit.com) if you want the fastest
+  browser-based editor and preview flow.
+- Start with the [`tsci` CLI](./quickstart-cli.md) if you want a local project,
+  source control, editor integration, and terminal exports.
+- Use [`@tscircuit/core`](https://github.com/tscircuit/core) when you are
+  writing scripts, libraries, or apps that need to compile tscircuit components.
+- Use RunFrame or the viewer packages when your web app needs embedded circuit
+  previews.
+- Use the converter and exporter tools when you need to import existing design
+  data or produce files for fabrication, CAD, simulation, or another EDA tool.
