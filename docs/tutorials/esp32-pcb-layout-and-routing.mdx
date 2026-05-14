@@ -1,0 +1,511 @@
+---
+title: ESP32 PCB Layout and Routing
+description: Learn how to place and route an ESP32 module board in tscircuit — module placement, antenna keepout, decoupling capacitors, USB power, and autorouting.
+---
+
+## Overview
+
+This tutorial builds a complete ESP32 development board PCB step by step. You will
+place the ESP32-WROOM-32 module, add power circuitry, wire up a USB-to-UART
+bridge for programming, and let the autorouter connect everything.
+
+Good PCB layout for an ESP32 follows three placement rules:
+1. The module antenna must hang over the board edge with no copper beneath it.
+2. The 3.3 V supply path (USB connector → regulator → module) should be short.
+3. Programming controls (EN reset, IO0 boot) live next to the module with their
+   pull-up resistors and pushbuttons nearby.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Step 1: Place the ESP32 Module
+
+The ESP32-WROOM-32 is a stamp-style module. In tscircuit it is modelled as a
+`<chip>` with the `stampreceiver` footprint family. The footprint string encodes
+the pad count and spacing:
+
+```
+stampreceiver_left14_right14_bottom10_top0_w18mm_p1.27mm
+```
+
+Place the module near the **top edge** of the board so the antenna side (the
+rounded end of the WROOM module) points outward away from the rest of the
+circuitry.
+
+<TscircuitIframe defaultView="pcb" code={`
+const Esp32Wroom = (props) => (
+  <chip
+    manufacturerPartNumber="ESP32-WROOM-32"
+    footprint="stampreceiver_left14_right14_bottom10_top0_w18mm_p1.27mm"
+    pinLabels={{
+      pin1: "GND",
+      pin2: "3V3",
+      pin3: "EN",
+      pin4: "SENSOR_VP",
+      pin5: "SENSOR_VN",
+      pin6: "IO34",
+      pin7: "IO35",
+      pin8: "IO32",
+      pin9: "IO33",
+      pin10: "IO25",
+      pin11: "IO26",
+      pin12: "IO27",
+      pin13: "IO14",
+      pin14: "IO12",
+      pin15: "GND2",
+      pin16: "IO13",
+      pin17: "SD2",
+      pin18: "SD3",
+      pin19: "CMD",
+      pin20: "CLK",
+      pin21: "SD0",
+      pin22: "SD1",
+      pin23: "IO15",
+      pin24: "IO2",
+      pin25: "IO0",
+      pin26: "IO4",
+      pin27: "IO16",
+      pin28: "IO17",
+      pin29: "IO5",
+      pin30: "IO18",
+      pin31: "IO19",
+      pin32: "IO21",
+      pin33: "RXD0",
+      pin34: "TXD0",
+      pin35: "IO22",
+      pin36: "IO23",
+      pin37: "GND3",
+      pin38: "GND4",
+    }}
+    schPinArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7",
+               "pin8","pin9","pin10","pin11","pin12","pin13","pin14"],
+      },
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: ["pin38","pin37","pin36","pin35","pin34","pin33","pin32",
+               "pin31","pin30","pin29","pin28","pin27","pin26","pin25"],
+      },
+    }}
+    {...props}
+  />
+)
+
+export default () => (
+  <board width="55mm" height="40mm">
+    <Esp32Wroom
+      name="U1"
+      pcbX={0}
+      pcbY={8}
+      schX={0}
+      schY={0}
+    />
+  </board>
+)
+`} />
+
+The `pcbY={8}` shifts the module toward the top of the 40 mm board, leaving
+room below for power and programming components.
+
+## Step 2: Add USB Power and 3.3 V Regulation
+
+The ESP32 runs on 3.3 V but USB supplies 5 V. We need:
+- A **USB-C connector** for power input
+- An **AMS1117-3.3** LDO regulator (SOT-223 package) to step 5 V down to 3.3 V
+- **Decoupling capacitors** on both sides of the regulator
+
+Place the USB connector at the left board edge and the regulator between it and
+the module to keep the high-current 5 V path short.
+
+<TscircuitIframe defaultView="pcb" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+const Esp32Wroom = (props) => (
+  <chip
+    manufacturerPartNumber="ESP32-WROOM-32"
+    footprint="stampreceiver_left14_right14_bottom10_top0_w18mm_p1.27mm"
+    pinLabels={{
+      pin1: "GND", pin2: "3V3", pin3: "EN",
+      pin25: "IO0", pin33: "RXD0", pin34: "TXD0",
+      pin15: "GND2", pin37: "GND3", pin38: "GND4",
+    }}
+    {...props}
+  />
+)
+
+export default () => (
+  <board width="55mm" height="40mm">
+    <Esp32Wroom
+      name="U1"
+      pcbX={0} pcbY={8}
+      schX={0} schY={0}
+    />
+
+    {/* USB-C power input at the left board edge */}
+    <SmdUsbC
+      name="J1"
+      pcbX={-22} pcbY={-13}
+      schX={-8} schY={-5}
+      connections={{
+        GND1: "net.GND", GND2: "net.GND",
+        VBUS1: "net.VBUS", VBUS2: "net.VBUS",
+      }}
+    />
+
+    {/* AMS1117-3.3 LDO: VIN=VBUS, VOUT=3V3 */}
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      footprint="sot223"
+      pinLabels={{ pin1: "GND", pin2: "VOUT", pin3: "VIN", pin4: "VOUT2" }}
+      pcbX={-10} pcbY={-12}
+      schX={-3} schY={-5}
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.3V3",
+        pin4: "net.3V3",
+        pin3: "net.VBUS",
+      }}
+    />
+
+    {/* 10 uF input bulk cap (close to regulator VIN) */}
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0805"
+      pcbX={-16} pcbY={-9}
+      schX={-6} schY={-3}
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+    />
+
+    {/* 10 uF output bulk cap (close to regulator VOUT) */}
+    <capacitor
+      name="C2"
+      capacitance="10uF"
+      footprint="0805"
+      pcbX={-4} pcbY={-9}
+      schX={-1} schY={-3}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }}
+    />
+
+    {/* 100 nF bypass cap right at the ESP32 3V3 pin */}
+    <capacitor
+      name="C3"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX={-6} pcbY={3}
+      schX={-3} schY={2}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }}
+    />
+
+    {/* Power rails to ESP32 */}
+    <netlabel net="3V3" anchorSide="bottom" connection="U1.pin2" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin1" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin15" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin37" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin38" />
+  </board>
+)
+`} />
+
+The regulator at `pcbX={-10}` sits between the USB connector (`pcbX={-22}`) and
+the module (`pcbX={0}`), creating a straight left-to-right power flow that is
+easy to review.
+
+## Step 3: Add the USB-to-UART Bridge
+
+To program the ESP32 over USB you need a serial bridge chip. The **CH340G**
+(SOP-16) converts USB signals to the UART RX/TX lines the ESP32 bootloader uses.
+
+The bridge also drives the **DTR** and **RTS** hardware flow-control lines.
+Those connect to the ESP32's EN and IO0 pins through 100 nF capacitors to
+implement the automatic reset-into-bootloader sequence that the Arduino IDE and
+`esptool` rely on.
+
+<TscircuitIframe defaultView="pcb" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+const Esp32Wroom = (props) => (
+  <chip
+    manufacturerPartNumber="ESP32-WROOM-32"
+    footprint="stampreceiver_left14_right14_bottom10_top0_w18mm_p1.27mm"
+    pinLabels={{
+      pin1: "GND", pin2: "3V3", pin3: "EN",
+      pin25: "IO0", pin33: "RXD0", pin34: "TXD0",
+      pin15: "GND2", pin37: "GND3", pin38: "GND4",
+    }}
+    {...props}
+  />
+)
+
+export default () => (
+  <board width="55mm" height="40mm">
+    <Esp32Wroom
+      name="U1"
+      pcbX={0} pcbY={8}
+      schX={0} schY={0}
+    />
+
+    <SmdUsbC
+      name="J1"
+      pcbX={-22} pcbY={-13}
+      schX={-8} schY={-5}
+      connections={{
+        GND1: "net.GND", GND2: "net.GND",
+        VBUS1: "net.VBUS", VBUS2: "net.VBUS",
+      }}
+    />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      footprint="sot223"
+      pinLabels={{ pin1: "GND", pin2: "VOUT", pin3: "VIN", pin4: "VOUT2" }}
+      pcbX={-10} pcbY={-12}
+      schX={-3} schY={-5}
+      connections={{
+        pin1: "net.GND", pin2: "net.3V3",
+        pin4: "net.3V3", pin3: "net.VBUS",
+      }}
+    />
+
+    {/* CH340G USB-UART bridge */}
+    <chip
+      name="U3"
+      manufacturerPartNumber="CH340G"
+      footprint="soic16_p1.27mm"
+      pinLabels={{
+        pin1: "TXD", pin2: "RXD",
+        pin3: "V3", pin4: "UD_PLUS", pin5: "UD_MINUS",
+        pin6: "XI", pin7: "XO", pin8: "TEST",
+        pin9: "GND", pin10: "CTS", pin11: "DSR",
+        pin12: "RI", pin13: "DCD",
+        pin14: "DTR", pin15: "RTS", pin16: "VCC",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin16","pin15","pin14","pin13","pin12","pin11","pin10","pin9"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8"],
+        },
+      }}
+      pcbX={18} pcbY={-8}
+      schX={8} schY={-2}
+      connections={{
+        pin1: "net.UART_TX",  // CH340 TXD → ESP32 RXD0
+        pin2: "net.UART_RX",  // CH340 RXD ← ESP32 TXD0
+        pin9: "net.GND",
+        pin16: "net.3V3",
+        pin4: "net.USB_DP",
+        pin5: "net.USB_DM",
+        pin14: "net.DTR_N",
+        pin15: "net.RTS_N",
+      }}
+    />
+
+    {/* UART cross-connect: CH340 TX→ESP RX, CH340 RX←ESP TX */}
+    <netlabel net="UART_TX" anchorSide="right" connection="U1.pin33" />
+    <netlabel net="UART_RX" anchorSide="right" connection="U1.pin34" />
+
+    {/* Auto-reset: DTR/RTS → 100nF caps → EN/IO0 */}
+    <capacitor
+      name="C4"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX={8} pcbY={-5}
+      schX={4} schY={-7}
+      connections={{ pin1: "net.DTR_N", pin2: "net.ESP_EN" }}
+    />
+    <capacitor
+      name="C5"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX={8} pcbY={-8}
+      schX={4} schY={-9}
+      connections={{ pin1: "net.RTS_N", pin2: "net.ESP_IO0" }}
+    />
+    <netlabel net="ESP_EN"  anchorSide="right" connection="U1.pin3" />
+    <netlabel net="ESP_IO0" anchorSide="right" connection="U1.pin25" />
+
+    {/* USB D+/D- to CH340 */}
+    <netlabel net="USB_DP" anchorSide="bottom" connection="J1.DP1" />
+    <netlabel net="USB_DM" anchorSide="bottom" connection="J1.DM1" />
+
+    {/* Decoupling on CH340 VCC */}
+    <capacitor
+      name="C6"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX={22} pcbY={-5}
+      schX={11} schY={0}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }}
+    />
+
+    <capacitor name="C1" capacitance="10uF" footprint="0805"
+      pcbX={-16} pcbY={-9} schX={-6} schY={-3}
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805"
+      pcbX={-4} pcbY={-9} schX={-1} schY={-3}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402"
+      pcbX={-6} pcbY={3} schX={-3} schY={2}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }} />
+
+    <netlabel net="3V3" anchorSide="bottom" connection="U1.pin2" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin1" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin15" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin37" />
+    <netlabel net="GND" anchorSide="top" connection="U1.pin38" />
+  </board>
+)
+`} />
+
+The auto-reset capacitors on C4 and C5 implement the standard ESP32 reset
+circuit: when a host asserts DTR and then RTS (or vice versa), the resulting
+pulse drives EN low followed by IO0 low, putting the chip into download mode
+without you pressing any buttons.
+
+## Step 4: EN Reset and BOOT Buttons
+
+Even with automatic reset, physical buttons are important for manual recovery.
+Place the **EN** (reset) button and the **IO0** (boot mode) button near the
+right edge of the board with their 10 kΩ pull-up resistors right beside them.
+
+<TscircuitIframe defaultView="pcb" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+const Esp32Wroom = (props) => (
+  <chip
+    manufacturerPartNumber="ESP32-WROOM-32"
+    footprint="stampreceiver_left14_right14_bottom10_top0_w18mm_p1.27mm"
+    pinLabels={{
+      pin1: "GND", pin2: "3V3", pin3: "EN",
+      pin25: "IO0", pin33: "RXD0", pin34: "TXD0",
+      pin15: "GND2", pin37: "GND3", pin38: "GND4",
+    }}
+    {...props}
+  />
+)
+
+export default () => (
+  <board width="55mm" height="40mm">
+    <Esp32Wroom name="U1" pcbX={0} pcbY={8} schX={0} schY={0} />
+
+    <SmdUsbC name="J1" pcbX={-22} pcbY={-13} schX={-8} schY={-5}
+      connections={{ GND1:"net.GND", GND2:"net.GND", VBUS1:"net.VBUS", VBUS2:"net.VBUS" }} />
+
+    <chip name="U2" manufacturerPartNumber="AMS1117-3.3" footprint="sot223"
+      pinLabels={{ pin1:"GND", pin2:"VOUT", pin3:"VIN", pin4:"VOUT2" }}
+      pcbX={-10} pcbY={-12} schX={-3} schY={-5}
+      connections={{ pin1:"net.GND", pin2:"net.3V3", pin4:"net.3V3", pin3:"net.VBUS" }} />
+
+    <chip name="U3" manufacturerPartNumber="CH340G" footprint="soic16_p1.27mm"
+      pinLabels={{ pin1:"TXD", pin2:"RXD", pin9:"GND", pin16:"VCC",
+        pin4:"UD_PLUS", pin5:"UD_MINUS", pin14:"DTR", pin15:"RTS" }}
+      pcbX={18} pcbY={-8} schX={8} schY={-2}
+      connections={{ pin1:"net.UART_TX", pin2:"net.UART_RX",
+        pin9:"net.GND", pin16:"net.3V3", pin4:"net.USB_DP", pin5:"net.USB_DM",
+        pin14:"net.DTR_N", pin15:"net.RTS_N" }} />
+
+    {/* 10k pull-up on EN */}
+    <resistor name="R1" resistance="10k" footprint="0402"
+      pcbX={12} pcbY={5} schX={5} schY={3}
+      connections={{ pin1: "net.3V3", pin2: "net.ESP_EN" }} />
+
+    {/* EN reset button */}
+    <pushbutton name="SW1" footprint="pushbutton_smd_4mm"
+      pcbX={18} pcbY={5} schX={7} schY={3}
+      connections={{ pin1: "net.ESP_EN", pin2: "net.GND" }} />
+
+    {/* 10k pull-up on IO0 */}
+    <resistor name="R2" resistance="10k" footprint="0402"
+      pcbX={12} pcbY={2} schX={5} schY={1}
+      connections={{ pin1: "net.3V3", pin2: "net.ESP_IO0" }} />
+
+    {/* BOOT button */}
+    <pushbutton name="SW2" footprint="pushbutton_smd_4mm"
+      pcbX={18} pcbY={2} schX={7} schY={1}
+      connections={{ pin1: "net.ESP_IO0", pin2: "net.GND" }} />
+
+    <capacitor name="C4" capacitance="100nF" footprint="0402"
+      pcbX={8} pcbY={-5} schX={4} schY={-7}
+      connections={{ pin1:"net.DTR_N", pin2:"net.ESP_EN" }} />
+    <capacitor name="C5" capacitance="100nF" footprint="0402"
+      pcbX={8} pcbY={-8} schX={4} schY={-9}
+      connections={{ pin1:"net.RTS_N", pin2:"net.ESP_IO0" }} />
+
+    <netlabel net="ESP_EN"  anchorSide="right" connection="U1.pin3" />
+    <netlabel net="ESP_IO0" anchorSide="right" connection="U1.pin25" />
+    <netlabel net="UART_TX" anchorSide="right" connection="U1.pin33" />
+    <netlabel net="UART_RX" anchorSide="right" connection="U1.pin34" />
+    <netlabel net="USB_DP"  anchorSide="bottom" connection="J1.DP1" />
+    <netlabel net="USB_DM"  anchorSide="bottom" connection="J1.DM1" />
+    <netlabel net="3V3"     anchorSide="bottom" connection="U1.pin2" />
+    <netlabel net="GND"     anchorSide="top"    connection="U1.pin1" />
+    <netlabel net="GND"     anchorSide="top"    connection="U1.pin15" />
+    <netlabel net="GND"     anchorSide="top"    connection="U1.pin37" />
+    <netlabel net="GND"     anchorSide="top"    connection="U1.pin38" />
+
+    <capacitor name="C1" capacitance="10uF" footprint="0805"
+      pcbX={-16} pcbY={-9} schX={-6} schY={-3}
+      connections={{ pin1:"net.VBUS", pin2:"net.GND" }} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805"
+      pcbX={-4} pcbY={-9} schX={-1} schY={-3}
+      connections={{ pin1:"net.3V3", pin2:"net.GND" }} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402"
+      pcbX={-6} pcbY={3} schX={-3} schY={2}
+      connections={{ pin1:"net.3V3", pin2:"net.GND" }} />
+    <capacitor name="C6" capacitance="100nF" footprint="0402"
+      pcbX={22} pcbY={-5} schX={11} schY={0}
+      connections={{ pin1:"net.3V3", pin2:"net.GND" }} />
+  </board>
+)
+`} />
+
+Pressing SW1 (EN) resets the ESP32. Pressing SW2 (IO0) while holding SW1 puts
+it into download mode so you can flash firmware manually without needing the
+auto-reset circuit.
+
+## Step 5: Autorouting
+
+Once component placement is done, tscircuit can route all the traces automatically.
+Add `autorouter="auto-cloud"` to the `<board>` element to use the cloud autorouter,
+or `autorouter="sequential-trace"` for the local solver:
+
+```tsx
+<board width="55mm" height="40mm" autorouter="auto-cloud">
+  ...
+</board>
+```
+
+The autorouter reads every `connections` prop and every `<netlabel>` you added,
+so there is nothing extra to configure. After routing you can switch to the PCB
+tab in the preview to inspect trace widths and clearances.
+
+### Placement tips that help the autorouter
+
+- **Short nets first**: the regulator-to-module 3V3 path and the UART TX/RX
+  crossover are the nets most affected by placement order.
+- **Avoid crossing power nets**: keep VBUS traces on the left side of the board
+  and 3V3 traces in the middle so they do not create unnecessary crossings that
+  require vias.
+- **Put bypass caps as close as possible**: C3 (module bypass) and C6 (CH340
+  bypass) should be within 2–3 mm of their respective IC's power pin to minimize
+  the inductance the router must deal with.
+
+## Pre-fabrication checklist
+
+Before exporting Gerbers:
+
+- [ ] The antenna end of the ESP32 module hangs over the board edge, or at least
+      no copper, vias, or components appear within 3 mm of the antenna window.
+- [ ] C1 is within 5 mm of the USB connector VBUS pin.
+- [ ] C3 is within 3 mm of U1 pin 2 (3V3).
+- [ ] C6 is within 3 mm of U3 pin 16 (VCC).
+- [ ] All GND pins on U1 (pins 1, 15, 37, 38) connect to the same GND net.
+- [ ] The UART crossover is correct: U3 TXD → U1 RXD0, U3 RXD ← U1 TXD0.
+- [ ] Both pushbuttons are reachable from the board edge.
