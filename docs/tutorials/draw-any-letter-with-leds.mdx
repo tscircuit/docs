@@ -1,0 +1,248 @@
+---
+title: Draw Any Letter with LEDs
+description: Learn how to place LEDs along the strokes of any letter using tscircuit, creating glowing letter-shaped PCBs.
+---
+
+## Overview
+
+In this tutorial you will build a PCB that spells out a letter using individual LEDs.
+Each LED is placed along the actual stroke of the character — not a blocky pixel grid —
+because we sample points directly from the vector paths in
+[`@tscircuit/alphabet`](https://github.com/tscircuit/alphabet).
+
+The result is a compact, reusable `LedLetter` component that accepts any A–Z letter and
+produces a layout-ready circuit with resistors, LEDs, and traces already wired up.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="pcb" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+// --- SVG path data for A–Z (from @tscircuit/alphabet) ---
+const LETTER_PATHS = {
+  A: "M0.018067 0.94897 L0.290179 0.270996 L0.583986 0.94897 M0.155303 0.684521 L0.433548 0.684521",
+  B: "M0.063965 0.94897 L0.063965 0.278953 L0.209356 0.270996 L0.342486 0.294394 L0.432179 0.37292 L0.418224 0.48773 L0.312686 0.549166 L0.084728 0.575531 L0.306377 0.589434 L0.468877 0.647456 L0.538087 0.736658 L0.5324 0.85202 L0.501247 0.902983 L0.42355 0.944398 L0.063965 0.94897",
+  C: "M0.529054 0.419847 L0.498425 0.345196 L0.442238 0.292341 L0.33583 0.257813 L0.257199 0.268357 L0.187906 0.303748 L0.120243 0.385432 L0.072998 0.599844 L0.110073 0.815385 L0.165381 0.902183 L0.222883 0.942801 L0.334904 0.961214 L0.43253 0.937679 L0.504816 0.868999 L0.529054 0.772065",
+  D: "M0.064454 0.94897 L0.071838 0.285078 L0.171217 0.270996 L0.247348 0.272633 L0.37101 0.306078 L0.462461 0.378304 L0.514748 0.475555 L0.535591 0.576392 L0.537599 0.652313 L0.528065 0.717381 L0.508562 0.772419 L0.445948 0.855695 L0.362356 0.90871 L0.225203 0.945862 L0.064454 0.94897",
+  E: "M0.080078 0.270996 L0.080078 0.94897 M0.080078 0.270996 L0.521974 0.270996 M0.080078 0.609981 L0.389405 0.609981 M0.080078 0.94897 L0.521974 0.94897",
+  F: "M0.086426 0.270996 L0.086426 0.94897 M0.091304 0.275607 L0.515626 0.275607 M0.091304 0.607677 L0.447344 0.607677",
+  G: "M0.498034 0.284943 L0.374621 0.257813 L0.244219 0.268648 L0.160577 0.311997 L0.094556 0.398116 L0.056397 0.58404 L0.076752 0.785532 L0.120865 0.858197 L0.188947 0.916734 L0.271008 0.953591 L0.357069 0.961214 L0.43715 0.932047 L0.501262 0.858539 L0.545656 0.648611 L0.329595 0.648131",
+  H: "M0.066895 0.270996 L0.066895 0.94897 M0.066895 0.595658 L0.530009 0.595658 M0.535157 0.270996 L0.535157 0.94897",
+  I: "M0.301026 0.270996 L0.301026 0.94897",
+  J: "M0.506839 0.270996 L0.507814 0.782193 L0.498468 0.846168 L0.480733 0.880789 L0.455864 0.90832 L0.426095 0.929408 L0.360746 0.954812 L0.302508 0.962139 L0.223573 0.953638 L0.16538 0.930312 L0.137072 0.907715 L0.116428 0.880312 L0.102822 0.848819 L0.095633 0.813947 L0.094239 0.776413",
+  K: "M0.035401 0.270996 L0.035401 0.94897 M0.502258 0.316194 L0.035401 0.687823 M0.212484 0.582361 L0.566652 0.933903",
+  L: "M0.07544 0.270996 L0.07544 0.94897 L0.526613 0.94897",
+  M: "M0.042481 0.94897 L0.042481 0.270996 L0.301027 0.712492 L0.559571 0.270996 L0.559571 0.94897",
+  N: "M0.067871 0.94897 L0.067871 0.270996 L0.534181 0.94897 L0.525031 0.270996",
+  O: "M0.287293 0.961214 L0.19843 0.933567 L0.1172 0.849451 L0.057129 0.563945 L0.114348 0.350255 L0.18455 0.289392 L0.306101 0.257813 L0.42054 0.29572 L0.487543 0.365003 L0.544923 0.625294 L0.516366 0.789624 L0.465476 0.884596 L0.375084 0.949287 L0.287293 0.961214",
+  P: "M0.070557 0.94897 L0.070557 0.28379 L0.20704 0.270996 L0.329134 0.278993 L0.408525 0.300514 L0.444022 0.317908 L0.500637 0.368929 L0.525796 0.423728 L0.531496 0.50384 L0.508934 0.554205 L0.473724 0.582043 L0.417577 0.604365 L0.336375 0.620372 L0.226014 0.629268 L0.082368 0.630258",
+  Q: "M0.282435 1.050813 L0.195447 1.019646 L0.115933 0.924817 L0.057129 0.602943 L0.113139 0.362034 L0.18186 0.293418 L0.300844 0.257813 L0.412868 0.300553 L0.478457 0.37866 L0.534625 0.672103 L0.506671 0.857367 L0.456855 0.964437 L0.368371 1.037368 L0.282435 1.050813 M0.341225 0.815559 L0.544923 1.070653",
+  R: "M0.034912 0.944112 L0.034912 0.288556 L0.227127 0.270996 L0.362038 0.276867 L0.443423 0.294907 L0.477644 0.309614 L0.505809 0.328757 L0.526616 0.352817 L0.544963 0.418061 L0.543241 0.475921 L0.524463 0.517817 L0.49076 0.546518 L0.444265 0.564799 L0.355195 0.578739 L0.047653 0.589627 M0.303054 0.617306 L0.56714 0.94897",
+  S: "M0.483037 0.364333 L0.407613 0.267477 L0.22883 0.257813 L0.128623 0.327565 L0.087712 0.455539 L0.104656 0.518727 L0.168054 0.573307 L0.41928 0.617318 L0.503796 0.669342 L0.535157 0.759324 L0.493846 0.900055 L0.367668 0.961214 L0.205436 0.956661 L0.116711 0.907038 L0.066895 0.790334",
+  T: "M0.022949 0.270996 L0.579103 0.270996 M0.309284 0.270996 L0.309284 0.94897",
+  U: "M0.072022 0.270996 L0.07308 0.648875 L0.080372 0.75167 L0.099024 0.827813 L0.134786 0.885729 L0.181571 0.924023 L0.251464 0.95168 L0.339655 0.962139 L0.401553 0.951668 L0.45232 0.924086 L0.482701 0.891771 L0.495745 0.870529 L0.515699 0.81637 L0.525014 0.744626 L0.530031 0.272017",
+  V: "M0.027832 0.270996 L0.320083 0.94897 L0.57422 0.270996",
+  W: "M0 0.270996 L0.079799 0.940377 L0.285198 0.472884 L0.505255 0.94897 L0.602052 0.270996",
+  X: "M0.009034 0.270996 L0.586805 0.94897 M0.593019 0.270996 L0.015246 0.94897",
+  Y: "M0.018067 0.270996 L0.293132 0.574135 M0.583986 0.271959 L0.294954 0.57606 L0.305277 0.94897",
+  Z: "M0.053711 0.270996 L0.548341 0.270996 L0.053711 0.94897 L0.548341 0.94897",
+}
+
+// --- Path parsing helpers ---
+
+function parseSvgPath(path) {
+  const segments = []
+  const cmds = path.trim().split(/(?=[ML])/)
+  let cx = 0
+  let cy = 0
+  for (const cmd of cmds) {
+    const t = cmd.trim()
+    if (!t) continue
+    const nums = t.slice(1).trim().split(/\\s+/).map(Number)
+    if (t[0] === "M") {
+      cx = nums[0]
+      cy = nums[1]
+    } else if (t[0] === "L") {
+      segments.push({ x1: cx, y1: cy, x2: nums[0], y2: nums[1] })
+      cx = nums[0]
+      cy = nums[1]
+    }
+  }
+  return segments
+}
+
+function sampleSegments(segments, spacing) {
+  const pts = []
+  for (const seg of segments) {
+    const dx = seg.x2 - seg.x1
+    const dy = seg.y2 - seg.y1
+    const len = Math.sqrt(dx * dx + dy * dy)
+    const count = Math.max(2, Math.round(len / spacing) + 1)
+    for (let i = 0; i < count; i++) {
+      const t = count === 1 ? 0 : i / (count - 1)
+      const x = seg.x1 + t * dx
+      const y = seg.y1 + t * dy
+      const tooClose = pts.some(
+        (p) => Math.sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < spacing * 0.5,
+      )
+      if (!tooClose) pts.push({ x, y })
+    }
+  }
+  return pts
+}
+
+// --- LedLetter component ---
+// letter: A–Z  power/gnd: net names  size: PCB extent in mm  ledSpacing: gap between LEDs (0–1 units)
+const LedLetter = ({ letter, power, gnd, size = 20, ledSpacing = 0.12, resistance = 150 }) => {
+  const path = LETTER_PATHS[letter.toUpperCase()]
+  if (!path) return null
+
+  const segments = parseSvgPath(path)
+  const positions = sampleSegments(segments, ledSpacing)
+
+  // Centre of the glyph bounding box in the [0,1] coordinate space
+  const cx = 0.3
+  const cy = 0.61
+
+  return (
+    <group>
+      {positions.flatMap((pos, i) => {
+        // SVG y increases downward; PCB y increases upward — flip the sign
+        const pcbX = (pos.x - cx) * size
+        const pcbY = -(pos.y - cy) * size
+        const schX = (pos.x - cx) * 18
+        const schY = -(pos.y - cy) * 18
+        return [
+          <resistor
+            key={"r" + i}
+            name={"R" + i}
+            resistance={resistance}
+            footprint="0402"
+            pcbX={pcbX + 1.5}
+            pcbY={pcbY}
+            schX={schX + 2}
+            schY={schY}
+          />,
+          <led
+            key={"led" + i}
+            name={"LED" + i}
+            footprint="0402"
+            pcbX={pcbX}
+            pcbY={pcbY}
+            schX={schX}
+            schY={schY}
+          />,
+          <trace key={"t1" + i} from={power} to={".R" + i + " > .pin1"} />,
+          <trace key={"t2" + i} from={".R" + i + " > .pin2"} to={".LED" + i + " > .pos"} />,
+          <trace key={"t3" + i} from={".LED" + i + " > .neg"} to={gnd} />,
+        ]
+      })}
+    </group>
+  )
+}
+
+// --- Board ---
+export default () => {
+  return (
+    <board width="35mm" height="35mm">
+      <SmdUsbC
+        name="USBC"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-13}
+        schX={-15}
+        schY={0}
+      />
+      <LedLetter letter="T" power="net.VBUS" gnd="net.GND" size={20} />
+    </board>
+  )
+}
+`} />
+
+## How it works
+
+### 1. Vector paths instead of a pixel grid
+
+The `@tscircuit/alphabet` library stores each character as an SVG path made of `M` (move-to)
+and `L` (line-to) commands in a normalised `[0, 1]` coordinate space.
+We parse those commands into line segments, then walk along every segment and place a LED at
+regular intervals.
+
+```
+SVG path string
+  └─ parseSvgPath()  → [ { x1, y1, x2, y2 }, … ]
+                           └─ sampleSegments(spacing)  → [ { x, y }, … ]
+                                                              └─ <led> at (pcbX, pcbY)
+```
+
+Because we follow the actual stroke geometry the LEDs hug the curves of the letter rather
+than approximating them with a blocky bitmap.
+
+### 2. Coordinate mapping
+
+The glyph coordinates sit in roughly `x: [0.02, 0.58]`, `y: [0.26, 0.96]`.
+We subtract the glyph centre `(cx=0.3, cy=0.61)` and multiply by `size` (in mm) to get
+PCB coordinates centred at `(0, 0)`.
+The Y axis is also flipped because SVG measures downward while PCB coordinates measure upward.
+
+```
+pcbX = (glyph.x - 0.30) × size
+pcbY = -(glyph.y - 0.61) × size
+```
+
+### 3. Per-LED circuit
+
+Each sample point gets a current-limiting resistor in series with an LED, both connected
+between the power net and ground:
+
+```
+net.VBUS → Rᵢ → LEDᵢ → net.GND
+```
+
+The default `resistance` of **150 Ω** is safe for a 3.3 V supply.
+Adjust it with the `resistance` prop if you use a different voltage or LED colour.
+
+## Component API
+
+```tsx
+<LedLetter
+  letter="A"         // any uppercase A–Z
+  power="net.VBUS"   // power net name
+  gnd="net.GND"      // ground net name
+  size={20}          // PCB extent in mm (default 20)
+  ledSpacing={0.12}  // spacing between LEDs in glyph units (default 0.12)
+  resistance={150}   // current-limiting resistor value in Ω (default 150)
+/>
+```
+
+Switch the preview to **PCB** view in the panel above to see the letter shape, or to
+**Schematic** to inspect the wiring.
+
+## Extending to multiple letters
+
+Wrap several `LedLetter` components in a `<group>` and offset each one horizontally to
+spell a word:
+
+```tsx
+export default () => (
+  <board width="100mm" height="35mm">
+    <SmdUsbC
+      name="USBC"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbY={-13}
+    />
+    <group pcbX={-30}>
+      <LedLetter letter="H" power="net.VBUS" gnd="net.GND" size={18} />
+    </group>
+    <group pcbX={0}>
+      <LedLetter letter="I" power="net.VBUS" gnd="net.GND" size={18} />
+    </group>
+  </board>
+)
+```
+
+Each letter is self-contained: its own resistors, LEDs, and traces are generated
+automatically.
+
+---
+
+/claim tscircuit/docs-old#50
