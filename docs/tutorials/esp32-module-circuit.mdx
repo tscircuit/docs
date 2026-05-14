@@ -1,0 +1,750 @@
+---
+title: "ESP32 Module Circuit: Designing a Custom ESP32 Development Board"
+description: Learn how to design a complete ESP32-WROOM-32 module circuit in tscircuit, including power supply, USB-to-UART programming interface, boot/reset buttons, and a status LED.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+The ESP32-WROOM-32 is one of the most popular Wi-Fi + Bluetooth modules for IoT projects. Unlike bare chips, it already contains the RF circuitry, antenna, and flash memory — so your schematic focuses on the support electronics: power, programming, and I/O.
+
+In this tutorial we'll build the schematic step by step using tscircuit:
+
+1. The ESP32-WROOM-32 module
+2. AMS1117-3.3 LDO power supply
+3. CH340C USB-to-UART programming circuit
+4. Boot and Reset buttons
+5. Status LED
+6. Complete schematic
+
+## The ESP32-WROOM-32 at a Glance
+
+The WROOM-32 module exposes 38 castellated pads. The key groups are:
+
+- **Power**: 3V3, GND, EN (chip enable, active-high)
+- **Strapping pins**: IO0 (boot mode select), IO2, IO12
+- **UART0**: TX0/RX0 for programming and serial debug
+- **GPIO**: IO2 through IO39 for general use (some input-only)
+
+A commercial dev board (like the ESP32 DevKit) adds exactly the support circuitry we're about to build.
+
+## Step 1 — The ESP32-WROOM-32 Module
+
+We define the module as a `<chip>` with pins split left and right to match the physical pad layout.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="100mm" height="80mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32"
+      pinLabels={{
+        pin1:  ["GND"],
+        pin2:  ["3V3"],
+        pin3:  ["EN"],
+        pin4:  ["VP", "IO36"],
+        pin5:  ["VN", "IO39"],
+        pin6:  ["IO34"],
+        pin7:  ["IO35"],
+        pin8:  ["IO32"],
+        pin9:  ["IO33"],
+        pin10: ["IO25"],
+        pin11: ["IO26"],
+        pin12: ["IO27"],
+        pin13: ["IO14"],
+        pin14: ["IO12"],
+        pin15: ["GND2"],
+        pin16: ["IO13"],
+        pin17: ["IO15"],
+        pin18: ["IO2"],
+        pin19: ["IO0"],
+        pin20: ["IO4"],
+        pin21: ["IO16"],
+        pin22: ["IO17"],
+        pin23: ["IO5"],
+        pin24: ["IO18"],
+        pin25: ["IO19"],
+        pin26: ["IO21"],
+        pin27: ["RX0"],
+        pin28: ["TX0"],
+        pin29: ["IO22"],
+        pin30: ["IO23"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7",
+                 "pin8","pin9","pin10","pin11","pin12","pin13","pin14"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin15","pin16","pin17","pin18","pin19","pin20","pin21",
+                 "pin22","pin23","pin24","pin25","pin26","pin27","pin28",
+                 "pin29","pin30"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+    <netlabel net="3V3" anchorSide="right" connection=".U1 > .3V3" />
+    <netlabel net="GND" anchorSide="left"  connection=".U1 > .GND"  />
+    <netlabel net="GND" anchorSide="right" connection=".U1 > .GND2" />
+  </board>
+)
+`} />
+
+:::tip Strapping Pins
+IO0, IO2, and IO12 are sampled at reset to choose the boot mode. IO0 = LOW forces
+bootloader mode (used for programming). IO0 = HIGH (pulled up) = normal boot.
+:::
+
+## Step 2 — 5 V to 3.3 V Power Supply
+
+The ESP32 runs at 3.3 V. A USB connection supplies 5 V (VBUS). We use an
+AMS1117-3.3 LDO regulator (SOT-223 package) to step down the voltage.
+
+The AMS1117-3.3 has a fixed 3.3 V output. Two bulk capacitors on the input and
+output filter noise and ensure stability.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="80mm" height="60mm">
+    {/* AMS1117-3.3 LDO — SOT-223
+        pin1 = ADJ/GND, pin2 = OUTPUT, pin3 = INPUT, pin4 = OUTPUT (tab) */}
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      pinLabels={{
+        pin1: ["GND_ADJ"],
+        pin2: ["OUT"],
+        pin3: ["IN"],
+        pin4: ["OUT2"],
+      }}
+      schPinArrangement={{
+        leftSide:  { direction: "top-to-bottom", pins: ["pin3"] },
+        rightSide: { direction: "top-to-bottom", pins: ["pin2", "pin4"] },
+        bottomSide: { direction: "left-to-right", pins: ["pin1"] },
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    {/* Input bulk cap: 10 µF filters VBUS spikes */}
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0805"
+      schX={-4}
+      schY={0}
+      schRotation={90}
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+    />
+    {/* Input bypass cap: 100 nF high-frequency decoupling */}
+    <capacitor
+      name="C2"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-6}
+      schY={0}
+      schRotation={90}
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+    />
+
+    {/* Output bulk cap: 10 µF stabilises LDO output */}
+    <capacitor
+      name="C3"
+      capacitance="10uF"
+      footprint="0805"
+      schX={4}
+      schY={0}
+      schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }}
+    />
+    {/* Output bypass cap */}
+    <capacitor
+      name="C4"
+      capacitance="100nF"
+      footprint="0402"
+      schX={6}
+      schY={0}
+      schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }}
+    />
+
+    <netlabel net="VBUS" anchorSide="right" connection=".U2 > .IN"   />
+    <netlabel net="3V3"  anchorSide="left"  connection=".U2 > .OUT"  />
+    <netlabel net="3V3"  anchorSide="left"  connection=".U2 > .OUT2" />
+    <netlabel net="GND"  anchorSide="top"   connection=".U2 > .GND_ADJ" />
+
+    <netlabel net="VBUS" anchorSide="right" connection=".C1 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C1 > .pin2" />
+    <netlabel net="VBUS" anchorSide="right" connection=".C2 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C2 > .pin2" />
+    <netlabel net="3V3"  anchorSide="right" connection=".C3 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C3 > .pin2" />
+    <netlabel net="3V3"  anchorSide="right" connection=".C4 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C4 > .pin2" />
+  </board>
+)
+`} />
+
+The AMS1117 can source up to 800 mA — enough for the ESP32 (peaks around 250 mA
+during Wi-Fi transmit) plus peripherals.
+
+## Step 3 — USB-to-UART Programming Circuit
+
+To upload firmware from a PC we need a USB-to-UART bridge. The CH340C (SOP-16)
+is the same chip found on most cheap Arduino clones and ESP32 dev boards. It
+needs no external crystal because it uses an internal oscillator.
+
+We also add auto-reset circuitry so the Arduino IDE or `esptool` can reset the
+ESP32 into bootloader mode without pressing buttons manually. Two NPN transistors
+(Q1 and Q2) are controlled by the CH340C's RTS# and DTR# signals:
+
+- Q1 drives EN low to reset the chip
+- Q2 drives IO0 low to enter bootloader mode
+
+The specific pulse sequence esptool sends on RTS/DTR triggers Q1 and Q2 in the
+correct order.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="100mm" height="80mm">
+    {/* CH340C USB-to-UART bridge
+        Real SOP-16 pinout (16 pins):
+        1=GND 2=TXD 3=RXD 4=V3 5=UD+ 6=UD- 7=XI 8=XO
+        9=CTS# 10=DSR# 11=RI# 12=DCD# 13=DTR# 14=RTS# 15=R232 16=VCC */}
+    <chip
+      name="U3"
+      manufacturerPartNumber="CH340C"
+      pinLabels={{
+        pin1:  ["GND"],
+        pin2:  ["TXD"],
+        pin3:  ["RXD"],
+        pin4:  ["V3"],
+        pin5:  ["UD_PLUS"],
+        pin6:  ["UD_MINUS"],
+        pin7:  ["XI"],
+        pin8:  ["XO"],
+        pin9:  ["CTS"],
+        pin10: ["DSR"],
+        pin11: ["RI"],
+        pin12: ["DCD"],
+        pin13: ["DTR"],
+        pin14: ["RTS"],
+        pin15: ["R232"],
+        pin16: ["VCC"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin16","pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin15","pin14","pin13","pin12","pin11","pin10","pin9"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    {/* 100 nF decoupling on VCC */}
+    <capacitor
+      name="C5"
+      capacitance="100nF"
+      footprint="0402"
+      schX={4}
+      schY={3}
+      schRotation={90}
+      connections={{ pin1: "net.5V", pin2: "net.GND" }}
+    />
+    {/* 100 nF on V3 (internal 3.3 V reference output) */}
+    <capacitor
+      name="C6"
+      capacitance="100nF"
+      footprint="0402"
+      schX={4}
+      schY={1}
+      schRotation={90}
+      connections={{ pin1: ".U3 > .V3", pin2: "net.GND" }}
+    />
+
+    {/* Auto-reset NPN Q1 — controls EN (reset) */}
+    <chip
+      name="Q1"
+      manufacturerPartNumber="MMBT3904"
+      pinLabels={{
+        pin1: ["base"],
+        pin2: ["collector"],
+        pin3: ["emitter"],
+      }}
+      schPinArrangement={{
+        leftSide:   { direction: "top-to-bottom", pins: ["pin1"] },
+        rightSide:  { direction: "top-to-bottom", pins: ["pin2"] },
+        bottomSide: { direction: "left-to-right", pins: ["pin3"] },
+      }}
+      schX={6}
+      schY={-3}
+    />
+
+    {/* Auto-reset NPN Q2 — controls IO0 (boot mode) */}
+    <chip
+      name="Q2"
+      manufacturerPartNumber="MMBT3904"
+      pinLabels={{
+        pin1: ["base"],
+        pin2: ["collector"],
+        pin3: ["emitter"],
+      }}
+      schPinArrangement={{
+        leftSide:   { direction: "top-to-bottom", pins: ["pin1"] },
+        rightSide:  { direction: "top-to-bottom", pins: ["pin2"] },
+        bottomSide: { direction: "left-to-right", pins: ["pin3"] },
+      }}
+      schX={6}
+      schY={-6}
+    />
+
+    {/* Base resistors — limit base current from CH340C outputs */}
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+      schX={4}
+      schY={-3}
+      connections={{ pin1: ".U3 > .RTS", pin2: ".Q1 > .base" }}
+    />
+    <resistor
+      name="R2"
+      resistance="10k"
+      footprint="0402"
+      schX={4}
+      schY={-6}
+      connections={{ pin1: ".U3 > .DTR", pin2: ".Q2 > .base" }}
+    />
+
+    {/* EN and IO0 pulled up to 3V3; collectors pull them low when transistors fire */}
+    <netlabel net="EN"  anchorSide="left"  connection=".Q1 > .collector" />
+    <netlabel net="IO0" anchorSide="left"  connection=".Q2 > .collector" />
+    <netlabel net="GND" anchorSide="top"   connection=".Q1 > .emitter"   />
+    <netlabel net="GND" anchorSide="top"   connection=".Q2 > .emitter"   />
+
+    {/* USB D+ / D- connect to USB connector */}
+    <netlabel net="USB_DP"  anchorSide="right" connection=".U3 > .UD_PLUS"  />
+    <netlabel net="USB_DM"  anchorSide="right" connection=".U3 > .UD_MINUS" />
+
+    {/* UART crossover: CH340C TX → ESP32 RX, CH340C RX ← ESP32 TX */}
+    <netlabel net="ESP_TX"  anchorSide="right" connection=".U3 > .RXD" />
+    <netlabel net="ESP_RX"  anchorSide="right" connection=".U3 > .TXD" />
+
+    <netlabel net="5V"  anchorSide="right" connection=".U3 > .VCC" />
+    <netlabel net="GND" anchorSide="top"   connection=".U3 > .GND" />
+    <netlabel net="5V"  anchorSide="right" connection=".C5 > .pin1" />
+    <netlabel net="GND" anchorSide="top"   connection=".C5 > .pin2" />
+    <netlabel net="GND" anchorSide="top"   connection=".C6 > .pin2" />
+  </board>
+)
+`} />
+
+:::note Auto-reset Explained
+`esptool` toggles RTS low → Q1 pulls EN low (resets ESP32). Then DTR goes low → Q2 pulls IO0 low (selects bootloader). Then RTS returns high → EN rises (ESP32 starts in bootloader). This all happens automatically in under a second.
+:::
+
+## Step 4 — Boot and Reset Buttons
+
+Even with auto-reset, manual buttons are useful for debugging. Two momentary
+switches connect key strapping pins to GND:
+
+- **RESET (SW1)**: momentarily pulls EN low, resetting the module.
+- **BOOT (SW2)**: momentarily pulls IO0 low while pressing RESET forces bootloader mode.
+
+Pull-up resistors keep EN and IO0 high during normal operation.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="80mm" height="60mm">
+    {/* EN pull-up — keeps EN high (module running) */}
+    <resistor
+      name="R3"
+      resistance="10k"
+      footprint="0402"
+      schX={0}
+      schY={2}
+      schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.EN" }}
+    />
+    <netlabel net="3V3" anchorSide="bottom" connection=".R3 > .pin1" />
+    <netlabel net="EN"  anchorSide="top"    connection=".R3 > .pin2" />
+
+    {/* IO0 pull-up — keeps IO0 high (normal boot) */}
+    <resistor
+      name="R4"
+      resistance="10k"
+      footprint="0402"
+      schX={4}
+      schY={2}
+      schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.IO0" }}
+    />
+    <netlabel net="3V3" anchorSide="bottom" connection=".R4 > .pin1" />
+    <netlabel net="IO0" anchorSide="top"    connection=".R4 > .pin2" />
+
+    {/* RESET button */}
+    <pushbutton
+      name="SW1"
+      footprint="pushbutton"
+      schX={0}
+      schY={-2}
+      connections={{ pin1: "net.EN", pin2: "net.GND" }}
+    />
+    <netlabel net="EN"  anchorSide="bottom" connection=".SW1 > .pin1" />
+    <netlabel net="GND" anchorSide="top"    connection=".SW1 > .pin2" />
+
+    {/* BOOT button */}
+    <pushbutton
+      name="SW2"
+      footprint="pushbutton"
+      schX={4}
+      schY={-2}
+      connections={{ pin1: "net.IO0", pin2: "net.GND" }}
+    />
+    <netlabel net="IO0" anchorSide="bottom" connection=".SW2 > .pin1" />
+    <netlabel net="GND" anchorSide="top"    connection=".SW2 > .pin2" />
+  </board>
+)
+`} />
+
+:::tip Bootloader Entry Without Auto-Reset
+Hold **BOOT** (IO0 = LOW), press and release **RESET** (EN pulse), then release
+**BOOT**. The ESP32 starts in download mode.
+:::
+
+## Step 5 — Status LED
+
+A blue LED on IO2 gives visual feedback. IO2 is also a strapping pin: it must be
+HIGH at boot for normal operation — so we use it as an output-only LED. The
+1 kΩ resistor limits current to ~3 mA which is easy on the GPIO driver.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="60mm" height="40mm">
+    {/* 1 kΩ current-limiting resistor for LED */}
+    <resistor
+      name="R5"
+      resistance="1k"
+      footprint="0402"
+      schX={-2}
+      schY={0}
+      connections={{ pin1: "net.IO2", pin2: ".LED1 > .pos" }}
+    />
+    <netlabel net="IO2" anchorSide="right" connection=".R5 > .pin1" />
+
+    {/* Blue status LED */}
+    <led
+      name="LED1"
+      color="blue"
+      footprint="0402"
+      schX={2}
+      schY={0}
+      connections={{ pos: ".R5 > .pin2", neg: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".LED1 > .neg" />
+  </board>
+)
+`} />
+
+For a 5 mm blue LED (Vf ≈ 3.2 V) at 3.3 V the forward voltage exceeds the
+supply — so on a 3.3 V rail only the bottom segment of the LED glows faintly.
+In practice, a low-current 0402 LED rated for 1–2 mA is a better fit.
+
+## Complete Schematic
+
+All five sections assembled into a single board. The ESP32 module occupies the
+centre; the LDO and USB bridge are to the left, buttons and LED to the right.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="140mm" height="100mm">
+
+    {/* ── ESP32-WROOM-32 Module ───────────────────────────────────────── */}
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32"
+      pinLabels={{
+        pin1:  ["GND"],
+        pin2:  ["3V3"],
+        pin3:  ["EN"],
+        pin4:  ["VP", "IO36"],
+        pin5:  ["VN", "IO39"],
+        pin6:  ["IO34"],
+        pin7:  ["IO35"],
+        pin8:  ["IO32"],
+        pin9:  ["IO33"],
+        pin10: ["IO25"],
+        pin11: ["IO26"],
+        pin12: ["IO27"],
+        pin13: ["IO14"],
+        pin14: ["IO12"],
+        pin15: ["GND2"],
+        pin16: ["IO13"],
+        pin17: ["IO15"],
+        pin18: ["IO2"],
+        pin19: ["IO0"],
+        pin20: ["IO4"],
+        pin21: ["IO16"],
+        pin22: ["IO17"],
+        pin23: ["IO5"],
+        pin24: ["IO18"],
+        pin25: ["IO19"],
+        pin26: ["IO21"],
+        pin27: ["RX0"],
+        pin28: ["TX0"],
+        pin29: ["IO22"],
+        pin30: ["IO23"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7",
+                 "pin8","pin9","pin10","pin11","pin12","pin13","pin14"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin15","pin16","pin17","pin18","pin19","pin20","pin21",
+                 "pin22","pin23","pin24","pin25","pin26","pin27","pin28",
+                 "pin29","pin30"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+    <netlabel net="3V3" anchorSide="right" connection=".U1 > .3V3"  />
+    <netlabel net="GND" anchorSide="left"  connection=".U1 > .GND"  />
+    <netlabel net="GND" anchorSide="right" connection=".U1 > .GND2" />
+    <netlabel net="EN"  anchorSide="right" connection=".U1 > .EN"   />
+    <netlabel net="IO0" anchorSide="right" connection=".U1 > .IO0"  />
+    <netlabel net="IO2" anchorSide="right" connection=".U1 > .IO2"  />
+    <netlabel net="ESP_RX" anchorSide="right" connection=".U1 > .RX0" />
+    <netlabel net="ESP_TX" anchorSide="right" connection=".U1 > .TX0" />
+
+    {/* ── AMS1117-3.3 LDO Power Supply ───────────────────────────────── */}
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      pinLabels={{
+        pin1: ["GND_ADJ"],
+        pin2: ["OUT"],
+        pin3: ["IN"],
+        pin4: ["OUT2"],
+      }}
+      schPinArrangement={{
+        leftSide:   { direction: "top-to-bottom", pins: ["pin3"] },
+        rightSide:  { direction: "top-to-bottom", pins: ["pin2", "pin4"] },
+        bottomSide: { direction: "left-to-right", pins: ["pin1"] },
+      }}
+      schX={-16}
+      schY={2}
+    />
+    <netlabel net="VBUS" anchorSide="right" connection=".U2 > .IN"      />
+    <netlabel net="3V3"  anchorSide="left"  connection=".U2 > .OUT"     />
+    <netlabel net="3V3"  anchorSide="left"  connection=".U2 > .OUT2"    />
+    <netlabel net="GND"  anchorSide="top"   connection=".U2 > .GND_ADJ" />
+
+    <capacitor name="C1" capacitance="10uF"  footprint="0805"
+      schX={-20} schY={2} schRotation={90}
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+    />
+    <capacitor name="C2" capacitance="100nF" footprint="0402"
+      schX={-22} schY={2} schRotation={90}
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+    />
+    <capacitor name="C3" capacitance="10uF"  footprint="0805"
+      schX={-12} schY={2} schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }}
+    />
+    <capacitor name="C4" capacitance="100nF" footprint="0402"
+      schX={-10} schY={2} schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.GND" }}
+    />
+    <netlabel net="VBUS" anchorSide="right" connection=".C1 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C1 > .pin2" />
+    <netlabel net="VBUS" anchorSide="right" connection=".C2 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C2 > .pin2" />
+    <netlabel net="3V3"  anchorSide="right" connection=".C3 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C3 > .pin2" />
+    <netlabel net="3V3"  anchorSide="right" connection=".C4 > .pin1" />
+    <netlabel net="GND"  anchorSide="top"   connection=".C4 > .pin2" />
+
+    {/* ── CH340C USB-to-UART Bridge ───────────────────────────────────── */}
+    <chip
+      name="U3"
+      manufacturerPartNumber="CH340C"
+      pinLabels={{
+        pin1:  ["GND"],
+        pin2:  ["TXD"],
+        pin3:  ["RXD"],
+        pin4:  ["V3"],
+        pin5:  ["UD_PLUS"],
+        pin6:  ["UD_MINUS"],
+        pin7:  ["XI"],
+        pin8:  ["XO"],
+        pin9:  ["CTS"],
+        pin10: ["DSR"],
+        pin11: ["RI"],
+        pin12: ["DCD"],
+        pin13: ["DTR"],
+        pin14: ["RTS"],
+        pin15: ["R232"],
+        pin16: ["VCC"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin16","pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin15","pin14","pin13","pin12","pin11","pin10","pin9"],
+        },
+      }}
+      schX={-16}
+      schY={-6}
+    />
+    <netlabel net="5V"     anchorSide="right" connection=".U3 > .VCC"      />
+    <netlabel net="GND"    anchorSide="top"   connection=".U3 > .GND"      />
+    <netlabel net="USB_DP" anchorSide="right" connection=".U3 > .UD_PLUS"  />
+    <netlabel net="USB_DM" anchorSide="right" connection=".U3 > .UD_MINUS" />
+    <netlabel net="ESP_TX" anchorSide="left"  connection=".U3 > .RXD"      />
+    <netlabel net="ESP_RX" anchorSide="left"  connection=".U3 > .TXD"      />
+
+    <capacitor name="C5" capacitance="100nF" footprint="0402"
+      schX={-10} schY={-4} schRotation={90}
+      connections={{ pin1: "net.5V", pin2: "net.GND" }}
+    />
+    <capacitor name="C6" capacitance="100nF" footprint="0402"
+      schX={-10} schY={-6} schRotation={90}
+      connections={{ pin1: ".U3 > .V3", pin2: "net.GND" }}
+    />
+    <netlabel net="5V"  anchorSide="right" connection=".C5 > .pin1" />
+    <netlabel net="GND" anchorSide="top"   connection=".C5 > .pin2" />
+    <netlabel net="GND" anchorSide="top"   connection=".C6 > .pin2" />
+
+    {/* Auto-reset transistors */}
+    <chip
+      name="Q1"
+      manufacturerPartNumber="MMBT3904"
+      pinLabels={{
+        pin1: ["base"],
+        pin2: ["collector"],
+        pin3: ["emitter"],
+      }}
+      schPinArrangement={{
+        leftSide:   { direction: "top-to-bottom", pins: ["pin1"] },
+        rightSide:  { direction: "top-to-bottom", pins: ["pin2"] },
+        bottomSide: { direction: "left-to-right", pins: ["pin3"] },
+      }}
+      schX={-8}
+      schY={-10}
+    />
+    <chip
+      name="Q2"
+      manufacturerPartNumber="MMBT3904"
+      pinLabels={{
+        pin1: ["base"],
+        pin2: ["collector"],
+        pin3: ["emitter"],
+      }}
+      schPinArrangement={{
+        leftSide:   { direction: "top-to-bottom", pins: ["pin1"] },
+        rightSide:  { direction: "top-to-bottom", pins: ["pin2"] },
+        bottomSide: { direction: "left-to-right", pins: ["pin3"] },
+      }}
+      schX={-8}
+      schY={-14}
+    />
+    <resistor name="R1" resistance="10k" footprint="0402"
+      schX={-12} schY={-10}
+      connections={{ pin1: ".U3 > .RTS", pin2: ".Q1 > .base" }}
+    />
+    <resistor name="R2" resistance="10k" footprint="0402"
+      schX={-12} schY={-14}
+      connections={{ pin1: ".U3 > .DTR", pin2: ".Q2 > .base" }}
+    />
+    <netlabel net="EN"  anchorSide="left"  connection=".Q1 > .collector" />
+    <netlabel net="IO0" anchorSide="left"  connection=".Q2 > .collector" />
+    <netlabel net="GND" anchorSide="top"   connection=".Q1 > .emitter"   />
+    <netlabel net="GND" anchorSide="top"   connection=".Q2 > .emitter"   />
+
+    {/* ── Boot & Reset Buttons ────────────────────────────────────────── */}
+    <resistor name="R3" resistance="10k" footprint="0402"
+      schX={10} schY={-2} schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.EN" }}
+    />
+    <netlabel net="3V3" anchorSide="bottom" connection=".R3 > .pin1" />
+    <netlabel net="EN"  anchorSide="top"    connection=".R3 > .pin2" />
+
+    <resistor name="R4" resistance="10k" footprint="0402"
+      schX={14} schY={-2} schRotation={90}
+      connections={{ pin1: "net.3V3", pin2: "net.IO0" }}
+    />
+    <netlabel net="3V3" anchorSide="bottom" connection=".R4 > .pin1" />
+    <netlabel net="IO0" anchorSide="top"    connection=".R4 > .pin2" />
+
+    <pushbutton name="SW1" footprint="pushbutton"
+      schX={10} schY={-6}
+      connections={{ pin1: "net.EN", pin2: "net.GND" }}
+    />
+    <netlabel net="EN"  anchorSide="bottom" connection=".SW1 > .pin1" />
+    <netlabel net="GND" anchorSide="top"    connection=".SW1 > .pin2" />
+
+    <pushbutton name="SW2" footprint="pushbutton"
+      schX={14} schY={-6}
+      connections={{ pin1: "net.IO0", pin2: "net.GND" }}
+    />
+    <netlabel net="IO0" anchorSide="bottom" connection=".SW2 > .pin1" />
+    <netlabel net="GND" anchorSide="top"    connection=".SW2 > .pin2" />
+
+    {/* ── Status LED ──────────────────────────────────────────────────── */}
+    <resistor name="R5" resistance="1k" footprint="0402"
+      schX={10} schY={6}
+      connections={{ pin1: "net.IO2", pin2: ".LED1 > .pos" }}
+    />
+    <netlabel net="IO2" anchorSide="right" connection=".R5 > .pin1" />
+
+    <led name="LED1" color="blue" footprint="0402"
+      schX={14} schY={6}
+      connections={{ pos: ".R5 > .pin2", neg: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".LED1 > .neg" />
+
+  </board>
+)
+`} />
+
+## Key Takeaways
+
+| Section | Purpose | Key Components |
+|---------|---------|----------------|
+| ESP32 module | Wi-Fi + BT SoC with flash and antenna | U1 (ESP32-WROOM-32) |
+| LDO power | 5 V → 3.3 V regulation | U2 (AMS1117-3.3), C1–C4 |
+| USB-UART bridge | Firmware upload via USB | U3 (CH340C), C5–C6 |
+| Auto-reset | Hands-free bootloader entry | Q1, Q2, R1, R2 |
+| Buttons | Manual boot / reset override | SW1 (RESET), SW2 (BOOT), R3, R4 |
+| Status LED | IO2 activity indicator | LED1, R5 |
+
+## Going Further
+
+- **Wi-Fi antenna clearance**: If you move the ESP32 module to a custom PCB,
+  keep a copper-free keepout zone under the on-board PCB antenna (marked on the
+  module datasheet).
+- **Deep sleep current**: Add a 10 µF bulk capacitor close to the module's
+  3V3 pin to absorb the current spike when waking from deep sleep (~50 µA → ~250 mA
+  in microseconds).
+- **JTAG debugging**: IO12, IO13, IO14, IO15 form the JTAG interface for
+  hardware-level debugging with OpenOCD.
+- **USB-C connector**: Connect USB_DP/USB_DM to a USB-C connector with the
+  two CC pins each pulled to GND through 5.1 kΩ resistors — this identifies
+  the device as a USB 2.0 peripheral to the host.
+
+The ESP32-WROOM-32 datasheet and reference design are available on the
+[Espressif documentation portal](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/hw-reference/).
