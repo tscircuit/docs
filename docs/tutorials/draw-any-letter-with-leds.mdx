@@ -1,0 +1,396 @@
+---
+title: Draw Any Letter with LEDs
+description: >-
+  Learn how to use tscircuit and the @tscircuit/alphabet package to
+  automatically place 0402 LEDs along the outline of any capital letter,
+  producing a reusable LedLetter component.
+---
+
+## Overview
+
+In this tutorial you will build a reusable `<LedLetter>` component that draws
+any capital letter (A–Z) by placing 0402 LEDs along the letter's outline path.
+The layout is fully automatic — you supply a letter and a size, and math does
+the rest.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Step 1: Sample points along an SVG path
+
+The `@tscircuit/alphabet` package exports `svgAlphabet`, a map from each
+character to a normalized SVG path string (coordinates in `[0, 1]`). We need
+to convert that path into a list of evenly-spaced `{x, y}` points so we know
+where to place each LED.
+
+<TscircuitIframe defaultView="schematic" code={`
+// Utility: walk an SVG "L"-only polyline and return N evenly-spaced points.
+// svgAlphabet paths use only M and L commands, so parsing is straightforward.
+function samplePath(pathStr: string, n: number): { x: number; y: number }[] {
+  // Parse "M x y L x y L x y ..." into coordinate pairs
+  const points: { x: number; y: number }[] = []
+  const tokens = pathStr.trim().split(/\s+/)
+  let i = 0
+  while (i < tokens.length) {
+    const cmd = tokens[i]; i++
+    if (cmd === "M" || cmd === "L") {
+      points.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) })
+      i += 2
+    }
+  }
+  if (points.length < 2) return points
+
+  // Compute cumulative arc-length
+  const arcLen: number[] = [0]
+  for (let j = 1; j < points.length; j++) {
+    const dx = points[j].x - points[j - 1].x
+    const dy = points[j].y - points[j - 1].y
+    arcLen.push(arcLen[j - 1] + Math.sqrt(dx * dx + dy * dy))
+  }
+  const total = arcLen[arcLen.length - 1]
+
+  // Re-sample at equal arc-length intervals
+  const result: { x: number; y: number }[] = []
+  for (let k = 0; k < n; k++) {
+    const target = (k / (n - 1)) * total
+    // Find the segment that contains this arc-length
+    let seg = 0
+    while (seg < arcLen.length - 1 && arcLen[seg + 1] < target) seg++
+    const segLen = arcLen[seg + 1] - arcLen[seg]
+    const t = segLen === 0 ? 0 : (target - arcLen[seg]) / segLen
+    result.push({
+      x: points[seg].x + t * (points[seg + 1].x - points[seg].x),
+      y: points[seg].y + t * (points[seg + 1].y - points[seg].y),
+    })
+  }
+  return result
+}
+
+// Preview: show what the sampled points look like for letter "A"
+const path = "M0.018067 0.94897 L0.290179 0.270996 L0.583986 0.94897 M0.155303 0.684521 L0.433548 0.684521"
+const pts = samplePath(path, 12)
+
+export default () => (
+  <board width="30mm" height="30mm">
+    {pts.map((p, i) => (
+      <led
+        key={i}
+        name={\`LED\${i + 1}\`}
+        color="red"
+        footprint="0402"
+        pcbX={(p.x - 0.5) * 20}
+        pcbY={(0.5 - p.y) * 25}
+        connections={{ anode: "net.PWR", cathode: \`net.COL\${i}\` }}
+      />
+    ))}
+  </board>
+)
+`} />
+
+## Step 2: Add current-limiting resistors
+
+Each LED string needs a resistor (typically 68–100 Ω for a red 0402 LED at
+5 V). We add one resistor per LED wired in series.
+
+<TscircuitIframe defaultView="schematic" code={`
+function samplePath(pathStr, n) {
+  const points = []
+  const tokens = pathStr.trim().split(/\s+/)
+  let i = 0
+  while (i < tokens.length) {
+    const cmd = tokens[i]; i++
+    if (cmd === "M" || cmd === "L") {
+      points.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) })
+      i += 2
+    }
+  }
+  if (points.length < 2) return points
+  const arcLen = [0]
+  for (let j = 1; j < points.length; j++) {
+    const dx = points[j].x - points[j - 1].x
+    const dy = points[j].y - points[j - 1].y
+    arcLen.push(arcLen[j - 1] + Math.sqrt(dx * dx + dy * dy))
+  }
+  const total = arcLen[arcLen.length - 1]
+  const result = []
+  for (let k = 0; k < n; k++) {
+    const target = (k / (n - 1)) * total
+    let seg = 0
+    while (seg < arcLen.length - 1 && arcLen[seg + 1] < target) seg++
+    const segLen = arcLen[seg + 1] - arcLen[seg]
+    const t = segLen === 0 ? 0 : (target - arcLen[seg]) / segLen
+    result.push({
+      x: points[seg].x + t * (points[seg + 1].x - points[seg].x),
+      y: points[seg].y + t * (points[seg + 1].y - points[seg].y),
+    })
+  }
+  return result
+}
+
+// Letter "A" SVG path (from @tscircuit/alphabet svgAlphabet)
+const LETTER_A = "M0.018067 0.94897 L0.290179 0.270996 L0.583986 0.94897 M0.155303 0.684521 L0.433548 0.684521"
+
+export default () => {
+  const pts = samplePath(LETTER_A, 10)
+  const W = 20  // letter width in mm
+  const H = 25  // letter height in mm
+
+  return (
+    <board width="40mm" height="40mm">
+      {pts.map((p, i) => {
+        const px = (p.x - 0.5) * W
+        const py = (0.5 - p.y) * H
+        return (
+          <>
+            <led
+              key={\`led-\${i}\`}
+              name={\`LED\${i + 1}\`}
+              color="red"
+              footprint="0402"
+              pcbX={px}
+              pcbY={py}
+              schX={-8 + i * 1.6}
+              schY={0}
+              connections={{
+                anode: \`net.A\${i}\`,
+                cathode: "net.GND",
+              }}
+            />
+            <resistor
+              key={\`res-\${i}\`}
+              name={\`R\${i + 1}\`}
+              resistance="68ohm"
+              footprint="0402"
+              pcbX={px + 1.5}
+              pcbY={py}
+              schX={-8 + i * 1.6}
+              schY={-2}
+              connections={{
+                pin1: "net.PWR",
+                pin2: \`net.A\${i}\`,
+              }}
+            />
+          </>
+        )
+      })}
+    </board>
+  )
+}
+`} />
+
+## Step 3: Build the reusable LedLetter component
+
+Now we wrap everything in a component that accepts any capital letter and a
+scale factor. All 26 letters (A–Z) are supported using the path data from
+`@tscircuit/alphabet`.
+
+<TscircuitIframe defaultView="pcb" code={`
+// Inline the paths for A–F as a demonstration. In a real project, import from
+// @tscircuit/alphabet: import { svgAlphabet } from "@tscircuit/alphabet"
+const svgAlphabet = {
+  A: "M0.018067 0.94897 L0.290179 0.270996 L0.583986 0.94897 M0.155303 0.684521 L0.433548 0.684521",
+  B: "M0.063965 0.94897 L0.063965 0.278953 L0.209356 0.270996 L0.342486 0.294394 L0.432179 0.37292 L0.418224 0.48773 L0.312686 0.549166 L0.084728 0.575531 L0.306377 0.589434 L0.468877 0.647456 L0.538087 0.736658 L0.5324 0.85202 L0.501247 0.902983 L0.42355 0.944398 L0.063965 0.94897",
+  C: "M0.529054 0.419847 L0.498425 0.345196 L0.442238 0.292341 L0.33583 0.257813 L0.257199 0.268357 L0.187906 0.303748 L0.120243 0.385432 L0.072998 0.599844 L0.110073 0.815385 L0.165381 0.902183 L0.222883 0.942801 L0.334904 0.961214 L0.43253 0.937679 L0.504816 0.868999 L0.529054 0.772065",
+  D: "M0.064454 0.94897 L0.071838 0.285078 L0.171217 0.270996 L0.247348 0.272633 L0.37101 0.306078 L0.462461 0.378304 L0.514748 0.475555 L0.535591 0.576392 L0.537599 0.652313 L0.528065 0.717381 L0.508562 0.772419 L0.445948 0.855695 L0.362356 0.90871 L0.225203 0.945862 L0.064454 0.94897",
+  E: "M0.080078 0.270996 L0.080078 0.94897 M0.080078 0.270996 L0.521974 0.270996 M0.080078 0.609981 L0.389405 0.609981 M0.080078 0.94897 L0.521974 0.94897",
+  F: "M0.086426 0.270996 L0.086426 0.94897 M0.091304 0.275607 L0.515626 0.275607 M0.091304 0.607677 L0.447344 0.607677",
+}
+
+function samplePath(pathStr, n) {
+  const points = []
+  const tokens = pathStr.trim().split(/\s+/)
+  let i = 0
+  while (i < tokens.length) {
+    const cmd = tokens[i]; i++
+    if (cmd === "M" || cmd === "L") {
+      points.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) }); i += 2
+    }
+  }
+  if (points.length < 2) return [points[0]]
+  const arcLen = [0]
+  for (let j = 1; j < points.length; j++) {
+    const dx = points[j].x - points[j - 1].x, dy = points[j].y - points[j - 1].y
+    arcLen.push(arcLen[j - 1] + Math.sqrt(dx * dx + dy * dy))
+  }
+  const total = arcLen[arcLen.length - 1]
+  const result = []
+  for (let k = 0; k < n; k++) {
+    const target = (k / (n - 1)) * total
+    let seg = 0
+    while (seg < arcLen.length - 1 && arcLen[seg + 1] < target) seg++
+    const segLen = arcLen[seg + 1] - arcLen[seg]
+    const t = segLen === 0 ? 0 : (target - arcLen[seg]) / segLen
+    result.push({
+      x: points[seg].x + t * (points[seg + 1].x - points[seg].x),
+      y: points[seg].y + t * (points[seg + 1].y - points[seg].y),
+    })
+  }
+  return result
+}
+
+// LedLetter component: places nLeds 0402 LEDs along the outline of any letter
+const LedLetter = ({ letter, power, gnd, offsetX = 0, offsetY = 0, width = 18, height = 24, nLeds = 14, namePrefix = "" }) => {
+  const path = svgAlphabet[letter.toUpperCase()]
+  if (!path) return null
+  const pts = samplePath(path, nLeds)
+
+  return (
+    <>
+      {pts.map((p, i) => {
+        const px = offsetX + (p.x - 0.3) * width
+        const py = offsetY + (0.6 - p.y) * height
+        const ledName = namePrefix + letter + \`_LED\${i + 1}\`
+        const resName = namePrefix + letter + \`_R\${i + 1}\`
+        const midNet = \`net.\${ledName}_A\`
+        return (
+          <>
+            <resistor
+              key={\`r\${i}\`}
+              name={resName}
+              resistance="68ohm"
+              footprint="0402"
+              pcbX={px - 1}
+              pcbY={py}
+              connections={{ pin1: power, pin2: midNet }}
+            />
+            <led
+              key={\`l\${i}\`}
+              name={ledName}
+              color="red"
+              footprint="0402"
+              pcbX={px}
+              pcbY={py}
+              connections={{ anode: midNet, cathode: gnd }}
+            />
+          </>
+        )
+      })}
+    </>
+  )
+}
+
+export default () => (
+  <board width="120mm" height="35mm">
+    <LedLetter letter="A" power="net.PWR" gnd="net.GND" offsetX={-50} offsetY={0} namePrefix="L1_" />
+    <LedLetter letter="B" power="net.PWR" gnd="net.GND" offsetX={-25} offsetY={0} namePrefix="L2_" />
+    <LedLetter letter="C" power="net.PWR" gnd="net.GND" offsetX={0}   offsetY={0} namePrefix="L3_" />
+    <LedLetter letter="D" power="net.PWR" gnd="net.GND" offsetX={25}  offsetY={0} namePrefix="L4_" />
+    <LedLetter letter="E" power="net.PWR" gnd="net.GND" offsetX={50}  offsetY={0} namePrefix="L5_" />
+  </board>
+)
+`} />
+
+## Step 4: Complete usage example
+
+Here is the complete `<LedLetter>` component with all 26 letters supported,
+ready to copy into your own project.
+
+```tsx
+import { svgAlphabet } from "@tscircuit/alphabet"
+
+function samplePath(pathStr: string, n: number) {
+  const points: { x: number; y: number }[] = []
+  const tokens = pathStr.trim().split(/\s+/)
+  let i = 0
+  while (i < tokens.length) {
+    const cmd = tokens[i++]
+    if (cmd === "M" || cmd === "L") {
+      points.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) })
+      i += 2
+    }
+  }
+  if (points.length < 2) return points
+  const arcLen = [0]
+  for (let j = 1; j < points.length; j++) {
+    const dx = points[j].x - points[j - 1].x
+    const dy = points[j].y - points[j - 1].y
+    arcLen.push(arcLen[j - 1] + Math.sqrt(dx * dx + dy * dy))
+  }
+  const total = arcLen.at(-1)!
+  const result: { x: number; y: number }[] = []
+  for (let k = 0; k < n; k++) {
+    const target = (k / (n - 1)) * total
+    let seg = 0
+    while (seg < arcLen.length - 1 && arcLen[seg + 1] < target) seg++
+    const segLen = arcLen[seg + 1] - arcLen[seg]
+    const t = segLen === 0 ? 0 : (target - arcLen[seg]) / segLen
+    result.push({
+      x: points[seg].x + t * (points[seg + 1].x - points[seg].x),
+      y: points[seg].y + t * (points[seg + 1].y - points[seg].y),
+    })
+  }
+  return result
+}
+
+interface LedLetterProps {
+  letter: string          // Any capital A–Z letter
+  power: string           // Net name for VCC (e.g. "net.PWR")
+  gnd: string             // Net name for GND (e.g. "net.GND")
+  offsetX?: number        // PCB X offset in mm
+  offsetY?: number        // PCB Y offset in mm
+  width?: number          // Letter width in mm (default 18)
+  height?: number         // Letter height in mm (default 24)
+  nLeds?: number          // Number of LEDs (default 14)
+  namePrefix?: string     // Prefix to avoid name collisions
+}
+
+export const LedLetter = ({
+  letter,
+  power,
+  gnd,
+  offsetX = 0,
+  offsetY = 0,
+  width = 18,
+  height = 24,
+  nLeds = 14,
+  namePrefix = "",
+}: LedLetterProps) => {
+  const path = svgAlphabet[letter.toUpperCase() as keyof typeof svgAlphabet]
+  if (!path) return null
+  const pts = samplePath(path, nLeds)
+
+  return (
+    <>
+      {pts.map((p, i) => {
+        const px = offsetX + (p.x - 0.3) * width
+        const py = offsetY + (0.6 - p.y) * height
+        const ledName = `${namePrefix}${letter}_LED${i + 1}`
+        const resName = `${namePrefix}${letter}_R${i + 1}`
+        const midNet = `net.${ledName}_A`
+        return (
+          <>
+            <resistor
+              key={`r${i}`}
+              name={resName}
+              resistance="68ohm"
+              footprint="0402"
+              pcbX={px - 1}
+              pcbY={py}
+              connections={{ pin1: power, pin2: midNet }}
+            />
+            <led
+              key={`l${i}`}
+              name={ledName}
+              color="red"
+              footprint="0402"
+              pcbX={px}
+              pcbY={py}
+              connections={{ anode: midNet, cathode: gnd }}
+            />
+          </>
+        )
+      })}
+    </>
+  )
+}
+```
+
+Usage:
+
+```tsx
+export default () => (
+  <board width="60mm" height="35mm">
+    <LedLetter letter="A" power="net.PWR" gnd="net.GND" offsetX={-20} namePrefix="A_" />
+    <LedLetter letter="B" power="net.PWR" gnd="net.GND" offsetX={5}   namePrefix="B_" />
+  </board>
+)
+```
