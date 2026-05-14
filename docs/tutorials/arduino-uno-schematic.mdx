@@ -1,0 +1,563 @@
+---
+title: "Arduino Uno Schematic: ATmega328P Core Circuit"
+description: Learn how the Arduino Uno schematic works by building the ATmega328P core circuit in tscircuit, including the clock, reset, and I/O sections.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+The Arduino Uno is one of the most studied open-source hardware designs. In this
+tutorial, we'll recreate its core schematic using tscircuit — the ATmega328P
+microcontroller with its essential support circuitry.
+
+## The ATmega328P at a Glance
+
+The ATmega328P is an 8-bit AVR microcontroller in a 28-pin DIP package. It
+powers the original Arduino Uno. Its 28 pins break down into four groups:
+
+- **Power**: VCC, AVCC (analog supply), AREF (analog reference), GND
+- **Crystal**: XTAL1/XTAL2 for the external 16 MHz oscillator
+- **Reset**: Active-low RESET pin
+- **I/O Ports**: Port B (PB0–PB5), Port C (PC0–PC5, includes ADC), Port D (PD0–PD7)
+
+Let's build the schematic step by step.
+
+## Step 1 — The Microcontroller
+
+Start with the `<chip>` component, defining all 28 pin labels to match the
+ATmega328P datasheet. We split the pins between the left and right sides of the
+schematic symbol:
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="80mm" height="60mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ATmega328P"
+      pinLabels={{
+        pin1: ["RESET"],
+        pin2: ["PD0", "RXD"],
+        pin3: ["PD1", "TXD"],
+        pin4: ["PD2", "INT0"],
+        pin5: ["PD3", "INT1"],
+        pin6: ["PD4"],
+        pin7: ["VCC"],
+        pin8: ["GND"],
+        pin9: ["XTAL1"],
+        pin10: ["XTAL2"],
+        pin11: ["PD5"],
+        pin12: ["PD6"],
+        pin13: ["PD7"],
+        pin14: ["PB0"],
+        pin15: ["PB1", "OC1A"],
+        pin16: ["PB2", "SS"],
+        pin17: ["PB3", "MOSI"],
+        pin18: ["PB4", "MISO"],
+        pin19: ["PB5", "SCK"],
+        pin20: ["AVCC"],
+        pin21: ["AREF"],
+        pin22: ["GND2"],
+        pin23: ["PC0", "A0"],
+        pin24: ["PC1", "A1"],
+        pin25: ["PC2", "A2"],
+        pin26: ["PC3", "A3"],
+        pin27: ["PC4", "SDA"],
+        pin28: ["PC5", "SCL"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8",
+                 "pin9","pin10","pin11","pin12","pin13","pin14"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin28","pin27","pin26","pin25","pin24","pin23","pin22",
+                 "pin21","pin20","pin19","pin18","pin17","pin16","pin15"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .VCC" />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .AVCC" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND2" />
+  </board>
+)
+`} />
+
+:::tip Pin Naming Convention
+We use `pin1`–`pin28` as keys. Each value is an array of aliases — tscircuit
+lets you connect to any alias (e.g., `.U1 > .RXD` or `.U1 > .PD0`).
+:::
+
+## Step 2 — The Crystal Oscillator
+
+The ATmega328P needs an external clock source. The Arduino Uno uses a 16 MHz
+crystal (Y1) with two 22 pF load capacitors (C1, C2) to ground. This is the
+standard Pierce oscillator circuit found on pins XTAL1 and XTAL2.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="80mm" height="60mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ATmega328P"
+      pinLabels={{
+        pin1: ["RESET"],
+        pin2: ["PD0", "RXD"],
+        pin3: ["PD1", "TXD"],
+        pin4: ["PD2", "INT0"],
+        pin5: ["PD3", "INT1"],
+        pin6: ["PD4"],
+        pin7: ["VCC"],
+        pin8: ["GND"],
+        pin9: ["XTAL1"],
+        pin10: ["XTAL2"],
+        pin11: ["PD5"],
+        pin12: ["PD6"],
+        pin13: ["PD7"],
+        pin14: ["PB0"],
+        pin15: ["PB1", "OC1A"],
+        pin16: ["PB2", "SS"],
+        pin17: ["PB3", "MOSI"],
+        pin18: ["PB4", "MISO"],
+        pin19: ["PB5", "SCK"],
+        pin20: ["AVCC"],
+        pin21: ["AREF"],
+        pin22: ["GND2"],
+        pin23: ["PC0", "A0"],
+        pin24: ["PC1", "A1"],
+        pin25: ["PC2", "A2"],
+        pin26: ["PC3", "A3"],
+        pin27: ["PC4", "SDA"],
+        pin28: ["PC5", "SCL"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8",
+                 "pin9","pin10","pin11","pin12","pin13","pin14"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin28","pin27","pin26","pin25","pin24","pin23","pin22",
+                 "pin21","pin20","pin19","pin18","pin17","pin16","pin15"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .VCC" />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .AVCC" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND2" />
+
+    {/* 16 MHz Crystal */}
+    <chip
+      name="Y1"
+      manufacturerPartNumber="16MHz Crystal"
+      pinLabels={{ pin1: ["XTAL_IN"], pin2: ["XTAL_OUT"] }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["pin1"] },
+        rightSide: { direction: "top-to-bottom", pins: ["pin2"] },
+      }}
+      schX={-8}
+      schY={1}
+      schWidth={1}
+      connections={{
+        pin1: ".U1 > .XTAL1",
+        pin2: ".U1 > .XTAL2",
+      }}
+    />
+
+    {/* 22pF load capacitors */}
+    <capacitor
+      name="C1"
+      capacitance="22pF"
+      footprint="0402"
+      schX={-9}
+      schY={3}
+      connections={{ pin1: ".U1 > .XTAL1", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C2"
+      capacitance="22pF"
+      footprint="0402"
+      schX={-9}
+      schY={-1}
+      connections={{ pin1: ".U1 > .XTAL2", pin2: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".C1 > .pin2" schX={-9} schY={4} />
+    <netlabel net="GND" anchorSide="top" connection=".C2 > .pin2" schX={-9} schY={-2} />
+  </board>
+)
+`} />
+
+The 22 pF capacitors tune the crystal's oscillation frequency. The exact value
+depends on the crystal's specified load capacitance — typical AVR crystals need
+12–22 pF.
+
+## Step 3 — Reset Circuit
+
+The RESET pin is active-low: pulling it to GND resets the MCU. A 10 kΩ pull-up
+resistor (R1) holds RESET high during normal operation. A 100 nF capacitor (C3)
+filters noise. A momentary button connects RESET to GND for manual resets.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="80mm" height="60mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ATmega328P"
+      pinLabels={{
+        pin1: ["RESET"],
+        pin2: ["PD0", "RXD"],
+        pin3: ["PD1", "TXD"],
+        pin4: ["PD2", "INT0"],
+        pin5: ["PD3", "INT1"],
+        pin6: ["PD4"],
+        pin7: ["VCC"],
+        pin8: ["GND"],
+        pin9: ["XTAL1"],
+        pin10: ["XTAL2"],
+        pin11: ["PD5"],
+        pin12: ["PD6"],
+        pin13: ["PD7"],
+        pin14: ["PB0"],
+        pin15: ["PB1", "OC1A"],
+        pin16: ["PB2", "SS"],
+        pin17: ["PB3", "MOSI"],
+        pin18: ["PB4", "MISO"],
+        pin19: ["PB5", "SCK"],
+        pin20: ["AVCC"],
+        pin21: ["AREF"],
+        pin22: ["GND2"],
+        pin23: ["PC0", "A0"],
+        pin24: ["PC1", "A1"],
+        pin25: ["PC2", "A2"],
+        pin26: ["PC3", "A3"],
+        pin27: ["PC4", "SDA"],
+        pin28: ["PC5", "SCL"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8",
+                 "pin9","pin10","pin11","pin12","pin13","pin14"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin28","pin27","pin26","pin25","pin24","pin23","pin22",
+                 "pin21","pin20","pin19","pin18","pin17","pin16","pin15"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .VCC" />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .AVCC" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND2" />
+
+    {/* Reset pull-up */}
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+      schX={-7}
+      schY={-7}
+      schRotation={90}
+      connections={{ pin1: "net.VCC", pin2: ".U1 > .RESET" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".R1 > .pin1" schX={-7} schY={-9} />
+
+    {/* Reset filter capacitor */}
+    <capacitor
+      name="C3"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-5}
+      schY={-7}
+      schRotation={90}
+      connections={{ pin1: ".U1 > .RESET", pin2: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".C3 > .pin2" schX={-5} schY={-5} />
+
+    {/* Reset button */}
+    <pushbutton
+      name="SW1"
+      footprint="pushbutton"
+      schX={-9}
+      schY={-7}
+      connections={{ pin1: ".U1 > .RESET", pin2: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".SW1 > .pin2" schX={-9} schY={-5} />
+  </board>
+)
+`} />
+
+## Step 4 — Power Decoupling
+
+Every MCU needs bypass capacitors near its power pins to suppress high-frequency
+noise. Place 100 nF capacitors close to each VCC pin. The AVCC pin (analog power
+for the ADC) benefits from an additional 10 µF bulk capacitor.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="80mm" height="60mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ATmega328P"
+      pinLabels={{
+        pin1: ["RESET"],
+        pin2: ["PD0", "RXD"],
+        pin3: ["PD1", "TXD"],
+        pin4: ["PD2", "INT0"],
+        pin5: ["PD3", "INT1"],
+        pin6: ["PD4"],
+        pin7: ["VCC"],
+        pin8: ["GND"],
+        pin9: ["XTAL1"],
+        pin10: ["XTAL2"],
+        pin11: ["PD5"],
+        pin12: ["PD6"],
+        pin13: ["PD7"],
+        pin14: ["PB0"],
+        pin15: ["PB1", "OC1A"],
+        pin16: ["PB2", "SS"],
+        pin17: ["PB3", "MOSI"],
+        pin18: ["PB4", "MISO"],
+        pin19: ["PB5", "SCK"],
+        pin20: ["AVCC"],
+        pin21: ["AREF"],
+        pin22: ["GND2"],
+        pin23: ["PC0", "A0"],
+        pin24: ["PC1", "A1"],
+        pin25: ["PC2", "A2"],
+        pin26: ["PC3", "A3"],
+        pin27: ["PC4", "SDA"],
+        pin28: ["PC5", "SCL"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8",
+                 "pin9","pin10","pin11","pin12","pin13","pin14"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin28","pin27","pin26","pin25","pin24","pin23","pin22",
+                 "pin21","pin20","pin19","pin18","pin17","pin16","pin15"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .VCC" />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .AVCC" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND2" />
+
+    {/* VCC bypass cap */}
+    <capacitor
+      name="C4"
+      capacitance="100nF"
+      footprint="0402"
+      schX={8}
+      schY={4}
+      schRotation={90}
+      connections={{ pin1: "net.VCC", pin2: "net.GND" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".C4 > .pin1" schX={8} schY={5.5} />
+    <netlabel net="GND" anchorSide="top" connection=".C4 > .pin2" schX={8} schY={2.5} />
+
+    {/* AVCC bypass cap */}
+    <capacitor
+      name="C5"
+      capacitance="100nF"
+      footprint="0402"
+      schX={10}
+      schY={4}
+      schRotation={90}
+      connections={{ pin1: "net.AVCC", pin2: "net.GND" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".C5 > .pin1" schX={10} schY={5.5} />
+    <netlabel net="GND" anchorSide="top" connection=".C5 > .pin2" schX={10} schY={2.5} />
+
+    {/* AVCC bulk cap */}
+    <capacitor
+      name="C6"
+      capacitance="10uF"
+      footprint="0402"
+      schX={12}
+      schY={4}
+      schRotation={90}
+      connections={{ pin1: "net.AVCC", pin2: "net.GND" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".C6 > .pin1" schX={12} schY={5.5} />
+    <netlabel net="GND" anchorSide="top" connection=".C6 > .pin2" schX={12} schY={2.5} />
+  </board>
+)
+`} />
+
+## Complete Schematic
+
+Here is the full Arduino Uno core schematic: MCU, crystal oscillator, reset
+circuit, and power decoupling assembled together.
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => (
+  <board width="80mm" height="70mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ATmega328P"
+      pinLabels={{
+        pin1: ["RESET"],
+        pin2: ["PD0", "RXD"],
+        pin3: ["PD1", "TXD"],
+        pin4: ["PD2", "INT0"],
+        pin5: ["PD3", "INT1"],
+        pin6: ["PD4"],
+        pin7: ["VCC"],
+        pin8: ["GND"],
+        pin9: ["XTAL1"],
+        pin10: ["XTAL2"],
+        pin11: ["PD5"],
+        pin12: ["PD6"],
+        pin13: ["PD7"],
+        pin14: ["PB0"],
+        pin15: ["PB1", "OC1A"],
+        pin16: ["PB2", "SS"],
+        pin17: ["PB3", "MOSI"],
+        pin18: ["PB4", "MISO"],
+        pin19: ["PB5", "SCK"],
+        pin20: ["AVCC"],
+        pin21: ["AREF"],
+        pin22: ["GND2"],
+        pin23: ["PC0", "A0"],
+        pin24: ["PC1", "A1"],
+        pin25: ["PC2", "A2"],
+        pin26: ["PC3", "A3"],
+        pin27: ["PC4", "SDA"],
+        pin28: ["PC5", "SCL"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8",
+                 "pin9","pin10","pin11","pin12","pin13","pin14"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["pin28","pin27","pin26","pin25","pin24","pin23","pin22",
+                 "pin21","pin20","pin19","pin18","pin17","pin16","pin15"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    {/* Power nets */}
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .VCC" />
+    <netlabel net="VCC" anchorSide="bottom" connection=".U1 > .AVCC" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND" />
+    <netlabel net="GND" anchorSide="top" connection=".U1 > .GND2" />
+
+    {/* Crystal oscillator */}
+    <chip
+      name="Y1"
+      manufacturerPartNumber="16MHz Crystal"
+      pinLabels={{ pin1: ["XTAL_IN"], pin2: ["XTAL_OUT"] }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["pin1"] },
+        rightSide: { direction: "top-to-bottom", pins: ["pin2"] },
+      }}
+      schX={-8}
+      schY={1}
+      schWidth={1}
+      connections={{ pin1: ".U1 > .XTAL1", pin2: ".U1 > .XTAL2" }}
+    />
+    <capacitor name="C1" capacitance="22pF" footprint="0402"
+      schX={-9.5} schY={3}
+      connections={{ pin1: ".U1 > .XTAL1", pin2: "net.GND" }}
+    />
+    <capacitor name="C2" capacitance="22pF" footprint="0402"
+      schX={-9.5} schY={-1}
+      connections={{ pin1: ".U1 > .XTAL2", pin2: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".C1 > .pin2" />
+    <netlabel net="GND" anchorSide="top" connection=".C2 > .pin2" />
+
+    {/* Reset circuit */}
+    <resistor name="R1" resistance="10k" footprint="0402"
+      schX={-7} schY={-8} schRotation={90}
+      connections={{ pin1: "net.VCC", pin2: ".U1 > .RESET" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".R1 > .pin1" />
+    <capacitor name="C3" capacitance="100nF" footprint="0402"
+      schX={-5} schY={-8} schRotation={90}
+      connections={{ pin1: ".U1 > .RESET", pin2: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".C3 > .pin2" />
+    <pushbutton name="SW1" footprint="pushbutton"
+      schX={-9} schY={-8}
+      connections={{ pin1: ".U1 > .RESET", pin2: "net.GND" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".SW1 > .pin2" />
+
+    {/* Decoupling capacitors */}
+    <capacitor name="C4" capacitance="100nF" footprint="0402"
+      schX={8} schY={4} schRotation={90}
+      connections={{ pin1: "net.VCC", pin2: "net.GND" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".C4 > .pin1" />
+    <netlabel net="GND" anchorSide="top" connection=".C4 > .pin2" />
+    <capacitor name="C5" capacitance="100nF" footprint="0402"
+      schX={10} schY={4} schRotation={90}
+      connections={{ pin1: "net.AVCC", pin2: "net.GND" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".C5 > .pin1" />
+    <netlabel net="GND" anchorSide="top" connection=".C5 > .pin2" />
+    <capacitor name="C6" capacitance="10uF" footprint="0402"
+      schX={12} schY={4} schRotation={90}
+      connections={{ pin1: "net.AVCC", pin2: "net.GND" }}
+    />
+    <netlabel net="VCC" anchorSide="bottom" connection=".C6 > .pin1" />
+    <netlabel net="GND" anchorSide="top" connection=".C6 > .pin2" />
+
+    {/* Pin 13 LED (D13 is Arduino's built-in LED) */}
+    <led name="LED1" color="yellow" footprint="0402"
+      schX={10} schY={-7}
+      connections={{ pos: ".R2 > .pin2", neg: "net.GND" }}
+    />
+    <resistor name="R2" resistance="470" footprint="0402"
+      schX={8} schY={-7}
+      connections={{ pin1: ".U1 > .SCK", pin2: ".LED1 > .pos" }}
+    />
+    <netlabel net="GND" anchorSide="top" connection=".LED1 > .neg" />
+  </board>
+)
+`} />
+
+## Key Takeaways
+
+| Section | Purpose | Key Components |
+|---------|---------|----------------|
+| Crystal | Provides accurate 16 MHz clock | Y1 (crystal), C1/C2 (22 pF) |
+| Reset | Manual reset and noise filtering | R1 (10 kΩ), C3 (100 nF), SW1 |
+| Decoupling | Filters supply noise for clean operation | C4/C5 (100 nF), C6 (10 µF) |
+| D13 LED | Classic Arduino indicator | R2 (470 Ω), LED1 |
+
+## Going Further
+
+- **UART**: PD0 (RXD) and PD1 (TXD) connect to a USB-serial chip (e.g., CH340C)
+  for programming and serial communication.
+- **SPI/ICSP**: PB3 (MOSI), PB4 (MISO), PB5 (SCK), and RESET form the
+  6-pin ICSP header used by the Arduino bootloader programmer.
+- **I²C**: PC4 (SDA) and PC5 (SCL) with 4.7 kΩ pull-up resistors to VCC.
+- **Analog**: PC0–PC5 are the six ADC inputs (A0–A5). AREF can be left
+  unconnected (uses internal reference) or driven by an external 3.3 V source.
+
+The full Arduino Uno schematic is open-source and available in Eagle/KiCad format
+on the [Arduino GitHub page](https://github.com/arduino/Arduino/tree/master/hardware).
