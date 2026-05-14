@@ -1,0 +1,193 @@
+---
+title: Using M.2 Connectors for MicroMod Modules
+description: How to model SparkFun MicroMod M.2 Key E edge connectors in tscircuit for processor-carrier board designs.
+---
+
+## Overview
+
+SparkFun's [MicroMod](https://www.sparkfun.com/micromod) ecosystem uses the **M.2 Key E** edge connector (75 pins, 0.5 mm pitch) to create swappable processor modules. A processor board (e.g., RP2040, ESP32, STM32) plugs into any compatible carrier board via a single M.2 edge connector.
+
+In tscircuit, you model the M.2 connector as a `<chip>` component. The same component definition works on both sides:
+
+- **Processor board** — the processor module exposes signals through the M.2 edge pads.
+- **Carrier board** — the carrier hosts the physical M.2 socket and routes those signals to headers, sensors, or other peripherals.
+
+## MicroMod Signal Map
+
+The MicroMod specification assigns each M.2 pin a fixed function. Odd-numbered pins are GND; even-numbered pins carry signals:
+
+| Pin | Signal | Notes |
+|-----|--------|-------|
+| 2 | 3V3 | Regulated 3.3 V from carrier |
+| 4 | 3V3_EN | 3.3 V enable (active high) |
+| 6 | RESET | System reset (active low) |
+| 8 | BOOT | Bootloader entry |
+| 10 | USB_DM | USB D− |
+| 12 | USB_DP | USB D+ |
+| 16 | UART_TX1 | Primary UART transmit |
+| 18 | UART_RX1 | Primary UART receive |
+| 24 | I2C_SDA | Primary I²C data |
+| 26 | I2C_SCL | Primary I²C clock |
+| 34 | SPI_CS | SPI chip select |
+| 36 | SPI_SCK | SPI clock |
+| 38 | SPI_COPI | SPI controller out |
+| 40 | SPI_CIPO | SPI controller in |
+| 50 | A0 | Analog input 0 |
+| 52 | A1 | Analog input 1 |
+| 56 | PWM0 | PWM output 0 |
+| 58 | PWM1 | PWM output 1 |
+| 60 | D0 | Digital I/O 0 |
+| 62 | D1 | Digital I/O 1 |
+| 64–74 | G0–G5 | General-purpose I/O |
+
+All odd pins (1, 3, 5 … 75) are GND.
+
+## Defining the MicroMod Edge Connector
+
+Model the connector as a `<chip>` with the full 75-pin label map. Because every odd pin is GND, omit them from `schPinArrangement` to keep the schematic readable — only signal pins appear on the schematic side.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+const MicroModEdge = (props) => (
+  <chip
+    manufacturerPartNumber="MicroMod_M2_Key_E_75P"
+    footprint="edge_connector_75p_m2_key_e"
+    pinLabels={{
+      pin1: "GND",   pin2: "3V3",
+      pin3: "GND",   pin4: "3V3_EN",
+      pin5: "GND",   pin6: "RESET",
+      pin7: "GND",   pin8: "BOOT",
+      pin9: "GND",   pin10: "USB_DM",
+      pin11: "GND",  pin12: "USB_DP",
+      pin13: "GND",  pin14: "NC",
+      pin15: "GND",  pin16: "UART_TX1",
+      pin17: "GND",  pin18: "UART_RX1",
+      pin19: "GND",  pin20: "UART_RTS1",
+      pin21: "GND",  pin22: "UART_CTS1",
+      pin23: "GND",  pin24: "I2C_SDA",
+      pin25: "GND",  pin26: "I2C_SCL",
+      pin27: "GND",  pin28: "I2C_INT",
+      pin29: "GND",  pin30: "I2C1_SDA",
+      pin31: "GND",  pin32: "I2C1_SCL",
+      pin33: "GND",  pin34: "SPI_CS",
+      pin35: "GND",  pin36: "SPI_SCK",
+      pin37: "GND",  pin38: "SPI_COPI",
+      pin39: "GND",  pin40: "SPI_CIPO",
+      pin41: "GND",  pin42: "SPI1_CS",
+      pin43: "GND",  pin44: "SPI1_SCK",
+      pin45: "GND",  pin46: "SPI1_COPI",
+      pin47: "GND",  pin48: "SPI1_CIPO",
+      pin49: "GND",  pin50: "A0",
+      pin51: "GND",  pin52: "A1",
+      pin53: "GND",  pin54: "BATT_VIN3",
+      pin55: "GND",  pin56: "PWM0",
+      pin57: "GND",  pin58: "PWM1",
+      pin59: "GND",  pin60: "D0",
+      pin61: "GND",  pin62: "D1",
+      pin63: "GND",  pin64: "G0",
+      pin65: "GND",  pin66: "G1",
+      pin67: "GND",  pin68: "G2",
+      pin69: "GND",  pin70: "G3",
+      pin71: "GND",  pin72: "G4",
+      pin73: "GND",  pin74: "G5",
+      pin75: "GND",
+    }}
+    schPinArrangement={{
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: [
+          "pin2","pin4","pin6","pin8","pin10","pin12",
+          "pin16","pin18","pin20","pin22",
+          "pin24","pin26","pin28","pin30","pin32",
+          "pin34","pin36","pin38","pin40",
+          "pin42","pin44","pin46","pin48",
+          "pin50","pin52","pin54",
+          "pin56","pin58","pin60","pin62",
+          "pin64","pin66","pin68","pin70","pin72","pin74",
+        ],
+      },
+    }}
+    {...props}
+  />
+)
+
+export default () => (
+  <board width="30mm" height="80mm">
+    <MicroModEdge name="J1" schX={0} schY={0} pcbX={0} pcbY={0} />
+  </board>
+)
+`} />
+
+## Connecting a Processor Module
+
+On the **processor board**, map your MCU's GPIO/peripheral pins to the correct M.2 pin numbers using the `connections` prop. Use pin number references (`sel.U1.pin6`) rather than label names when referencing chip pins — label names are not part of the global `sel` type union.
+
+```tsx
+import { sel } from "@tscircuit/core"
+
+// RP2040 processor mapped to MicroMod signals
+<MicroModEdge
+  name="J1"
+  connections={{
+    pin2: "net.3V3",                  // 3.3 V rail
+    pin6: sel.U1.pin42,               // RUN / nRESET
+    pin8: "net.BOOT",                 // BOOTSEL
+    pin10: "net.USB_DM_EXT",          // USB D−
+    pin12: "net.USB_DP_EXT",          // USB D+
+    pin16: sel.U1.pin2,               // GPIO0 → UART_TX1
+    pin18: sel.U1.pin3,               // GPIO1 → UART_RX1
+    pin24: sel.U1.pin6,               // GPIO4 → I2C_SDA
+    pin26: sel.U1.pin7,               // GPIO5 → I2C_SCL
+    pin34: sel.U1.pin21,              // GPIO17 → SPI_CS
+    pin36: sel.U1.pin22,              // GPIO18 → SPI_SCK
+    pin38: sel.U1.pin23,              // GPIO19 → SPI_COPI
+    pin40: sel.U1.pin20,              // GPIO16 → SPI_CIPO
+    pin50: sel.U1.pin28,              // GPIO26/ADC0 → A0
+    pin52: sel.U1.pin29,              // GPIO27/ADC1 → A1
+    pin56: sel.U1.pin25,              // GPIO21 → PWM0
+    pin60: sel.U1.pin8,               // GPIO6 → D0
+    pin64: sel.U1.pin10,              // GPIO8 → G0
+  }}
+/>
+```
+
+## Carrier Board Pattern
+
+On the **carrier board**, the same connector definition appears but connections go outward to headers, sensors, or other chips:
+
+```tsx
+<MicroModEdge
+  name="J1"
+  connections={{
+    pin2: "net.3V3",
+    pin16: "net.TX_TO_HOST",   // route UART_TX1 to debug header
+    pin24: sel.SENSOR.SDA,     // route I2C_SDA to an on-board sensor
+    pin26: sel.SENSOR.SCL,
+    pin50: sel.ADC.IN1,        // route A0 to ADC chip
+  }}
+/>
+```
+
+All GND pins connect to `net.GND` via `netlabel`:
+
+```tsx
+{/* Connect all GND pins with net labels instead of individual connections */}
+<netlabel net="GND" anchorSide="top" connection="J1.pin1" />
+<netlabel net="GND" anchorSide="top" connection="J1.pin3" />
+{/* ... repeat for all odd pins up to pin75 */}
+```
+
+## Footprint Note
+
+The MicroMod Key E footprint string `edge_connector_75p_m2_key_e` is a custom footprint. If the autorouter or renderer does not recognize it, import the footprint from KiCad using the KiCad library importer:
+
+```ts
+import footprint from "@tscircuit/kicad-footprint/SparkFun-MicroMod/MicroMod_Key_E_Connector.kicad_mod"
+```
+
+See the [Importing from KiCad](./importing-from-kicad.md) guide for details on using `.kicad_mod` files in tscircuit.
+
+## Full Example: RP2040 Processor Board
+
+The [SparkFun MicroMod RP2040 Processor](https://www.sparkfun.com/products/17720) is a complete example that uses this connector. The tscircuit implementation is available in the [sparkfun-boards](https://github.com/tscircuit/sparkfun-boards) repository as a reference for both the processor module and the M.2 edge connector wiring pattern.
