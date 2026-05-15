@@ -1,0 +1,88 @@
+---
+title: USB Power Delivery Trigger HAT
+description: Build a USB Power Delivery Trigger HAT with voltage negotiation using the FP28XX/CH224K controller.
+---
+
+## Overview
+
+This tutorial walks you through building a USB Power Delivery (PD) Trigger HAT for Raspberry Pi using tscircuit. The HAT negotiates voltages from 5V to 20V via USB PD and provides terminal block outputs with status indication.
+
+## What You'll Need
+
+- USB PD controller (FP28XX, CH224K, or PD2001)
+- USB-C connector
+- Terminal blocks for power output
+- Status LEDs
+- Filtering capacitors (100uF, 10uF)
+- Pull-up/pull-down resistors for PD negotiation
+
+## Circuit Design
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+
+export default () => {
+  return (
+    <board width="65mm" height="56mm">
+      {/* USB-C Input Connector */}
+      <chip name="U1" footprint="usb-c" pcbX={-25} pcbY={0}
+        connections={{ VBUS: "net.VBUS", GND: "net.GND", CC1: "net.CC1", CC2: "net.CC2" }}
+      />
+      {/* USB PD Controller - CH224K */}
+      <chip name="U2" footprint="esso-16" pcbX={0} pcbY={0}
+        connections={{ VBUS: "net.VBUS", GND: "net.GND", CC1: "net.CC1", CC2: "net.CC2" }}
+      />
+      {/* Voltage Select Resistors */}
+      <resistor name="R1" resistance="10k" footprint="0402" pcbX={5} pcbY={8} />
+      <resistor name="R2" resistance="10k" footprint="0402" pcbX={8} pcbY={8} />
+      {/* Output Filter Capacitors */}
+      <capacitor name="C1" capacitance="100uF" footprint="1206" pcbX={15} pcbY={-5} />
+      <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={20} pcbY={-5} />
+      {/* Status LED */}
+      <led name="D1" color="green" footprint="0603" pcbX={25} pcbY={5} />
+      <resistor name="R4" resistance="1k" footprint="0402" pcbX={25} pcbY={10} />
+      {/* Terminal Block Output */}
+      <chip name="J2" footprint="screw-terminal-2pin" pcbX={25} pcbY={0} />
+    </board>
+  )
+}
+`} />
+
+## Step-by-Step Instructions
+
+### 1. USB-C Input
+Place the USB-C connector at one edge of the board. This serves as the power input and PD communication interface.
+
+### 2. PD Controller
+The CH224K USB PD controller handles voltage negotiation. Connect CC1/CC2 lines from the USB-C connector to the controller for PD communication.
+
+### 3. Voltage Selection
+Configure the desired output voltage (5V, 9V, 12V, 15V, or 20V) using pull-down resistors on the CFG pins:
+- **5V:** CFG1=Low, CFG2=Low, CFG3=Low
+- **9V:** CFG1=High, CFG2=Low, CFG3=Low
+- **12V:** CFG1=Low, CFG2=High, CFG3=Low
+- **15V:** CFG1=High, CFG2=High, CFG3=Low
+- **20V:** CFG1=Low, CFG2=Low, CFG3=High
+
+### 4. Output Filtering
+Add bulk (100uF) and decoupling (10uF) capacitors on the output to reduce voltage ripple.
+
+### 5. Status LED
+Add a green LED with a 1k current-limiting resistor to indicate when power is active.
+
+### 6. Terminal Block Output
+Use a 2-pin screw terminal for the regulated output, making it easy to connect external devices.
+
+## Testing
+
+1. Connect a USB-C PD power supply to the input
+2. Verify the negotiated voltage on the terminal block with a multimeter
+3. Check the status LED illuminates
+4. Measure output ripple under load (should be <100mV)
+
+## Safety Notes
+
+- Ensure adequate trace width for higher currents (use 2oz copper for 20V/3A)
+- Add a polyfuse on the output for overcurrent protection
+- Keep PD communication traces short and away from high-current paths
