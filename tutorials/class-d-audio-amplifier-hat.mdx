@@ -1,0 +1,123 @@
+# Class D Audio Amplifier HAT Tutorial
+
+## Overview
+
+Build a Class D Audio Amplifier HAT using the PAM8403, delivering 3W per channel of stereo audio for Raspberry Pi or standalone use.
+
+## Components
+
+| Component | Quantity | Notes |
+|-----------|----------|-------|
+| PAM8403 | 1 | 3W+3W Class D amplifier |
+| 10kΩ Potentiometer | 1 | Volume control |
+| 3.5mm Audio Jack | 1 | Input |
+| Terminal Block 2-pin | 2 | Speaker outputs |
+| 100µF Electrolytic | 2 | Output coupling |
+| 220µF Electrolytic | 1 | Power filter |
+| 100nF Ceramic | 2 | Decoupling |
+
+## Schematic
+
+```typescript
+import { createCircuit } from "@tscircuit/core"
+
+export default function AudioAmpHat() {
+  return (
+    <board width="65mm" height="56mm">
+      {/* PAM8403 Amplifier */}
+      <chip name="U1" footprint="SOP-16" supplierPartNumbers={{ jlcpcb: "C113663" }} />
+      
+      {/* Volume control */}
+      <potentiometer name="RV1" resistance="10kΩ" />
+      
+      {/* Input jack */}
+      <audio-jack name="J1" type="3.5mm" />
+      
+      {/* Speaker outputs */}
+      <terminal-block name="J2" pinCount={2} label="L Speaker" />
+      <terminal-block name="J3" pinCount={2} label="R Speaker" />
+      
+      {/* Coupling capacitors */}
+      <capacitor name="C1" capacitance="100µF" footprint="1206" />
+      <capacitor name="C2" capacitance="100µF" footprint="1206" />
+      
+      {/* Power filter */}
+      <capacitor name="C3" capacitance="220µF" footprint="1206" />
+      <capacitor name="C4" capacitance="100nF" footprint="0805" />
+    </board>
+  )
+}
+```
+
+## Circuit Design
+
+### Power Supply
+- Input: 5V from USB or Raspberry Pi
+- PAM8403 operates from 2.5V to 5.5V
+- Add 220µF bulk cap + 100nF decoupling near IC
+
+### Audio Input
+- 3.5mm jack connects to potentiometer wiper
+- Potentiometer controls volume
+- AC coupling caps (100µF) block DC bias
+
+### Audio Output
+- Class D filtered output to terminal blocks
+- Use twisted pair wire to speakers
+- Keep output traces short
+
+## Raspberry Pi Integration
+
+```bash
+# Enable audio output
+sudo raspi-config nonint do_audio 0
+
+# Set volume to 80%
+amixer set PCM -- 80%
+
+# Test audio
+speaker-test -t wav -c 2
+```
+
+### Python Audio Player
+
+```python
+import pygame
+import time
+
+pygame.mixer.init()
+pygame.mixer.music.load("audio.wav")
+pygame.mixer.music.set_volume(0.8)
+pygame.mixer.music.play()
+
+while pygame.mixer.music.get_busy():
+    time.sleep(0.1)
+```
+
+## PCB Layout
+
+1. Keep audio input traces away from output traces
+2. Star ground pattern for minimal noise
+3. Place decoupling caps as close to IC as possible
+4. Use ground plane on bottom layer
+5. Route speaker outputs with wider traces
+
+## Testing
+
+1. Connect 5V power
+2. Connect speakers to terminal blocks
+3. Plug audio source into 3.5mm jack
+4. Adjust volume potentiometer
+5. Verify clean audio output at both speakers
+
+## Specifications
+
+- Output Power: 3W + 3W (5V, 4Ω)
+- THD: < 0.2% at 1W
+- Efficiency: > 85%
+- Frequency Response: 20Hz - 20kHz
+- SNR: > 90dB
+
+## Estimated Cost
+
+~$4 in single quantities
