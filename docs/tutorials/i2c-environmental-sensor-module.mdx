@@ -1,0 +1,353 @@
+---
+title: Building an I2C Environmental Sensor Module Tutorial
+description: Learn how to design a multi-sensor environmental monitoring module using tscircuit — BME280 (temp/humidity/pressure), CCS811 (CO2/VOC), I2C bus design, and enclosure considerations.
+---
+
+## Overview
+
+This tutorial covers designing a comprehensive environmental monitoring sensor module using tscircuit. You'll learn about I2C communication, multi-sensor integration, environmental sensing principles, and low-power design for battery-operated applications.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Project Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Board Size | 25mm × 35mm |
+| Power Supply | 3.3V regulated |
+| Communication | I2C (SDA/SCL) |
+| Sensors | BME280 + CCS811 |
+| Interface | Qwiic/Stemma QT compatible |
+
+## Sensors Overview
+
+### BME280 (Bosch)
+
+Measures temperature, humidity, and barometric pressure:
+
+| Parameter | Range | Accuracy |
+|-----------|-------|----------|
+| Temperature | -40°C to +85°C | ±1°C |
+| Humidity | 0-100% RH | ±3% |
+| Pressure | 300-1100 hPa | ±1 hPa |
+
+### CCS811 (AMS)
+
+Measures carbon dioxide (CO2) and volatile organic compounds (VOCs):
+
+| Parameter | Range | Accuracy |
+|-----------|-------|----------|
+| eCO2 | 400-8192 ppm | ±50 ppm |
+| TVOC | 0-1187 ppb | — |
+
+## Components
+
+| Ref | Part | Description | Footprint |
+|-----|------|------------|-----------|
+| U1 | BME280 | Temp/Humidity/Pressure | `lga-8` |
+| U2 | CCS811 | CO2/VOC Sensor | `mlga-10` |
+| U3 | AP2112-3.3 | 3.3V LDO regulator | `sot-23-5` |
+| J1 | Qwiic Connector | I2C + Power | `jst-ph-4pin` |
+| J2 | Optional Header | Breadboard pins | `pin_header_1x4` |
+| C1 | Input capacitor | 10µF | `0805` |
+| C2 | Output capacitor | 10µF | `0805` |
+| R1 | I2C pull-up | 4.7kΩ | `0805` |
+| R2 | I2C pull-up | 4.7kΩ | `0805` |
+| LED1 | Power LED | Blue | `0805` |
+
+## Step 1: BME280 Sensor
+
+The BME280 uses an I2C interface with selectable address (0x76 or 0x77):
+
+```tsx
+<chip
+  name="U1"
+  footprint="lga-8"
+  pcbX={0}
+  pcbY={5}
+/>
+
+/* BME280 Pinout */
+<trace from=".U1 .VDD" to="net.3V3" />
+<trace from=".U1 .GND" to="net.GND" />
+<trace from=".U1 .SDA" to="net.SDA" />
+<trace from=".U1 .SCL" to="net.SCL" />
+<trace from=".U1 .CSB" to="net.3V3" />  /* I2C mode */
+<trace from=".U1 .SDO" to="net.GND" />  /* Address 0x76 */
+```
+
+### BME280 Mounting Considerations
+
+The BME280 should be mounted with the sensing element exposed to air:
+
+1. **Top side**: Keep the port hole unobstructed
+2. **No conformal coating**: Over the sensor
+3. **Isolation**: Separate from heated components
+
+## Step 2: CCS811 Sensor
+
+The CCS811 requires a burn-in period and periodic baseline resets:
+
+```tsx
+<chip
+  name="U2"
+  footprint="mlga-10"
+  pcbX={0}
+  pcbY={-5}
+/>
+
+/* CCS811 Pinout */
+<trace from=".U2 .VCC" to="net.3V3" />
+<trace from=".U2 .GND" to="net.GND" />
+<trace from=".U2 .SDA" to="net.SDA" />
+<trace from=".U2 .SCL" to="net.SCL" />
+<trace from=".U2 .WAK" to="net.GND" />  /* Wake pin low */
+<trace from=".U2 .INT" to="net.INT" />
+<trace from=".U2 .RST" to="net.3V3" />  /* Hardware reset */
+```
+
+### CCS811 Environmental Considerations
+
+The CCS811 is sensitive to:
+- **Temperature changes**: Allow 20 minutes warm-up
+- **High humidity**: Can affect readings temporarily
+- **Airflow**: Needs fresh air for accurate VOC measurements
+
+## Step 3: I2C Bus Design
+
+### Address Configuration
+
+```tsx
+/* BME280: SDO grounded = 0x76 */
+/* CCS811: Addr pin = low = 0x5A */
+
+<resistor name="R1" footprint="0805" resistance="4k7" pcbX={15} pcbY={0} />
+<resistor name="R2" footprint="0805" resistance="4k7" pcbX={15} pcbY={3} />
+
+<trace from="net.3V3" to=".R1 .pos" />
+<trace from="net.3V3" to=".R2 .pos" />
+<trace from=".R1 .neg" to="net.SDA" />
+<trace from=".R2 .neg" to="net.SCL" />
+```
+
+### I2C Pull-Up Resistor Selection
+
+| Bus Speed | Min R (mA) | Max R (kΩ) |
+|-----------|------------|------------|
+| 100kHz | 1kΩ | 10kΩ |
+| 400kHz | 2kΩ | 4kΩ |
+| 1MHz | 1kΩ | 2kΩ |
+
+We use 4.7kΩ for standard 100kHz operation with 2 sensors.
+
+## Step 4: Qwiic/Stemma QT Connector
+
+```tsx
+<chip name="J1" footprint="jst-ph-4pin" pcbX={20} pcbY={0} />
+
+/* Qwiic pinout: 1=GND, 2=3V3, 3=SDA, 4=SCL */
+<trace from=".J1 .1" to="net.GND" />
+<trace from=".J1 .2" to="net.3V3" />
+<trace from=".J1 .3" to="net.SDA" />
+<trace from=".J1 .4" to="net.SCL" />
+```
+
+## Step 5: Power Supply
+
+```tsx
+<chip name="U3" footprint="sot-23-5" pcbX={-15} pcbY={0} />
+
+<capacitor name="C_IN" footprint="0805" capacitance="10µF" pcbX={-17} pcbY={2} />
+<capacitor name="C_OUT" footprint="0805" capacitance="10µF" pcbX={-13} pcbY={2} />
+
+<trace from=".U3 .VIN" to="net.VIN" />
+<trace from=".U3 .GND" to="net.GND" />
+<trace from=".U3 .VOUT" to="net.3V3" />
+
+<trace from="net.VIN" to=".C_IN .pos" />
+<trace from="net.GND" to=".C_IN .neg" />
+<trace from="net.3V3" to=".C_OUT .pos" />
+<trace from="net.GND" to=".C_OUT .neg" />
+```
+
+## Step 6: Power LED
+
+```tsx
+<led name="LED1" color="blue" footprint="0805" pcbX={-20} pcbY={8} />
+<resistor name="R_LED" footprint="0805" resistance="4k7" pcbX={-22} pcbY={8} />
+
+<trace from="net.3V3" to=".R_LED .pos" />
+<trace from=".R_LED .neg" to=".LED1 .pos" />
+<trace from=".LED1 .neg" to="net.GND" />
+```
+
+## Complete Circuit
+
+```tsx
+export default () => {
+  return (
+    <board width="35mm" height="25mm">
+      {/* BME280 - Temp/Humidity/Pressure */}
+      <chip name="U1" footprint="lga-8" pcbX={0} pcbY={5} />
+      
+      {/* CCS811 - CO2/VOC */}
+      <chip name="U2" footprint="mlga-10" pcbX={0} pcbY={-5} />
+      
+      {/* 3.3V LDO */}
+      <chip name="U3" footprint="sot-23-5" pcbX={-15} pcbY={0} />
+      
+      {/* Qwiic Connector */}
+      <chip name="J1" footprint="jst-ph-4pin" pcbX={20} pcbY={0} />
+      
+      {/* Power LED */}
+      <led name="LED1" color="blue" footprint="0805" pcbX={-20} pcbY={8} />
+      <resistor name="R_LED" footprint="0805" resistance="4k7" pcbX={-22} pcbY={8} />
+      
+      {/* Bypass Capacitors */}
+      <capacitor name="C_IN" footprint="0805" capacitance="10µF" pcbX={-17} pcbY={2} />
+      <capacitor name="C_OUT" footprint="0805" capacitance="10µF" pcbX={-13} pcbY={2} />
+    </board>
+  )
+}
+```
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => {
+  return (
+    <board width="35mm" height="25mm">
+      <chip name="U1" footprint="lga-8" pcbX={0} pcbY={5} />
+      <chip name="U2" footprint="mlga-10" pcbX={0} pcbY={-5} />
+      <chip name="U3" footprint="sot-23-5" pcbX={-15} pcbY={0} />
+      <chip name="J1" footprint="jst-ph-4pin" pcbX={20} pcbY={0} />
+      <led name="LED1" color="blue" footprint="0805" pcbX={-20} pcbY={8} />
+      <resistor name="R_LED" footprint="0805" resistance="4k7" pcbX={-22} pcbY={8} />
+    </board>
+  )
+}
+`} />
+
+## Arduino Code Example
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+#include "CCS811.h"
+
+Adafruit_BME280 bme;
+CCS811 ccs811;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+  
+  // Initialize BME280
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found!");
+  }
+  
+  // Initialize CCS811
+  ccs811.begin();
+}
+
+void loop() {
+  // Read BME280
+  float temp = bme.readTemperature();
+  float hum = bme.readHumidity();
+  float pres = bme.readPressure() / 100.0F;
+  
+  // Read CCS811
+  ccs811.readData();
+  int co2 = ccs811.geteCO2();
+  int tvoc = ccs811.getTVOC();
+  
+  Serial.print("Temp: "); Serial.print(temp, 1); Serial.println(" C");
+  Serial.print("Humidity: "); Serial.print(hum, 1); Serial.println(" %");
+  Serial.print("Pressure: "); Serial.print(pres, 1); Serial.println(" hPa");
+  Serial.print("CO2: "); Serial.print(co2); Serial.println(" ppm");
+  Serial.print("TVOC: "); Serial.print(tvoc); Serial.println(" ppb");
+  
+  delay(1000);
+}
+```
+
+## Python (Raspberry Pi) Example
+
+```python
+import smbus2
+import bme280
+import ccs811
+import time
+
+bus = smbus2.SMBus(1)
+
+# Initialize BME280
+calibration_params = bme280.load_calibration_params(bus, 0x76)
+
+# Initialize CCS811
+sensor = ccs811.CCS811(bus, 0x5a)
+time.sleep(1)  # Wait for sensor to warm up
+
+while True:
+    # Read BME280
+    data = bme280.read(bus, 0x76, calibration_params)
+    print(f"Temp: {data.temperature:.1f} C")
+    print(f"Humidity: {data.humidity:.1f} %")
+    print(f"Pressure: {data.pressure:.1f} hPa")
+    
+    # Read CCS811
+    if sensor.data_ready:
+        print(f"CO2: {sensor.co2} ppm")
+        print(f"TVOC: {sensor.tvoc} ppb")
+    
+    time.sleep(1)
+```
+
+## Enclosure Design
+
+### Ventilation Requirements
+- **Sensor area**: Include ventilation holes near sensors
+- **Size**: Minimum 2mm diameter holes
+- **Pattern**: Staggered pattern to prevent dust ingress
+- **Location**: Bottom of enclosure for convection
+
+### Material Considerations
+- **Avoid**: ABS plastic can outgas VOCs
+- **Preferred**: Acrylic, aluminum, or ABS with outgassing period
+- **Sealing**: Use silicone gaskets for weatherproofing
+
+## PCB Layout Guidelines
+
+### Sensor Placement
+- **Keep sensors away from heat sources**: MCU, voltage regulator
+- **Consider airflow**: Position sensors in natural airflow path
+- **Separation**: Keep BME280 and CCS811 at least 5mm apart
+
+### Power Design
+- **Low noise**: CCS811 is sensitive to supply noise
+- **Decoupling**: Use ceramic capacitors near each sensor
+- **Ground plane**: Solid ground under sensor area
+
+## Cost Estimate
+
+| Component | Unit Cost | Qty | Total |
+|-----------|-----------|-----|-------|
+| BME280 | $2.50 | 1 | $2.50 |
+| CCS811 | $3.00 | 1 | $3.00 |
+| AP2112-3.3 | $0.25 | 1 | $0.25 |
+| Qwiic connector | $0.30 | 1 | $0.30 |
+| Passives | $0.05 | 5 | $0.25 |
+| PCB (2-layer) | $0.50 | 1 | $0.50 |
+| **Total** | | | **$6.80** |
+
+## Summary
+
+You've designed a complete environmental sensor module covering:
+- I2C communication with multiple sensors
+- BME280 temperature, humidity, and pressure sensing
+- CCS811 CO2 and VOC detection
+- Qwiic/Stemma QT compatibility
+- Power supply design with filtering
+- Arduino and Python code examples
+- Enclosure design for sensor accuracy
+
+This module is ready for integration into environmental monitoring projects, smart home systems, or air quality monitoring applications.
