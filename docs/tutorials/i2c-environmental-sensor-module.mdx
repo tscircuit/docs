@@ -1,0 +1,845 @@
+---
+title: Building an I2C Environmental Sensor Module
+description: >-
+  This tutorial will walk you through building an I2C environmental sensor module
+  featuring temperature, humidity, and pressure sensing using the BME280 sensor,
+  perfect for weather stations, home automation, and environmental monitoring.
+---
+
+## Overview
+
+This tutorial will walk you through building an I2C environmental sensor module using the popular BME280 sensor. The BME280 is a combined digital sensor that measures temperature, barometric pressure, and humidity with high accuracy. This module is ideal for weather stations, home automation systems, HVAC monitoring, and environmental data logging.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+import { SSD1306_OLED } from "@tsci/seveibar.ssd1306_128x64_0.96inch_oled_display_module"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    {/* BME280 Environmental Sensor */}
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    
+    {/* I2C Pull-up Resistors */}
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    
+    {/* OLED Display for readings */}
+    <SSD1306_OLED
+      name="OLED1"
+      pcbX={0}
+      pcbY={-5}
+    />
+    
+    {/* Status LED */}
+    <led name="LED1" color="blue" footprint="0805" pcbX={-10} pcbY={-15} />
+    <resistor name="R1" resistance="330" footprint="0603" pcbX={-10} pcbY={-8} />
+    
+    {/* Power Capacitor */}
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+    
+    {/* I2C header for external connection */}
+    <chip
+      name="J1"
+      footprint="1x04_pin_header"
+      manufacturerPartNumber="Pin Header 1x4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"]
+      }}
+      pcbX={-15}
+      pcbY={15}
+      pcbRotation="180deg"
+    />
+    
+    {/* Connect I2C bus */}
+    <trace from=".U1 .SDA" to=".I2C1 .SDA" />
+    <trace from=".U1 .SCL" to=".I2C1 .SCL" />
+    <trace from=".I2C1 .SDA" to=".OLED1 .SDA" />
+    <trace from=".I2C1 .SCL" to=".OLED1 .SCL" />
+    
+    {/* Connect power */}
+    <trace from=".U1 .VCC" to=".I2C1 .VCC" />
+    <trace from=".I2C1 .VCC" to=".OLED1 .VCC" />
+    <trace from=".U1 .GND" to=".I2C1 .GND" />
+    <trace from=".I2C1 .GND" to=".OLED1 .GND" />
+    
+    {/* Connect header */}
+    <trace from=".J1 .pin1" to=".I2C1 .VCC" />
+    <trace from=".J1 .pin2" to=".I2C1 .GND" />
+    <trace from=".J1 .pin3" to=".I2C1 .SCL" />
+    <trace from=".J1 .pin4" to=".I2C1 .SDA" />
+    
+    {/* Connect LED */}
+    <trace from=".I2C1 .VCC" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".I2C1 .GND" />
+    
+    {/* Connect decoupling capacitor */}
+    <trace from=".U1 .VCC" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+  </board>
+)
+`} />
+
+## What is an Environmental Sensor Module?
+
+Environmental sensor modules measure physical conditions in the surrounding environment:
+
+- **Temperature**: Ambient air temperature in Celsius or Fahrenheit
+- **Humidity**: Relative humidity percentage (0-100% RH)
+- **Barometric Pressure**: Atmospheric pressure in hPa/mbar
+
+### Why Build Your Own?
+
+Building a custom environmental sensor module offers advantages:
+
+- **Custom form factor**: Design for your specific enclosure or application
+- **Integration**: Combine sensor with display, wireless, or data logging
+- **Learning**: Understand I2C communication and sensor integration
+- **Cost optimization**: Only include components you need
+
+## Understanding the BME280 Sensor
+
+The BME280 from Bosch is a popular environmental sensor because:
+
+- **High accuracy**: Temperature (±0.5°C), humidity (±3% RH), pressure (±1 hPa)
+- **Low power**: 3.6µA typical current consumption
+- **I2C/SPI interface**: Flexible communication options
+- **Small package**: 2.5mm x 2.5mm LGA-8 package
+- **Digital filter**: Built-in noise reduction
+
+### BME280 Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Temperature Range | -40°C to +85°C |
+| Pressure Range | 300 to 1100 hPa |
+| Humidity Range | 0 to 100% RH |
+| I2C Address | 0x76 (SDO=0) or 0x77 (SDO=1) |
+| Supply Voltage | 1.71V to 3.6V |
+| Interface | I2C (up to 3.4MHz) or SPI (up to 10MHz) |
+
+### I2C Communication
+
+The BME280 uses standard I2C communication:
+
+```
+Device Address: 0x76 or 0x77 (set by SDO pin)
+Registers:
+  - 0xD0: Chip ID (should read 0x60)
+  - 0xF7: pressure_msb (start of readout)
+  - 0xF2: ctrl_hum (humidity oversampling)
+  - 0xF4: ctrl_meas (temperature/pressure settings)
+  - 0xF5: config (standby, filter)
+```
+
+## Circuit Requirements
+
+Our environmental sensor module needs:
+
+1. **BME280 sensor** for temperature, humidity, and pressure
+2. **I2C pull-up resistors** (typically 4.7kΩ)
+3. **Power decoupling capacitor** (100nF)
+4. **Status LED** to indicate power
+5. **Pin header** for external connections
+6. **Optional OLED display** for local readings
+
+## Building the Circuit Step by Step
+
+### Step 1: Create the Board and Add the BME280 Sensor
+
+Start with a board and place the BME280 sensor at the center.
+
+```tsx
+import { BME280 } from "@tsci/seveibar.bme280"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+  </board>
+)
+```
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+  </board>
+)
+`} />
+
+### Step 2: Add the I2C Pull-up Resistors
+
+I2C requires pull-up resistors on SDA and SCL lines. The BME280 and most microcontrollers have open-drain outputs, so pull-ups are essential.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+  </board>
+)
+`} />
+
+### Step 3: Add the Power Decoupling Capacitor
+
+Place a 100nF capacitor close to the BME280's VCC pin to filter high-frequency noise.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+  </board>
+)
+`} />
+
+### Step 4: Add the Pin Header for External Connection
+
+A 4-pin header allows connection to microcontrollers or other I2C devices.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+    <chip
+      name="J1"
+      footprint="1x04_pin_header"
+      manufacturerPartNumber="Pin Header 1x4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"]
+      }}
+      pcbX={-15}
+      pcbY={15}
+      pcbRotation="180deg"
+    />
+  </board>
+)
+`} />
+
+### Step 5: Connect All Components
+
+Now let's wire everything together with proper traces.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+    <chip
+      name="J1"
+      footprint="1x04_pin_header"
+      manufacturerPartNumber="Pin Header 1x4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"]
+      }}
+      pcbX={-15}
+      pcbY={15}
+      pcbRotation="180deg"
+    />
+    
+    {/* Connect I2C bus to sensor and pull-ups */}
+    <trace from=".U1 .SDA" to=".I2C1 .SDA" />
+    <trace from=".U1 .SCL" to=".I2C1 .SCL" />
+    
+    {/* Connect header */}
+    <trace from=".J1 .pin1" to=".I2C1 .VCC" />
+    <trace from=".J1 .pin2" to=".I2C1 .GND" />
+    <trace from=".J1 .pin3" to=".I2C1 .SCL" />
+    <trace from=".J1 .pin4" to=".I2C1 .SDA" />
+    
+    {/* Connect power to sensor */}
+    <trace from=".U1 .VCC" to=".I2C1 .VCC" />
+    <trace from=".U1 .GND" to=".I2C1 .GND" />
+    
+    {/* Connect decoupling capacitor */}
+    <trace from=".U1 .VCC" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+  </board>
+)
+`} />
+
+### Step 6: Add the Optional OLED Display
+
+Adding an OLED display creates a standalone weather station that can display readings without needing a computer.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+import { SSD1306_OLED } from "@tsci/seveibar.ssd1306_128x64_0.96inch_oled_display_module"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+    <chip
+      name="J1"
+      footprint="1x04_pin_header"
+      manufacturerPartNumber="Pin Header 1x4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"]
+      }}
+      pcbX={-15}
+      pcbY={15}
+      pcbRotation="180deg"
+    />
+    <SSD1306_OLED
+      name="OLED1"
+      pcbX={0}
+      pcbY={-5}
+    />
+    
+    <trace from=".U1 .SDA" to=".I2C1 .SDA" />
+    <trace from=".U1 .SCL" to=".I2C1 .SCL" />
+    <trace from=".I2C1 .SDA" to=".OLED1 .SDA" />
+    <trace from=".I2C1 .SCL" to=".OLED1 .SCL" />
+    <trace from=".J1 .pin1" to=".I2C1 .VCC" />
+    <trace from=".J1 .pin2" to=".I2C1 .GND" />
+    <trace from=".J1 .pin3" to=".I2C1 .SCL" />
+    <trace from=".J1 .pin4" to=".I2C1 .SDA" />
+    <trace from=".U1 .VCC" to=".I2C1 .VCC" />
+    <trace from=".I2C1 .VCC" to=".OLED1 .VCC" />
+    <trace from=".U1 .GND" to=".I2C1 .GND" />
+    <trace from=".I2C1 .GND" to=".OLED1 .GND" />
+    <trace from=".U1 .VCC" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+  </board>
+)
+`} />
+
+### Step 7: Add Status LED
+
+A status LED provides visual confirmation that the module is powered.
+
+<CircuitPreview defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+import { SSD1306_OLED } from "@tsci/seveibar.ssd1306_128x64_0.96inch_oled_display_module"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+    <chip
+      name="J1"
+      footprint="1x04_pin_header"
+      manufacturerPartNumber="Pin Header 1x4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"]
+      }}
+      pcbX={-15}
+      pcbY={15}
+      pcbRotation="180deg"
+    />
+    <SSD1306_OLED
+      name="OLED1"
+      pcbX={0}
+      pcbY={-5}
+    />
+    <led name="LED1" color="blue" footprint="0805" pcbX={-10} pcbY={-15} />
+    <resistor name="R1" resistance="330" footprint="0603" pcbX={-10} pcbY={-8} />
+    
+    <trace from=".U1 .SDA" to=".I2C1 .SDA" />
+    <trace from=".U1 .SCL" to=".I2C1 .SCL" />
+    <trace from=".I2C1 .SDA" to=".OLED1 .SDA" />
+    <trace from=".I2C1 .SCL" to=".OLED1 .SCL" />
+    <trace from=".J1 .pin1" to=".I2C1 .VCC" />
+    <trace from=".J1 .pin2" to=".I2C1 .GND" />
+    <trace from=".J1 .pin3" to=".I2C1 .SCL" />
+    <trace from=".J1 .pin4" to=".I2C1 .SDA" />
+    <trace from=".U1 .VCC" to=".I2C1 .VCC" />
+    <trace from=".I2C1 .VCC" to=".OLED1 .VCC" />
+    <trace from=".U1 .GND" to=".I2C1 .GND" />
+    <trace from=".I2C1 .GND" to=".OLED1 .GND" />
+    <trace from=".U1 .VCC" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".I2C1 .VCC" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".I2C1 .GND" />
+  </board>
+)
+`} />
+
+## Complete 3D View
+
+Here's the complete module with all components in 3D:
+
+<TscircuitIframe defaultView="3d" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+import { SSD1306_OLED } from "@tsci/seveibar.ssd1306_128x64_0.96inch_oled_display_module"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+    <chip
+      name="J1"
+      footprint="1x04_pin_header"
+      manufacturerPartNumber="Pin Header 1x4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"]
+      }}
+      pcbX={-15}
+      pcbY={15}
+      pcbRotation="180deg"
+    />
+    <SSD1306_OLED
+      name="OLED1"
+      pcbX={0}
+      pcbY={-5}
+    />
+    <led name="LED1" color="blue" footprint="0805" pcbX={-10} pcbY={-15} />
+    <resistor name="R1" resistance="330" footprint="0603" pcbX={-10} pcbY={-8} />
+    
+    <trace from=".U1 .SDA" to=".I2C1 .SDA" />
+    <trace from=".U1 .SCL" to=".I2C1 .SCL" />
+    <trace from=".I2C1 .SDA" to=".OLED1 .SDA" />
+    <trace from=".I2C1 .SCL" to=".OLED1 .SCL" />
+    <trace from=".J1 .pin1" to=".I2C1 .VCC" />
+    <trace from=".J1 .pin2" to=".I2C1 .GND" />
+    <trace from=".J1 .pin3" to=".I2C1 .SCL" />
+    <trace from=".J1 .pin4" to=".I2C1 .SDA" />
+    <trace from=".U1 .VCC" to=".I2C1 .VCC" />
+    <trace from=".I2C1 .VCC" to=".OLED1 .VCC" />
+    <trace from=".U1 .GND" to=".I2C1 .GND" />
+    <trace from=".I2C1 .GND" to=".OLED1 .GND" />
+    <trace from=".U1 .VCC" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".I2C1 .VCC" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".I2C1 .GND" />
+  </board>
+)
+`} />
+
+## Complete Circuit Schematic
+
+Here's the full schematic showing all component connections:
+
+<CircuitPreview defaultView="schematic" code={`
+import { BME280 } from "@tsci/seveibar.bme280"
+import { I2C_PULLUPS } from "@tscircuit/common"
+import { SSD1306_OLED } from "@tsci/seveibar.ssd1306_128x64_0.96inch_oled_display_module"
+
+export default () => (
+  <board width="40mm" height="50mm">
+    <BME280
+      name="U1"
+      pcbX={0}
+      pcbY={10}
+    />
+    <I2C_PULLUPS name="I2C1" pcbX={-10} pcbY={10} />
+    <capacitor name="C1" capacitance="100n" footprint="0603" pcbX={10} pcbY={15} />
+    <chip
+      name="J1"
+      footprint="1x04_pin_header"
+      manufacturerPartNumber="Pin Header 1x4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"]
+      }}
+      pcbX={-15}
+      pcbY={15}
+      pcbRotation="180deg"
+    />
+    <SSD1306_OLED
+      name="OLED1"
+      pcbX={0}
+      pcbY={-5}
+    />
+    <led name="LED1" color="blue" footprint="0805" pcbX={-10} pcbY={-15} />
+    <resistor name="R1" resistance="330" footprint="0603" pcbX={-10} pcbY={-8} />
+    
+    <trace from=".U1 .SDA" to=".I2C1 .SDA" />
+    <trace from=".U1 .SCL" to=".I2C1 .SCL" />
+    <trace from=".I2C1 .SDA" to=".OLED1 .SDA" />
+    <trace from=".I2C1 .SCL" to=".OLED1 .SCL" />
+    <trace from=".J1 .pin1" to=".I2C1 .VCC" />
+    <trace from=".J1 .pin2" to=".I2C1 .GND" />
+    <trace from=".J1 .pin3" to=".I2C1 .SCL" />
+    <trace from=".J1 .pin4" to=".I2C1 .SDA" />
+    <trace from=".U1 .VCC" to=".I2C1 .VCC" />
+    <trace from=".I2C1 .VCC" to=".OLED1 .VCC" />
+    <trace from=".U1 .GND" to=".I2C1 .GND" />
+    <trace from=".I2C1 .GND" to=".OLED1 .GND" />
+    <trace from=".U1 .VCC" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".I2C1 .VCC" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".I2C1 .GND" />
+  </board>
+)
+`} />
+
+## Bill of Materials
+
+| Reference | Component | Value | Footprint | Notes |
+|-----------|-----------|-------|-----------|-------|
+| U1 | BME280 Sensor | - | LGA-8 | Temperature, humidity, pressure |
+| OLED1 | SSD1306 OLED | 0.96" 128x64 | - | I2C OLED display |
+| R1 | Resistor | 330Ω | 0603 | LED current limit |
+| R2, R3 | Resistor | 4.7kΩ | 0603 | I2C pull-ups |
+| C1 | Capacitor | 100nF | 0603 | Power decoupling |
+| J1 | Pin Header | 1x4 male | THT | External connection |
+| LED1 | LED | Blue | 0805 | Power indicator |
+
+## PCB Layout Recommendations
+
+### Sensor Placement
+
+The BME280 should be placed with consideration for:
+
+1. **Keep-out zone**: Avoid placing tall components nearby that might block airflow
+2. **Ventilation**: The sensor needs to "breathe" - consider adding small holes in the enclosure
+3. **Distance from heat sources**: Keep away from components that generate heat (regulators, displays)
+4. **Board orientation**: If using as a vertical module, place sensor on the edge
+
+### I2C Bus Layout
+
+For the I2C bus:
+
+1. **Pull-up resistor placement**: Place near the master device or split between ends
+2. **Bus capacitance**: Keep total bus capacitance under 400pF for reliable 400kHz operation
+3. **Trace length**: I2C is not sensitive to trace length for typical hobby projects
+4. **Shielding**: Not necessary for most applications, but keep away from noisy signals
+
+### Decoupling Capacitor Placement
+
+The 100nF capacitor should be:
+
+1. **As close as possible** to the BME280 VCC pin
+2. **On the same side** of the board as the sensor if possible
+3. **Connected with short traces** to both VCC and GND
+
+## Using the Module with Microcontrollers
+
+### Arduino Connection
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+Adafruit_BME280 bme;
+Adafruit_SSD1306 display(128, 64, &Wire);
+
+void setup() {
+  Serial.begin(9600);
+  
+  // Initialize BME280
+  if (!bme.begin(0x76)) {
+    Serial.println("Could not find a valid BME280 sensor!");
+    while (1);
+  }
+  
+  // Initialize OLED
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.display();
+  delay(1000);
+}
+
+void loop() {
+  // Read sensor values
+  float temp = bme.readTemperature();
+  float humidity = bme.readHumidity();
+  float pressure = bme.readPressure() / 100.0F;
+  
+  // Print to Serial
+  Serial.print("Temperature: ");
+  Serial.print(temp);
+  Serial.println(" °C");
+  
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println(" %");
+  
+  Serial.print("Pressure: ");
+  Serial.print(pressure);
+  Serial.println(" hPa");
+  
+  // Display on OLED
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Weather Station");
+  display.setTextSize(2);
+  display.print(temp, 1);
+  display.println(" C");
+  display.print(humidity, 0);
+  display.println(" %");
+  display.print(pressure, 0);
+  display.println(" hPa");
+  display.display();
+  
+  delay(2000);
+}
+```
+
+### Raspberry Pi Python Example
+
+```python
+import smbus2
+import bme280
+import time
+
+# Initialize I2C bus
+bus = smbus2.SMBus(1)
+address = 0x76
+
+# Load calibration parameters
+calibration_params = bme280.load_calibration_params(bus, address)
+
+while True:
+    # Read sensor data
+    data = bme280.read(bus, address, calibration_params)
+    
+    print(f"Temperature: {data.temperature:.2f} C")
+    print(f"Humidity: {data.humidity:.2f} %")
+    print(f"Pressure: {data.pressure:.2f} hPa")
+    
+    # Calculate altitude (optional)
+    altitude = 44330 * (1 - (data.pressure / 1013.25) ** 0.1903)
+    print(f"Altitude: {altitude:.2f} m")
+    
+    time.sleep(2)
+```
+
+### ESP32 Example
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+#include <WiFi.h>
+
+#define I2C_SDA 21
+#define I2C_SCL 22
+
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(115200);
+  
+  // Initialize I2C with custom pins
+  Wire.begin(I2C_SDA, I2C_SCL);
+  
+  if (!bme.begin(0x76, &Wire)) {
+    Serial.println("Could not find BME280!");
+    while (1);
+  }
+  
+  // Connect to WiFi
+  WiFi.begin("SSID", "PASSWORD");
+}
+
+void loop() {
+  Serial.printf("Temperature: %.2f C\n", bme.readTemperature());
+  Serial.printf("Humidity: %.2f %%\n", bme.readHumidity());
+  Serial.printf("Pressure: %.2f hPa\n", bme.readPressure() / 100);
+  
+  delay(1000);
+}
+```
+
+## Advanced: Altitude Compensation
+
+Barometric pressure varies with altitude. To calculate altitude from pressure readings:
+
+```
+Altitude = 44330 × (1 - (P/P0)^0.1903)
+```
+
+Where:
+- P = measured pressure
+- P0 = sea level pressure (typically 1013.25 hPa)
+
+You can also use local weather station data for more accurate P0 values.
+
+## Adding More Sensors
+
+The I2C bus can support multiple sensors. Common additions:
+
+### Gas Sensor (MQ-135)
+
+```tsx
+// Add to existing circuit
+import { MQ135 } from "@tsci/common.mq135"
+
+<MQ135
+  name="GAS1"
+  pcbX={15}
+  pcbY={5}
+  connections={{
+    VCC: ".I2C1 .VCC",
+    GND: ".I2C1 .GND",
+    DO: "net.GAS_DIGITAL",
+    AO: "net.GAS_ANALOG"  // Connect to ADC
+  }}
+/>
+```
+
+### UV Sensor (VEML6075)
+
+```tsx
+import { VEML6075 } from "@tsci/common.veml6075"
+
+<VEML6075
+  name="UV1"
+  pcbX={-15}
+  pcbY={-5}
+  connections={{
+    VCC: ".I2C1 .VCC",
+    GND: ".I2C1 .GND",
+    SDA: ".I2C1 .SDA",
+    SCL: ".I2C1 .SCL"
+  }}
+/>
+```
+
+## Enclosure Design
+
+When designing an enclosure for your sensor module:
+
+1. **Ventilation holes**: Add small holes for air circulation
+2. **Sensor window**: If using an OLED, plan for a viewing window
+3. **Cable routing**: Consider strain relief for the header wires
+4. **Mounting**: Add holes for standoffs or magnets
+5. **Material**: Avoid airtight enclosures - the sensor needs airflow
+6. **Sunlight**: If used outdoors, protect from direct sunlight
+
+## Troubleshooting
+
+### Sensor Not Detected
+
+1. Check I2C address (try 0x76 and 0x77)
+2. Verify pull-up resistors are installed
+3. Check SDA/SCL connections
+4. Verify voltage (BME280 needs 3.3V)
+
+### Readings Seem Off
+
+1. Allow 20 minutes for sensor to stabilize
+2. Check for heat sources near sensor
+3. Verify calibration parameters
+4. Compare with known-good reference
+
+### I2C Communication Errors
+
+1. Check bus capacitance (<400pF)
+2. Reduce I2C speed to 100kHz
+3. Add stronger pull-ups (2.2kΩ)
+4. Check for short circuits
+
+## Conclusion
+
+You now have a complete environmental sensor module that can:
+
+- Measure temperature, humidity, and barometric pressure
+- Display readings on an integrated OLED
+- Interface with any microcontroller via I2C
+- Be extended with additional sensors
+
+This project demonstrates important skills in sensor integration, I2C communication, and PCB design that apply to many embedded systems projects.
+
+## Next Steps
+
+- Add wireless connectivity (ESP8266, nRF24L01, LoRa)
+- Implement data logging with SD card
+- Create a web dashboard for remote monitoring
+- Design a 3D-printed enclosure
+- Build a multi-sensor array for distributed monitoring
+- Add solar power for outdoor deployment
+
+## Resources
+
+- [BME280 Datasheet](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf)
+- [Adafruit BME280 Guide](https://learn.adafruit.com/adafruit-bme280-humidity-barometric-pressure-temperature-sensor-breakout)
+- [I2C Protocol Overview](https://www.i2c-bus.org/specification/)
+- [tscircuit Documentation](/docs/intro/overview)
