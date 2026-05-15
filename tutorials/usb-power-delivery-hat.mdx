@@ -1,0 +1,130 @@
+# USB Power Delivery Trigger HAT Tutorial
+
+## Overview
+
+In this tutorial, we'll build a USB Power Delivery (PD) Trigger HAT that can negotiate voltages from 5V to 20V from any USB PD power supply. This is useful for powering custom electronics projects with modern USB-C chargers.
+
+## Components Needed
+
+| Component | Quantity | Notes |
+|-----------|----------|-------|
+| CH224K USB PD Controller | 1 | or FP2844S |
+| USB-C Receptacle (16-pin) | 1 | Through-hole |
+| 100nF Ceramic Capacitor (0805) | 4 | Decoupling |
+| 10µF Ceramic Capacitor (0805) | 2 | Bulk filtering |
+| 100µF Electrolytic (16V+) | 1 | Output filter |
+| 5mm Terminal Block | 1 | 2-pin output |
+| 3mm LED | 1 | Status indicator |
+| 1kΩ Resistor (0805) | 1 | LED current limit |
+| 10kΩ Resistor (0805) | 3 | PD config pull-down |
+| Tactile Switch | 3 | Voltage select |
+
+## Schematic Design
+
+### Step 1: USB-C Input
+
+Place the USB-C receptacle and connect:
+
+```
+USB-C Pin    ->  CH224K Pin
+---           ---  
+CC1 (A5)     ->  CC1 (Pin 1)
+CC2 (B5)     ->  CC2 (Pin 2)  
+VBUS (A4/B4) ->  VIN (Pin 3)
+GND (A1/B1)  ->  GND
+```
+
+### Step 2: PD Controller Circuit
+
+The CH224K handles PD negotiation automatically:
+
+```typescript
+// tscircuit schematic
+import { createCircuit } from "@tscircuit/core"
+
+export default function USBPDHat() {
+  return (
+    <board width="65mm" height="30mm">
+      {/* USB-C Input */}
+      <usb-c-connector name="J1" />
+      
+      {/* PD Controller */}
+      <chip 
+        name="U1" 
+        footprint="QFN16"
+        footprintParams={{ pitch: "0.5mm" }}
+        supplierPartNumbers={{ jlcpcb: "C5529240" }}
+      />
+      
+      {/* Decoupling capacitors */}
+      <capacitor name="C1" capacitance="100nF" footprint="0805" />
+      <capacitor name="C2" capacitance="100nF" footprint="0805" />
+      <capacitor name="C3" capacitance="10µF" footprint="0805" />
+      <capacitor name="C4" capacitance="100µF" footprint="0805" />
+      
+      {/* Voltage selection resistors */}
+      <resistor name="R1" resistance="10kΩ" footprint="0805" />
+      <resistor name="R2" resistance="10kΩ" footprint="0805" />
+      
+      {/* Status LED */}
+      <led name="D1" footprint="0805" color="green" />
+      <resistor name="R3" resistance="1kΩ" footprint="0805" />
+      
+      {/* Output terminal block */}
+      <terminal-block name="J2" pinCount={2} />
+      
+      {/* Voltage select buttons */}
+      <button name="SW1" label="5V" />
+      <button name="SW2" label="9V" />
+      <button name="SW3" label="12V" />
+    </board>
+  )
+}
+```
+
+### Step 3: Voltage Configuration
+
+The CH224K uses resistor dividers to set the requested voltage:
+
+| Configuration | CFG1 | CFG2 | CFG3 | Voltage |
+|---|---|---|---|---|
+| Default | Float | Float | Float | 5V |
+| 9V | GND | Float | Float | 9V |
+| 12V | Float | GND | Float | 12V |
+| 15V | GND | GND | Float | 15V |
+| 20V | Float | Float | GND | 20V |
+
+## PCB Layout Guidelines
+
+1. Keep USB-C connector close to CH224K (minimize CC trace length)
+2. Place decoupling caps adjacent to IC power pins
+3. Use wider traces for VBUS (min 1mm for 3A)
+4. Ground plane on bottom layer for thermal dissipation
+5. Keep CFG resistors close to IC pins
+
+## Testing Procedure
+
+1. Connect USB-C cable to a PD charger
+2. Verify 5V output on terminal block (default)
+3. Press voltage select buttons and verify output:
+   - SW1: 5V (default)
+   - SW2: 9V
+   - SW3: 12V
+4. Check status LED illuminates when PD negotiation succeeds
+5. Verify output voltage with multimeter
+
+## Bill of Materials
+
+Total estimated cost: ~$5 in single quantities.
+
+## Safety Notes
+
+- Never exceed the rated current of your USB-C cable/charger
+- Add reverse polarity protection if connecting to external circuits
+- Use appropriate wire gauge for expected current draw
+
+## Next Steps
+
+- Add voltage display (7-segment LED)
+- Add current sensing capability
+- Design a 3D-printed enclosure
