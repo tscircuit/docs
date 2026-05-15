@@ -1,0 +1,93 @@
+---
+title: I2C Environmental Sensor Module
+description: Build an I2C Environmental Sensor Module with BME280 for temperature, humidity, and pressure readings.
+---
+
+## Overview
+
+This tutorial guides you through building an I2C Environmental Sensor Module using the BME280 sensor, capable of measuring temperature, humidity, and atmospheric pressure. An optional OLED display shows real-time readings.
+
+## What You'll Need
+
+- BME280 sensor (temperature, humidity, pressure)
+- I2C pull-up resistors (4.7k)
+- Optional SSD1306 OLED display
+- Pin header for external connection
+- Decoupling capacitors
+
+## Circuit Design
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+
+export default () => {
+  return (
+    <board width="40mm" height="30mm">
+      {/* BME280 Environmental Sensor */}
+      <chip name="U1" footprint="lga-8" pcbX={0} pcbY={0}
+        connections={{ SDA: "net.SDA", SCL: "net.SCL", VDD: "net.VCC", GND: "net.GND" }}
+      />
+      {/* I2C Pull-up Resistors */}
+      <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-8} pcbY={5} />
+      <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={-5} pcbY={5} />
+      {/* Optional OLED Display */}
+      <chip name="U2" footprint="oled-ssd1306" pcbX={10} pcbY={0}
+        connections={{ SDA: "net.SDA", SCL: "net.SCL", VDD: "net.VCC", GND: "net.GND" }}
+      />
+      {/* Decoupling Capacitor */}
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={-8} pcbY={-5} />
+      <capacitor name="C2" capacitance="1uF" footprint="0402" pcbX={-5} pcbY={-5} />
+      {/* Pin Header */}
+      <chip name="J1" footprint="pin-header-6" pcbX={15} pcbY={8}
+        connections={{ pin1: "net.VCC", pin2: "net.GND", pin3: "net.SDA", pin4: "net.SCL" }}
+      />
+    </board>
+  )
+}
+`} />
+
+## Step-by-Step Instructions
+
+### 1. BME280 Sensor Placement
+Place the BME280 sensor in an LGA-8 footprint at the center of the board. Ensure adequate airflow around the sensor for accurate readings.
+
+### 2. I2C Pull-up Resistors
+Add 4.7k pull-up resistors on both SDA and SCL lines. These are essential for proper I2C communication. Connect them between the I2C lines and VCC.
+
+### 3. Power Supply Filtering
+Place 100nF and 1uF decoupling capacitors close to the BME280 VDD pin to filter power supply noise.
+
+### 4. Optional OLED Display
+Mount an SSD1306 128x64 OLED display sharing the same I2C bus. It connects to the same SDA/SCL lines with no additional components needed.
+
+### 5. Pin Header
+Add a 6-pin header for external connections: VCC, GND, SDA, SCL, and two spare pins for additional sensors.
+
+## Software Setup
+
+```python
+# Raspberry Pi I2C Setup
+import board
+import adafruit_bme280
+
+i2c = board.I2C()
+sensor = adafruit_bme280.Adafruit_BME280_I2C(i2c)
+
+print(f"Temperature: {sensor.temperature:.1f} C")
+print(f"Humidity: {sensor.humidity:.1f} %")
+print(f"Pressure: {sensor.pressure:.1f} hPa")
+```
+
+## Calibration
+
+- For accurate altitude readings, calibrate the pressure sensor to your local sea-level pressure
+- Allow 5 minutes warm-up time for stable temperature readings
+- Avoid placing near heat-generating components
+
+## Testing
+
+1. Power on the module (3.3V)
+2. Run `i2cdetect -y 1` to verify BME280 at address 0x76 or 0x77
+3. Read sensor values and verify they match ambient conditions
+4. If using OLED, verify display shows correct readings
