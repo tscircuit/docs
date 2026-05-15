@@ -1,0 +1,347 @@
+---
+title: Building a Class D Audio Amplifier HAT Tutorial
+description: Learn how to design a Raspberry Pi HAT-compatible Class D audio amplifier using tscircuit — TPA2016D2, I2S interface, power filtering, and speaker output stage.
+---
+
+## Overview
+
+This tutorial covers designing a Raspberry Pi Zero/4 compatible Class D Audio Amplifier HAT using tscircuit. You'll learn about Class D amplification principles, I2S digital audio interface, power supply filtering, and thermal management for audio circuits.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Project Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Board Size | 65mm × 56mm (Pi HAT form factor) |
+| Output Power | 2× 3W into 4Ω, 2× 1.5W into 8Ω |
+| Power Supply | 5V from Raspberry Pi GPIO or barrel jack |
+| Audio Interface | I2S (PCM5102A DAC) |
+| Amplifier IC | TPA2016D2 (Class D) |
+
+## Components
+
+| Ref | Part | Description | Footprint |
+|-----|------|------------|-----------|
+| U1 | TPA2016D2 | 2-channel Class D amplifier | `qfn-32` |
+| U2 | PCM5102A | I2S DAC | `qfn-28` |
+| J1 | 40-pin GPIO Header | Raspberry Pi HAT compatible | `raspberry-pi-hat-40pin` |
+| J2 | Screw Terminal | Speaker output L | `screw_terminal_2pin` |
+| J3 | Screw Terminal | Speaker output R | `screw_terminal_2pin` |
+| J4 | Barrel Jack | 5V external power | `barrel_jack` |
+| C1 | Input filter cap | 100nF ceramic | `0805` |
+| C2-C5 | Supply bypass caps | 100nF + 10µF | `0805`/`0805` |
+| C6-C7 | Output coupling caps | 470µF electrolytic | `through_hole_electrolytic` |
+| L1-L2 | Output inductors | 10µH ferrite | `1210` |
+| R1-R2 | Input resistors | 10kΩ | `0805` |
+| LED1 | Power indicator | Green LED | `0805` |
+
+## Class D Amplifier Theory
+
+Class D amplifiers use pulse-width modulation (PWM) to amplify audio signals:
+
+1. **Input**: Analog audio signal
+2. **Modulation**: Compares audio to high-frequency triangle wave (~384kHz)
+3. **Output**: PWM stream that varies duty cycle with audio amplitude
+4. **Filtering**: LC low-pass filter removes switching frequency
+5. **Speaker**: Smooth current drives the speaker
+
+**Advantages over Class AB**:
+- Efficiency up to 90% (vs ~60% for Class AB)
+- Less heat dissipation
+- Smaller form factor
+- Longer battery life in portable applications
+
+## Step 1: PCM5102A I2S DAC
+
+The PCM5102A is a high-performance stereo DAC with hardware I2S interface:
+
+```tsx
+<chip
+  name="U2"
+  footprint="qfn-28"
+  pcbX={10}
+  pcbY={0}
+/>
+
+<capacitor name="C_DAC_IN" footprint="0805" capacitance="100nF" pcbX={8} pcbY={5} />
+<capacitor name="C_VCOM" footprint="0805" capacitance="1µF" pcbX={12} pcbY={5} />
+
+<trace from=".U2 .VCC" to="net.3V3" />
+<trace from=".U2 .GND" to="net.GND" />
+<trace from=".U2 .SCK" to="net.GND" />  /* Ground SCK for hardware I2S mode */
+<trace from=".U2 .BCK" to="net.BCK" />
+<trace from=".U2 .LCK" to="net.LRCK" />
+<trace from=".U2 .DIN" to="net.DIN" />
+<trace from=".U2 .FMT" to="net.3V3" />  /* I2S format */
+```
+
+### PCM5102A Pin Configuration
+
+| Pin | Function | Connection |
+|-----|----------|------------|
+| VCC | 3.3V supply | LDO output |
+| GND | Ground | System ground |
+| SCK | System clock | Ground (use PLL) |
+| BCK | Bit clock | From Pi I2S |
+| LRCK | Left/Right clock | From Pi I2S |
+| DIN | Audio data input | From Pi I2S |
+| FMT | Format select | 3.3V (I2S) |
+| XSMT | Soft mute control | 3.3V (unmuted) |
+
+## Step 2: TPA2016D2 Class D Amplifier
+
+The TPA2016D2 provides 2×3W output with integrated feedback:
+
+```tsx
+<chip
+  name="U1"
+  footprint="qfn-32"
+  pcbX={-10}
+  pcbY={0}
+/>
+
+/* Power supply connections */
+<trace from=".U1 .PVDD_L" to="net.5V" />
+<trace from=".U1 .PVDD_R" to="net.5V" />
+<trace from=".U1 .AVDD" to="net.3V3" />
+<trace from=".U1 .DGND" to="net.GND" />
+<trace from=".U1 .AGND" to="net.GND" />
+```
+
+### Input Filtering
+
+```tsx
+<resistor name="R1" footprint="0805" resistance="10k" pcbX={-5} pcbY={8} />
+<resistor name="R2" footprint="0805" resistance="10k" pcbX={-5} pcbY={-8} />
+
+<capacitor name="C_IN_L" footprint="0805" capacitance="100nF" pcbX={-3} pcbY={8} />
+<capacitor name="C_IN_R" footprint="0805" capacitance="100nF" pcbX={-3} pcbY={-8} />
+
+<trace from=".U2 .L_OUT" to=".R1 .pos" />
+<trace from=".R1 .neg" to=".C_IN_L .pos" />
+<trace from=".C_IN_L .neg" to=".U1 .INL" />
+
+<trace from=".U2 .R_OUT" to=".R2 .pos" />
+<trace from=".R2 .neg" to=".C_IN_R .pos" />
+<trace from=".C_IN_R .neg" to=".U1 .INR" />
+```
+
+### Output LC Low-Pass Filter
+
+Each channel requires an LC filter to remove the PWM switching frequency:
+
+```tsx
+<inductor name="L1" footprint="1210" inductance="10µH" pcbX={-18} pcbY={8} />
+<inductor name="L2" footprint="1210" inductance="10µH" pcbX={-18} pcbY={-8} />
+
+<capacitor name="C_FLT_L" footprint="0805" capacitance="1µF" pcbX={-20} pcbY={8} />
+<capacitor name="C_FLT_R" footprint="0805" capacitance="1µF" pcbX={-20} pcbY={-8} />
+
+<trace from=".U1 .OUTL" to=".L1 .pos" />
+<trace from=".L1 .neg" to=".J2 .1" />  /* Left speaker + */
+<trace from=".L1 .neg" to=".C_FLT_L .pos" />
+<trace from=".C_FLT_L .neg" to=".U1 .AGND" />
+
+<trace from=".U1 .OUTR" to=".L2 .pos" />
+<trace from=".L2 .neg" to=".J3 .1" />  /* Right speaker + */
+<trace from=".L2 .neg" to=".C_FLT_R .pos" />
+<trace from=".C_FLT_R .neg" to=".U1 .AGND" />
+```
+
+## Step 3: Raspberry Pi GPIO Header
+
+```tsx
+<chip
+  name="J1"
+  footprint="raspberry-pi-hat-40pin"
+  pcbX={20}
+  pcbY={0}
+/>
+
+/* I2S signals from Pi */
+<trace from=".J1 .GPIO18" to=".U2 .BCK" />   /* I2S BCK */
+<trace from=".J1 .GPIO19" to=".U2 .LCK" />   /* I2S LRCK */
+<trace from=".J1 .GPIO21" to=".U2 .DIN" />   /* I2S DIN */
+
+/* Power from Pi */
+<trace from=".J1 .5V" to="net.5V" />
+<trace from=".J1 .3V3" to="net.3V3" />
+<trace from=".J1 .GND" to="net.GND" />
+
+/* ID EEPROM (optional for auto-config) */
+<resistor name="R_ID_SDA" footprint="0805" resistance="1k5" pcbX={28} pcbY={5} />
+<resistor name="R_ID_SCL" footprint="0805" resistance="1k5" pcbX={28} pcbY={3} />
+```
+
+## Step 4: Power Supply Design
+
+### 3.3V LDO for DAC
+
+```tsx
+<chip name="U3" footprint="sot-23-5" pcbX={15} pcbY={10} />
+<capacitor name="C_LDO_IN" footprint="0805" capacitance="10µF" pcbX={14} pcbY={12} />
+<capacitor name="C_LDO_OUT" footprint="0805" capacitance="10µF" pcbX={16} pcbY={12} />
+
+<trace from=".U3 .VIN" to="net.5V" />
+<trace from=".U3 .GND" to="net.GND" />
+<trace from=".U3 .VOUT" to="net.3V3" />
+<trace from=".C_LDO_IN .pos" to="net.5V" />
+<trace from=".C_LDO_IN .neg" to="net.GND" />
+<trace from=".C_LDO_OUT .pos" to="net.3V3" />
+<trace from=".C_LDO_OUT .neg" to="net.GND" />
+```
+
+### Power Filtering
+
+```tsx
+<capacitor name="C_BULK" footprint="0805" capacitance="470µF" pcbX={-25} pcbY={0} />
+<capacitor name="C_BYPASS1" footprint="0805" capacitance="100nF" pcbX={-23} pcbY={3} />
+<capacitor name="C_BYPASS2" footprint="0805" capacitance="100nF" pcbX={-23} pcbY={-3} />
+
+<trace from="net.5V" to=".C_BULK .pos" />
+<trace from=".C_BULK .neg" to="net.GND" />
+```
+
+## Step 5: Power LED
+
+```tsx
+<led name="LED1" color="green" footprint="0805" pcbX={25} pcbY={12} />
+<resistor name="R_LED" footprint="0805" resistance="1k" pcbX={27} pcbY={12} />
+
+<trace from="net.5V" to=".R_LED .pos" />
+<trace from=".R_LED .neg" to=".LED1 .pos" />
+<trace from=".LED1 .neg" to="net.GND" />
+```
+
+## Complete Circuit
+
+```tsx
+export default () => {
+  return (
+    <board width="65mm" height="56mm">
+      {/* DAC - PCM5102A */}
+      <chip name="U2" footprint="qfn-28" pcbX={10} pcbY={0} />
+      
+      {/* Amplifier - TPA2016D2 */}
+      <chip name="U1" footprint="qfn-32" pcbX={-10} pcbY={0} />
+      
+      {/* Power - 3.3V LDO */}
+      <chip name="U3" footprint="sot-23-5" pcbX={15} pcbY={10} />
+      
+      {/* Pi GPIO Header */}
+      <chip name="J1" footprint="raspberry-pi-hat-40pin" pcbX={20} pcbY={0} />
+      
+      {/* Speaker Terminals */}
+      <chip name="J2" footprint="screw_terminal_2pin" pcbX={-25} pcbY={8} />
+      <chip name="J3" footprint="screw_terminal_2pin" pcbX={-25} pcbY={-8} />
+      
+      {/* Output Inductors */}
+      <inductor name="L1" footprint="1210" inductance="10µH" pcbX={-18} pcbY={8} />
+      <inductor name="L2" footprint="1210" inductance="10µH" pcbX={-18} pcbY={-8} />
+      
+      {/* Power LED */}
+      <led name="LED1" color="green" footprint="0805" pcbX={25} pcbY={12} />
+      <resistor name="R_LED" footprint="0805" resistance="1k" pcbX={27} pcbY={12} />
+      
+      {/* Bypass Capacitors */}
+      <capacitor name="C_BULK" footprint="0805" capacitance="470µF" pcbX={-25} pcbY={0} />
+    </board>
+  )
+}
+```
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => {
+  return (
+    <board width="65mm" height="56mm">
+      <chip name="U2" footprint="qfn-28" pcbX={10} pcbY={0} />
+      <chip name="U1" footprint="qfn-32" pcbX={-10} pcbY={0} />
+      <chip name="U3" footprint="sot-23-5" pcbX={15} pcbY={10} />
+      <chip name="J1" footprint="raspberry-pi-hat-40pin" pcbX={20} pcbY={0} />
+      <chip name="J2" footprint="screw_terminal_2pin" pcbX={-25} pcbY={8} />
+      <chip name="J3" footprint="screw_terminal_2pin" pcbX={-25} pcbY={-8} />
+      <inductor name="L1" footprint="1210" inductance="10µH" pcbX={-18} pcbY={8} />
+      <inductor name="L2" footprint="1210" inductance="10µH" pcbX={-18} pcbY={-8} />
+      <led name="LED1" color="green" footprint="0805" pcbX={25} pcbY={12} />
+      <resistor name="R_LED" footprint="0805" resistance="1k" pcbX={27} pcbY={12} />
+    </board>
+  )
+}
+`} />
+
+## Thermal Considerations
+
+Class D amplifiers generate heat based on output power and speaker load:
+
+| Output Power | Into 4Ω | Into 8Ω | Thermal Design |
+|-------------|---------|---------|----------------|
+| 0.5W | 85°C | 80°C | No heatsink needed |
+| 1.5W | 95°C | 88°C | Heatsink recommended |
+| 3W | 115°C | 95°C | Large heatsink required |
+
+**Thermal pad connection**: Connect the TPA2016D2 thermal pad to a large copper area or dedicated heatsink pad.
+
+## PCB Layout Guidelines
+
+### High-Current Paths
+- **Speaker output traces**: Minimum 1mm width for 3W operation
+- **Power traces**: 0.5mm minimum from 5V supply
+- **Use fills**: Pour copper on output stage for heat dissipation
+
+### Signal Integrity
+- **Keep digital and analog grounds separate**
+- **Short I2S traces**: Keep BCK/LRCK/DIN under 50mm
+- **Decoupling**: Place caps within 2mm of each power pin
+
+### EMI Considerations
+- **Output filters**: Place close to amplifier outputs
+- **Ferrite beads**: Consider adding on power input
+- **Ground plane**: Solid ground under entire board
+
+## Raspberry Pi Software Configuration
+
+Add to `/boot/config.txt`:
+
+```
+dtoverlay=hifiberry-dac
+```
+
+Or for specific DAC:
+
+```
+dtoverlay=rpi-dac
+```
+
+Test with:
+
+```bash
+aplay -l  # List audio devices
+speaker-test -c 2  # Test audio output
+```
+
+## Cost Estimate
+
+| Component | Unit Cost | Qty | Total |
+|-----------|-----------|-----|-------|
+| TPA2016D2 | $1.80 | 1 | $1.80 |
+| PCM5102A | $1.20 | 1 | $1.20 |
+| MCP1700-330E | $0.25 | 1 | $0.25 |
+| Passives (×15) | $0.02 | 15 | $0.30 |
+| Inductors 10µH | $0.15 | 2 | $0.30 |
+| Electrolytic caps | $0.10 | 2 | $0.20 |
+| Connectors | $0.50 | 3 | $1.50 |
+| PCB (4-layer) | $2.00 | 1 | $2.00 |
+| **Total** | | | **$7.55** |
+
+## Summary
+
+You've designed a complete Class D Audio Amplifier HAT covering:
+- Class D amplification theory and PWM modulation
+- I2S digital audio interface with PCM5102A DAC
+- TPA2016D2 amplifier with output filtering
+- Raspberry Pi HAT form factor with GPIO header
+- Thermal management for audio circuits
+- Software configuration for Linux
+
+This HAT is ready for integration with any Raspberry Pi project requiring high-quality audio output.
