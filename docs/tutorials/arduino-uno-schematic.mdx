@@ -9,6 +9,21 @@ The Arduino Uno is one of the most studied open-source hardware designs. In this
 tutorial, we'll recreate its core schematic using tscircuit — the ATmega328P
 microcontroller with its essential support circuitry.
 
+## Components
+
+| Ref | Part | Value / Part # | Footprint |
+|-----|------|----------------|-----------|
+| U1 | ATmega328P | ATmega328P-PU | DIP-28 |
+| Y1 | Crystal | 16 MHz | HC-49S |
+| C1, C2 | Capacitor | 22 pF (crystal load) | 0402 |
+| C3 | Capacitor | 100 nF (RESET filter) | 0402 |
+| C4, C5 | Capacitor | 100 nF (VCC/AVCC bypass) | 0402 |
+| C6 | Capacitor | 10 µF (AVCC bulk) | 0402 |
+| R1 | Resistor | 10 kΩ (RESET pull-up) | 0402 |
+| R2 | Resistor | 470 Ω (D13 LED limit) | 0402 |
+| SW1 | Pushbutton | Tactile SPST | THT |
+| LED1 | LED | Yellow (D13) | 0402 |
+
 ## The ATmega328P at a Glance
 
 The ATmega328P is an 8-bit AVR microcontroller in a 28-pin DIP package. It
@@ -548,6 +563,24 @@ export default () => (
 | Reset | Manual reset and noise filtering | R1 (10 kΩ), C3 (100 nF), SW1 |
 | Decoupling | Filters supply noise for clean operation | C4/C5 (100 nF), C6 (10 µF) |
 | D13 LED | Classic Arduino indicator | R2 (470 Ω), LED1 |
+
+## Cost Estimate
+
+| Component | Unit Cost | Qty | Total |
+|-----------|-----------|-----|-------|
+| ATmega328P-PU | $1.80 | 1 | $1.80 |
+| 16 MHz Crystal (HC-49S) | $0.15 | 1 | $0.15 |
+| 22 pF capacitor (0402) | $0.02 | 2 | $0.04 |
+| 100 nF capacitor (0402) | $0.02 | 3 | $0.06 |
+| 10 µF capacitor (0402) | $0.05 | 1 | $0.05 |
+| 10 kΩ resistor (0402) | $0.01 | 1 | $0.01 |
+| 470 Ω resistor (0402) | $0.01 | 1 | $0.01 |
+| Tactile pushbutton | $0.05 | 1 | $0.05 |
+| Yellow LED (0402) | $0.03 | 1 | $0.03 |
+| PCB (2-layer, 5 pcs) | $0.40 | 1 | $0.40 |
+| **Total** | | | **~$2.60** |
+
+*Prices based on LCSC/JLCPCB quantities of 10.*
 
 ## Going Further
 
