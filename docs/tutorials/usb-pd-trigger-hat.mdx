@@ -1,0 +1,606 @@
+---
+title: Building a USB Power Delivery Trigger HAT
+description: >-
+  This tutorial will walk you through building a USB Power Delivery (PD) trigger
+  board that can negotiate different voltage levels (5V, 9V, 12V, 15V, 20V) from
+  USB-C power supplies, useful for powering projects that need higher voltages.
+---
+
+## Overview
+
+This tutorial will walk you through building a USB Power Delivery (PD) trigger HAT for Raspberry Pi. USB PD allows devices to request specific voltage levels from compatible power supplies, enabling projects that require more than the standard 5V. This is perfect for powering motors, LED strips, or other peripherals that need 9V-20V.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* USB-C PD Controller/Trigger Chip */}
+    <PD2001_Trigger
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    
+    {/* Output Terminal Block for 12V/3A */}
+    <chip
+      name="TB1"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Terminal Block 5mm"
+      pcbX={20}
+      pcbY={5}
+      pcbRotation="90deg"
+    />
+    
+    {/* Status LED - Power Indicator */}
+    <led
+      name="LED1"
+      color="green"
+      footprint="0805"
+      pcbX={-20}
+      pcbY={10}
+    />
+    
+    {/* Current Limiting Resistor for LED */}
+    <resistor
+      name="R1"
+      resistance="330"
+      footprint="0603"
+      pcbX={-20}
+      pcbY={3}
+    />
+    
+    {/* Capacitor for input filtering */}
+    <capacitor
+      name="C1"
+      capacitance="10u"
+      footprint="0603"
+      pcbX={-10}
+      pcbY={15}
+    />
+    
+    {/* Capacitor for output filtering */}
+    <capacitor
+      name="C2"
+      capacitance="22u"
+      footprint="0805"
+      pcbX={15}
+      pcbY={15}
+    />
+    
+    {/* Connect USB-C CC lines to PD controller */}
+    <trace from=".U1 .CC1" to=".U1 .CC2" />
+    
+    {/* Connect output terminals to VBUS */}
+    <trace from=".U1 .VBUS" to=".TB1 .pin1" />
+    
+    {/* Connect ground to terminal and HAT GND */}
+    <trace from=".U1 .GND" to=".TB1 .pin2" />
+    <trace from=".U1 .GND" to=".HAT1 .GND_1" />
+    
+    {/* Connect status LED with resistor */}
+    <trace from=".U1 .VBUS" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".U1 .GND" />
+    
+    {/* Connect capacitors for filtering */}
+    <trace from=".U1 .VBUS" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".TB1 .pin1" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".TB1 .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is USB Power Delivery?
+
+USB Power Delivery (PD) is a fast charging protocol that allows USB-C devices to negotiate power levels beyond the standard 5V/500mA. With USB PD, devices can request:
+
+| Voltage | Maximum Current | Maximum Power |
+|---------|-----------------|---------------|
+| 5V | 3A | 15W |
+| 9V | 3A | 27W |
+| 12V | 2.5A | 30W |
+| 15V | 2A | 30W |
+| 20V | 3A | 60W |
+
+### Why Build a PD Trigger Board?
+
+USB PD trigger boards are useful for:
+
+- **Projects requiring higher voltages**: Motors, solenoids, and some LED strips need 9V-20V
+- **Efficient power delivery**: USB PD is more efficient than boost converters
+- **Universal power source**: Use any USB-C PD power supply (phone chargers, laptop chargers, power banks)
+- **Safe voltage selection**: Programmable boards can limit maximum voltage
+
+## Circuit Requirements
+
+Our USB PD Trigger HAT needs to:
+
+1. **Detect USB-C connection** via CC pins
+2. **Communicate with PD controller** to negotiate voltage/current
+3. **Output regulated power** to terminal block
+4. **Include filtering capacitors** for clean power
+5. **Add status indicators** (LED for power-on)
+
+## Understanding the Components
+
+### USB-C Connector with PD Controller
+
+The PD controller (such as FP28XX, CH224K, or PD2001) handles all USB PD negotiation:
+- Monitors CC1/CC2 pins for source connection
+- Sends PDO (Power Data Object) requests
+- Enables internal MOSFET when voltage is negotiated
+- Provides overcurrent protection
+
+### Filtering Capacitors
+
+Input and output capacitors are critical:
+- **Input capacitor (10uF)**: Filters high-frequency noise from USB source
+- **Output capacitor (22uF)**: Provides stable output for load transients
+- Both should be rated for the maximum voltage (25V minimum)
+
+### Status LED
+
+A green LED indicates when output power is active:
+- Current limiting resistor (330Ω) sets LED current to ~10mA
+- Connected to output VBUS so it shows when power is available
+
+### Terminal Block
+
+A 2-pin terminal block provides easy connection:
+- Output voltage (VBUS) on pin 1
+- Ground on pin 2
+- Rated for the expected current (3A-5A recommended)
+
+## Building the Circuit Step by Step
+
+### Step 1: Import the RaspberryPiHatBoard and PD Trigger
+
+First, we import the base HAT board and the PD trigger component.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* PD Trigger will go here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PD2001_Trigger
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 2: Add the Terminal Block
+
+The terminal block provides screw terminals for connecting your load.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PD2001_Trigger
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <chip
+      name="TB1"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Terminal Block 5mm"
+      pcbX={20}
+      pcbY={5}
+      pcbRotation="90deg"
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Add the Status LED and Resistor
+
+Add visual feedback for when power is active.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PD2001_Trigger
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <chip
+      name="TB1"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Terminal Block 5mm"
+      pcbX={20}
+      pcbY={5}
+      pcbRotation="90deg"
+    />
+    <led
+      name="LED1"
+      color="green"
+      footprint="0805"
+      pcbX={-20}
+      pcbY={10}
+    />
+    <resistor
+      name="R1"
+      resistance="330"
+      footprint="0603"
+      pcbX={-20}
+      pcbY={3}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 4: Add the Filtering Capacitors
+
+Capacitors smooth out voltage fluctuations and provide transient response.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PD2001_Trigger
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <chip
+      name="TB1"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Terminal Block 5mm"
+      pcbX={20}
+      pcbY={5}
+      pcbRotation="90deg"
+    />
+    <led
+      name="LED1"
+      color="green"
+      footprint="0805"
+      pcbX={-20}
+      pcbY={10}
+    />
+    <resistor
+      name="R1"
+      resistance="330"
+      footprint="0603"
+      pcbX={-20}
+      pcbY={3}
+    />
+    <capacitor
+      name="C1"
+      capacitance="10u"
+      footprint="0603"
+      pcbX={-10}
+      pcbY={15}
+    />
+    <capacitor
+      name="C2"
+      capacitance="22u"
+      footprint="0805"
+      pcbX={15}
+      pcbY={15}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 5: Connect Everything with Traces
+
+Now we wire all the components together to complete the circuit.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PD2001_Trigger
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <chip
+      name="TB1"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Terminal Block 5mm"
+      pcbX={20}
+      pcbY={5}
+      pcbRotation="90deg"
+    />
+    <led
+      name="LED1"
+      color="green"
+      footprint="0805"
+      pcbX={-20}
+      pcbY={10}
+    />
+    <resistor
+      name="R1"
+      resistance="330"
+      footprint="0603"
+      pcbX={-20}
+      pcbY={3}
+    />
+    <capacitor
+      name="C1"
+      capacitance="10u"
+      footprint="0603"
+      pcbX={-10}
+      pcbY={15}
+    />
+    <capacitor
+      name="C2"
+      capacitance="22u"
+      footprint="0805"
+      pcbX={15}
+      pcbY={15}
+    />
+    
+    {/* Connect terminal block to VBUS and GND */}
+    <trace from=".U1 .VBUS" to=".TB1 .pin1" />
+    <trace from=".U1 .GND" to=".TB1 .pin2" />
+    <trace from=".U1 .GND" to=".HAT1 .GND_1" />
+    
+    {/* Connect status LED through resistor to VBUS */}
+    <trace from=".U1 .VBUS" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".U1 .GND" />
+    
+    {/* Connect filtering capacitors */}
+    <trace from=".U1 .VBUS" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".TB1 .pin1" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".TB1 .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Complete Circuit Schematic
+
+Here's the full schematic view showing all components and their connections:
+
+<CircuitPreview defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PD2001_Trigger } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PD2001_Trigger
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <chip
+      name="TB1"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Terminal Block 5mm"
+      pcbX={20}
+      pcbY={5}
+      pcbRotation="90deg"
+    />
+    <led
+      name="LED1"
+      color="green"
+      footprint="0805"
+      pcbX={-20}
+      pcbY={10}
+    />
+    <resistor
+      name="R1"
+      resistance="330"
+      footprint="0603"
+      pcbX={-20}
+      pcbY={3}
+    />
+    <capacitor
+      name="C1"
+      capacitance="10u"
+      footprint="0603"
+      pcbX={-10}
+      pcbY={15}
+    />
+    <capacitor
+      name="C2"
+      capacitance="22u"
+      footprint="0805"
+      pcbX={15}
+      pcbY={15}
+    />
+    
+    <trace from=".U1 .VBUS" to=".TB1 .pin1" />
+    <trace from=".U1 .GND" to=".TB1 .pin2" />
+    <trace from=".U1 .GND" to=".HAT1 .GND_1" />
+    <trace from=".U1 .VBUS" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".U1 .GND" />
+    <trace from=".U1 .VBUS" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".TB1 .pin1" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".TB1 .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Bill of Materials
+
+| Reference | Component | Value | Footprint | Notes |
+|-----------|-----------|-------|-----------|-------|
+| U1 | PD Trigger IC | FP28XX/CH224K/PD2001 | SOP-8 | USB PD controller |
+| TB1 | Terminal Block | 2-pin 5mm | THT | Output connection |
+| LED1 | Power LED | Green | 0805 | Power indicator |
+| R1 | Resistor | 330Ω | 0603 | LED current limit |
+| C1 | Capacitor | 10µF | 0603 | Input filter, 25V |
+| C2 | Capacitor | 22µF | 0805 | Output filter, 25V |
+| - | USB-C Connector | - | - | Right-angle THT or SMD |
+
+## PCB Layout Recommendations
+
+When laying out this board:
+
+1. **USB-C connector placement**: Position near the edge of the HAT for easy cable access
+2. **Terminal block placement**: Keep opposite side for load connections
+3. **Capacitor placement**: Place C1 close to IC VBUS pin, C2 near terminal block
+4. **LED placement**: Position for visibility when HAT is installed
+5. **Ground plane**: Use a solid ground plane under all components
+6. **Trace widths**: Use 20mil traces for signal, 40-60mil for power paths
+7. **Keep-out zones**: Follow USB-C connector manufacturer's keep-out recommendations
+
+## Programming Voltage Selection
+
+Some PD trigger ICs allow voltage selection via resistors or jumpers:
+
+### Voltage Selection Resistor Values
+
+| Target Voltage | Resistor Value |
+|----------------|----------------|
+| 5V | 10kΩ |
+| 9V | 15kΩ |
+| 12V | 20kΩ |
+| 15kΩ | 27kΩ |
+| 20V | 36kΩ |
+
+Check your specific IC's datasheet for exact resistor values and connection method.
+
+## Alternative: Programmable PD Controller
+
+For more flexibility, consider using a microcontroller-based PD solution:
+
+- **FUSB302**: I2C-based USB PD controller
+- **CYPD3177**: Full-featured PD controller with USB-C authentication
+- **ESP32-C3**: Combine PD control with wireless connectivity
+
+This allows dynamic voltage negotiation based on load requirements.
+
+## Testing Your PD Trigger HAT
+
+### Required Equipment
+
+- USB-C PD power supply (65W recommended)
+- Digital multimeter
+- Electronic load (optional, for load testing)
+
+### Testing Procedure
+
+1. **Visual inspection**: Check for cold solder joints, bridged pins
+2. **Continuity test**: Verify no shorts between VBUS and GND
+3. **No-load test**: Connect power supply, verify LED illuminates
+4. **Voltage verification**: Measure output voltage with multimeter
+5. **Load test**: Connect load, verify stable operation at rated current
+
+### Expected Results
+
+| Test | Expected Result |
+|------|------------------|
+| LED indicator | Illuminates when PD negotiation succeeds |
+| Output voltage | Matches programmed/selected voltage (±5%) |
+| Ripple/noise | <100mVpp at rated load |
+| Thermal | Component temperature rise <30°C at rated load |
+
+## Extending the Design
+
+### Adding Voltage Display
+
+Add an OLED display to show current voltage and current:
+
+```tsx
+// Add to circuit
+import { SSD1306_OLED } from "@tscircuit/common"
+
+<SSD1306_OLED
+  name="OLED1"
+  pcbX={-15}
+  pcbY={-15}
+  connections={{
+    VCC: ".U1 .VBUS",
+    GND: ".U1 .GND",
+    SDA: "net.I2C_SDA",
+    SCL: "net.I2C_SCL"
+  }}
+/>
+```
+
+### Adding Current Monitoring
+
+Include an INA219 sensor for power monitoring:
+
+```tsx
+import { INA219_Sensor } from "@tscircuit/common"
+
+<INA219_Sensor
+  name="INA1"
+  pcbX={10}
+  pcbY={-10}
+  connections={{
+    VCC: ".U1 .VBUS",
+    GND: ".U1 .GND",
+    SDA: "net.I2C_SDA",
+    SCL: "net.I2C_SCL"
+  }}
+/>
+```
+
+### Adding Multiple Outputs
+
+Create a board with selectable voltage outputs using analog switches or relays.
+
+## Safety Considerations
+
+1. **Overcurrent protection**: Ensure your PD controller or downstream protection limits current
+2. **Overvoltage protection**: Some controllers have built-in OVP; verify before use
+3. **Thermal management**: High-current applications may require heatsinking
+4. **Reverse polarity**: Add a reverse-polarity protection diode on output
+5. **ESD protection**: Consider adding TVS diodes on USB-C connector pins
+
+## Conclusion
+
+You've now built a complete USB Power Delivery Trigger HAT that can:
+
+- Negotiate voltages from 5V to 20V with USB PD power supplies
+- Provide clean, filtered power output
+- Display status via LED indicator
+- Interface with Raspberry Pi GPIO pins
+
+This project demonstrates key concepts in power supply design, USB protocols, and HAT development that apply to many other projects.
+
+## Next Steps
+
+- Add an ESP32 or other microcontroller for dynamic voltage control
+- Implement voltage/current monitoring with a small display
+- Design a more compact version using all SMD components
+- Create an enclosure for the completed HAT
+- Experiment with different PD power supplies and verify compatibility
+
+## Resources
+
+- [USB Power Delivery Specification](https://usb.org/document-library/usb-power-delivery)
+- [USB Type-C Specification](https://usb.org/document-library/usb-type-cr-cable-and-connector-specification)
+- [Raspberry Pi HAT Specification](https://github.com/raspberrypi/hats)
+- [tscircuit Documentation](/docs/intro/overview)
