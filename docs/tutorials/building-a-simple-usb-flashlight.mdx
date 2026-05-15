@@ -1,17 +1,171 @@
 ---
-title: Building a Simple USB Flashlight
-description: Learn how to build a simple USB-powered flashlight circuit using tscircuit with a push button, LED, and USB-C connector.
+title: Building a Simple USB Flashlight (Complete Guide)
+description: Step-by-step tutorial to build a USB-powered flashlight circuit using tscircuit — components, schematic, PCB layout, and manufacturing.
 ---
 
 ## Overview
 
-This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+This tutorial walks you through building a simple USB-powered flashlight using tscircuit. You'll learn how to design a circuit that takes 5V from a USB-C connector, uses a push button for on/off control, drives an LED through a current-limiting resistor, and lays it out as a manufacturable PCB.
 
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
-<TscircuitIframe defaultView="3d" code={`
+## Components
 
+| Ref | Part | Description | Footprint |
+|-----|------|-------------|-----------|
+| J1 | USB-C Receptacle | USB Type-C connector for 5V power | `smd-usb-c` |
+| SW1 | Tactile Push Button | Momentary SPST switch for on/off | `pushbutton` |
+| LED1 | Red LED | 0603 surface-mount indicator LED | `0603` |
+| R1 | 150Ω Resistor | Current limiting resistor for LED | `0603` |
+
+## Circuit Theory
+
+The circuit is straightforward:
+
+1. **USB-C Power**: The USB-C connector provides 5V on VBUS and a ground reference on GND
+2. **Push Button**: Acts as a switch between VBUS and the LED circuit
+3. **Current Limiting**: The 150Ω resistor limits LED current to approximately 20mA
+4. **LED Indicator**: The red LED illuminates when the button is pressed
+
+### Current Calculation
+
+Using Ohm's Law: `I = (V_source - V_LED) / R`
+
+For a red LED with forward voltage ~2.0V:
+`I = (5.0V - 2.0V) / 150Ω = 20mA`
+
+This is the typical operating current for a standard 0603 indicator LED.
+
+## Step 1: USB-C Connector
+
+Start with the USB-C receptacle. We use the community-sourced `@tsci/seveibar.smd-usb-c` component:
+
+```tsx
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+<SmdUsbC
+  name="J1"
+  connections={{
+    GND1: "net.GND",
+    GND2: "net.GND",
+    VBUS1: "net.VBUS",
+    VBUS2: "net.VBUS",
+  }}
+  pcbY={-10}
+  schX={-4}
+/>
+```
+
+Key points:
+- Both GND pins are tied to the ground net
+- Both VBUS pins are tied to the power net
+- `pcbY={-10}` places it at the board edge for connector access
+- `schX={-4}` positions it on the left side of the schematic
+
+## Step 2: Push Button Switch
+
+The push button connects between VBUS and the rest of the circuit:
+
+```tsx
+<pushbutton
+  name="SW1"
+  footprint="pushbutton"
+  layer="top"
+  connections={{
+    pin1: "net.VBUS",
+    pin2: ".R1 > .pos",
+  }}
+  pcbX={0}
+  pcbY={-1}
+/>
+```
+
+When pressed, pin1 connects to pin2, completing the circuit from VBUS through the LED.
+
+## Step 3: LED and Current-Limiting Resistor
+
+```tsx
+<led name="LED1" color="red" footprint="0603" pcbY={12} />
+
+<resistor
+  name="R1"
+  footprint="0603"
+  resistance="150"
+  pcbY={7}
+  connections={{
+    pos: ".SW1 > .pin2",
+    neg: ".LED1 > .pos",
+  }}
+/>
+```
+
+The resistor is placed in series with the LED to limit current. Without it, the LED would draw excessive current and burn out.
+
+## Step 4: Ground Return Path
+
+```tsx
+<trace from=".LED1 > .neg" to="net.GND" />
+```
+
+The LED's cathode connects to ground, completing the circuit.
+
+## Step 5: Complete Circuit
+
+Here's the full circuit file:
+
+```tsx
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        pcbY={-10}
+        schX={-4}
+      />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{
+          pin1: "net.VBUS",
+          pin2: ".R1 > .pos",
+        }}
+        pcbX={0}
+        pcbY={-1}
+      />
+      <resistor
+        name="R1"
+        footprint="0603"
+        resistance="150"
+        pcbY={7}
+        connections={{
+          pos: ".SW1 > .pin2",
+          neg: ".LED1 > .pos",
+        }}
+      />
+      <led
+        name="LED1"
+        color="red"
+        footprint="0603"
+        pcbY={12}
+        connections={{
+          neg: "net.GND",
+        }}
+      />
+    </board>
+  )
+}
+```
+
+<TscircuitIframe defaultView="3d" code={`
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
@@ -27,16 +181,146 @@ export default () => {
         name="SW1"
         footprint="pushbutton"
         layer="top"
-        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        connections={{ pin1: "net.VBUS", pin2: ".R1 > .pos" }}
         pcbX={0}
         pcbY={-1}
       />
-      <led name="LED" color="red" footprint="0603" pcbY={12} />
+      <led name="LED1" color="red" footprint="0603" pcbY={12} />
      
-      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
-      <trace from=".R1 .neg" to=".LED .pos" />
-      <trace from=".LED .neg" to="net.GND" />
+      <resistor name="R1" footprint="0603" resistance="150" pcbY={7} />
+      <trace from=".R1 .neg" to=".LED1 .pos" />
+      <trace from=".LED1 .neg" to="net.GND" />
     </board>
   )
 }
 `} />
+
+## PCB Layout Considerations
+
+### Board Dimensions
+- **Width**: 12mm — narrow enough to fit in a pen-sized housing
+- **Height**: 30mm — provides enough space for all components with good spacing
+
+### Component Placement
+- USB-C at the bottom edge (-10mm) for external access
+- Push button in the middle for easy pressing
+- LED at the top (12mm) as the light source
+- Resistor between button and LED in the current path
+
+### Trace Routing
+The tscircuit autorouter handles the connections, but you can also manually route traces:
+
+```tsx
+<trace from=".R1 .neg" to=".LED1 .pos" width="0.3mm" />
+<trace from=".LED1 .neg" to="net.GND" width="0.3mm" />
+<trace from="J1 .VBUS1" to=".SW1 > .pin1" width="0.5mm" />
+```
+
+Use wider traces (0.5mm) for power connections and standard width (0.3mm) for signal lines.
+
+## Schematic View
+
+The schematic shows the circuit topology clearly:
+
+```
+USB-C VBUS ──┬── SW1 ── R1 ── LED1 ── GND
+             │
+USB-C GND ───┴────────────────────────
+```
+
+- Current flows from VBUS through the button when pressed
+- The resistor limits current to the LED
+- The return path goes through ground
+
+## Building and Testing
+
+### Local Development
+
+```bash
+# Create a new tscircuit project
+mkdir usb-flashlight && cd usb-flashlight
+tsci init
+
+# Save the circuit file
+# (copy the circuit code into index.circuit.tsx)
+
+# Build the project
+tsci build
+
+# View in browser
+tsci preview
+```
+
+### Generate Manufacturing Files
+
+```bash
+# Generate Gerber files for PCB fabrication
+tsci build --gerber
+
+# Generate BOM (Bill of Materials)
+tsci build --bom
+
+# Generate pick-and-place file
+tsci build --pick-and-place
+```
+
+## Cost Estimate
+
+| Component | Unit Cost | Quantity | Total |
+|-----------|-----------|----------|-------|
+| USB-C Receptacle | $0.15 | 1 | $0.15 |
+| Tactile Push Button | $0.05 | 1 | $0.05 |
+| Red LED 0603 | $0.02 | 1 | $0.02 |
+| Resistor 150Ω 0603 | $0.01 | 1 | $0.01 |
+| PCB (2-layer) | $0.50 | 1 | $0.50 |
+| **Total** | | | **$0.73** |
+
+At scale (1000+ units), the per-unit cost drops below $0.30.
+
+## Extensions
+
+Once you have the basic flashlight working, try these modifications:
+
+### Multiple LEDs
+```tsx
+<led name="LED1" color="red" footprint="0603" pcbY={10} pcbX={-3} />
+<led name="LED2" color="red" footprint="0603" pcbY={10} pcbX={3} />
+<resistor name="R1" resistance="300" footprint="0603" />
+<resistor name="R2" resistance="300" footprint="0603" />
+```
+
+### Different LED Colors
+```tsx
+<led name="LED1" color="blue" footprint="0603" />
+<led name="LED2" color="green" footprint="0603" />
+<led name="LED3" color="white" footprint="0603" />
+```
+
+### Add a Capacitor for Persistence
+Add a small capacitor to keep the LED lit briefly after releasing the button:
+
+```tsx
+<capacitor
+  name="C1"
+  footprint="0603"
+  capacitance="100uF"
+  pcbY={5}
+  connections={{
+    pos: "net.VBUS",
+    neg: "net.GND",
+  }}
+/>
+```
+
+## Summary
+
+You've built a complete USB-powered flashlight circuit using tscircuit, covering:
+- Component selection and specification
+- Circuit theory and current calculations
+- Complete circuit implementation in TSX
+- PCB layout with proper component placement
+- Manufacturing file generation
+- Cost analysis
+- Extension ideas for more advanced versions
+
+This project demonstrates tscircuit's ability to handle everything from simple LED circuits to complex multi-layer PCB designs.
