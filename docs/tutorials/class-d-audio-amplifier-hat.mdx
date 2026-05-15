@@ -1,0 +1,956 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: >-
+  This tutorial will walk you through building a Class D audio amplifier HAT for
+  Raspberry Pi featuring a PAM8403 or similar chip, suitable for driving small
+  speakers for media playback, AI assistants, or audio projects.
+---
+
+## Overview
+
+This tutorial will walk you through building a Class D audio amplifier HAT for Raspberry Pi. Class D amplifiers are highly efficient (90%+) and produce minimal heat, making them perfect for battery-powered or space-constrained audio projects. We'll use the popular PAM8403 chip which provides 3W per channel at 5V.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* PAM8403 Class D Amplifier */}
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    
+    {/* Input Capacitors (DC blocking) */}
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    
+    {/* Output Filter Capacitors */}
+    <capacitor name="C3" capacitance="10u" footprint="0805" pcbX={20} pcbY={10} />
+    <capacitor name="C4" capacitance="10u" footprint="0805" pcbX={20} pcbY={0} />
+    
+    {/* Power Supply Decoupling */}
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    
+    {/* Speaker Terminals - Left */}
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    
+    {/* Speaker Terminals - Right */}
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+    
+    {/* Status LED */}
+    <led name="LED1" color="green" footprint="0805" pcbX={-25} pcbY={-5} />
+    <resistor name="R1" resistance="330" footprint="0603" pcbX={-25} pcbY={-10} />
+    
+    {/* Volume Potentiometer */}
+    <chip
+      name="VOL1"
+      footprint="rv09_haudiole_3pin"
+      manufacturerPartNumber="10K Audio Potentiometer"
+      pcbX={-15}
+      pcbY={-5}
+    />
+    
+    {/* Connect audio inputs through capacitors */}
+    <trace from=".HAT1 .GPIO_18" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".VOL1 .pin2" />
+    <trace from=".VOL1 .pin3" to=".U1 .INLP" />
+    <trace from=".HAT1 .GPIO_13" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".VOL1 .pin1" />
+    
+    {/* Connect power and ground */}
+    <trace from=".HAT1 .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1 .GND_1" to=".U1 .GND" />
+    <trace from=".U1 .GND" to=".C5 .pin2" />
+    <trace from=".U1 .VDD" to=".C5 .pin1" />
+    <trace from=".C5 .pin1" to=".C6 .pin1" />
+    <trace from=".C6 .pin2" to=".C5 .pin2" />
+    
+    {/* Connect outputs to speakers */}
+    <trace from=".U1 .OUTLP" to=".C3 .pin1" />
+    <trace from=".C3 .pin2" to=".SPK_L .pin1" />
+    <trace from=".U1 .OUTLN" to=".SPK_L .pin2" />
+    <trace from=".U1 .OUTRP" to=".C4 .pin1" />
+    <trace from=".C4 .pin2" to=".SPK_R .pin1" />
+    <trace from=".U1 .OUTRN" to=".SPK_R .pin2" />
+    
+    {/* Connect status LED */}
+    <trace from=".U1 .VDD" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".U1 .GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is a Class D Amplifier?
+
+Class D amplifiers work by converting analog audio signals into high-frequency pulse-width modulated (PWM) signals, then filtering them to recover the amplified audio. This approach offers significant advantages:
+
+- **High efficiency** (85-95%) compared to Class A/B (25-60%)
+- **Minimal heat output** - no large heatsinks needed
+- **Compact size** - perfect for HAT form factor
+- **Long battery life** - less power wasted as heat
+
+### PAM8403 Specifications
+
+The PAM8403 is a popular 3W stereo Class D audio amplifier:
+
+| Parameter | Value |
+|-----------|-------|
+| Output Power | 3W x 2 (at 5V, 4Ω) |
+| Efficiency | 90% typical |
+| THD+N | 0.1% typical |
+| Supply Voltage | 2.5V to 5.5V |
+| Quiescent Current | 20mA |
+| Output Type | Differential (BTL) |
+| Standby Mode | Yes (via ENABLE pin) |
+
+## Why Build an Audio Amplifier HAT?
+
+Building a custom audio amplifier HAT offers benefits:
+
+- **Integration**: Combine amplifier with Raspberry Pi for a complete audio system
+- **Power control**: Add features like auto-on, volume control, power indicators
+- **Custom filter tuning**: Adjust output filters for different speaker characteristics
+- **Learning**: Understand Class D operation, audio filtering, and PCB design
+
+## Circuit Requirements
+
+Our Class D Audio Amplifier HAT needs:
+
+1. **PAM8403 amplifier chip** - the main audio amplification component
+2. **Input coupling capacitors** - block DC from audio source
+3. **Output filter capacitors** - smooth the PWM to recover audio
+4. **Power supply decoupling** - filter power supply noise
+5. **Volume potentiometer** - user-adjustable volume control
+6. **Speaker terminals** - easy connection for speakers
+7. **Status LED** - indicate power status
+
+## Understanding the Components
+
+### PAM8403 Class D Amplifier
+
+The PAM8403 is a complete stereo Class D solution:
+
+- **Differential inputs**: INLP/INLN for left, INRP/INRN for right
+- **BTL outputs**: OUTLP/OUTLN for left, OUTRP/OUTRN for right
+- **Shutdown control**: SD pin for standby mode
+- **Filter-less operation**: Can work without output filters at higher frequencies
+
+### Input Coupling Capacitors (C1, C2)
+
+These 1µF capacitors:
+- Block DC offset from the audio source
+- Allow AC audio signals through
+- Prevent DC from affecting the amplifier bias point
+- Form a high-pass filter with input impedance
+
+### Output Filter Capacitors (C3, C4)
+
+Class D outputs contain high-frequency switching:
+- 10µF capacitors help filter switching artifacts
+- Work with speaker inductance to smooth the waveform
+- Optional but recommended for cleaner audio
+
+### Power Supply Decoupling (C5, C6)
+
+Class D amplifiers are sensitive to power supply noise:
+- **100µF bulk capacitor**: Handles current peaks
+- **100nF ceramic**: Filters high-frequency noise
+- Place close to the amplifier chip
+
+### Volume Potentiometer (VOL1)
+
+A 10kΩ audio taper potentiometer:
+- Allows manual volume adjustment
+- Connected as a voltage divider on inputs
+- Audio taper (logarithmic) matches human hearing
+
+## Building the Circuit Step by Step
+
+### Step 1: Create the HAT Board and Add the PAM8403
+
+Start with the Raspberry Pi HAT base and place the amplifier chip.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+  </RaspberryPiHatBoard>
+)
+```
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 2: Add the Input Coupling Capacitors
+
+Add the DC blocking capacitors on the audio inputs.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Add the Power Supply Decoupling
+
+Add capacitors near the amplifier for power filtering.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 4: Add the Speaker Terminals
+
+Add 2-pin terminal blocks for speaker connection.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 5: Add the Volume Potentiometer
+
+Add an audio potentiometer for volume control.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="VOL1"
+      footprint="rv09_haudiole_3pin"
+      manufacturerPartNumber="10K Audio Potentiometer"
+      pcbX={-15}
+      pcbY={-5}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 6: Wire the Audio Inputs
+
+Connect the audio sources through the coupling capacitors.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="VOL1"
+      footprint="rv09_haudiole_3pin"
+      manufacturerPartNumber="10K Audio Potentiometer"
+      pcbX={-15}
+      pcbY={-5}
+    />
+    
+    {/* Connect audio from GPIO to amplifier */}
+    <trace from=".HAT1 .GPIO_18" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".VOL1 .pin2" />
+    <trace from=".VOL1 .pin3" to=".U1 .INLP" />
+    <trace from=".HAT1 .GPIO_13" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".VOL1 .pin1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 7: Wire Power and Ground
+
+Connect power supply and decoupling capacitors.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="VOL1"
+      footprint="rv09_haudiole_3pin"
+      manufacturerPartNumber="10K Audio Potentiometer"
+      pcbX={-15}
+      pcbY={-5}
+    />
+    
+    <trace from=".HAT1 .GPIO_18" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".VOL1 .pin2" />
+    <trace from=".VOL1 .pin3" to=".U1 .INLP" />
+    <trace from=".HAT1 .GPIO_13" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".VOL1 .pin1" />
+    
+    {/* Connect power and ground */}
+    <trace from=".HAT1 .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1 .GND_1" to=".U1 .GND" />
+    <trace from=".U1 .GND" to=".C5 .pin2" />
+    <trace from=".U1 .VDD" to=".C5 .pin1" />
+    <trace from=".C5 .pin1" to=".C6 .pin1" />
+    <trace from=".C6 .pin2" to=".C5 .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 8: Wire the Speaker Outputs
+
+Connect the amplifier outputs to the speaker terminals.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    <capacitor name="C3" capacitance="10u" footprint="0805" pcbX={20} pcbY={10} />
+    <capacitor name="C4" capacitance="10u" footprint="0805" pcbX={20} pcbY={0} />
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="VOL1"
+      footprint="rv09_haudiole_3pin"
+      manufacturerPartNumber="10K Audio Potentiometer"
+      pcbX={-15}
+      pcbY={-5}
+    />
+    
+    <trace from=".HAT1 .GPIO_18" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".VOL1 .pin2" />
+    <trace from=".VOL1 .pin3" to=".U1 .INLP" />
+    <trace from=".HAT1 .GPIO_13" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".VOL1 .pin1" />
+    <trace from=".HAT1 .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1 .GND_1" to=".U1 .GND" />
+    <trace from=".U1 .GND" to=".C5 .pin2" />
+    <trace from=".U1 .VDD" to=".C5 .pin1" />
+    <trace from=".C5 .pin1" to=".C6 .pin1" />
+    <trace from=".C6 .pin2" to=".C5 .pin2" />
+    
+    {/* Connect outputs to speakers */}
+    <trace from=".U1 .OUTLP" to=".C3 .pin1" />
+    <trace from=".C3 .pin2" to=".SPK_L .pin1" />
+    <trace from=".U1 .OUTLN" to=".SPK_L .pin2" />
+    <trace from=".U1 .OUTRP" to=".C4 .pin1" />
+    <trace from=".C4 .pin2" to=".SPK_R .pin1" />
+    <trace from=".U1 .OUTRN" to=".SPK_R .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 9: Add Status LED
+
+Add a power indicator LED for visual feedback.
+
+<CircuitPreview defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    <capacitor name="C3" capacitance="10u" footprint="0805" pcbX={20} pcbY={10} />
+    <capacitor name="C4" capacitance="10u" footprint="0805" pcbX={20} pcbY={0} />
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="VOL1"
+      footprint="rv09_haudiole_3pin"
+      manufacturerPartNumber="10K Audio Potentiometer"
+      pcbX={-15}
+      pcbY={-5}
+    />
+    <led name="LED1" color="green" footprint="0805" pcbX={-25} pcbY={-5} />
+    <resistor name="R1" resistance="330" footprint="0603" pcbX={-25} pcbY={-10} />
+    
+    <trace from=".HAT1 .GPIO_18" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".VOL1 .pin2" />
+    <trace from=".VOL1 .pin3" to=".U1 .INLP" />
+    <trace from=".HAT1 .GPIO_13" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".VOL1 .pin1" />
+    <trace from=".HAT1 .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1 .GND_1" to=".U1 .GND" />
+    <trace from=".U1 .GND" to=".C5 .pin2" />
+    <trace from=".U1 .VDD" to=".C5 .pin1" />
+    <trace from=".C5 .pin1" to=".C6 .pin1" />
+    <trace from=".C6 .pin2" to=".C5 .pin2" />
+    <trace from=".U1 .OUTLP" to=".C3 .pin1" />
+    <trace from=".C3 .pin2" to=".SPK_L .pin1" />
+    <trace from=".U1 .OUTLN" to=".SPK_L .pin2" />
+    <trace from=".U1 .OUTRP" to=".C4 .pin1" />
+    <trace from=".C4 .pin2" to=".SPK_R .pin1" />
+    <trace from=".U1 .OUTRN" to=".SPK_R .pin2" />
+    
+    {/* Connect LED */}
+    <trace from=".U1 .VDD" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".U1 .GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Complete 3D View
+
+Here's the complete amplifier HAT with all components:
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { PAM8403 } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <PAM8403
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+    />
+    <capacitor name="C1" capacitance="1u" footprint="0603" pcbX={-20} pcbY={8} />
+    <capacitor name="C2" capacitance="1u" footprint="0603" pcbX={-20} pcbY={2} />
+    <capacitor name="C5" capacitance="100u" footprint="0805" pcbX={-10} pcbY={12} />
+    <capacitor name="C6" capacitance="100n" footprint="0603" pcbX={-5} pcbY={12} />
+    <capacitor name="C3" capacitance="10u" footprint="0805" pcbX={20} pcbY={10} />
+    <capacitor name="C4" capacitance="10u" footprint="0805" pcbX={20} pcbY={0} />
+    <chip
+      name="SPK_L"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={8}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="SPK_R"
+      footprint="terminal_2pin"
+      manufacturerPartNumber="Speaker Terminal 5mm"
+      pcbX={25}
+      pcbY={2}
+      pcbRotation="90deg"
+    />
+    <chip
+      name="VOL1"
+      footprint="rv09_haudiole_3pin"
+      manufacturerPartNumber="10K Audio Potentiometer"
+      pcbX={-15}
+      pcbY={-5}
+    />
+    <led name="LED1" color="green" footprint="0805" pcbX={-25} pcbY={-5} />
+    <resistor name="R1" resistance="330" footprint="0603" pcbX={-25} pcbY={-10} />
+    
+    <trace from=".HAT1 .GPIO_18" to=".C1 .pin1" />
+    <trace from=".C1 .pin2" to=".VOL1 .pin2" />
+    <trace from=".VOL1 .pin3" to=".U1 .INLP" />
+    <trace from=".HAT1 .GPIO_13" to=".C2 .pin1" />
+    <trace from=".C2 .pin2" to=".VOL1 .pin1" />
+    <trace from=".HAT1 .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1 .GND_1" to=".U1 .GND" />
+    <trace from=".U1 .GND" to=".C5 .pin2" />
+    <trace from=".U1 .VDD" to=".C5 .pin1" />
+    <trace from=".C5 .pin1" to=".C6 .pin1" />
+    <trace from=".C6 .pin2" to=".C5 .pin2" />
+    <trace from=".U1 .OUTLP" to=".C3 .pin1" />
+    <trace from=".C3 .pin2" to=".SPK_L .pin1" />
+    <trace from=".U1 .OUTLN" to=".SPK_L .pin2" />
+    <trace from=".U1 .OUTRP" to=".C4 .pin1" />
+    <trace from=".C4 .pin2" to=".SPK_R .pin1" />
+    <trace from=".U1 .OUTRN" to=".SPK_R .pin2" />
+    <trace from=".U1 .VDD" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to=".U1 .GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Bill of Materials
+
+| Reference | Component | Value | Footprint | Notes |
+|-----------|-----------|-------|-----------|-------|
+| U1 | PAM8403 | - | SOP-16 | Class D stereo amplifier |
+| C1, C2 | Capacitor | 1µF | 0603 | Input coupling, film or ceramic |
+| C3, C4 | Capacitor | 10µF | 0805 | Output filter (optional) |
+| C5 | Capacitor | 100µF | 0805 | Bulk decoupling, low ESR |
+| C6 | Capacitor | 100nF | 0603 | High-frequency decoupling |
+| VOL1 | Potentiometer | 10kΩ | THT | Audio taper, panel mount |
+| SPK_L | Terminal Block | 2-pin | THT | Left speaker output |
+| SPK_R | Terminal Block | 2-pin | THT | Right speaker output |
+| LED1 | LED | Green | 0805 | Power indicator |
+| R1 | Resistor | 330Ω | 0603 | LED current limit |
+
+## PCB Layout Guidelines
+
+### Class D Amplifier Layout Tips
+
+Class D amplifiers require careful PCB layout to minimize EMI:
+
+1. **Keep switching traces short**: The outputs switch at ~300kHz
+2. **Separate analog and power grounds**: Use a single point connection
+3. **Decoupling capacitors**: Place immediately adjacent to power pins
+4. **Ground plane**: Use solid ground planes for return paths
+5. **Output filter placement**: If using filters, place near amplifier
+
+### Power Supply Layout
+
+```
+                    C5 (100µF)
+    VDD -----+------||------+------ to IC VDD
+             |             |
+             +--- C6 (100nF)|
+             |             |
+            GND           GND
+```
+
+### Speaker Output Layout
+
+For differential BTL outputs:
+- Keep positive and negative output traces parallel
+- Use equal trace lengths to each speaker terminal
+- Avoid crossing switching outputs over sensitive signals
+
+## Understanding Class D Operation
+
+### How Class D Works
+
+1. **Input stage**: Audio signal is compared to a triangle wave
+2. **PWM generation**: Creates high-frequency pulse width modulated signal
+3. **Output stage**: H-bridge MOSFETs switch full supply across load
+4. **Filtering**: Speaker inductance naturally filters PWM
+5. **Recovery**: Only the average (audio) content is reproduced
+
+### PWM Frequency
+
+The PAM8403 uses ~300kHz switching frequency:
+- Higher frequency = easier filtering, better audio quality
+- Trade-off with efficiency (switching losses increase with frequency)
+- Must be above human hearing range (>20kHz)
+
+### EMI Considerations
+
+Class D outputs can radiate EMI:
+- Keep output traces away from sensitive circuits
+- Use shielded cables for speaker connections if needed
+- Ferrite beads on outputs can reduce conducted EMI
+
+## Software Setup
+
+### Raspberry Pi Configuration
+
+Enable I2S audio output for best quality:
+
+```bash
+# Edit /boot/config.txt
+sudo nano /boot/config.txt
+
+# Add these lines:
+dtparam=i2s=on
+dtoverlay=hifiberry-dac
+
+# Reboot
+sudo reboot
+```
+
+### Audio Test
+
+```bash
+# Install audio tools
+sudo apt-get install alsa-utils
+
+# Check audio devices
+aplay -l
+
+# Play a test tone
+speaker-test -t sine -f 440
+
+# Play audio file
+aplay audio.wav
+```
+
+### Python Audio Playback
+
+```python
+import pygame
+import time
+
+pygame.mixer.init()
+
+# Load and play audio
+pygame.mixer.music.load("music.mp3")
+pygame.mixer.music.play()
+
+# Adjust volume (0.0 to 1.0)
+pygame.mixer.music.set_volume(0.7)
+
+while pygame.mixer.music.get_busy():
+    time.sleep(1)
+```
+
+### Volume Control
+
+The potentiometer provides hardware volume control. For software control:
+
+```python
+# Using alsautils
+import subprocess
+
+def set_volume(percent):
+    subprocess.run([
+        'amixer', 'sset', 'Master', f'{percent}%'
+    ])
+
+# Set volume to 50%
+set_volume(50)
+```
+
+## Adding Features
+
+### Power On/Off Control
+
+Add a shutdown pin to control the amplifier:
+
+```tsx
+// Add to existing circuit
+<trace from=".HAT1 .GPIO_26" to=".U1 .SD" />
+
+// In software
+import RPi.GPIO as GPIO
+
+SHUTDOWN_PIN = 26
+GPIO.setup(SHUTDOWN_PIN, GPIO.OUT)
+GPIO.output(SHUTDOWN_PIN, GPIO.HIGH)  # Enable amplifier
+```
+
+### Headphone Detection
+
+Add headphone jack with auto-detection:
+
+```tsx
+// Add headphone detection
+import { HP_JACK } from "@tscircuit/common"
+
+<HP_JACK
+  name="HP1"
+  pcbX={-25}
+  pcbY={5}
+  connections={{
+    TIP: ".U1 .INRP",
+    RING1: ".U1 .INRN",
+    RING2: ".U1 .OUTRP",
+    SLEEVE: ".U1 .GND"
+  }}
+/>
+```
+
+### Tone Controls
+
+Add bass and treble adjustment:
+
+```tsx
+// Add tone control potentiometers
+<chip name="BASS" footprint="rv09_3pin" pcbX={-30} pcbY={0} />
+<chip name="TREBLE" footprint="rv09_3pin" pcbX={-30} pcbY={-10} />
+```
+
+## Troubleshooting
+
+### No Sound Output
+
+1. Check power LED is illuminated
+2. Verify speakers are connected correctly
+3. Check volume potentiometer isn't at minimum
+4. Test audio source with headphones first
+5. Verify Raspberry Pi audio output is configured
+
+### Distorted Audio
+
+1. Reduce volume - amplifier may be clipping
+2. Check power supply can provide adequate current (>500mA)
+3. Verify speaker impedance (4-8Ω recommended)
+4. Check for loose connections
+
+### Hum or Noise
+
+1. Use separate power supplies for amplifier and digital circuits
+2. Add ferrite beads on speaker wires
+3. Check ground connections
+4. Keep audio cables away from power cables
+5. Use shielded cables for audio input
+
+### Class D Radio Interference
+
+1. Keep amplifier board away from antennas
+2. Add EMI suppression capacitors (100pF) across speaker outputs
+3. Use ferrite clamp on speaker wires
+4. Add LC filter on power input
+
+## Applications
+
+### Smart Speaker
+
+Combine with microphone array for voice control:
+- Add ReSpeaker USB Mic Array
+- Integrate with Alexa/Google Assistant
+- Control via voice commands
+
+### Music Player
+
+Create a Hi-Fi music system:
+- Connect to network-attached storage
+- Install Volumio or RuneAudio
+- Stream from Spotify, Tidal, etc.
+
+### Arcade Cabinet
+
+Build authentic arcade audio:
+- Small form factor
+- High efficiency for battery backup
+- Can drive multiple speakers
+
+### Public Address System
+
+For announcements:
+- Connect to microphone
+- Drive horn speakers
+- Add volume limiter for safety
+
+## Conclusion
+
+You now have a complete Class D audio amplifier HAT that can:
+
+- Drive 3W stereo speakers per channel
+- Connect directly to Raspberry Pi GPIO
+- Provide hardware volume control
+- Operate efficiently with minimal heat
+- Be powered from the Pi's 5V rail
+
+This project demonstrates important concepts in audio electronics, Class D amplification, and HAT design that apply to many audio projects.
+
+## Next Steps
+
+- Add a microphone for recording and voice control
+- Implement software equalizer using DSP
+- Design a custom enclosure
+- Add Bluetooth audio接收
+- Build a multi-room audio system
+- Create a digital audio player with display
+
+## Resources
+
+- [PAM8403 Datasheet](https://www.datasheets360.com/part/detail/PAM8403/-875699033/)
+- [Class D Amplifier Theory](https://www.ti.com/lit/an/slaa494/slaa494.pdf)
+- [Raspberry Pi Audio Documentation](https://www.raspberrypi.com/documentation/computers/audio.html)
+- [Raspberry Pi HAT Specification](https://github.com/raspberrypi/hats)
+- [tscircuit Documentation](/docs/intro/overview)
