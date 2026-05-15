@@ -1,0 +1,401 @@
+---
+title: Building a USB Power Delivery Trigger HAT Tutorial
+description: Learn how to design a USB Power Delivery (PD) trigger module using tscircuit — FUSB302 PD controller, voltage negotiation, sink profiles, and power routing for Raspberry Pi projects.
+---
+
+## Overview
+
+This tutorial covers designing a USB Power Delivery trigger module that negotiates power from USB-C sources and provides regulated voltage to Raspberry Pi projects. You'll learn about USB PD protocols, sink negotiation, power path design, and current monitoring.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Project Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Board Size | 25mm × 25mm |
+| Input | USB-C PD (5V/9V/12V/15V/20V) |
+| Output | 5V @ 3A or negotiated voltage |
+| PD Controller | FUSB302BMPX |
+| Protocol | USB Power Delivery 3.0 |
+
+## USB Power Delivery Basics
+
+USB PD allows devices to negotiate power delivery beyond the standard 5V:
+
+### Voltage Profiles
+
+| Profile | Voltage | Max Current | Typical Use |
+|---------|---------|-------------|-------------|
+| 0 | 5V | 3A | Standard USB |
+| 1 | 9V | 3A | Tablets, quick charge |
+| 2 | 12V | 3A | Laptops, monitors |
+| 3 | 15V | 3A | Larger laptops |
+| 4 | 20V | 5A | Docking stations |
+
+### Sink Request Example
+
+```cpp
+// Request 20V @ 3A from PD source
+PDO_t request[] = {
+    { .fixed: { .voltage = 5000, .max_current = 3000 } },  // 5V @ 3A fallback
+    { .fixed: { .voltage = 20000, .max_current = 3000 } }, // 20V @ 3A preferred
+};
+```
+
+## Components
+
+| Ref | Part | Description | Footprint |
+|-----|------|------------|-----------|
+| U1 | FUSB302BMPX | USB PD sink controller | `qfn-24` |
+| U2 | MP2491C | 3.3V/5V buck converter | `qfn-16` |
+| J1 | USB-C Receptacle | USB-C connector | `usb-c-16pin` |
+| J2 | 40-pin Header | Raspberry Pi HAT compatible | `raspberry-pi-hat-40pin` |
+| L1 | Power inductor | 10µH 4A | `srn6045` |
+| C1 | Input capacitor | 10µF | `0805` |
+| C2 | Output capacitor | 22µF | `0805` |
+| C3 | Bypass cap | 100nF | `0805` |
+| R1 | Current sense | 10mΩ | `1206` |
+| R2-R3 | Voltage divider | 100k/100k | `0805` |
+| LED1 | PD active | Yellow | `0805` |
+| LED2 | Power good | Green | `0805` |
+
+## Step 1: FUSB302B PD Controller
+
+The FUSB302B handles all USB PD protocol communication:
+
+```tsx
+<chip
+  name="U1"
+  footprint="qfn-24"
+  pcbX={10}
+  pcbY={0}
+/>
+
+/* USB-C CC pins for PD negotiation */
+<trace from=".U1 .CC1" to="net.CC1" />
+<trace from=".U1 .CC2" to="net.CC2" />
+
+/* I2C interface to host MCU */
+<trace from=".U1 .SDA" to="net.SDA" />
+<trace from=".U1 .SCL" to="net.SCL" />
+
+/* Power supply */
+<trace from=".U1 .VBus" to="net.VBUS" />
+<trace from=".U1 .VConn" to="net.VBUS" />
+<trace from=".U1 .GND" to="net.GND" />
+
+/* Interrupt output */
+<trace from=".U1 .INT" to="net.PD_INT" />
+```
+
+### CC Pin Configuration
+
+USB-C uses CC pins for:
+1. **Cable orientation detection**: Determines plug orientation
+2. **PD negotiation**: Communicates power capabilities
+3. **VConn**: Powers cable electronics (not used in sink)
+
+```tsx
+/* CC1 and CC2 connect to USB-C receptacle CC pins */
+/* Rp (source terminator) is inside the USB-C connector */
+```
+
+## Step 2: Buck Converter for 5V Regulation
+
+The MP2491C provides efficient 5V from higher PD voltages:
+
+```tsx
+<chip
+  name="U2"
+  footprint="qfn-16"
+  pcbX={-10}
+  pcbY={0}
+/>
+
+<inductor name="L1" footprint="srn6045" inductance="10µH" pcbX={-5} pcbY={0} />
+
+/* Input capacitor */
+<capacitor name="C1" footprint="0805" capacitance="10µF" pcbX={-15} pcbY={3} />
+
+/* Output capacitor */
+<capacitor name="C2" footprint="0805" capacitance="22µF" pcbX={-15} pcbY={-3} />
+
+<trace from=".U2 .VIN" to="net.VBUS" />
+<trace from=".U2 .SW" to=".L1 .pos" />
+<trace from=".U2 .GND" to="net.GND" />
+<trace from=".U2 .FB" to=".L1 .neg" />
+<trace from=".U2 .EN" to="net.5V_EN" />
+```
+
+## Step 3: USB-C Receptacle
+
+```tsx
+<chip
+  name="J1"
+  footprint="usb-c-16pin"
+  pcbX={20}
+  pcbY={0}
+/>
+
+/* Power pins */
+<trace from=".J1 .VBUS" to="net.VBUS" />
+<trace from=".J1 .GND" to="net.GND" />
+
+/* CC pins for PD */
+<trace from=".J1 .CC1" to=".U1 .CC1" />
+<trace from=".J1 .CC2" to=".U1 .CC2" />
+
+/* USB 2.0 data (not used for PD only) */
+/* D+ and D+ not needed for PD trigger */
+```
+
+## Step 4: Voltage and Current Monitoring
+
+### Output Voltage Feedback
+
+```tsx
+<resistor name="R2" footprint="0805" resistance="100k" pcbX={-8} pcbY={8} />
+<resistor name="R3" footprint="0805" resistance="100k" pcbX={-5} pcbY={8} />
+
+<trace from=".U2 .FB" to=".R2 .pos" />
+<trace from=".R2 .neg" to=".R3 .pos" />
+<trace from=".R3 .neg" to="net.GND" />
+```
+
+### Output Current Sensing
+
+```tsx
+<resistor name="R1" footprint="1206" resistance="0.01" pcbX={-12} pcbY={0} />
+
+<trace from="net.5V" to=".R1 .pos" />
+<trace from=".R1 .neg" to="net.5V_SENSE" />
+```
+
+## Step 5: Status LEDs
+
+```tsx
+<led name="LED1" color="yellow" footprint="0805" pcbX={-20} pcbY={8} />
+<resistor name="R_LED1" footprint="0805" resistance="1k" pcbX={-22} pcbY={8} />
+
+<led name="LED2" color="green" footprint="0805" pcbX={-15} pcbY={8} />
+<resistor name="R_LED2" footprint="0805" resistance="1k" pcbX={-17} pcbY={8} />
+
+<trace from="net.VBUS" to=".R_LED1 .pos" />
+<trace from=".R_LED1 .neg" to=".LED1 .pos" />
+<trace from=".LED1 .neg" to=".U1 .GPIO1" />  /* PD active indicator */
+
+<trace from="net.5V" to=".R_LED2 .pos" />
+<trace from=".R_LED2 .neg" to=".LED2 .pos" />
+<trace from=".LED2 .neg" to="net.GND" />  /* Power good */
+```
+
+## Step 6: Raspberry Pi Header
+
+```tsx
+<chip
+  name="J2"
+  footprint="raspberry-pi-hat-40pin"
+  pcbX={-10}
+  pcbY={20}
+/>
+
+/* 5V power output */
+<trace from=".J2 .2" to="net.5V" />
+<trace from=".J2 .4" to="net.5V" />
+
+/* Ground */
+<trace from=".J2 .6" to="net.GND" />
+<trace from=".J2 .9" to="net.GND" />
+
+/* I2C for PD status */
+<trace from=".J2 .3" to="net.SDA" />
+<trace from=".J2 .5" to="net.SCL" />
+
+/* GPIO for PD interrupt */
+<trace from=".J2 .29" to="net.PD_INT" />
+```
+
+## Complete Circuit
+
+```tsx
+export default () => {
+  return (
+    <board width="25mm" height="25mm">
+      {/* FUSB302B PD Controller */}
+      <chip name="U1" footprint="qfn-24" pcbX={10} pcbY={0} />
+      
+      {/* MP2491C Buck Converter */}
+      <chip name="U2" footprint="qfn-16" pcbX={-10} pcbY={0} />
+      
+      {/* USB-C Receptacle */}
+      <chip name="J1" footprint="usb-c-16pin" pcbX={20} pcbY={0} />
+      
+      {/* Power Inductor */}
+      <inductor name="L1" footprint="srn6045" inductance="10µH" pcbX={-5} pcbY={0} />
+      
+      {/* Capacitors */}
+      <capacitor name="C1" footprint="0805" capacitance="10µF" pcbX={-15} pcbY={3} />
+      <capacitor name="C2" footprint="0805" capacitance="22µF" pcbX={-15} pcbY={-3} />
+      
+      {/* Status LEDs */}
+      <led name="LED1" color="yellow" footprint="0805" pcbX={-20} pcbY={8} />
+      <resistor name="R_LED1" footprint="0805" resistance="1k" pcbX={-22} pcbY={8} />
+      <led name="LED2" color="green" footprint="0805" pcbX={-15} pcbY={8} />
+      <resistor name="R_LED2" footprint="0805" resistance="1k" pcbX={-17} pcbY={8} />
+      
+      {/* Current Sense */}
+      <resistor name="R1" footprint="1206" resistance="0.01" pcbX={-12} pcbY={0} />
+    </board>
+  )
+}
+```
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => {
+  return (
+    <board width="25mm" height="25mm">
+      <chip name="U1" footprint="qfn-24" pcbX={10} pcbY={0} />
+      <chip name="U2" footprint="qfn-16" pcbX={-10} pcbY={0} />
+      <chip name="J1" footprint="usb-c-16pin" pcbX={20} pcbY={0} />
+      <inductor name="L1" footprint="srn6045" inductance="10µH" pcbX={-5} pcbY={0} />
+      <capacitor name="C1" footprint="0805" capacitance="10µF" pcbX={-15} pcbY={3} />
+      <capacitor name="C2" footprint="0805" capacitance="22µF" pcbX={-15} pcbY={-3} />
+      <led name="LED1" color="yellow" footprint="0805" pcbX={-20} pcbY={8} />
+      <led name="LED2" color="green" footprint="0805" pcbX={-15} pcbY={8} />
+    </board>
+  )
+}
+`} />
+
+## Firmware (Arduino Example)
+
+```cpp
+#include <Wire.h>
+#include <FUSB302_pd.h>
+
+FUSB302 pd;
+float voltage = 0;
+float current = 0;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+  
+  pd.begin();
+  pd.setMessageCallback([](PDMessage msg) {
+    if (msg.type == PD_SOURCE_CAPABILITIES) {
+      // Received source capabilities
+      for (int i = 0; i < msg.num_pdos; i++) {
+        PDO_t pdo = msg.pdos[i];
+        if (pdo.fixed.voltage == 20000) {  // 20V available
+          // Request 20V @ 3A
+          pd.requestPower(20000, 3000);
+          break;
+        }
+      }
+    }
+  });
+}
+
+void loop() {
+  pd.processMessages();
+  
+  // Read voltage and current
+  voltage = readVoltage();
+  current = readCurrent();
+  
+  Serial.print("Voltage: "); Serial.print(voltage / 1000, 2); Serial.println(" V");
+  Serial.print("Current: "); Serial.print(current / 1000, 2); Serial.println(" A");
+  
+  delay(1000);
+}
+```
+
+## Python (Raspberry Pi) Example
+
+```python
+import smbus2
+import time
+
+# FUSB302 I2C address
+FUSB302_ADDR = 0x22
+
+def init_pd():
+    bus = smbus2.SMBus(1)
+    # Initialize FUSB302
+    bus.write_byte_data(FUSB302_ADDR, 0x0B, 0x01)  # Control register
+    bus.write_byte_data(FUSB302_ADDR, 0x0C, 0x03)  # Power register
+    return bus
+
+def request_20v(bus):
+    # Send PD sink request for 20V @ 3A
+    # This is a simplified example - real implementation
+    # requires proper PD protocol handling
+    print("Requesting 20V from PD source...")
+
+def read_voltage(bus):
+    # Read voltage from ADC or PD controller
+    # Return voltage in millivolts
+    return 5000
+
+def read_current(bus):
+    # Read current from ADC
+    # Return current in milliamps
+    return 0
+
+bus = init_pd()
+request_20v(bus)
+
+while True:
+    voltage = read_voltage(bus)
+    current = read_current(bus)
+    power = (voltage * current) / 1000000
+    print(f"V: {voltage/1000:.2f}V | I: {current/1000:.2f}A | P: {power:.2f}W")
+    time.sleep(1)
+```
+
+## PCB Layout Guidelines
+
+### High-Current Paths
+- **VBUS traces**: Minimum 1.5mm for 3A current
+- **Ground plane**: Solid ground under entire board
+- **Via stitching**: Multiple vias for current return
+
+### Thermal Management
+- **Buck converter**: Large copper area for thermal pad
+- **Inductor**: Keep away from temperature-sensitive components
+- **LED placement**: Visible indicators away from heat sources
+
+### PD Signal Integrity
+- **CC traces**: 0.2mm, keep short (< 20mm)
+- **Decoupling**: 100nF near FUSB302 VBus pin
+- **Ground reference**: Solid ground under PD controller
+
+## Cost Estimate
+
+| Component | Unit Cost | Qty | Total |
+|-----------|-----------|-----|-------|
+| FUSB302BMPX | $1.50 | 1 | $1.50 |
+| MP2491C | $0.80 | 1 | $0.80 |
+| USB-C Receptacle | $0.20 | 1 | $0.20 |
+| Power Inductor | $0.30 | 1 | $0.30 |
+| Passives (×8) | $0.02 | 8 | $0.16 |
+| Capacitors (×3) | $0.05 | 3 | $0.15 |
+| Current Sense | $0.10 | 1 | $0.10 |
+| LEDs (×2) | $0.02 | 2 | $0.04 |
+| PCB (2-layer) | $0.50 | 1 | $0.50 |
+| **Total** | | | **$3.75** |
+
+## Summary
+
+You've designed a complete USB Power Delivery trigger module covering:
+- USB PD 3.0 protocol and sink negotiation
+- FUSB302B PD controller integration
+- MP2491C buck converter for voltage regulation
+- USB-C receptacle with CC pin management
+- Current and voltage monitoring
+- Status LED indicators
+- Firmware examples for Arduino and Raspberry Pi
+
+This module enables Raspberry Pi projects to draw power from USB-C PD sources, allowing use of modern USB-C chargers and power banks for higher power applications.
