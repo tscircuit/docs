@@ -1,0 +1,118 @@
+# I2C Environmental Sensor Module Tutorial
+
+## Overview
+
+Build a BME280-based environmental sensor module that measures temperature, humidity, and pressure over I2C, with an optional OLED display.
+
+## Components
+
+| Component | Quantity | Notes |
+|-----------|----------|-------|
+| BME280 Breakout | 1 | Temperature/Humidity/Pressure |
+| SSD1306 OLED 128x64 | 1 | I2C display (optional) |
+| 4.7kΩ Resistor | 2 | I2C pull-up |
+| 100nF Capacitor | 2 | Decoupling |
+| Pin Header (2.54mm) | 1 | 6-pin for external connection |
+| 0.96" OLED Module | 1 | I2C, SSD1306 |
+
+## Schematic
+
+```typescript
+import { createCircuit } from "@tscircuit/core"
+
+export default function EnvironmentalSensor() {
+  return (
+    <board width="40mm" height="30mm">
+      {/* BME280 Sensor */}
+      <chip name="U1" footprint="LGA-8" supplierPartNumbers={{ jlcpcb: "C506769" }} />
+      
+      {/* I2C Pull-ups */}
+      <resistor name="R1" resistance="4.7kΩ" footprint="0805" />
+      <resistor name="R2" resistance="4.7kΩ" footprint="0805" />
+      
+      {/* Decoupling */}
+      <capacitor name="C1" capacitance="100nF" footprint="0805" />
+      <capacitor name="C2" capacitance="1µF" footprint="0805" />
+      
+      {/* Optional OLED */}
+      <oled-display name="D1" driver="ssd1306" width={128} height={64} />
+      
+      {/* Pin header for I2C connection */}
+      <pin-header name="J1" pinCount={6} />
+    </board>
+  )
+}
+```
+
+## I2C Connection
+
+| Pin Header | BME280 | OLED | Function |
+|---|---|---|---|
+| Pin 1 | VIN | VCC | 3.3V/5V Power |
+| Pin 2 | GND | GND | Ground |
+| Pin 3 | SCK | SCL | I2C Clock (with pull-up) |
+| Pin 4 | SDI | SDA | I2C Data (with pull-up) |
+| Pin 5 | CSB | - | Chip Select (tie high for I2C) |
+| Pin 6 | SDO | - | I2C Address select |
+
+## Microcontroller Code
+
+```c
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_SSD1306.h>
+
+Adafruit_BME280 bme;
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+  
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found!");
+    while (1);
+  }
+  
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("OLED not found!");
+  }
+  
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+}
+
+void loop() {
+  float temp = bme.readTemperature();
+  float humidity = bme.readHumidity();
+  float pressure = bme.readPressure() / 100.0F;
+  
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("Temp: "); display.print(temp); display.println(" C");
+  display.print("Hum:  "); display.print(humidity); display.println(" %");
+  display.print("Pres: "); display.print(pressure); display.println(" hPa");
+  display.display();
+  
+  delay(2000);
+}
+```
+
+## PCB Layout Tips
+
+1. Place BME280 away from heat-generating components
+2. Add thermal relief pads under the sensor for better air flow
+3. Keep I2C traces short and use pull-ups near the sensor
+4. Consider adding a ventilation hole above the sensor
+
+## Calibration
+
+The BME280 typically needs no calibration for general use. For precise measurements:
+- Compare temperature readings against a known reference
+- Apply offset correction in software
+- For altitude: calibrate pressure against local weather station
+
+## Estimated Cost
+
+~$8 in single quantities (BME280 + OLED + passives)
