@@ -12,6 +12,13 @@ In tscircuit, you model the M.2 connector as a `<chip>` component. The same comp
 - **Processor board** — the processor module exposes signals through the M.2 edge pads.
 - **Carrier board** — the carrier hosts the physical M.2 socket and routes those signals to headers, sensors, or other peripherals.
 
+## Components
+
+| Ref | Part | Description | Footprint |
+|-----|------|-------------|-----------|
+| J1 | M.2 Key E connector | 75-pin, 0.5 mm pitch | `edge_connector_75p_m2_key_e` |
+| U1 | Processor module | RP2040 / ESP32 / STM32 (varies) | Per-module stamp receiver |
+
 ## MicroMod Signal Map
 
 The MicroMod specification assigns each M.2 pin a fixed function. Odd-numbered pins are GND; even-numbered pins carry signals:
