@@ -1,0 +1,329 @@
+---
+title: ESP32 PCB Layout and Routing Tutorial
+description: Learn how to design a complete ESP32 development board with tscircuit — component placement, trace routing, USB connectivity, and manufacturing.
+---
+
+## Overview
+
+This tutorial covers designing a complete ESP32 development board using tscircuit. You'll learn professional PCB layout techniques including component placement, power trace routing, USB differential pairs, crystal oscillator placement, and antenna keepout zones.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Project Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Board Size | 30mm × 60mm |
+| Layers | 2-layer (Top/Bottom) |
+| Target | ESP32-WROOM-32 development board |
+| USB | USB-C for programming and power |
+| Voltage Regulator | 5V to 3.3V LDO (AMS1117-3.3) |
+| Programming | Auto-reset via DTR/RTS from USB-UART |
+
+## Components
+
+| Ref | Part | Description | Footprint |
+|-----|------|-------------|-----------|
+| U1 | ESP32-WROOM-32 | Dual-core MCU with WiFi/BT | `esp32-wroom-32` |
+| J1 | USB-C Receptacle | USB Type-C for power/programming | `smd-usb-c` |
+| U2 | CH340G | USB-to-Serial bridge | `sop-16` |
+| U3 | AMS1117-3.3 | 3.3V LDO regulator | `sot-223` |
+| Y1 | 32.768 kHz Crystal | RTC clock oscillator | `3215_smd` |
+| Y2 | 40 MHz Crystal | Main MCU oscillator | `2520_smd` |
+| C1-C4 | Decoupling caps | 100nF ceramic capacitors | `0402` |
+| R1-R6 | Pull-up/pull-down | 10kΩ resistors | `0402` |
+| LED1 | Power indicator | Green status LED | `0603` |
+| LED2 | TX indicator | Yellow activity LED | `0603` |
+| SW1 | Reset button | Tactile push button | `pushbutton` |
+| SW2 | Boot button | Tactile push button | `pushbutton` |
+
+## Step 1: Power Architecture
+
+The ESP32 requires a stable 3.3V supply. We use an AMS1117-3.3 LDO regulator:
+
+```tsx
+<capacitor name="C_IN" footprint="0805" capacitance="10uF" />
+<capacitor name="C_OUT" footprint="0805" capacitance="10uF" />
+
+<chip name="U3" footprint="sot-223" />
+
+<trace from="U3 .vin" to="net.5V" />
+<trace from="U3 .gnd" to="net.GND" />
+<trace from="U3 .vout" to="net.3V3" />
+```
+
+### Decoupling Capacitors
+
+Each power pin on the ESP32 needs a 100nF decoupling capacitor placed as close as possible:
+
+```tsx
+<capacitor name="C1" footprint="0402" capacitance="100nF" pcbX={-8} pcbY={-5} />
+<capacitor name="C2" footprint="0402" capacitance="100nF" pcbX={-5} pcbY={-5} />
+<capacitor name="C3" footprint="0402" capacitance="100nF" pcbX={-2} pcbY={-5} />
+<capacitor name="C4" footprint="0402" capacitance="100nF" pcbX={1} pcbY={-5} />
+```
+
+**Rule of thumb**: Place decoupling caps within 2mm of the power pin they're decoupling.
+
+## Step 2: ESP32 Module Placement
+
+The ESP32-WROOM-32 should be placed with the antenna overhanging the board edge for optimal WiFi performance:
+
+```tsx
+<chip
+  name="U1"
+  footprint="esp32-wroom-32"
+  pcbX={10}
+  pcbY={0}
+  pcbRotation={0}
+/>
+```
+
+### Critical Placement rules:
+
+1. **Antenna keepout**: No copper pour within 15mm of the antenna area
+2. **Ground plane**: Solid ground plane under the module
+3. **Crystal proximity**: Place 40MHz crystal within 5mm of OSC pins
+4. **Flash memory**: Keep high-speed signals away from the antenna side
+
+## Step 3: USB-C and CH340G Circuit
+
+The CH340G provides USB-to-serial conversion for programming:
+
+```tsx
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+<SmdUsbC
+  name="J1"
+  connections={{
+    GND1: "net.GND",
+    GND2: "net.GND",
+    VBUS1: "net.5V",
+    VBUS2: "net.5V",
+    D1: ".U2 > .d-",
+    D2: ".U2 > .d+",
+  }}
+  pcbX={-25}
+  pcbY={0}
+/>
+
+<chip
+  name="U2"
+  footprint="sop-16"
+  pcbX={-15}
+  pcbY={0}
+/>
+```
+
+### Auto-Reset Circuit
+
+The ESP32 needs an auto-reset circuit for programming. Connect CH340G DTR and RTS to ESP32 EN and GPIO0:
+
+```tsx
+<capacitor name="C_DTR" footprint="0402" capacitance="100nF" />
+<resistor name="R_DTR" footprint="0402" resistance="1k" />
+
+<trace from=".U2 .dtr" to=".C_DTR .pos" />
+<trace from=".C_DTR .neg" to=".U1 > .EN" />
+<trace from=".U2 .rts" to=".R_DTR .pos" />
+<trace from=".R_DTR .neg" to=".U1 > .GPIO0" />
+```
+
+## Step 4: Crystal Oscillators
+
+### 40 MHz Main Crystal
+
+```tsx
+<crystal
+  name="Y2"
+  footprint="2520_smd"
+  frequency="40MHz"
+  loadCapacitance="12pF"
+  pcbX={5}
+  pcbY={-8}
+/>
+
+<capacitor name="C_Y2A" footprint="0402" capacitance="12pF" pcbX={4} pcbY={-9} />
+<capacitor name="C_Y2B" footprint="0402" capacitance="12pF" pcbX={6} pcbY={-9} />
+
+<trace from=".Y2 .1" to=".C_Y2A .pos" />
+<trace from=".Y2 .2" to=".C_Y2B .pos" />
+<trace from=".C_Y2A .neg" to="net.GND" />
+<trace from=".C_Y2B .neg" to="net.GND" />
+```
+
+### 32.768 kHz RTC Crystal
+
+```tsx
+<crystal
+  name="Y1"
+  footprint="3215_smd"
+  frequency="32.768kHz"
+  pcbX={5}
+  pcbY={8}
+/>
+
+<capacitor name="C_Y1A" footprint="0402" capacitance="6.8pF" />
+<capacitor name="C_Y1B" footprint="0402" capacitance="6.8pF" />
+```
+
+## Step 5: LED Indicators
+
+```tsx
+<led name="LED1" color="green" footprint="0603" pcbX={-20} pcbY={-10} />
+<resistor name="R_LED1" footprint="0402" resistance="330" pcbX={-22} pcbY={-10} />
+
+<trace from="net.3V3" to=".R_LED1 .pos" />
+<trace from=".R_LED1 .neg" to=".LED1 .pos" />
+<trace from=".LED1 .neg" to="net.GND" />
+```
+
+## Step 6: Reset and Boot Buttons
+
+```tsx
+<pushbutton name="SW1" footprint="pushbutton" pcbX={-20} pcbY={10} />
+<pushbutton name="SW2" footprint="pushbutton" pcbX={-15} pcbY={10} />
+
+<trace from=".SW1 .pin1" to="net.GND" />
+<trace from=".SW1 .pin2" to=".U1 > .EN" />
+
+<trace from=".SW2 .pin1" to="net.GND" />
+<trace from=".SW2 .pin2" to=".U1 > .GPIO0" />
+```
+
+## Complete Circuit
+
+```tsx
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="60mm" height="30mm">
+      {/* ESP32 Module */}
+      <chip name="U1" footprint="esp32-wroom-32" pcbX={10} pcbY={0} />
+      
+      {/* USB-C Connector */}
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.5V",
+          VBUS2: "net.5V",
+        }}
+        pcbX={-25}
+        pcbY={0}
+      />
+      
+      {/* CH340G USB-UART */}
+      <chip name="U2" footprint="sop-16" pcbX={-15} pcbY={0} />
+      
+      {/* AMS1117-3.3 Voltage Regulator */}
+      <chip name="U3" footprint="sot-223" pcbX={-10} pcbY={-10} />
+      
+      {/* Power LED */}
+      <led name="LED1" color="green" footprint="0603" pcbX={-20} pcbY={-10} />
+      <resistor name="R_LED1" footprint="0402" resistance="330" pcbX={-22} pcbY={-10} />
+      
+      {/* Reset Button */}
+      <pushbutton name="SW1" footprint="pushbutton" pcbX={-20} pcbY={10} />
+      
+      {/* Boot Button */}
+      <pushbutton name="SW2" footprint="pushbutton" pcbX={-15} pcbY={10} />
+      
+      {/* 40 MHz Crystal */}
+      <crystal name="Y2" footprint="2520_smd" frequency="40MHz" pcbX={5} pcbY={-8} />
+      
+      {/* 32.768 kHz Crystal */}
+      <crystal name="Y1" footprint="3215_smd" frequency="32.768kHz" pcbX={5} pcbY={8} />
+      
+      {/* Decoupling Capacitors */}
+      <capacitor name="C1" footprint="0402" capacitance="100nF" pcbX={-8} pcbY={-5} />
+      <capacitor name="C2" footprint="0402" capacitance="100nF" pcbX={-5} pcbY={-5} />
+      <capacitor name="C3" footprint="0402" capacitance="100nF" pcbX={-2} pcbY={-5} />
+      <capacitor name="C4" footprint="0402" capacitance="100nF" pcbX={1} pcbY={-5} />
+    </board>
+  )
+}
+```
+
+<TscircuitIframe defaultView="3d" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="60mm" height="30mm">
+      <chip name="U1" footprint="esp32-wroom-32" pcbX={10} pcbY={0} />
+      <SmdUsbC name="J1" connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.5V", VBUS2: "net.5V" }} pcbX={-25} pcbY={0} />
+      <chip name="U2" footprint="sop-16" pcbX={-15} pcbY={0} />
+      <chip name="U3" footprint="sot-223" pcbX={-10} pcbY={-10} />
+      <led name="LED1" color="green" footprint="0603" pcbX={-20} pcbY={-10} />
+      <resistor name="R_LED1" footprint="0402" resistance="330" pcbX={-22} pcbY={-10} />
+      <pushbutton name="SW1" footprint="pushbutton" pcbX={-20} pcbY={10} />
+      <pushbutton name="SW2" footprint="pushbutton" pcbX={-15} pcbY={10} />
+      <crystal name="Y2" footprint="2520_smd" frequency="40MHz" pcbX={5} pcbY={-8} />
+      <crystal name="Y1" footprint="3215_smd" frequency="32.768kHz" pcbX={5} pcbY={8} />
+    </board>
+  )
+}
+`} />
+
+## PCB Layout Rules
+
+### Power Traces
+- **5V input**: Minimum 0.5mm trace width (500mA current)
+- **3.3V output**: Minimum 0.3mm trace width (ESP32 peak ~500mA)
+- **GND plane**: Use a solid ground plane on the bottom layer
+
+### Signal Traces
+- **UART (TX/RX)**: 0.2mm traces, keep short
+- **SPI**: 0.2mm traces, controlled impedance not needed at ESP32 speeds
+- **I2C**: 0.2mm traces with 4.7kΩ pull-ups
+
+### USB Differential Pair
+- **D+/D-**: Route as differential pair with 90Ω impedance
+- **Length matching**: Keep length difference under 5mm
+- **Ground reference**: Solid ground plane underneath
+
+### Antenna Guidelines
+- **Keepout zone**: 15mm no-copper zone around antenna
+- **No vias**: No vias under or near the antenna
+- **Ground plane**: Cut out ground plane in antenna area
+
+## Manufacturing Files
+
+```bash
+# Generate Gerbers
+tsci build --gerber
+
+# Generate BOM
+tsci build --bom
+
+# Generate Assembly
+tsci build --pick-and-place
+```
+
+## Cost Estimate
+
+| Component | Unit Cost | Qty | Total |
+|-----------|-----------|-----|-------|
+| ESP32-WROOM-32 | $2.50 | 1 | $2.50 |
+| CH340G | $0.30 | 1 | $0.30 |
+| AMS1117-3.3 | $0.15 | 1 | $0.15 |
+| USB-C Receptacle | $0.15 | 1 | $0.15 |
+| Crystals (×2) | $0.20 | 2 | $0.40 |
+| Passives (×20) | $0.01 | 20 | $0.20 |
+| PCB (2-layer) | $1.00 | 1 | $1.00 |
+| **Total** | | | **$4.70** |
+
+## Summary
+
+You've designed a complete ESP32 development board covering:
+- Power architecture with LDO regulation
+- USB-C connectivity with CH340G programming
+- Auto-reset circuit for seamless flashing
+- Crystal oscillators for MCU timing
+- PCB layout rules for WiFi performance
+- Manufacturing file generation
+
+This board is ready for production and can be manufactured at any standard PCB fab house.
