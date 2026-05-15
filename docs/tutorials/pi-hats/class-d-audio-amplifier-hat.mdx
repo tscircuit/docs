@@ -1,0 +1,106 @@
+---
+title: Class D Audio Amplifier HAT
+description: Build a Class D Audio Amplifier HAT with PAM8403 for 3W per channel stereo output.
+---
+
+## Overview
+
+This tutorial shows you how to build a Class D Audio Amplifier HAT using the PAM8403 chip, delivering 3W per channel of stereo audio output with volume control and speaker terminals.
+
+## What You'll Need
+
+- PAM8403 Class D amplifier chip
+- Volume control potentiometer (10k)
+- Speaker terminals (2-pin, screw type)
+- Input filtering capacitors
+- Power supply decoupling capacitors
+- 3.5mm audio input jack
+
+## Circuit Design
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+
+export default () => {
+  return (
+    <board width="65mm" height="56mm">
+      {/* Audio Input Jack */}
+      <chip name="J1" footprint="audio-jack-3.5mm" pcbX={-25} pcbY={0}
+        connections={{ L: "net.AUDL", R: "net.AUDR", GND: "net.GND" }}
+      />
+      {/* Volume Control */}
+      <chip name="RV1" footprint="potentiometer-10k" pcbX={-10} pcbY={15}
+        connections={{ pin1: "net.AUDL", pin2: "net.VOL_L", pin3: "net.GND" }}
+      />
+      <chip name="RV2" footprint="potentiometer-10k" pcbX={-10} pcbY={-15}
+        connections={{ pin1: "net.AUDR", pin2: "net.VOL_R", pin3: "net.GND" }}
+      />
+      {/* PAM8403 Amplifier */}
+      <chip name="U1" footprint="sop-16" pcbX={5} pcbY={0}
+        connections={{
+          INL: "net.VOL_L", INR: "net.VOL_R",
+          OUTL_P: "net.SP_L_P", OUTL_N: "net.SP_L_N",
+          OUTR_P: "net.SP_R_P", OUTR_N: "net.SP_R_N",
+          VDD: "net.VCC", GND: "net.GND"
+        }}
+      />
+      {/* Output Filter Inductors */}
+      <chip name="L1" footprint="inductor-0805" pcbX={15} pcbY={8} />
+      <chip name="L2" footprint="inductor-0805" pcbX={15} pcbY={-8} />
+      {/* Decoupling Capacitors */}
+      <capacitor name="C1" capacitance="100uF" footprint="1206" pcbX={5} pcbY={12} />
+      <capacitor name="C2" capacitance="1uF" footprint="0402" pcbX={8} pcbY={12} />
+      {/* Speaker Terminals */}
+      <chip name="J2" footprint="screw-terminal-2pin" pcbX={25} pcbY={8}
+        connections={{ pin1: "net.SP_L_P", pin2: "net.SP_L_N" }}
+      />
+      <chip name="J3" footprint="screw-terminal-2pin" pcbX={25} pcbY={-8}
+        connections={{ pin1: "net.SP_R_P", pin2: "net.SP_R_N" }}
+      />
+    </board>
+  )
+}
+`} />
+
+## Step-by-Step Instructions
+
+### 1. Audio Input
+Place a 3.5mm audio jack at the edge of the board. This accepts stereo line-level input from any audio source.
+
+### 2. Volume Control
+Add dual 10k potentiometers for left and right channel volume control. Wire them as voltage dividers between the audio input and ground.
+
+### 3. PAM8403 Amplifier
+The PAM8403 is a 3W+3W Class D amplifier. Place it centrally with adequate copper pour for heat dissipation. It operates on 5V supply.
+
+### 4. Output LC Filter
+Class D amplifiers require output inductors to filter the PWM switching waveform. Use ferrite bead inductors on each output.
+
+### 5. Power Supply Decoupling
+Add a 100uF bulk capacitor and 1uF ceramic capacitor near the PAM8403 VDD pin to prevent supply ripple.
+
+### 6. Speaker Terminals
+Use screw terminals for speaker connections, supporting 4-8 ohm speakers rated for at least 3W.
+
+## Specifications
+
+- **Supply Voltage:** 5V DC
+- **Output Power:** 3W per channel (4 ohm load)
+- **Efficiency:** >85% (Class D)
+- **THD+N:** <0.2% at 1W
+- **Frequency Response:** 20Hz - 20kHz
+
+## Testing
+
+1. Connect 5V power supply (capable of at least 2A)
+2. Connect 4-8 ohm speakers to terminal blocks
+3. Feed audio signal via 3.5mm jack
+4. Adjust volume potentiometers
+5. Verify clean audio output with no audible distortion
+
+## Safety Notes
+
+- Do not short speaker outputs
+- Use speakers rated for at least 3W
+- Keep audio input traces away from output traces to prevent oscillation
