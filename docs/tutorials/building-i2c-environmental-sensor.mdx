@@ -1,0 +1,361 @@
+---
+title: Building an I2C Environmental Sensor Module
+description: Learn how to build an I2C environmental sensor module with a BME280 sensor for temperature, humidity, and pressure monitoring using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building an I2C environmental sensor module using tscircuit. The module features a BME280 sensor that measures temperature, humidity, and atmospheric pressure, connected via I2C to any microcontroller.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="25mm" height="20mm">
+    {/* BME280 Environmental Sensor */}
+    <chip
+      name="U1"
+      footprint="lga8_2.5x2.5"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "CSB",
+        pin3: "SDI",
+        pin4: "SCK",
+        pin5: "SDO",
+        pin6: "VDDIO",
+        pin7: "GND2",
+        pin8: "VDD"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "GND", "CSB", "SDO"] },
+        rightSide: { pins: ["VDDIO", "GND2", "SDI", "SCK"] }
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    {/* I2C Pull-up Resistors */}
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-8} pcbY={4} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={-8} pcbY={-4} />
+
+    {/* Decoupling Capacitor */}
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={6} pcbY={0} />
+
+    {/* Pin Header for Connection */}
+    <pinheader
+      name="J1"
+      pinCount={4}
+      pitch="2.54mm"
+      pcbX={-8}
+      pcbY={0}
+      pcbRotation="90deg"
+    />
+
+    {/* Power connections */}
+    <trace from=".U1 .VDD" to="net.VCC" />
+    <trace from=".U1 .VDDIO" to="net.VCC" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U1 .GND2" to="net.GND" />
+    <trace from=".U1 .CSB" to="net.VCC" />
+
+    {/* I2C connections with pull-ups */}
+    <trace from=".U1 .SDI" to="net.SDA" />
+    <trace from=".U1 .SCK" to="net.SCL" />
+    <trace from=".R1 .pos" to="net.VCC" />
+    <trace from=".R1 .neg" to="net.SDA" />
+    <trace from=".R2 .pos" to="net.VCC" />
+    <trace from=".R2 .neg" to="net.SCL" />
+
+    {/* Decoupling capacitor */}
+    <trace from=".C1 .pos" to="net.VCC" />
+    <trace from=".C1 .neg" to="net.GND" />
+
+    {/* Pin header connections */}
+    <trace from=".J1 .pin1" to="net.VCC" />
+    <trace from=".J1 .pin2" to="net.GND" />
+    <trace from=".J1 .pin3" to="net.SDA" />
+    <trace from=".J1 .pin4" to="net.SCL" />
+  </board>
+)
+`} />
+
+## Objectives
+
+Building an I2C environmental sensor module teaches fundamental concepts:
+
+- **I2C Communication** - Understanding the two-wire serial protocol
+- **Pull-up Resistors** - Why I2C requires pull-ups and how to size them
+- **Power Filtering** - Using decoupling capacitors for stable operation
+- **Sensor Integration** - Connecting precision sensors to microcontrollers
+
+## Practical Applications
+
+- **Weather Stations** - Monitor local atmospheric conditions
+- **Indoor Air Quality** - Track humidity and temperature for comfort
+- **Altitude Estimation** - Use pressure readings for elevation data
+- **HVAC Monitoring** - Integration with climate control systems
+
+## Bill of Materials
+
+| Component | Value | Footprint | Purpose |
+|-----------|-------|-----------|---------|
+| BME280 | - | LGA-8 (2.5x2.5mm) | Environmental sensor |
+| R1, R2 | 4.7kΩ | 0402 | I2C pull-up resistors |
+| C1 | 100nF | 0402 | Power decoupling |
+| J1 | 4-pin | 2.54mm pitch | External connection |
+
+## Understanding the BME280
+
+The BME280 is a precision environmental sensor that measures:
+
+- **Temperature**: -40°C to +85°C with ±1°C accuracy
+- **Humidity**: 0-100% RH with ±3% accuracy
+- **Pressure**: 300-1100 hPa with ±1 hPa accuracy
+
+The sensor communicates via I2C (or SPI) and operates at 1.8-3.6V.
+
+## Circuit Design
+
+### Step 1: BME280 Sensor Connections
+
+The BME280 in I2C mode requires these connections:
+- **VDD/VDDIO**: Power supply (3.3V recommended)
+- **GND**: Ground connections
+- **SDI**: I2C data (SDA)
+- **SCK**: I2C clock (SCL)
+- **CSB**: Tie HIGH for I2C mode (LOW enables SPI)
+- **SDO**: I2C address select (GND=0x76, VDD=0x77)
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="25mm" height="20mm">
+    <chip
+      name="U1"
+      footprint="lga8_2.5x2.5"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "CSB",
+        pin3: "SDI",
+        pin4: "SCK",
+        pin5: "SDO",
+        pin6: "VDDIO",
+        pin7: "GND2",
+        pin8: "VDD"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "GND", "CSB", "SDO"] },
+        rightSide: { pins: ["VDDIO", "GND2", "SDI", "SCK"] }
+      }}
+    />
+    <trace from=".U1 .VDD" to="net.VCC" />
+    <trace from=".U1 .VDDIO" to="net.VCC" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U1 .GND2" to="net.GND" />
+    <trace from=".U1 .CSB" to="net.VCC" />
+  </board>
+)
+`} />
+
+### Step 2: I2C Pull-up Resistors
+
+I2C is an open-drain bus requiring pull-up resistors. For 3.3V operation with standard-mode I2C (100kHz):
+
+**Pull-up calculation:**
+- Bus capacitance: ~10pF (short traces)
+- Rise time requirement: `<1µs`
+- Typical value: 4.7kΩ works for most applications
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="25mm" height="20mm">
+    <resistor name="R1" resistance="4.7k" footprint="0402" />
+    <resistor name="R2" resistance="4.7k" footprint="0402" />
+    
+    <trace from=".R1 .pos" to="net.VCC" />
+    <trace from=".R1 .neg" to="net.SDA" />
+    <trace from=".R2 .pos" to="net.VCC" />
+    <trace from=".R2 .neg" to="net.SCL" />
+  </board>
+)
+`} />
+
+### Step 3: Power Decoupling
+
+A 100nF ceramic capacitor close to the sensor filters high-frequency noise:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="25mm" height="20mm">
+    <capacitor name="C1" capacitance="100nF" footprint="0402" />
+    <trace from=".C1 .pos" to="net.VCC" />
+    <trace from=".C1 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+### Step 4: Complete Schematic
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="25mm" height="20mm">
+    <chip
+      name="U1"
+      footprint="lga8_2.5x2.5"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "CSB",
+        pin3: "SDI",
+        pin4: "SCK",
+        pin5: "SDO",
+        pin6: "VDDIO",
+        pin7: "GND2",
+        pin8: "VDD"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "GND", "CSB", "SDO"] },
+        rightSide: { pins: ["VDDIO", "GND2", "SDI", "SCK"] }
+      }}
+    />
+    
+    <resistor name="R1" resistance="4.7k" footprint="0402" schX={-5} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" schX={-5} schY={-3} />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" schX={5} />
+    
+    <pinheader name="J1" pinCount={4} pitch="2.54mm" schX={-10} />
+
+    <trace from=".U1 .VDD" to="net.VCC" />
+    <trace from=".U1 .VDDIO" to="net.VCC" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U1 .GND2" to="net.GND" />
+    <trace from=".U1 .CSB" to="net.VCC" />
+    
+    <trace from=".U1 .SDI" to="net.SDA" />
+    <trace from=".U1 .SCK" to="net.SCL" />
+    <trace from=".R1 .pos" to="net.VCC" />
+    <trace from=".R1 .neg" to="net.SDA" />
+    <trace from=".R2 .pos" to="net.VCC" />
+    <trace from=".R2 .neg" to="net.SCL" />
+    
+    <trace from=".C1 .pos" to="net.VCC" />
+    <trace from=".C1 .neg" to="net.GND" />
+    
+    <trace from=".J1 .pin1" to="net.VCC" />
+    <trace from=".J1 .pin2" to="net.GND" />
+    <trace from=".J1 .pin3" to="net.SDA" />
+    <trace from=".J1 .pin4" to="net.SCL" />
+  </board>
+)
+`} />
+
+## PCB Layout
+
+Layout considerations for this sensor module:
+
+- Place decoupling capacitor close to sensor VDD pins
+- Keep I2C traces short and parallel
+- Avoid routing noisy signals near the sensor
+- Provide adequate ground plane for stability
+
+<CircuitPreview splitView={false} hideSchematicTab hide3DTab defaultView="pcb" code={`
+export default () => (
+  <board width="25mm" height="20mm">
+    <chip
+      name="U1"
+      footprint="lga8_2.5x2.5"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "CSB",
+        pin3: "SDI",
+        pin4: "SCK",
+        pin5: "SDO",
+        pin6: "VDDIO",
+        pin7: "GND2",
+        pin8: "VDD"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "GND", "CSB", "SDO"] },
+        rightSide: { pins: ["VDDIO", "GND2", "SDI", "SCK"] }
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-8} pcbY={4} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={-8} pcbY={-4} />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={6} pcbY={0} />
+    <pinheader name="J1" pinCount={4} pitch="2.54mm" pcbX={-8} pcbY={0} pcbRotation="90deg" />
+
+    <trace from=".U1 .VDD" to="net.VCC" />
+    <trace from=".U1 .VDDIO" to="net.VCC" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U1 .GND2" to="net.GND" />
+    <trace from=".U1 .CSB" to="net.VCC" />
+    
+    <trace from=".U1 .SDI" to="net.SDA" />
+    <trace from=".U1 .SCK" to="net.SCL" />
+    <trace from=".R1 .pos" to="net.VCC" />
+    <trace from=".R1 .neg" to="net.SDA" />
+    <trace from=".R2 .pos" to="net.VCC" />
+    <trace from=".R2 .neg" to="net.SCL" />
+    
+    <trace from=".C1 .pos" to="net.VCC" />
+    <trace from=".C1 .neg" to="net.GND" />
+    
+    <trace from=".J1 .pin1" to="net.VCC" />
+    <trace from=".J1 .pin2" to="net.GND" />
+    <trace from=".J1 .pin3" to="net.SDA" />
+    <trace from=".J1 .pin4" to="net.SCL" />
+  </board>
+)
+`} />
+
+## Microcontroller Integration
+
+Connect the module to any microcontroller with I2C support:
+
+| Module Pin | Microcontroller | Function |
+|------------|----------------|----------|
+| VCC | 3.3V | Power supply |
+| GND | GND | Ground |
+| SDA | I2C SDA | Data line |
+| SCL | I2C SCL | Clock line |
+
+### Arduino Example
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found!");
+    while (1);
+  }
+}
+
+void loop() {
+  Serial.print("Temperature: ");
+  Serial.print(bme.readTemperature());
+  Serial.println(" °C");
+  
+  Serial.print("Humidity: ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
+  
+  Serial.print("Pressure: ");
+  Serial.print(bme.readPressure() / 100.0F);
+  Serial.println(" hPa");
+  
+  delay(2000);
+}
+```
+
+## Ordering the PCB
+
+Export the fabrication files and upload to JLCPCB. See [Ordering Prototypes](/building-electronics/ordering-prototypes) for detailed instructions.
