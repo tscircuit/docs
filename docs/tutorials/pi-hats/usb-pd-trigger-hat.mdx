@@ -1,0 +1,341 @@
+---
+title: Building a USB Power Delivery Trigger HAT
+description: Learn how to build a USB Power Delivery trigger HAT for Raspberry Pi that negotiates 5V-20V from USB-C PD power supplies using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building a USB Power Delivery (PD) trigger HAT for Raspberry Pi. The HAT uses a CH224K controller to negotiate voltage from USB-C PD power supplies, providing configurable 5V to 20V output.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    {/* USB-C Connector */}
+    <chip
+      name="J1"
+      footprint="usb_c_16pin"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VBUS",
+        pin3: "CC1",
+        pin4: "CC2",
+        pin5: "D+",
+        pin6: "D-",
+        pin7: "SBU1",
+        pin8: "SBU2"
+      }}
+      pcbX={-25}
+      pcbY={0}
+    />
+
+    {/* CH224K USB PD Controller */}
+    <chip
+      name="U1"
+      footprint="essop10"
+      pinLabels={{
+        pin1: "CFG1",
+        pin2: "CFG2",
+        pin3: "CFG3",
+        pin4: "CC1",
+        pin5: "CC2",
+        pin6: "VIN",
+        pin7: "GND",
+        pin8: "VOUT",
+        pin9: "PG",
+        pin10: "NC"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VIN", "CC1", "CC2", "GND", "NC"] },
+        rightSide: { pins: ["VOUT", "PG", "CFG1", "CFG2", "CFG3"] }
+      }}
+      pcbX={-5}
+      pcbY={0}
+    />
+
+    {/* Status LED */}
+    <led name="LED1" color="green" footprint="0603" pcbX={10} pcbY={5} />
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={10} pcbY={0} />
+
+    {/* Output Capacitors */}
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={15} pcbY={-5} />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={20} pcbY={-5} />
+
+    {/* Terminal Block Output */}
+    <pinheader name="J2" pinCount={2} pitch="5.08mm" pcbX={25} pcbY={0} />
+
+    {/* Raspberry Pi GPIO Header */}
+    <pinheader name="J3" pinCount={40} pitch="2.54mm" pcbX={0} pcbY={10} />
+
+    {/* Power traces */}
+    <trace from=".J1 .VBUS" to=".U1 .VIN" />
+    <trace from=".J1 .CC1" to=".U1 .CC1" />
+    <trace from=".J1 .CC2" to=".U1 .CC2" />
+    <trace from=".J1 .GND" to="net.GND" />
+    <trace from=".U1 .GND" to="net.GND" />
+    
+    {/* Output connections */}
+    <trace from=".U1 .VOUT" to=".J2 .pin1" />
+    <trace from=".J2 .pin2" to="net.GND" />
+    
+    {/* Capacitor connections */}
+    <trace from=".C1 .pos" to=".U1 .VOUT" />
+    <trace from=".C1 .neg" to="net.GND" />
+    <trace from=".C2 .pos" to=".U1 .VOUT" />
+    <trace from=".C2 .neg" to="net.GND" />
+    
+    {/* Status LED */}
+    <trace from=".U1 .PG" to=".R1 .pos" />
+    <trace from=".R1 .neg" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## Objectives
+
+A USB PD trigger HAT demonstrates advanced power electronics concepts:
+
+- **USB Power Delivery Protocol** - Understanding PD negotiation
+- **Voltage Selection** - Configuring output voltage via pins
+- **Power Distribution** - Safe delivery of higher voltages
+- **HAT Design** - Raspberry Pi expansion board conventions
+
+## Use Cases
+
+- **High Power Projects** - Power motors, heaters, or high-brightness LEDs
+- **Battery Charging** - Build chargers for various battery chemistries
+- **Lab Power Supply** - Portable voltage source from USB-C chargers
+- **Raspberry Pi Clusters** - Efficient power for multiple Pis
+
+## Bill of Materials
+
+| Component | Value | Footprint | Purpose |
+|-----------|-------|-----------|---------|
+| USB-C Connector | - | 16-pin | PD power input |
+| CH224K | - | ESSOP-10 | PD controller |
+| LED1 | Green | 0603 | Power good indicator |
+| R1 | 1kΩ | 0402 | LED current limit |
+| C1 | 10µF | 0805 | Output filtering |
+| C2 | 100nF | 0402 | High-freq filtering |
+| J2 | 2-pin | 5.08mm | Terminal block output |
+| J3 | 40-pin | 2.54mm | Raspberry Pi header |
+
+## Understanding USB Power Delivery
+
+USB PD allows negotiation of higher voltages and currents:
+
+| Profile | Voltage | Max Current | Max Power |
+|---------|---------|-------------|-----------|
+| 5V | 5V | 3A | 15W |
+| 9V | 9V | 3A | 27W |
+| 12V | 12V | 3A | 36W |
+| 15V | 15V | 3A | 45W |
+| 20V | 20V | 5A | 100W |
+
+The CH224K handles all PD communication automatically.
+
+## Circuit Design
+
+### Step 1: CH224K Voltage Configuration
+
+The CH224K selects output voltage based on CFG pin connections:
+
+| CFG3 | CFG2 | CFG1 | Output Voltage |
+|------|------|------|----------------|
+| Float | Float | Float | 5V |
+| Float | Float | GND | 9V |
+| Float | GND | Float | 12V |
+| Float | GND | GND | 15V |
+| GND | Float | Float | 20V |
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <chip
+      name="U1"
+      footprint="essop10"
+      pinLabels={{
+        pin1: "CFG1",
+        pin2: "CFG2",
+        pin3: "CFG3",
+        pin4: "CC1",
+        pin5: "CC2",
+        pin6: "VIN",
+        pin7: "GND",
+        pin8: "VOUT",
+        pin9: "PG",
+        pin10: "NC"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VIN", "CC1", "CC2", "GND", "NC"] },
+        rightSide: { pins: ["VOUT", "PG", "CFG1", "CFG2", "CFG3"] }
+      }}
+    />
+    
+    {/* Example: 12V configuration (CFG2 to GND) */}
+    <trace from=".U1 .CFG2" to="net.GND" />
+    <trace from=".U1 .GND" to="net.GND" />
+  </board>
+)
+`} />
+
+### Step 2: USB-C Connection
+
+Connect the USB-C CC pins to the controller for PD communication:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <chip
+      name="J1"
+      footprint="usb_c_16pin"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VBUS",
+        pin3: "CC1",
+        pin4: "CC2"
+      }}
+    />
+    
+    <chip
+      name="U1"
+      footprint="essop10"
+      pinLabels={{
+        pin4: "CC1",
+        pin5: "CC2",
+        pin6: "VIN",
+        pin7: "GND"
+      }}
+      schX={5}
+    />
+    
+    <trace from=".J1 .VBUS" to=".U1 .VIN" />
+    <trace from=".J1 .CC1" to=".U1 .CC1" />
+    <trace from=".J1 .CC2" to=".U1 .CC2" />
+    <trace from=".J1 .GND" to="net.GND" />
+    <trace from=".U1 .GND" to="net.GND" />
+  </board>
+)
+`} />
+
+### Step 3: Output Filtering
+
+Output capacitors ensure stable voltage delivery:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <capacitor name="C1" capacitance="10uF" footprint="0805" />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" schX={4} />
+    
+    <trace from=".C1 .pos" to="net.VOUT" />
+    <trace from=".C1 .neg" to="net.GND" />
+    <trace from=".C2 .pos" to="net.VOUT" />
+    <trace from=".C2 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+### Step 4: Power Good LED
+
+The PG pin indicates successful voltage negotiation:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <led name="LED1" color="green" footprint="0603" schX={5} />
+    
+    <trace from="net.PG" to=".R1 .pos" />
+    <trace from=".R1 .neg" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## Complete Schematic
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <chip
+      name="J1"
+      footprint="usb_c_16pin"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VBUS",
+        pin3: "CC1",
+        pin4: "CC2"
+      }}
+      schX={-10}
+    />
+
+    <chip
+      name="U1"
+      footprint="essop10"
+      pinLabels={{
+        pin1: "CFG1",
+        pin2: "CFG2",
+        pin3: "CFG3",
+        pin4: "CC1",
+        pin5: "CC2",
+        pin6: "VIN",
+        pin7: "GND",
+        pin8: "VOUT",
+        pin9: "PG",
+        pin10: "NC"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VIN", "CC1", "CC2", "GND", "NC"] },
+        rightSide: { pins: ["VOUT", "PG", "CFG1", "CFG2", "CFG3"] }
+      }}
+    />
+
+    <led name="LED1" color="green" footprint="0603" schX={10} schY={-3} />
+    <resistor name="R1" resistance="1k" footprint="0402" schX={7} schY={-3} />
+    <capacitor name="C1" capacitance="10uF" footprint="0805" schX={8} />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" schX={12} />
+    <pinheader name="J2" pinCount={2} pitch="5.08mm" schX={15} />
+
+    <trace from=".J1 .VBUS" to=".U1 .VIN" />
+    <trace from=".J1 .CC1" to=".U1 .CC1" />
+    <trace from=".J1 .CC2" to=".U1 .CC2" />
+    <trace from=".J1 .GND" to="net.GND" />
+    <trace from=".U1 .GND" to="net.GND" />
+    
+    <trace from=".U1 .VOUT" to=".J2 .pin1" />
+    <trace from=".J2 .pin2" to="net.GND" />
+    
+    <trace from=".C1 .pos" to=".U1 .VOUT" />
+    <trace from=".C1 .neg" to="net.GND" />
+    <trace from=".C2 .pos" to=".U1 .VOUT" />
+    <trace from=".C2 .neg" to="net.GND" />
+    
+    <trace from=".U1 .PG" to=".R1 .pos" />
+    <trace from=".R1 .neg" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## Testing the HAT
+
+1. **Visual Inspection** - Check solder joints and component orientation
+2. **Continuity Test** - Verify no shorts between VOUT and GND
+3. **Power Test** - Connect to a USB-C PD charger
+4. **LED Check** - Green LED should illuminate when voltage is negotiated
+5. **Voltage Verify** - Measure output with a multimeter
+
+## Safety Considerations
+
+- Always verify voltage before connecting loads
+- Use appropriate gauge wires for high current
+- Include reverse polarity protection for sensitive loads
+- Consider adding a fuse for overcurrent protection
+
+## Ordering the PCB
+
+Export the fabrication files and upload to JLCPCB. See [Ordering Prototypes](/building-electronics/ordering-prototypes) for detailed instructions.
