@@ -1,0 +1,393 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: Learn how to build a Class D audio amplifier HAT for Raspberry Pi using the PAM8403 chip for stereo speaker output using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building a Class D audio amplifier HAT for Raspberry Pi. Using the PAM8403 chip, we'll create a stereo amplifier delivering 3W per channel, perfect for desktop speakers or portable audio projects.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="65mm" height="56mm">
+    {/* PAM8403 Stereo Amplifier */}
+    <chip
+      name="U1"
+      footprint="soic16"
+      pinLabels={{
+        pin1: "OUTP_R",
+        pin2: "VDD",
+        pin3: "PGND_R",
+        pin4: "MUTE",
+        pin5: "INR",
+        pin6: "INL",
+        pin7: "PVDD",
+        pin8: "PGND_L",
+        pin9: "OUTP_L",
+        pin10: "OUTN_L",
+        pin11: "NC1",
+        pin12: "NC2",
+        pin13: "NC3",
+        pin14: "NC4",
+        pin15: "PGND2",
+        pin16: "OUTN_R"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "PVDD", "INL", "INR", "MUTE"] },
+        rightSide: { pins: ["OUTP_L", "OUTN_L", "OUTP_R", "OUTN_R", "PGND_L"] }
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    {/* Input Capacitors */}
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={-12} pcbY={-5} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-12} pcbY={5} />
+
+    {/* Power Filtering */}
+    <capacitor name="C3" capacitance="10uF" footprint="0805" pcbX={10} pcbY={-8} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={10} pcbY={-4} />
+
+    {/* Volume Control Potentiometer */}
+    <chip
+      name="RV1"
+      footprint="pot_3pin"
+      pinLabels={{ pin1: "CW", pin2: "WIPER", pin3: "CCW" }}
+      pcbX={-20}
+      pcbY={0}
+    />
+
+    {/* 3.5mm Audio Input */}
+    <chip
+      name="J1"
+      footprint="audio_jack_3pin"
+      pinLabels={{ pin1: "TIP", pin2: "RING", pin3: "SLEEVE" }}
+      pcbX={-28}
+      pcbY={0}
+    />
+
+    {/* Speaker Terminals */}
+    <pinheader name="SP_L" pinCount={2} pitch="5.08mm" pcbX={25} pcbY={-8} />
+    <pinheader name="SP_R" pinCount={2} pitch="5.08mm" pcbX={25} pcbY={8} />
+
+    {/* Raspberry Pi GPIO Header */}
+    <pinheader name="J2" pinCount={40} pitch="2.54mm" pcbX={0} pcbY={20} />
+
+    {/* Power connections */}
+    <trace from=".U1 .VDD" to="net.5V" />
+    <trace from=".U1 .PVDD" to="net.5V" />
+    <trace from=".U1 .PGND_L" to="net.GND" />
+    <trace from=".U1 .PGND_R" to="net.GND" />
+    <trace from=".U1 .PGND2" to="net.GND" />
+
+    {/* Mute disabled (active low) */}
+    <trace from=".U1 .MUTE" to="net.5V" />
+
+    {/* Input path */}
+    <trace from=".J1 .TIP" to=".RV1 .CCW" />
+    <trace from=".RV1 .WIPER" to=".C1 .pos" />
+    <trace from=".C1 .neg" to=".U1 .INL" />
+    <trace from=".J1 .RING" to=".C2 .pos" />
+    <trace from=".C2 .neg" to=".U1 .INR" />
+    <trace from=".J1 .SLEEVE" to="net.GND" />
+
+    {/* Speaker outputs */}
+    <trace from=".U1 .OUTP_L" to=".SP_L .pin1" />
+    <trace from=".U1 .OUTN_L" to=".SP_L .pin2" />
+    <trace from=".U1 .OUTP_R" to=".SP_R .pin1" />
+    <trace from=".U1 .OUTN_R" to=".SP_R .pin2" />
+
+    {/* Power filtering */}
+    <trace from=".C3 .pos" to="net.5V" />
+    <trace from=".C3 .neg" to="net.GND" />
+    <trace from=".C4 .pos" to="net.5V" />
+    <trace from=".C4 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## Objectives
+
+Building a Class D amplifier HAT teaches essential audio electronics:
+
+- **Class D Operation** - Understanding pulse-width modulation amplification
+- **Audio Signal Path** - AC coupling and input filtering
+- **Bridge-Tied Load** - Maximizing power from low voltage supplies
+- **HAT Integration** - Interfacing with Raspberry Pi audio output
+
+## Use Cases
+
+- **Desktop Speakers** - Power small speakers from Pi audio
+- **Media Centers** - Audio for Kodi or Pi-based media players
+- **Voice Assistants** - Speaker output for Pi voice projects
+- **Portable Audio** - Battery-powered Bluetooth speakers
+
+## Bill of Materials
+
+| Component | Value | Footprint | Purpose |
+|-----------|-------|-----------|---------|
+| PAM8403 | - | SOIC-16 | Class D stereo amplifier |
+| C1, C2 | 1µF | 0603 | Input DC blocking |
+| C3 | 10µF | 0805 | Power supply filtering |
+| C4 | 100nF | 0402 | High-freq decoupling |
+| RV1 | 10kΩ | Potentiometer | Volume control |
+| J1 | - | 3.5mm jack | Audio input |
+| SP_L, SP_R | 2-pin | 5.08mm | Speaker terminals |
+| J2 | 40-pin | 2.54mm | Pi GPIO header |
+
+## Understanding Class D Amplifiers
+
+Class D amplifiers use pulse-width modulation (PWM) for high efficiency:
+
+| Amplifier Class | Efficiency | Heat Generation | Use Case |
+|-----------------|------------|-----------------|----------|
+| Class A | 20-30% | High | High-end audio |
+| Class AB | 50-60% | Moderate | General audio |
+| Class D | 85-95% | Low | Portable/efficient |
+
+The PAM8403 achieves over 90% efficiency, enabling operation without heatsinks.
+
+## Circuit Design
+
+### Step 1: PAM8403 Power Supply
+
+The PAM8403 operates from 2.5V to 5.5V. Using the Pi's 5V rail provides maximum output power:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <chip
+      name="U1"
+      footprint="soic16"
+      pinLabels={{
+        pin1: "OUTP_R",
+        pin2: "VDD",
+        pin7: "PVDD",
+        pin3: "PGND_R",
+        pin8: "PGND_L",
+        pin15: "PGND2"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "PVDD", "PGND_L"] },
+        rightSide: { pins: ["OUTP_R", "PGND_R", "PGND2"] }
+      }}
+    />
+    
+    <capacitor name="C3" capacitance="10uF" footprint="0805" schX={6} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" schX={10} />
+    
+    <trace from=".U1 .VDD" to="net.5V" />
+    <trace from=".U1 .PVDD" to="net.5V" />
+    <trace from=".U1 .PGND_L" to="net.GND" />
+    <trace from=".U1 .PGND_R" to="net.GND" />
+    <trace from=".U1 .PGND2" to="net.GND" />
+    <trace from=".C3 .pos" to="net.5V" />
+    <trace from=".C3 .neg" to="net.GND" />
+    <trace from=".C4 .pos" to="net.5V" />
+    <trace from=".C4 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+### Step 2: Audio Input with DC Blocking
+
+Capacitors block DC offset while passing audio frequencies:
+
+**Capacitor selection:**
+- Target frequency: 20Hz (low end of audio)
+- Input impedance: 20kΩ typical
+- C = 1 / (2π × f × R) = 0.4µF minimum
+- Using 1µF provides margin
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <chip
+      name="J1"
+      footprint="audio_jack_3pin"
+      pinLabels={{ pin1: "TIP", pin2: "RING", pin3: "SLEEVE" }}
+      schX={-8}
+    />
+    
+    <capacitor name="C1" capacitance="1uF" footprint="0603" schX={-2} schY={2} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" schX={-2} schY={-2} />
+    
+    <trace from=".J1 .TIP" to=".C1 .pos" />
+    <trace from=".C1 .neg" to="net.INL" />
+    <trace from=".J1 .RING" to=".C2 .pos" />
+    <trace from=".C2 .neg" to="net.INR" />
+    <trace from=".J1 .SLEEVE" to="net.GND" />
+  </board>
+)
+`} />
+
+### Step 3: Volume Control
+
+A potentiometer provides analog volume adjustment:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <chip
+      name="RV1"
+      footprint="pot_3pin"
+      pinLabels={{ pin1: "CW", pin2: "WIPER", pin3: "CCW" }}
+    />
+    
+    <trace from="net.AUDIO_IN" to=".RV1 .CCW" />
+    <trace from=".RV1 .CW" to="net.GND" />
+    <trace from=".RV1 .WIPER" to="net.AUDIO_OUT" />
+  </board>
+)
+`} />
+
+### Step 4: Bridge-Tied Load Outputs
+
+The PAM8403 uses BTL configuration, doubling voltage swing across speakers:
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="30mm" height="25mm">
+    <chip
+      name="U1"
+      footprint="soic16"
+      pinLabels={{
+        pin1: "OUTP_R",
+        pin9: "OUTP_L",
+        pin10: "OUTN_L",
+        pin16: "OUTN_R"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["OUTP_L", "OUTN_L"] },
+        rightSide: { pins: ["OUTP_R", "OUTN_R"] }
+      }}
+    />
+    
+    <pinheader name="SP_L" pinCount={2} pitch="5.08mm" schX={-8} />
+    <pinheader name="SP_R" pinCount={2} pitch="5.08mm" schX={8} />
+    
+    <trace from=".U1 .OUTP_L" to=".SP_L .pin1" />
+    <trace from=".U1 .OUTN_L" to=".SP_L .pin2" />
+    <trace from=".U1 .OUTP_R" to=".SP_R .pin1" />
+    <trace from=".U1 .OUTN_R" to=".SP_R .pin2" />
+  </board>
+)
+`} />
+
+## Complete Schematic
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="65mm" height="56mm">
+    <chip
+      name="U1"
+      footprint="soic16"
+      pinLabels={{
+        pin1: "OUTP_R",
+        pin2: "VDD",
+        pin3: "PGND_R",
+        pin4: "MUTE",
+        pin5: "INR",
+        pin6: "INL",
+        pin7: "PVDD",
+        pin8: "PGND_L",
+        pin9: "OUTP_L",
+        pin10: "OUTN_L",
+        pin15: "PGND2",
+        pin16: "OUTN_R"
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "PVDD", "INL", "INR", "MUTE"] },
+        rightSide: { pins: ["OUTP_L", "OUTN_L", "OUTP_R", "OUTN_R", "PGND_L"] }
+      }}
+    />
+
+    <capacitor name="C1" capacitance="1uF" footprint="0603" schX={-8} schY={2} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" schX={-8} schY={-2} />
+    <capacitor name="C3" capacitance="10uF" footprint="0805" schX={8} schY={-5} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" schX={12} schY={-5} />
+
+    <chip
+      name="RV1"
+      footprint="pot_3pin"
+      pinLabels={{ pin1: "CW", pin2: "WIPER", pin3: "CCW" }}
+      schX={-12}
+    />
+
+    <chip
+      name="J1"
+      footprint="audio_jack_3pin"
+      pinLabels={{ pin1: "TIP", pin2: "RING", pin3: "SLEEVE" }}
+      schX={-18}
+    />
+
+    <pinheader name="SP_L" pinCount={2} pitch="5.08mm" schX={10} schY={3} />
+    <pinheader name="SP_R" pinCount={2} pitch="5.08mm" schX={10} schY={-1} />
+
+    <trace from=".U1 .VDD" to="net.5V" />
+    <trace from=".U1 .PVDD" to="net.5V" />
+    <trace from=".U1 .PGND_L" to="net.GND" />
+    <trace from=".U1 .PGND_R" to="net.GND" />
+    <trace from=".U1 .PGND2" to="net.GND" />
+    <trace from=".U1 .MUTE" to="net.5V" />
+
+    <trace from=".J1 .TIP" to=".RV1 .CCW" />
+    <trace from=".RV1 .CW" to="net.GND" />
+    <trace from=".RV1 .WIPER" to=".C1 .pos" />
+    <trace from=".C1 .neg" to=".U1 .INL" />
+    <trace from=".J1 .RING" to=".C2 .pos" />
+    <trace from=".C2 .neg" to=".U1 .INR" />
+    <trace from=".J1 .SLEEVE" to="net.GND" />
+
+    <trace from=".U1 .OUTP_L" to=".SP_L .pin1" />
+    <trace from=".U1 .OUTN_L" to=".SP_L .pin2" />
+    <trace from=".U1 .OUTP_R" to=".SP_R .pin1" />
+    <trace from=".U1 .OUTN_R" to=".SP_R .pin2" />
+
+    <trace from=".C3 .pos" to="net.5V" />
+    <trace from=".C3 .neg" to="net.GND" />
+    <trace from=".C4 .pos" to="net.5V" />
+    <trace from=".C4 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## Raspberry Pi Audio Configuration
+
+Configure the Pi to output audio to the 3.5mm jack:
+
+```bash
+# Set audio output to headphone jack
+amixer cset numid=3 1
+
+# Test with a sound file
+aplay /usr/share/sounds/alsa/Front_Center.wav
+
+# Adjust volume
+alsamixer
+```
+
+For I2S audio (higher quality), modify `/boot/config.txt`:
+
+```
+dtparam=audio=on
+audio_pwm_mode=2
+```
+
+## Speaker Selection
+
+The PAM8403 works best with 4-8Ω speakers:
+
+| Speaker Impedance | Max Power (5V) | Recommended Use |
+|-------------------|----------------|-----------------|
+| 4Ω | 3W per channel | Desktop speakers |
+| 8Ω | 1.5W per channel | Small speakers |
+
+Higher impedance speakers reduce power but also reduce noise.
+
+## Ordering the PCB
+
+Export the fabrication files and upload to JLCPCB. See [Ordering Prototypes](/building-electronics/ordering-prototypes) for detailed instructions.
