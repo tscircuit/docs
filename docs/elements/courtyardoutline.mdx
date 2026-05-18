@@ -2,76 +2,229 @@
 title: <courtyardoutline />
 description: Draw custom polygon courtyard boundaries for irregular package geometry.
 ---
-
-import CircuitPreview from "@site/src/components/CircuitPreview"
-
-## Overview
-
-Use `<courtyardoutline />` when your footprint needs a non-rectangular, non-circular courtyard shape.
-
-## Basic Outline Example
-
-<CircuitPreview
-  showCourtyards
-  defaultView="pcb"
-  hideSchematicTab
-  hide3DTab
-  code={`
-export default () => (
-  <board width="30mm" height="24mm">
-    <chip
-      name="U1"
-      footprint={
-        <footprint>
-          <platedhole shape="circle" pcbX={-4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
-          <platedhole shape="circle" pcbX={-4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
-          <platedhole shape="circle" pcbX={4} pcbY={-2.5} outerDiameter={2.2} holeDiameter={1.1} />
-          <platedhole shape="circle" pcbX={4} pcbY={2.5} outerDiameter={2.2} holeDiameter={1.1} />
-          <courtyardoutline
-            outline={[
-              { x: -6, y: -5 },
-              { x: 6, y: -5 },
-              { x: 6, y: 5 },
-              { x: 0, y: 7 },
-              { x: -6, y: 5 },
-            ]}
-          />
-        </footprint>
-      }
-    />
-  </board>
-)
-`}
-/>
-
-## Filled Outline Example
-
-<CircuitPreview
-  showCourtyards
-  defaultView="pcb"
-  hideSchematicTab
-  hide3DTab
-  code={`
-export default () => (
-  <board width="28mm" height="22mm">
-    <chip
-      name="ANT1"
-      footprint={
-        <footprint>
-          <platedhole shape="circle" pcbX={0} pcbY={-3} outerDiameter={2.2} holeDiameter={1.1} />
-          <courtyardoutline
-            outline={[
-              { x: -7, y: -5 },
-              { x: 7, y: -5 },
-              { x: 7, y: 4 },
-              { x: 0, y: 7 },
-              { x: -7, y: 4 },
-            ]}
-          />
-        </footprint>
-      }
-    />
-  </board>
-)
-`}
-/>
+ 
+# `<courtyardoutline />`
+ 
+The `<courtyardoutline />` element lets you define a custom polygon boundary for a component's
+courtyard — the keep-out zone that prevents other components from being placed too close.
+Use it inside a `<footprint />` whenever the standard rectangular or circular courtyard shapes
+don't match your package geometry.
+ 
+---
+ 
+## Props
+ 
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `points` | `Array<{ x: number; y: number }>` | required | Polygon vertices in millimetres, relative to the component origin |
+| `anchorAlignment` | `"center" \| "top_left" \| "top_right" \| "bottom_left" \| "bottom_right"` | `"center"` | Which point of the bounding box is treated as the origin anchor |
+| `layer` | `string` | `"F.Courtyard"` | PCB layer for the courtyard outline |
+ 
+---
+ 
+## How `anchorAlignment` Works
+ 
+By default the courtyard polygon is positioned so that its **bounding-box centre** sits at the
+component's `pcbX` / `pcbY` coordinates. Changing `anchorAlignment` shifts which corner (or the
+centre) of the bounding box aligns with that position.
+ 
+Think of it like CSS `transform-origin`: the polygon itself doesn't change shape — only the
+reference point used to place it does.
+ 
+---
+ 
+## Examples
+ 
+### Default — `center` alignment
+ 
+The most common case. The centroid of the bounding box lands exactly at the component origin.
+ 
+```tsx
+<footprint>
+  <courtyardoutline
+    points={[
+      { x: -2, y: -1 },
+      { x:  2, y: -1 },
+      { x:  2, y:  1 },
+      { x: -2, y:  1 },
+    ]}
+    anchorAlignment="center"
+  />
+</footprint>
+```
+ 
+```
+     ┌──────────┐
+     │          │
+  ───┼──origin──┼───
+     │          │
+     └──────────┘
+```
+ 
+---
+ 
+### `top_left` alignment
+ 
+The **top-left corner** of the bounding box lands at the component origin. Useful when your
+component's pin 1 is at the top-left and you want to align the courtyard to it precisely.
+ 
+```tsx
+<footprint>
+  <courtyardoutline
+    points={[
+      { x: 0, y:  0 },
+      { x: 4, y:  0 },
+      { x: 4, y: -2 },
+      { x: 0, y: -2 },
+    ]}
+    anchorAlignment="top_left"
+  />
+</footprint>
+```
+ 
+```
+  origin (0,0) = top-left corner
+  ┌──────────┐
+  │          │
+  │          │
+  └──────────┘
+```
+ 
+---
+ 
+### `top_right` alignment
+ 
+The **top-right corner** lands at the component origin. Handy for edge-mounted connectors
+where the right edge must align with a board boundary.
+ 
+```tsx
+<footprint>
+  <courtyardoutline
+    points={[
+      { x: -4, y:  0 },
+      { x:  0, y:  0 },
+      { x:  0, y: -3 },
+      { x: -4, y: -3 },
+    ]}
+    anchorAlignment="top_right"
+  />
+</footprint>
+```
+ 
+```
+              origin = top-right corner
+  ┌──────────┐
+  │          │
+  │          │
+  └──────────┘
+```
+ 
+---
+ 
+### `bottom_left` alignment
+ 
+The **bottom-left corner** lands at the component origin. Useful for components that grow
+upward from a reference baseline (e.g. tall through-hole parts referenced from the bottom pad).
+ 
+```tsx
+<footprint>
+  <courtyardoutline
+    points={[
+      { x: 0, y: 0 },
+      { x: 5, y: 0 },
+      { x: 5, y: 3 },
+      { x: 0, y: 3 },
+    ]}
+    anchorAlignment="bottom_left"
+  />
+</footprint>
+```
+ 
+```
+  ┌──────────┐
+  │          │
+  │          │
+  └──────────┘
+  origin (0,0) = bottom-left corner
+```
+ 
+---
+ 
+### `bottom_right` alignment
+ 
+The **bottom-right corner** lands at the component origin. Mirrors `bottom_left`, useful for
+right-aligned connectors or pads referenced from the bottom-right.
+ 
+```tsx
+<footprint>
+  <courtyardoutline
+    points={[
+      { x: -5, y: 0 },
+      { x:  0, y: 0 },
+      { x:  0, y: 3 },
+      { x: -5, y: 3 },
+    ]}
+    anchorAlignment="bottom_right"
+  />
+</footprint>
+```
+ 
+```
+  ┌──────────┐
+  │          │
+  │          │
+  └──────────┘
+              origin = bottom-right corner
+```
+ 
+---
+ 
+### Irregular (non-rectangular) polygon
+ 
+`<courtyardoutline />` accepts any convex or concave polygon. This is its main advantage over
+`<courtyardrect />`. Here is an L-shaped courtyard for a component with an asymmetric body:
+ 
+```tsx
+<footprint>
+  <courtyardoutline
+    anchorAlignment="center"
+    points={[
+      { x: -3,   y: -2   },
+      { x:  3,   y: -2   },
+      { x:  3,   y:  0   },
+      { x:  0,   y:  0   },
+      { x:  0,   y:  2   },
+      { x: -3,   y:  2   },
+    ]}
+  />
+</footprint>
+```
+ 
+```
+  ┌───┐
+  │   │
+  │   └──────┐
+  │          │
+  └──────────┘
+     (centre anchored at origin)
+```
+ 
+---
+ 
+## Tips
+ 
+- All `points` coordinates are **relative to the component's placed position** on the PCB, not
+  absolute board coordinates.
+- The polygon does not need to be closed — tscircuit automatically connects the last point back
+  to the first.
+- Combine `<courtyardoutline />` with `<courtyardrect />` or `<courtyardcircle />` inside the
+  same `<footprint />` to build compound keep-out zones for complex packages.
+- If you just need a simple rectangle, prefer `<courtyardrect />` — it is less verbose and
+  supports the same `anchorAlignment` prop.
+---
+ 
+## Related Elements
+ 
+- [`<courtyardrect />`](./courtyardrect) — rectangular courtyard, same alignment options
+- [`<courtyardcircle />`](./courtyardcircle) — circular courtyard
+- [`<footprint />`](./footprint) — the parent element that contains courtyard elements
