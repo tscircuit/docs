@@ -51,6 +51,21 @@ Next, run the following command to convert your KiCad files:
 kicad-component-converter convert-kicad-directory --input-dir ./my-footprints.pretty --output-dir ./my-tscircuit-footprints
 ```
 
+### Importing `.kicad_pcb` files directly
+
+You can import a KiCad PCB board file as Circuit JSON and place it inside a
+tscircuit board with `<subcircuit />`:
+
+```tsx
+import { circuitJson } from "./example.kicad_pcb"
+
+circuit.add(
+  <board width="10mm" height="10mm">
+    <subcircuit circuitJson={circuitJson} />
+  </board>,
+)
+```
+
 ### Importing KiCad Components Programmatically
 
 ```bash
