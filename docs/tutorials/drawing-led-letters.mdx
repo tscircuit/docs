@@ -1,0 +1,200 @@
+---
+title: Drawing Letters with LEDs
+description: Build a reusable LedLetter component that lays out any capital A-Z letter with 0603 LEDs and current-limiting resistors.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+## Overview
+
+This tutorial builds a reusable `LedLetter` component. Give it a capital letter,
+a power net, and a ground net, and it places a 5x7 bitmap letter on the PCB with
+one 0603 LED and one current-limiting resistor for every lit pixel.
+
+The same component handles all capital letters from `A` to `Z`. Change the
+`letter` prop in the snippet to generate a different letter without manually
+placing each LED again.
+
+## Complete Snippet
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  code={`
+const LED_FONT = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  G: ["01111", "10000", "10000", "10111", "10001", "10001", "01111"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  J: ["00111", "00010", "00010", "00010", "10010", "10010", "01100"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+  Q: ["01110", "10001", "10001", "10001", "10101", "10010", "01101"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+  W: ["10001", "10001", "10001", "10101", "10101", "10101", "01010"],
+  X: ["10001", "10001", "01010", "00100", "01010", "10001", "10001"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  Z: ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
+} as const
+
+type LetterName = keyof typeof LED_FONT
+
+type LedLetterProps = {
+  name: string
+  letter: LetterName
+  power: string
+  gnd: string
+  color?: "red" | "green" | "blue" | "yellow" | "white"
+  pcbX?: number
+  pcbY?: number
+  schX?: number
+  schY?: number
+}
+
+const getLitCells = (letter: LetterName) => {
+  const rows = LED_FONT[letter]
+
+  return rows.flatMap((row, rowIndex) =>
+    row.split("").flatMap((cell, colIndex) =>
+      cell === "1" ? [{ rowIndex, colIndex }] : []
+    )
+  )
+}
+
+function LedLetter({
+  name,
+  letter,
+  power,
+  gnd,
+  color = "red",
+  pcbX = 0,
+  pcbY = 0,
+  schX = 0,
+  schY = 0,
+}: LedLetterProps) {
+  const ledPitch = 2.4
+  const resistorYOffset = -0.95
+  const schematicPitch = 1.3
+  const litCells = getLitCells(letter)
+
+  return (
+    <>
+      {litCells.map(({ rowIndex, colIndex }, index) => {
+        const ledName = name + "_D" + (index + 1)
+        const resistorName = name + "_R" + (index + 1)
+        const x = pcbX + (colIndex - 2) * ledPitch
+        const y = pcbY + (3 - rowIndex) * ledPitch
+        const sx = schX + (colIndex - 2) * schematicPitch
+        const sy = schY + (3 - rowIndex) * schematicPitch
+
+        return (
+          <group key={ledName}>
+            <led
+              name={ledName}
+              color={color}
+              footprint="0603"
+              pcbX={x}
+              pcbY={y}
+              schX={sx}
+              schY={sy}
+            />
+            <resistor
+              name={resistorName}
+              resistance="1k"
+              footprint="0603"
+              pcbX={x}
+              pcbY={y + resistorYOffset}
+              schX={sx + 0.55}
+              schY={sy - 0.55}
+            />
+            <trace from={"." + resistorName + " .pos"} to={power} />
+            <trace from={"." + resistorName + " .neg"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={gnd} />
+          </group>
+        )
+      })}
+    </>
+  )
+}
+
+export default () => (
+  <board
+    width="26mm"
+    height="24mm"
+    pcbStyle={{ silkscreenFontSize: 0.6 }}
+  >
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pinLabels={{ pin1: "V5", pin2: "GND" }}
+      connections={{ pin1: "net.V5", pin2: "net.GND" }}
+      pcbX={-10}
+      pcbY={0}
+      schX={-6}
+      schY={0}
+    />
+
+    <LedLetter name="LETTER_A" letter="A" power="net.V5" gnd="net.GND" pcbX={2} />
+  </board>
+)
+`}
+/>
+
+## How It Works
+
+`LED_FONT` stores every letter as seven strings of five characters. A `1`
+means the component should place an LED at that row and column; a `0` leaves the
+cell empty. The `getLitCells` helper turns that bitmap into row and column
+coordinates.
+
+Inside `LedLetter`, the row and column are converted into `pcbX` and `pcbY`
+positions. The formula centers the 5-column letter around the component origin,
+then flips the row index so the first bitmap row appears at the top of the PCB.
+
+Each lit cell contains:
+
+- one 0603 `<led />`
+- one 0603 `<resistor />`
+- a trace from the power net to the resistor
+- a trace from the resistor to the LED positive pin
+- a trace from the LED negative pin to ground
+
+That keeps every LED current-limited independently. It is simple to fabricate
+and easier to debug than sharing one resistor across a mixed LED pattern.
+
+## Drawing Another Letter
+
+Change the `letter` prop to any capital letter:
+
+```tsx
+<LedLetter name="LETTER_Z" letter="Z" power="net.V5" gnd="net.GND" />
+```
+
+Use a different `name` when you place more than one letter on the same board so
+the generated LED and resistor names remain unique.
+
+## Tuning the Layout
+
+The layout math lives in a few constants:
+
+| Constant          | What it controls                          |
+| ----------------- | ----------------------------------------- |
+| `ledPitch`        | LED spacing in millimeters on the PCB     |
+| `resistorYOffset` | How far each resistor sits below its LED  |
+| `schematicPitch`  | Spacing between symbols in schematic view |
+
+Increase `ledPitch` for a larger display or change the LED footprint to `0402`
+if you want a tighter letter.
