@@ -1,0 +1,175 @@
+---
+title: Drawing Letters with LEDs
+description: Build a reusable LedLetter component that lays out A-Z LED glyphs with current-limiting resistors in tscircuit.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial builds a reusable `LedLetter` component. The component accepts a
+capital letter from A to Z, looks up a 5 by 7 bitmap glyph, and uses math to
+place an LED and current-limiting resistor for every lit pixel.
+
+Each LED string is wired from `power` through its own resistor and LED to `gnd`.
+That keeps the example simple, predictable, and easy to copy into a larger sign,
+badge, or indicator board.
+
+## Final example
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+type LedLetterProps = {
+  letter: string
+  power: string
+  gnd: string
+  x?: number
+  y?: number
+  pitch?: number
+  ledFootprint?: string
+  resistorFootprint?: string
+  resistance?: string
+}
+
+const glyphs: Record<string, string[]> = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  G: ["01111", "10000", "10000", "10111", "10001", "10001", "01110"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  J: ["00111", "00010", "00010", "00010", "00010", "10010", "01100"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+  Q: ["01110", "10001", "10001", "10001", "10101", "10010", "01101"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+  W: ["10001", "10001", "10001", "10101", "10101", "10101", "01010"],
+  X: ["10001", "10001", "01010", "00100", "01010", "10001", "10001"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  Z: ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
+}
+
+const litPixelsFor = (letter: string) => {
+  const rows = glyphs[letter.toUpperCase()]
+  if (!rows) {
+    throw new Error(\`LedLetter only supports capital A-Z, got "\${letter}"\`)
+  }
+
+  return rows.flatMap((row, rowIndex) =>
+    [...row].flatMap((pixel, columnIndex) =>
+      pixel === "1" ? [{ row: rowIndex, column: columnIndex }] : [],
+    ),
+  )
+}
+
+export const LedLetter = ({
+  letter,
+  power,
+  gnd,
+  x = 0,
+  y = 0,
+  pitch = 2.5,
+  ledFootprint = "0603",
+  resistorFootprint = "0402",
+  resistance = "1k",
+}: LedLetterProps) => {
+  const pixels = litPixelsFor(letter)
+  const startX = x - ((5 - 1) * pitch) / 2
+  const startY = y + ((7 - 1) * pitch) / 2
+
+  return (
+    <group>
+      {pixels.map(({ row, column }, index) => {
+        const ledName = \`LED_\${letter}_\${index + 1}\`
+        const resistorName = \`R_\${letter}_\${index + 1}\`
+        const pcbX = startX + column * pitch
+        const pcbY = startY - row * pitch
+        const schX = column * 2
+        const schY = -row * 1.6
+
+        return (
+          <group key={\`\${row}-\${column}\`}>
+            <resistor
+              name={resistorName}
+              resistance={resistance}
+              footprint={resistorFootprint}
+              pcbX={pcbX - 0.8}
+              pcbY={pcbY}
+              schX={schX - 0.8}
+              schY={schY}
+            />
+            <led
+              name={ledName}
+              color="red"
+              footprint={ledFootprint}
+              pcbX={pcbX + 0.8}
+              pcbY={pcbY}
+              schX={schX + 0.8}
+              schY={schY}
+            />
+            <trace from={power} to={\`.\${resistorName} > .pin1\`} />
+            <trace from={\`.\${resistorName} > .pin2\`} to={\`.\${ledName} > .pos\`} />
+            <trace from={\`.\${ledName} > .neg\`} to={gnd} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="32mm" height="44mm">
+    <net name="V3_3" isForPower />
+    <net name="GND" isGround />
+    <LedLetter letter="A" power="net.V3_3" gnd="net.GND" />
+  </board>
+)
+`}
+/>
+
+## Usage
+
+Use `LedLetter` inside any board and pass the nets that should power each LED
+string:
+
+```tsx
+<LedLetter letter="A" power="net.V3_3" gnd="net.GND" />
+```
+
+The example uses one resistor for each LED. That is conservative for a small
+display because every pixel has its own current limiter. If you decide to wire
+LEDs in series or multiplex a larger display, calculate the resistor values and
+drive circuitry for the selected LED forward voltage, supply voltage, duty
+cycle, and desired current.
+
+## How the layout works
+
+Each glyph is stored as seven strings with five characters per row. A `1` means
+that pixel is lit; a `0` means it is empty. `litPixelsFor()` converts the glyph
+into `{ row, column }` coordinates, and `LedLetter` turns those coordinates into
+component positions:
+
+- `pcbX` and `pcbY` use `pitch` to form the physical LED grid.
+- `schX` and `schY` spread the LED-resistor strings into a readable schematic.
+- Component names include the selected letter and pixel index so every LED and
+  resistor has a stable, unique name.
+- `ledFootprint`, `resistorFootprint`, and `resistance` are props, so the same
+  component can switch between 0402 and 0603 assemblies.
+
+## Try another letter
+
+Change the prop from `letter="A"` to any capital letter through `letter="Z"`.
+The glyph table above includes all A-Z letters, so the same component can render
+letters for names, badges, indicators, or simple LED art.
