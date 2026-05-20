@@ -1,0 +1,82 @@
+---
+title: Building a USB Power Delivery Trigger HAT
+description: Build a Raspberry Pi HAT that negotiates USB-C Power Delivery voltages and exposes filtered terminal block outputs.
+---
+
+## Overview
+
+This tutorial designs a USB Power Delivery trigger HAT. The board uses a USB-C connector and PD trigger controller to request a fixed voltage, then exposes the negotiated output through filtering and a terminal block.
+
+Use this pattern for projects that need a USB-C power source at 9 V, 12 V, 15 V, or 20 V. Do not connect the negotiated high-voltage rail directly to Raspberry Pi 5 V pins.
+
+## Requirements
+
+- USB-C receptacle.
+- PD trigger/controller such as CH224K, FP28XX, or PD2001.
+- Configuration resistors or pins for voltage selection.
+- Terminal block output.
+- Status LED with current-limiting resistor.
+- Input and output capacitors.
+
+## Step 1: Add the HAT board
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* USB PD trigger circuit goes here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+## Step 2: Add USB-C and PD controller parts
+
+```tsx
+<chip name="J1" footprint="usb_c_receptacle" manufacturerPartNumber="USB-C receptacle" pcbX={-22} pcbY={0} />
+<chip name="U1" footprint="sop10" manufacturerPartNumber="CH224K USB PD trigger" pcbX={-6} pcbY={0} />
+```
+
+## Step 3: Add voltage selection and output parts
+
+```tsx
+<resistor name="R1" resistance="10k" footprint="0402" pcbX={2} pcbY={8} />
+<resistor name="R2" resistance="10k" footprint="0402" pcbX={2} pcbY={4} />
+<chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="PD output" pcbX={20} pcbY={0} />
+<led name="LED1" footprint="0603" color="green" pcbX={10} pcbY={8} />
+<resistor name="R3" resistance="2.2k" footprint="0402" pcbX={14} pcbY={8} />
+```
+
+## Complete example
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip name="J1" footprint="usb_c_receptacle" manufacturerPartNumber="USB-C receptacle" pcbX={-22} pcbY={0} />
+    <chip name="U1" footprint="sop10" manufacturerPartNumber="CH224K USB PD trigger" pcbX={-6} pcbY={0} />
+    <chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="PD output" pcbX={20} pcbY={0} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={2} pcbY={8} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={2} pcbY={4} />
+    <resistor name="R3" resistance="2.2k" footprint="0402" pcbX={14} pcbY={8} />
+    <led name="LED1" footprint="0603" color="green" pcbX={10} pcbY={8} />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-12} pcbY={8} />
+    <capacitor name="C2" capacitance="47uF" footprint="cap_0603" pcbX={12} pcbY={-8} />
+    <trace from=".J1 > .pin1" to=".U1 > .pin1" />
+    <trace from=".J1 > .pin3" to=".U1 > .pin3" />
+    <trace from=".J1 > .pin4" to=".U1 > .pin4" />
+    <trace from=".U1 > .pin9" to=".J2 > .pin1" />
+    <trace from=".U1 > .pin10" to=".J2 > .pin2" />
+  </RaspberryPiHatBoard>
+)
+```
+
+## Layout and bring-up checklist
+
+- Use wide traces for VBUS and the negotiated output.
+- Place input capacitance close to the controller VIN pin.
+- Place output capacitance close to the terminal block.
+- Add silkscreen text showing the configured output voltage.
+- Measure the terminal voltage before connecting a load.
+- Test first with a small dummy load before attaching project hardware.
