@@ -1,71 +1,170 @@
 ---
 title: Building an I2C Environmental Sensor Module
-description: Build a BME280 temperature, humidity, and pressure sensor module with I2C pull-ups and an optional OLED connector.
+description: Build a BME280 temperature, humidity, and pressure module with I2C pull-ups, host header, optional OLED header, code examples, and layout guidance.
 ---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-This tutorial builds a compact BME280 environmental sensor module. The board exposes power, ground, SDA, and SCL on a header, includes pull-up resistors for the I2C bus, and adds an optional connector for a small I2C OLED display.
+This tutorial builds a compact I2C environmental sensor module around the BME280. The board exposes power, ground, SDA, and SCL on a host header, adds the pull-up resistors required by I2C, includes local decoupling near the sensor, and provides an optional second I2C header for a small OLED display.
+
+The module is intended for 3.3 V systems. Many BME280 parts are not 5 V tolerant, so only connect the header to a 3.3 V microcontroller or add level shifting before using a 5 V host.
 
 ## Requirements
 
-- BME280 sensor for temperature, humidity, and pressure.
-- 4-pin host header with GND, VCC, SDA, and SCL.
-- 4.7 kΩ pull-up resistors on SDA and SCL.
-- 100 nF decoupling capacitor near the sensor.
-- Optional OLED header on the same I2C bus.
+- BME280 sensor for temperature, humidity, and barometric pressure.
+- 4-pin host header: `GND`, `VCC`, `SDA`, `SCL`.
+- 4.7 kΩ pull-up resistors from `SDA` and `SCL` to `VCC`.
+- 100 nF decoupling capacitor near the BME280 power pins.
+- Optional 4-pin OLED header on the same I2C bus.
+- Clear silkscreen labels for both headers.
 
-## I2C pull-up explanation
+## I2C and BME280 integration notes
 
-I2C devices pull the bus low but do not actively drive it high. Pull-up resistors return SDA and SCL to VCC when the bus is idle. For a short 3.3 V sensor module, 4.7 kΩ is a practical default.
+I2C devices pull the bus low but do not actively drive it high. Pull-up resistors return `SDA` and `SCL` to `VCC` when the bus is idle. For a short 3.3 V board, 4.7 kΩ is a practical default. If the host board already has strong pull-ups, you can mark `R1` and `R2` as do-not-populate.
 
-## Step 1: Add the sensor
+The BME280 commonly responds at I2C address `0x76` or `0x77`, depending on the state of the `SDO` address-select pin. Tie `SDO` to ground for `0x76` or to `VCC` for `0x77`.
+
+## Step 1: Add the BME280 sensor
 
 ```tsx
+<chip
+  name="U1"
+  footprint="lga8_w2.5mm_h2.5mm_p0.65mm"
+  manufacturerPartNumber="BME280"
+  pinLabels={{ 1: "GND", 2: "CSB", 3: "SDI", 4: "SCK", 5: "SDO", 6: "VDDIO", 7: "GND", 8: "VDD" }}
+/>
+```
+
+`CSB` is tied high so the part stays in I2C mode. `SDI` is used as `SDA`, and `SCK` is used as `SCL`.
+
+## Step 2: Add headers and pull-ups
+
+```tsx
+<chip name="J1" footprint="pinrow4" manufacturerPartNumber="Host I2C header" pinLabels={{ 1: "GND", 2: "VCC", 3: "SDA", 4: "SCL" }} />
+<chip name="J2" footprint="pinrow4" manufacturerPartNumber="Optional OLED header" pinLabels={{ 1: "GND", 2: "VCC", 3: "SDA", 4: "SCL" }} />
+<resistor name="R1" resistance="4.7k" footprint="0402" />
+<resistor name="R2" resistance="4.7k" footprint="0402" />
+```
+
+## Schematic and 3D preview
+
+<CircuitPreview code={`
 export default () => (
   <board width="35mm" height="25mm">
-    <chip name="U1" footprint="qfn8" manufacturerPartNumber="BME280" pcbX={0} pcbY={0} />
-  </board>
-)
-```
-
-## Step 2: Add the host header and pull-ups
-
-```tsx
-<chip name="J1" footprint="pinrow4" manufacturerPartNumber="I2C host header" pcbX={-12} pcbY={0} />
-<resistor name="R1" resistance="4.7k" footprint="0402" pcbX={8} pcbY={5} />
-<resistor name="R2" resistance="4.7k" footprint="0402" pcbX={8} pcbY={-5} />
-```
-
-## Step 3: Add optional OLED expansion
-
-```tsx
-<chip name="J2" footprint="pinrow4" manufacturerPartNumber="Optional I2C OLED header" pcbX={12} pcbY={0} />
-```
-
-## Complete example
-
-```tsx
-export default () => (
-  <board width="35mm" height="25mm">
-    <chip name="U1" footprint="qfn8" manufacturerPartNumber="BME280" pcbX={0} pcbY={0} />
-    <chip name="J1" footprint="pinrow4" manufacturerPartNumber="I2C host header" pcbX={-12} pcbY={0} />
-    <chip name="J2" footprint="pinrow4" manufacturerPartNumber="Optional I2C OLED header" pcbX={12} pcbY={0} />
-    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={8} pcbY={5} />
-    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={8} pcbY={-5} />
+    <chip
+      name="U1"
+      footprint="lga8_w2.5mm_h2.5mm_p0.65mm"
+      manufacturerPartNumber="BME280"
+      pcbX={0}
+      pcbY={0}
+      pinLabels={{ 1: "GND", 2: "CSB", 3: "SDI", 4: "SCK", 5: "SDO", 6: "VDDIO", 7: "GND2", 8: "VDD" }}
+    />
+    <chip name="J1" footprint="pinrow4" manufacturerPartNumber="Host I2C header" pcbX={-13} pcbY={0} pinLabels={{ 1: "GND", 2: "VCC", 3: "SDA", 4: "SCL" }} />
+    <chip name="J2" footprint="pinrow4" manufacturerPartNumber="Optional OLED header" pcbX={13} pcbY={0} pinLabels={{ 1: "GND", 2: "VCC", 3: "SDA", 4: "SCL" }} />
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-5} pcbY={7} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={5} pcbY={7} />
     <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={0} pcbY={7} />
-    <trace from=".J1 > .pin2" to=".U1 > .pin8" />
-    <trace from=".J1 > .pin1" to=".U1 > .pin1" />
-    <trace from=".J1 > .pin3" to=".U1 > .pin3" />
-    <trace from=".J1 > .pin4" to=".U1 > .pin4" />
+
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .SDA" to="net.SDA" />
+    <trace from=".J1 > .SCL" to="net.SCL" />
+
+    <trace from=".J2 > .GND" to="net.GND" />
+    <trace from=".J2 > .VCC" to="net.VCC" />
+    <trace from=".J2 > .SDA" to="net.SDA" />
+    <trace from=".J2 > .SCL" to="net.SCL" />
+
+    <trace from=".U1 > .GND" to="net.GND" />
+    <trace from=".U1 > .GND2" to="net.GND" />
+    <trace from=".U1 > .VDD" to="net.VCC" />
+    <trace from=".U1 > .VDDIO" to="net.VCC" />
+    <trace from=".U1 > .CSB" to="net.VCC" />
+    <trace from=".U1 > .SDO" to="net.GND" />
+    <trace from=".U1 > .SDI" to="net.SDA" />
+    <trace from=".U1 > .SCK" to="net.SCL" />
+
+    <trace from=".R1 > .pin1" to="net.VCC" />
+    <trace from=".R1 > .pin2" to="net.SDA" />
+    <trace from=".R2 > .pin1" to="net.VCC" />
+    <trace from=".R2 > .pin2" to="net.SCL" />
+    <trace from=".C1 > .pin1" to="net.VCC" />
+    <trace from=".C1 > .pin2" to="net.GND" />
   </board>
 )
+`} />
+
+## Bill of materials
+
+| Ref | Part | Notes |
+| --- | --- | --- |
+| U1 | BME280 | Temperature, humidity, pressure sensor |
+| J1 | 4-pin header | Host connection: GND, VCC, SDA, SCL |
+| J2 | 4-pin header | Optional OLED expansion header |
+| R1/R2 | 4.7 kΩ resistors | I2C pull-ups to VCC |
+| C1 | 100 nF capacitor | Local sensor decoupling |
+
+## Microcontroller code examples
+
+### Arduino / ESP32
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found; try address 0x77");
+    while (1) delay(10);
+  }
+}
+
+void loop() {
+  Serial.print("Temperature C: ");
+  Serial.println(bme.readTemperature());
+  Serial.print("Humidity %: ");
+  Serial.println(bme.readHumidity());
+  Serial.print("Pressure hPa: ");
+  Serial.println(bme.readPressure() / 100.0F);
+  delay(1000);
+}
 ```
 
-## Layout and bring-up checklist
+### Raspberry Pi Python
 
-- Place the BME280 away from regulators and other heat sources.
-- Keep the decoupling capacitor close to the sensor power pins.
-- Label GND, VCC, SDA, and SCL on both headers.
-- Scan the I2C bus after assembly and confirm the expected BME280 address.
-- Compare sensor readings against a known reference during first test.
+```python
+import time
+import board
+import adafruit_bme280.basic as adafruit_bme280
+
+i2c = board.I2C()
+bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
+
+while True:
+    print(f"Temp: {bme280.temperature:.1f} C")
+    print(f"Humidity: {bme280.relative_humidity:.1f} %")
+    print(f"Pressure: {bme280.pressure:.1f} hPa")
+    time.sleep(1)
+```
+
+## PCB layout guidance
+
+- Place `C1` within a few millimeters of the BME280 `VDD` and `GND` pins.
+- Keep the sensor away from hot regulators, LEDs, processors, and board edges with strong airflow.
+- Route `SDA` and `SCL` together and keep them short.
+- Put the host header at the edge of the board and label every pin on silkscreen.
+- If you add an OLED, remember it shares the same bus and must not conflict with the BME280 address.
+
+## Bring-up checklist
+
+1. Verify the host is 3.3 V before connecting the module.
+2. Use an I2C scanner and confirm the BME280 appears at `0x76` or `0x77`.
+3. Confirm temperature, humidity, and pressure readings change plausibly.
+4. If the bus does not scan, check pull-ups and confirm `CSB` is tied high for I2C mode.
+5. If readings are warm, move the module away from heat sources or add airflow isolation.
