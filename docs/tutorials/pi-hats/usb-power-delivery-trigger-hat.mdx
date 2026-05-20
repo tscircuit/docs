@@ -1,22 +1,39 @@
 ---
 title: Building a USB Power Delivery Trigger HAT
-description: Build a Raspberry Pi HAT that negotiates USB-C Power Delivery voltages and exposes filtered terminal block outputs.
+description: Build a Raspberry Pi HAT that negotiates USB-C Power Delivery voltages and exposes a protected, filtered terminal-block output.
 ---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-This tutorial designs a USB Power Delivery trigger HAT. The board uses a USB-C connector and PD trigger controller to request a fixed voltage, then exposes the negotiated output through filtering and a terminal block.
+This tutorial designs a USB-C Power Delivery trigger HAT. The board uses a USB-C receptacle and a PD trigger controller such as the CH224K, FP28XX, or PD2001 to request a fixed voltage from a USB-C charger. The negotiated rail is filtered and exposed on a terminal block for external loads.
 
-Use this pattern for projects that need a USB-C power source at 9 V, 12 V, 15 V, or 20 V. Do not connect the negotiated high-voltage rail directly to Raspberry Pi 5 V pins.
+Use this HAT when a project needs a convenient 9 V, 12 V, 15 V, or 20 V rail from a USB-C charger. **Do not connect the negotiated high-voltage rail directly to Raspberry Pi 5 V pins.** The terminal block output is for external loads or a separate regulator stage.
 
 ## Requirements
 
-- USB-C receptacle.
-- PD trigger/controller such as CH224K, FP28XX, or PD2001.
-- Configuration resistors or pins for voltage selection.
-- Terminal block output.
+- USB-C receptacle with VBUS, GND, CC1, and CC2 connected to the PD controller.
+- USB PD trigger/controller such as CH224K, FP28XX, or PD2001.
+- Voltage-selection pins or resistors for 5 V, 9 V, 12 V, 15 V, or 20 V negotiation.
+- Terminal block output for the negotiated rail.
 - Status LED with current-limiting resistor.
-- Input and output capacitors.
+- Input and output filtering capacitors.
+- Wide VBUS/output copper and clear voltage silkscreen.
+
+## Voltage negotiation plan
+
+PD trigger chips differ in their exact pin names, but the design pattern is the same:
+
+| Target output | Controller config example | Use case |
+| --- | --- | --- |
+| 5 V | default/no high-voltage request | logic rails and low-power loads |
+| 9 V | select pin mode for 9 V | small motors, LEDs, regulators |
+| 12 V | select pin mode for 12 V | fans, relays, buck regulators |
+| 15 V | select pin mode for 15 V | higher-power regulators |
+| 20 V | select pin mode for 20 V | only when the downstream circuit is rated for it |
+
+Always check the datasheet for your exact controller. The schematic below labels the selection pins generically as `CFG1` and `CFG2` so you can map them to the exact resistor strap table for CH224K, FP28XX, or PD2001.
 
 ## Step 1: Add the HAT board
 
@@ -33,50 +50,121 @@ export default () => (
 ## Step 2: Add USB-C and PD controller parts
 
 ```tsx
-<chip name="J1" footprint="usb_c_receptacle" manufacturerPartNumber="USB-C receptacle" pcbX={-22} pcbY={0} />
-<chip name="U1" footprint="sop10" manufacturerPartNumber="CH224K USB PD trigger" pcbX={-6} pcbY={0} />
+<chip name="J1" footprint="usb_c_receptacle" manufacturerPartNumber="USB-C receptacle" pinLabels={{ 1: "VBUS", 2: "GND", 3: "CC1", 4: "CC2" }} />
+<chip name="U1" footprint="sop10" manufacturerPartNumber="CH224K USB PD trigger" pinLabels={{ 1: "VBUS", 2: "GND", 3: "CC1", 4: "CC2", 5: "CFG1", 6: "CFG2", 7: "PG", 8: "VOUT" }} />
 ```
 
-## Step 3: Add voltage selection and output parts
+## Step 3: Add configuration, status, and output filtering
 
 ```tsx
-<resistor name="R1" resistance="10k" footprint="0402" pcbX={2} pcbY={8} />
-<resistor name="R2" resistance="10k" footprint="0402" pcbX={2} pcbY={4} />
-<chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="PD output" pcbX={20} pcbY={0} />
-<led name="LED1" footprint="0603" color="green" pcbX={10} pcbY={8} />
-<resistor name="R3" resistance="2.2k" footprint="0402" pcbX={14} pcbY={8} />
+<resistor name="R1" resistance="10k" footprint="0402" />
+<resistor name="R2" resistance="10k" footprint="0402" />
+<resistor name="RLED" resistance="2.2k" footprint="0402" />
+<led name="LED1" footprint="0603" color="green" />
+<capacitor name="CIN" capacitance="10uF" footprint="0603" />
+<capacitor name="COUT" capacitance="47uF" footprint="cap_0603" />
+<chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="PD output" pinLabels={{ 1: "VOUT", 2: "GND" }} />
 ```
 
-## Complete example
+## Schematic and 3D preview
 
-```tsx
+<CircuitPreview code={`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    <chip name="J1" footprint="usb_c_receptacle" manufacturerPartNumber="USB-C receptacle" pcbX={-22} pcbY={0} />
-    <chip name="U1" footprint="sop10" manufacturerPartNumber="CH224K USB PD trigger" pcbX={-6} pcbY={0} />
-    <chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="PD output" pcbX={20} pcbY={0} />
-    <resistor name="R1" resistance="10k" footprint="0402" pcbX={2} pcbY={8} />
-    <resistor name="R2" resistance="10k" footprint="0402" pcbX={2} pcbY={4} />
-    <resistor name="R3" resistance="2.2k" footprint="0402" pcbX={14} pcbY={8} />
-    <led name="LED1" footprint="0603" color="green" pcbX={10} pcbY={8} />
-    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-12} pcbY={8} />
-    <capacitor name="C2" capacitance="47uF" footprint="cap_0603" pcbX={12} pcbY={-8} />
-    <trace from=".J1 > .pin1" to=".U1 > .pin1" />
-    <trace from=".J1 > .pin3" to=".U1 > .pin3" />
-    <trace from=".J1 > .pin4" to=".U1 > .pin4" />
-    <trace from=".U1 > .pin9" to=".J2 > .pin1" />
-    <trace from=".U1 > .pin10" to=".J2 > .pin2" />
+    <chip name="J1" footprint="usb_c_receptacle" manufacturerPartNumber="USB-C receptacle" pcbX={-24} pcbY={0} pinLabels={{ 1: "VBUS", 2: "GND", 3: "CC1", 4: "CC2" }} />
+    <chip name="U1" footprint="sop10" manufacturerPartNumber="CH224K USB PD trigger" pcbX={-6} pcbY={0} pinLabels={{ 1: "VBUS", 2: "GND", 3: "CC1", 4: "CC2", 5: "CFG1", 6: "CFG2", 7: "PG", 8: "VOUT" }} />
+    <chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="PD output" pcbX={24} pcbY={0} pinLabels={{ 1: "VOUT", 2: "GND" }} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={0} pcbY={8} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={5} pcbY={8} />
+    <resistor name="RLED" resistance="2.2k" footprint="0402" pcbX={12} pcbY={8} />
+    <led name="LED1" footprint="0603" color="green" pcbX={17} pcbY={8} />
+    <capacitor name="CIN" capacitance="10uF" footprint="0603" pcbX={-15} pcbY={8} />
+    <capacitor name="COUT" capacitance="47uF" footprint="cap_0603" pcbX={15} pcbY={-8} />
+
+    <trace from=".J1 > .VBUS" to="net.VBUS" />
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".J1 > .CC1" to=".U1 > .CC1" />
+    <trace from=".J1 > .CC2" to=".U1 > .CC2" />
+    <trace from="net.VBUS" to=".U1 > .VBUS" />
+    <trace from=".U1 > .GND" to="net.GND" />
+
+    <trace from=".R1 > .pin1" to=".U1 > .CFG1" />
+    <trace from=".R1 > .pin2" to="net.GND" />
+    <trace from=".R2 > .pin1" to=".U1 > .CFG2" />
+    <trace from=".R2 > .pin2" to="net.VBUS" />
+
+    <trace from=".U1 > .VOUT" to="net.PD_OUT" />
+    <trace from="net.PD_OUT" to=".J2 > .VOUT" />
+    <trace from=".J2 > .GND" to="net.GND" />
+    <trace from=".CIN > .pin1" to="net.VBUS" />
+    <trace from=".CIN > .pin2" to="net.GND" />
+    <trace from=".COUT > .pin1" to="net.PD_OUT" />
+    <trace from=".COUT > .pin2" to="net.GND" />
+
+    <trace from="net.PD_OUT" to=".RLED > .pin1" />
+    <trace from=".RLED > .pin2" to=".LED1 > .anode" />
+    <trace from=".LED1 > .cathode" to="net.GND" />
   </RaspberryPiHatBoard>
 )
+`} />
+
+## Bill of materials
+
+| Ref | Part | Notes |
+| --- | --- | --- |
+| J1 | USB-C receptacle | Must expose VBUS, GND, CC1, CC2 |
+| U1 | CH224K / FP28XX / PD2001 | USB PD trigger/controller |
+| R1/R2 | Configuration resistors | Match values to the controller datasheet voltage table |
+| J2 | 2-pin terminal block | Negotiated output and ground |
+| LED1/RLED | Green LED + 2.2 kΩ resistor | Output-present indicator |
+| CIN | 10 µF capacitor | Input VBUS filtering |
+| COUT | 47 µF capacitor | Output bulk filtering |
+
+## Example voltage-selection code/comments
+
+Most fixed-voltage trigger chips do not need firmware; they use resistor straps or mode pins. If you are documenting the board in code, keep the selected voltage explicit:
+
+```ts
+const pdTriggerConfig = {
+  controller: "CH224K",
+  requestedVoltage: "12V",
+  warning: "PD_OUT is not connected to Raspberry Pi 5V pins",
+}
 ```
 
-## Layout and bring-up checklist
+If your design uses a microcontroller-controlled PD sink instead of a fixed trigger chip, initialize the controller for the same voltage before enabling the downstream load:
 
-- Use wide traces for VBUS and the negotiated output.
-- Place input capacitance close to the controller VIN pin.
-- Place output capacitance close to the terminal block.
-- Add silkscreen text showing the configured output voltage.
-- Measure the terminal voltage before connecting a load.
-- Test first with a small dummy load before attaching project hardware.
+```cpp
+// Pseudocode: use the library for your actual PD sink controller.
+pd.begin();
+pd.requestFixedVoltage(12); // request 12 V PDO
+if (pd.contractReady()) {
+  enableLoadSwitch();
+}
+```
+
+## PCB layout guidance
+
+- Route `VBUS` and `PD_OUT` with wide traces or pours sized for the expected current.
+- Keep CC1 and CC2 short and away from noisy switching nodes.
+- Place `CIN` close to the PD controller VBUS pin and `COUT` close to the terminal block/load path.
+- Put the selected voltage on silkscreen next to the terminal block.
+- Keep the high-voltage terminal output physically separated from Raspberry Pi GPIO pins.
+- Add mounting holes or strain relief if the terminal block will drive moving wires.
+
+## Bring-up and testing procedure
+
+1. Before plugging in USB-C, check continuity: no short from `VBUS`/`PD_OUT` to ground.
+2. Plug into a current-limited USB-C PD source if available.
+3. Measure `PD_OUT` with no load and confirm it matches the selected voltage.
+4. Confirm the status LED turns on only when output is present.
+5. Test first with a dummy load sized for the selected voltage.
+6. Only connect project hardware after confirming voltage, polarity, and current draw.
+
+## Safety notes
+
+- A 20 V PD output can destroy 5 V electronics instantly. Label the selected voltage clearly.
+- Use capacitors with voltage ratings above the requested PD voltage.
+- Do not backfeed the Raspberry Pi through GPIO, 5 V, or USB ports from `PD_OUT` unless you add a proper regulator and power-path design.
