@@ -344,6 +344,288 @@ export default () => (
 `}
 />
 
+## PCB Layout and Routing
+
+Once the schematic nets are correct, move the ESP32 module to the edge of the
+board before placing the rest of the circuit. The example below keeps the USB-C
+connector and regulator on the left, puts the USB-UART bridge away from the
+antenna side, and fans the expansion headers out along the right edge.
+
+<CircuitPreview
+  splitView={false}
+  hideSchematicTab
+  hide3DTab
+  defaultView="pcb"
+  code={`
+const esp32PinLabels = {
+  pin1: "GND1",
+  pin2: "3V3",
+  pin3: "EN",
+  pin4: "GPIO36",
+  pin5: "GPIO39",
+  pin6: "GPIO34",
+  pin7: "GPIO35",
+  pin8: "GPIO32",
+  pin9: "GPIO33",
+  pin10: "GPIO25",
+  pin11: "GPIO26",
+  pin12: "GPIO27",
+  pin13: "GPIO14",
+  pin14: "GPIO12",
+  pin15: "GND2",
+  pin16: "GPIO13",
+  pin17: "SD2",
+  pin18: "SD3",
+  pin19: "CMD",
+  pin20: "CLK",
+  pin21: "SD0",
+  pin22: "SD1",
+  pin23: "GPIO15",
+  pin24: "GPIO2",
+  pin25: "GPIO0",
+  pin26: "GPIO4",
+  pin27: "GPIO16",
+  pin28: "GPIO17",
+  pin29: "GPIO5",
+  pin30: "GPIO18",
+  pin31: "GPIO19",
+  pin32: "NC",
+  pin33: "GPIO21",
+  pin34: "U0RXD",
+  pin35: "U0TXD",
+  pin36: "GPIO22",
+  pin37: "GPIO23",
+  pin38: "GND3",
+}
+
+export default () => (
+  <board width="76mm" height="44mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="pinrow38"
+      pinLabels={esp32PinLabels}
+      pcbX={18}
+      pcbY={0}
+      pcbRotation="90deg"
+      connections={{
+        "3V3": "net.V3_3",
+        EN: "net.EN",
+        GND1: "net.GND",
+        GND2: "net.GND",
+        GND3: "net.GND",
+        GPIO0: "net.BOOT",
+        GPIO21: "net.I2C_SDA",
+        GPIO22: "net.I2C_SCL",
+        GPIO23: "net.SPI_MOSI",
+        GPIO19: "net.SPI_MISO",
+        GPIO18: "net.SPI_SCK",
+        GPIO5: "net.SPI_CS",
+        U0TXD: "net.UART_TX",
+        U0RXD: "net.UART_RX",
+      }}
+    />
+
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C Receptacle"
+      footprint="usb_c_smd"
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "GND",
+        pin3: "D+",
+        pin4: "D-",
+        pin5: "CC1",
+        pin6: "CC2",
+      }}
+      pcbX={-32}
+      pcbY={0}
+      pcbRotation="270deg"
+      connections={{
+        VBUS: "net.VBUS",
+        GND: "net.GND",
+        "D+": "net.USB_DP",
+        "D-": "net.USB_DM",
+      }}
+    />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="AP2112K-3.3"
+      footprint="sot23_5"
+      pinLabels={{
+        pin1: "VIN",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "BYP",
+        pin5: "VOUT",
+      }}
+      pcbX={-20}
+      pcbY={10}
+      connections={{
+        VIN: "net.VBUS",
+        EN: "net.VBUS",
+        VOUT: "net.V3_3",
+        GND: "net.GND",
+      }}
+    />
+
+    <chip
+      name="U3"
+      manufacturerPartNumber="CP2102N"
+      footprint="qfn24"
+      pinLabels={{
+        pin1: "D+",
+        pin2: "D-",
+        pin3: "VDD",
+        pin4: "GND",
+        pin5: "TXD",
+        pin6: "RXD",
+        pin7: "DTR",
+        pin8: "RTS",
+      }}
+      pcbX={-18}
+      pcbY={-7}
+      connections={{
+        "D+": "net.USB_DP",
+        "D-": "net.USB_DM",
+        VDD: "net.V3_3",
+        GND: "net.GND",
+        TXD: "net.UART_RX",
+        RXD: "net.UART_TX",
+        DTR: "net.AUTO_BOOT",
+        RTS: "net.AUTO_RESET",
+      }}
+    />
+
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0603"
+      pcbX={4}
+      pcbY={10}
+      connections={{ pin1: "net.EN", pin2: "net.V3_3" }}
+    />
+    <capacitor
+      name="C1"
+      capacitance="1uF"
+      footprint="0603"
+      pcbX={8}
+      pcbY={10}
+      connections={{ pin1: "net.EN", pin2: "net.GND" }}
+    />
+    <pushbutton
+      name="RESET"
+      footprint="pushbutton"
+      pcbX={-4}
+      pcbY={12}
+      connections={{ pin1: "net.EN", pin2: "net.GND" }}
+    />
+
+    <resistor
+      name="R2"
+      resistance="10k"
+      footprint="0603"
+      pcbX={4}
+      pcbY={-10}
+      connections={{ pin1: "net.BOOT", pin2: "net.V3_3" }}
+    />
+    <pushbutton
+      name="BOOT"
+      footprint="pushbutton"
+      pcbX={-4}
+      pcbY={-12}
+      connections={{ pin1: "net.BOOT", pin2: "net.GND" }}
+    />
+
+    <capacitor
+      name="C2"
+      capacitance="10uF"
+      footprint="0805"
+      pcbX={10}
+      pcbY={5}
+      connections={{ pin1: "net.V3_3", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C3"
+      capacitance="100nF"
+      footprint="0603"
+      pcbX={10}
+      pcbY={2}
+      connections={{ pin1: "net.V3_3", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C4"
+      capacitance="100nF"
+      footprint="0603"
+      pcbX={-27}
+      pcbY={8}
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+    />
+
+    <chip
+      name="J2"
+      manufacturerPartNumber="I2C header"
+      footprint="pinrow4"
+      pinLabels={{ pin1: "3V3", pin2: "GND", pin3: "SDA", pin4: "SCL" }}
+      pcbX={31}
+      pcbY={10}
+      pcbRotation="90deg"
+      connections={{
+        "3V3": "net.V3_3",
+        GND: "net.GND",
+        SDA: "net.I2C_SDA",
+        SCL: "net.I2C_SCL",
+      }}
+    />
+
+    <chip
+      name="J3"
+      manufacturerPartNumber="SPI header"
+      footprint="pinrow6"
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "GND",
+        pin3: "MOSI",
+        pin4: "MISO",
+        pin5: "SCK",
+        pin6: "CS",
+      }}
+      pcbX={31}
+      pcbY={-9}
+      pcbRotation="90deg"
+      connections={{
+        "3V3": "net.V3_3",
+        GND: "net.GND",
+        MOSI: "net.SPI_MOSI",
+        MISO: "net.SPI_MISO",
+        SCK: "net.SPI_SCK",
+        CS: "net.SPI_CS",
+      }}
+    />
+
+  </board>
+)
+`}
+/>
+
+Use the preview as a placement topology, then replace the placeholder
+`pinrow38` module footprint with the exact imported ESP32 module footprint you
+plan to assemble. The important layout decisions are:
+
+| Area    | PCB layout and routing guidance                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Antenna | Place the module so the antenna end is at the board edge. If the antenna cannot hang over the edge, keep the antenna area free of copper, routes, and components.         |
+| Power   | Route 3.3 V from the regulator to the ESP32 as a short, wide path, then place the 10 uF and 100 nF capacitors next to the module supply pins.                             |
+| Ground  | Use a continuous ground plane under the module body, regulator, USB-UART bridge, and decoupling capacitors. Stitch ground near the module and around higher-speed routes. |
+| USB     | Keep `D+` and `D-` together from the USB-C connector to the USB-UART bridge, and keep them away from the ESP32 antenna area.                                              |
+| UART    | Keep `U0TXD` and `U0RXD` short between the USB-UART bridge and the ESP32, then route them away from the RF side of the module.                                            |
+| Headers | Fan out slower I2C and SPI breakout signals to board-edge headers after the local power, reset, boot, and USB programming circuits are placed.                            |
+
+The [Espressif ESP32 PCB layout guide](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/pcb-layout-design.html)
+is the design reference for antenna placement, 3.3 V trace width, ground-plane
+continuity, and keeping USB/UART routes away from the RF area.
+
 ## Pin Groups
 
 | Group    | ESP32 pins used in the example        | Purpose                                                                          |
