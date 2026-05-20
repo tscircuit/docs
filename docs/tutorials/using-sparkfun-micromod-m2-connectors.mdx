@@ -1,0 +1,234 @@
+---
+title: Using SparkFun MicroMod M.2 Connectors
+description: Learn how to document and wire SparkFun MicroMod processor-board connectors in tscircuit.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+## Overview
+
+SparkFun MicroMod uses an M.2 connector so a processor board can plug into a
+carrier board or a main board. In tscircuit, model the carrier-side connector
+with `<connector />`, label the MicroMod pins you use, then connect those pins
+to the carrier-board power, reset, boot, and peripheral circuits.
+
+This tutorial focuses on the carrier-board side of the interface. It shows the
+common pins needed by many MicroMod designs:
+
+- 3.3 V, USB input power, and ground
+- 3.3 V regulator enable
+- reset and boot controls
+- USB data pins
+- primary I2C, SPI, and UART buses
+- a Qwiic-style I2C expansion header
+
+## Carrier Connector Example
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+const microModCarrierPins = {
+  pin1: "GND",
+  pin2: "3V3",
+  pin3: "USB_D+",
+  pin4: "3V3_EN",
+  pin5: "USB_D-",
+  pin6: "RESET#",
+  pin7: "GND",
+  pin9: "USB_VIN",
+  pin10: "D0",
+  pin11: "BOOT",
+  pin12: "I2C_SDA",
+  pin14: "I2C_SCL",
+  pin17: "UART_TX1",
+  pin19: "UART_RX1",
+  pin55: "SPI_CS#",
+  pin57: "SPI_SCK",
+  pin59: "SPI_COPI",
+  pin61: "SPI_CIPO",
+  pin74: "3V3",
+  pin75: "GND",
+}
+
+export default () => (
+  <board width="90mm" height="60mm">
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      manufacturerPartNumber="MicroMod M.2 carrier connector"
+      pinLabels={microModCarrierPins}
+      schPinArrangement={{
+        topSide: {
+          direction: "left-to-right",
+          pins: ["3V3", "USB_VIN", "3V3_EN"],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["GND"],
+        },
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["USB_D+", "USB_D-", "RESET#", "BOOT"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "I2C_SDA",
+            "I2C_SCL",
+            "UART_TX1",
+            "UART_RX1",
+            "SPI_COPI",
+            "SPI_CIPO",
+            "SPI_SCK",
+            "SPI_CS#",
+            "D0",
+          ],
+        },
+      }}
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin3: "net.USB_DP",
+        pin4: "net.REG_EN",
+        pin5: "net.USB_DM",
+        pin6: "net.RESET_N",
+        pin7: "net.GND",
+        pin9: "net.USB_VIN",
+        pin10: "net.D0",
+        pin11: "net.BOOT",
+        pin12: "net.I2C_SDA",
+        pin14: "net.I2C_SCL",
+        pin17: "net.UART_TX1",
+        pin19: "net.UART_RX1",
+        pin55: "net.SPI_CS_N",
+        pin57: "net.SPI_SCK",
+        pin59: "net.SPI_COPI",
+        pin61: "net.SPI_CIPO",
+        pin74: "net.V3_3",
+        pin75: "net.GND",
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    <chip
+      name="U_REG"
+      manufacturerPartNumber="3.3 V regulator"
+      footprint="sot23_5"
+      pinLabels={{
+        pin1: "VIN",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "BYP",
+        pin5: "VOUT",
+      }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["VIN", "EN"] },
+        rightSide: { direction: "top-to-bottom", pins: ["VOUT", "BYP"] },
+        bottomSide: { direction: "left-to-right", pins: ["GND"] },
+      }}
+      connections={{
+        VIN: "net.USB_VIN",
+        EN: "net.REG_EN",
+        VOUT: "net.V3_3",
+        GND: "net.GND",
+      }}
+      schX={-7}
+      schY={3}
+    />
+
+    <resistor
+      name="R_EN"
+      resistance="10k"
+      footprint="0603"
+      connections={{ pin1: "net.REG_EN", pin2: "net.V3_3" }}
+      schX={-4}
+      schY={5}
+    />
+    <pushbutton
+      name="SW_RESET"
+      footprint="pushbutton"
+      connections={{ pin1: "net.RESET_N", pin2: "net.GND" }}
+      schX={-6}
+      schY={-3}
+    />
+    <pushbutton
+      name="SW_BOOT"
+      footprint="pushbutton"
+      connections={{ pin1: "net.BOOT", pin2: "net.GND" }}
+      schX={-4}
+      schY={-3}
+    />
+
+    <resistor
+      name="R_SDA"
+      resistance="2.2k"
+      footprint="0603"
+      connections={{ pin1: "net.I2C_SDA", pin2: "net.V3_3" }}
+      schX={6}
+      schY={4}
+    />
+    <resistor
+      name="R_SCL"
+      resistance="2.2k"
+      footprint="0603"
+      connections={{ pin1: "net.I2C_SCL", pin2: "net.V3_3" }}
+      schX={8}
+      schY={4}
+    />
+
+    <chip
+      name="J_QWIIC"
+      manufacturerPartNumber="Qwiic connector"
+      footprint="pinrow4"
+      pinLabels={{ pin1: "GND", pin2: "3V3", pin3: "SDA", pin4: "SCL" }}
+      connections={{
+        GND: "net.GND",
+        "3V3": "net.V3_3",
+        SDA: "net.I2C_SDA",
+        SCL: "net.I2C_SCL",
+      }}
+      schX={9}
+      schY={0}
+    />
+
+  </board>
+)
+`}
+/>
+
+## Pin Groups to Bring Out
+
+| Group          | MicroMod pins in this example                | Carrier-board responsibility                                                                                          |
+| -------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Power          | `3V3`, `USB_VIN`, `GND`, `3V3_EN`            | Provide the 3.3 V rail, USB input power, return path, and regulator enable behavior.                                  |
+| Reset and boot | `RESET#`, `BOOT`                             | Add user-accessible controls or test points; both are open-drain style control signals in SparkFun's interface guide. |
+| USB            | `USB_D+`, `USB_D-`                           | Route as a differential pair if the processor board exposes native USB through the connector.                         |
+| I2C            | `I2C_SDA`, `I2C_SCL`                         | Add carrier-side pullups and route to Qwiic, sensors, or other low-speed peripherals.                                 |
+| SPI            | `SPI_COPI`, `SPI_CIPO`, `SPI_SCK`, `SPI_CS#` | Route to displays, memory, radios, or other SPI peripherals.                                                          |
+| UART           | `UART_TX1`, `UART_RX1`                       | Route to serial expansion, debug headers, or carrier-board devices.                                                   |
+
+## Design Checklist
+
+Before routing a MicroMod carrier board:
+
+- keep all carrier-board signals at 3.3 V logic levels unless the processor
+  board documentation says otherwise
+- add I2C pullups on the carrier board when you expose the primary I2C bus
+- keep reset and boot controls open-drain friendly so the processor board can
+  still drive or pull those signals as intended
+- decide whether `USB_D+` and `USB_D-` go to the connector, to a USB protection
+  circuit, or remain unused for a processor board that does not need native USB
+- connect only the buses your carrier actually uses; unused MicroMod pins can be
+  left unconnected
+- verify the exact processor board before assigning optional pins such as ADC,
+  PWM, camera, audio, SWD, CAN, or secondary SPI/SDIO
+
+## References
+
+- [SparkFun MicroMod](https://www.sparkfun.com/micromod)
+- [SparkFun MicroMod pin descriptions](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
+- [SparkFun MicroMod pinout](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pinout.pdf)

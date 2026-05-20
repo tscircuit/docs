@@ -14,7 +14,10 @@ Connectors support:
 - Schematic pin styling and arrangement controls
 - Optional connector `standard` hints (currently `"usb_c"` and `"m2"`)
 
-import CircuitPreview from "@site/src/components/CircuitPreview"
+For a worked M.2 connector example, see
+[Using SparkFun MicroMod M.2 Connectors](/tutorials/using-sparkfun-micromod-m2-connectors).
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
 
 ## Standard Connector Example
 
@@ -121,33 +124,33 @@ The TypeScript interface for `<connector />` is defined in [`@tscircuit/props`](
 
 ```ts
 export interface ConnectorProps extends CommonComponentProps {
-  manufacturerPartNumber?: string
+  manufacturerPartNumber?: string;
   pinLabels?: Record<
     number | SchematicPinLabel,
     SchematicPinLabel | SchematicPinLabel[]
-  >
-  schPinStyle?: SchematicPinStyle
-  schPinSpacing?: number | string
-  schWidth?: number | string
-  schHeight?: number | string
-  schDirection?: "left" | "right"
-  schPortArrangement?: SchematicPortArrangement
-  internallyConnectedPins?: (string | number)[][]
-  standard?: "usb_c" | "m2"
+  >;
+  schPinStyle?: SchematicPinStyle;
+  schPinSpacing?: number | string;
+  schWidth?: number | string;
+  schHeight?: number | string;
+  schDirection?: "left" | "right";
+  schPortArrangement?: SchematicPortArrangement;
+  internallyConnectedPins?: (string | number)[][];
+  standard?: "usb_c" | "m2";
 }
 ```
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `manufacturerPartNumber` | `string` | Manufacturer part number for the connector. |
-| `pinLabels` | `Record<number \| SchematicPinLabel, SchematicPinLabel \| SchematicPinLabel[]>` | Maps connector pins to one or more net labels. |
-| `schPinStyle` | `SchematicPinStyle` | Schematic rendering style for pins. |
-| `schPinSpacing` | `number \| string` | Pin spacing in schematic symbol. |
-| `schWidth` | `number \| string` | Schematic symbol width. |
-| `schHeight` | `number \| string` | Schematic symbol height. |
-| `schDirection` | `"left" \| "right"` | Direction of the connector symbol pins. |
-| `schPortArrangement` | `SchematicPortArrangement` | Schematic port layout strategy. |
-| `internallyConnectedPins` | `(string \| number)[][]` | Pin groups treated as internally shorted. |
-| `standard` | `"usb_c" \| "m2"` | Optional connector standard hint. |
+| Property                  | Type                                                                            | Description                                    |
+| ------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `manufacturerPartNumber`  | `string`                                                                        | Manufacturer part number for the connector.    |
+| `pinLabels`               | `Record<number \| SchematicPinLabel, SchematicPinLabel \| SchematicPinLabel[]>` | Maps connector pins to one or more net labels. |
+| `schPinStyle`             | `SchematicPinStyle`                                                             | Schematic rendering style for pins.            |
+| `schPinSpacing`           | `number \| string`                                                              | Pin spacing in schematic symbol.               |
+| `schWidth`                | `number \| string`                                                              | Schematic symbol width.                        |
+| `schHeight`               | `number \| string`                                                              | Schematic symbol height.                       |
+| `schDirection`            | `"left" \| "right"`                                                             | Direction of the connector symbol pins.        |
+| `schPortArrangement`      | `SchematicPortArrangement`                                                      | Schematic port layout strategy.                |
+| `internallyConnectedPins` | `(string \| number)[][]`                                                        | Pin groups treated as internally shorted.      |
+| `standard`                | `"usb_c" \| "m2"`                                                               | Optional connector standard hint.              |
 
 Like most components, `<connector />` also accepts common placement and PCB props from `CommonComponentProps` such as `pcbX`, `pcbY`, `rotation`, and `footprint`.
