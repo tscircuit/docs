@@ -1,0 +1,74 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: Build a Raspberry Pi HAT with a PAM8403 Class D amplifier, volume control, and speaker terminals.
+---
+
+## Overview
+
+This tutorial walks through a Raspberry Pi HAT for a small stereo Class D amplifier. The design uses a PAM8403-compatible amplifier, a dual-gang volume control, local supply filtering, and terminal blocks for left and right speakers.
+
+## Requirements
+
+- PAM8403 or compatible 3 W per channel stereo amplifier.
+- Dual-gang 10 kΩ audio potentiometer for volume control.
+- Left and right speaker terminal blocks.
+- 100 µF bulk capacitor and 100 nF bypass capacitor near the amplifier.
+
+## Step 1: Start with a HAT board
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* amplifier circuit goes here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+## Step 2: Add the amplifier and controls
+
+```tsx
+<chip name="U1" footprint="soic8" manufacturerPartNumber="PAM8403" pcbX={0} pcbY={0} />
+<chip name="RV1" footprint="potentiometer_9mm" manufacturerPartNumber="Dual 10k audio pot" pcbX={-18} pcbY={0} />
+<chip name="J1" footprint="terminalblock_2" manufacturerPartNumber="Left speaker" pcbX={18} pcbY={8} />
+<chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="Right speaker" pcbX={18} pcbY={-8} />
+```
+
+## Step 3: Add filtering
+
+```tsx
+<capacitor name="C1" capacitance="100uF" footprint="cap_0603" pcbX={-6} pcbY={8} />
+<capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={-3} pcbY={8} />
+```
+
+## Complete example
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip name="U1" footprint="soic8" manufacturerPartNumber="PAM8403" pcbX={0} pcbY={0} />
+    <chip name="RV1" footprint="potentiometer_9mm" manufacturerPartNumber="Dual 10k audio pot" pcbX={-18} pcbY={0} />
+    <chip name="J1" footprint="terminalblock_2" manufacturerPartNumber="Left speaker" pcbX={18} pcbY={8} />
+    <chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="Right speaker" pcbX={18} pcbY={-8} />
+    <capacitor name="C1" capacitance="100uF" footprint="cap_0603" pcbX={-6} pcbY={8} />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={-3} pcbY={8} />
+    <trace from=".HAT1_chip .V5_1" to=".U1 > .pin4" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 > .pin2" />
+    <trace from=".RV1 > .pin2" to=".U1 > .pin3" />
+    <trace from=".RV1 > .pin5" to=".U1 > .pin5" />
+    <trace from=".U1 > .pin1" to=".J1 > .pin1" />
+    <trace from=".U1 > .pin7" to=".J2 > .pin1" />
+  </RaspberryPiHatBoard>
+)
+```
+
+## Layout and test checklist
+
+- Keep speaker output traces away from low-level audio inputs.
+- Use wider traces for power, ground, and speaker outputs.
+- Place speaker terminals at the board edge.
+- Verify there is no short between 5 V and ground before powering the HAT.
+- Start testing at low volume with inexpensive speakers.
