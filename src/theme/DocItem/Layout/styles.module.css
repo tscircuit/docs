@@ -7,6 +7,12 @@
   position: relative;
 }
 
+.docItemContainer {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .contentHeader {
   position: relative;
   z-index: 10;
@@ -40,6 +46,9 @@
 
 @media (min-width: 997px) {
   .docItemCol {
-    max-width: 75% !important;
+    flex: 0 1 1000px !important;
+    max-width: min(100%, 1000px) !important;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
