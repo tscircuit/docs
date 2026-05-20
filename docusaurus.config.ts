@@ -42,7 +42,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/", // Serve docs at root
-          editUrl: "https://github.com/tscircuit/docs/tree/main/",
+          editUrl: "https://github.com/tscircuit/docs/edit/main/",
           breadcrumbs: false,
         },
         theme: {
@@ -179,8 +179,8 @@ const config: Config = {
         },
         { to: "https://blog.tscircuit.com", label: "Blog", position: "left" },
         {
-          to: "https://tscircuit.com",
-          label: "Use Online",
+          to: "https://tscircuit.com/editor",
+          label: "Try Online",
           position: "left",
         },
 
