@@ -1,0 +1,370 @@
+---
+title: ESP32 Module Schematic
+description: Build a schematic-only ESP32 module circuit with power, boot, reset, USB-UART, and expansion connections.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+## Overview
+
+This tutorial builds a schematic-only ESP32-WROOM style module circuit. It keeps
+the example focused on the connections that matter before PCB layout:
+
+- a 3.3 V regulator from USB 5 V
+- EN reset and IO0 boot strapping
+- USB-UART programming connections
+- decoupling capacitors near the ESP32 module
+- I2C, SPI, UART, power, and ground breakout headers
+
+Use this as a starting point when you want an ESP32 module design that is easier
+to review before you add the final PCB footprint, antenna keepout, and routing.
+
+## Schematic
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+const esp32PinLabels = {
+  pin1: "GND1",
+  pin2: "3V3",
+  pin3: "EN",
+  pin4: "GPIO36",
+  pin5: "GPIO39",
+  pin6: "GPIO34",
+  pin7: "GPIO35",
+  pin8: "GPIO32",
+  pin9: "GPIO33",
+  pin10: "GPIO25",
+  pin11: "GPIO26",
+  pin12: "GPIO27",
+  pin13: "GPIO14",
+  pin14: "GPIO12",
+  pin15: "GND2",
+  pin16: "GPIO13",
+  pin17: "SD2",
+  pin18: "SD3",
+  pin19: "CMD",
+  pin20: "CLK",
+  pin21: "SD0",
+  pin22: "SD1",
+  pin23: "GPIO15",
+  pin24: "GPIO2",
+  pin25: "GPIO0",
+  pin26: "GPIO4",
+  pin27: "GPIO16",
+  pin28: "GPIO17",
+  pin29: "GPIO5",
+  pin30: "GPIO18",
+  pin31: "GPIO19",
+  pin32: "NC",
+  pin33: "GPIO21",
+  pin34: "U0RXD",
+  pin35: "U0TXD",
+  pin36: "GPIO22",
+  pin37: "GPIO23",
+  pin38: "GND3",
+}
+
+const esp32PinArrangement = {
+topSide: {
+direction: "left-to-right",
+pins: ["3V3", "EN"],
+},
+bottomSide: {
+direction: "left-to-right",
+pins: ["GND1", "GND2", "GND3"],
+},
+leftSide: {
+direction: "top-to-bottom",
+pins: [
+"GPIO36",
+"GPIO39",
+"GPIO34",
+"GPIO35",
+"GPIO32",
+"GPIO33",
+"GPIO25",
+"GPIO26",
+"GPIO27",
+"GPIO14",
+"GPIO12",
+"GPIO13",
+],
+},
+rightSide: {
+direction: "top-to-bottom",
+pins: [
+"GPIO23",
+"GPIO22",
+"U0TXD",
+"U0RXD",
+"GPIO21",
+"GPIO19",
+"GPIO18",
+"GPIO5",
+"GPIO17",
+"GPIO16",
+"GPIO4",
+"GPIO0",
+"GPIO2",
+"GPIO15",
+],
+},
+}
+
+export default () => (
+  <board width="120mm" height="80mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="pinrow38"
+      pinLabels={esp32PinLabels}
+      schPinArrangement={esp32PinArrangement}
+      schX={0}
+      schY={0}
+      connections={{
+        "3V3": "net.V3_3",
+        EN: "net.EN",
+        GND1: "net.GND",
+        GND2: "net.GND",
+        GND3: "net.GND",
+        GPIO0: "net.BOOT",
+        GPIO21: "net.I2C_SDA",
+        GPIO22: "net.I2C_SCL",
+        GPIO23: "net.SPI_MOSI",
+        GPIO19: "net.SPI_MISO",
+        GPIO18: "net.SPI_SCK",
+        GPIO5: "net.SPI_CS",
+        U0TXD: "net.UART_TX",
+        U0RXD: "net.UART_RX",
+      }}
+    />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="AP2112K-3.3"
+      footprint="sot23_5"
+      pinLabels={{
+        pin1: "VIN",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "BYP",
+        pin5: "VOUT",
+      }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["VIN", "EN"] },
+        rightSide: { direction: "top-to-bottom", pins: ["VOUT", "BYP"] },
+        bottomSide: { direction: "left-to-right", pins: ["GND"] },
+      }}
+      schX={-7}
+      schY={3}
+      connections={{
+        VIN: "net.VBUS",
+        EN: "net.VBUS",
+        VOUT: "net.V3_3",
+        GND: "net.GND",
+      }}
+    />
+
+    <chip
+      name="U3"
+      manufacturerPartNumber="CP2102N"
+      footprint="qfn24"
+      pinLabels={{
+        pin1: "D+",
+        pin2: "D-",
+        pin3: "VDD",
+        pin4: "GND",
+        pin5: "TXD",
+        pin6: "RXD",
+        pin7: "DTR",
+        pin8: "RTS",
+      }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["D+", "D-"] },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["TXD", "RXD", "DTR", "RTS"],
+        },
+        topSide: { direction: "left-to-right", pins: ["VDD"] },
+        bottomSide: { direction: "left-to-right", pins: ["GND"] },
+      }}
+      schX={-7}
+      schY={-3}
+      connections={{
+        "D+": "net.USB_DP",
+        "D-": "net.USB_DM",
+        VDD: "net.V3_3",
+        GND: "net.GND",
+        TXD: "net.UART_RX",
+        RXD: "net.UART_TX",
+        DTR: "net.AUTO_BOOT",
+        RTS: "net.AUTO_RESET",
+      }}
+    />
+
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C Receptacle"
+      footprint="usb_c_smd"
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "GND",
+        pin3: "D+",
+        pin4: "D-",
+        pin5: "CC1",
+        pin6: "CC2",
+      }}
+      schPinArrangement={{
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["VBUS", "D+", "D-", "CC1", "CC2"],
+        },
+        bottomSide: { direction: "left-to-right", pins: ["GND"] },
+      }}
+      schX={-12}
+      schY={0}
+      connections={{
+        VBUS: "net.VBUS",
+        GND: "net.GND",
+        "D+": "net.USB_DP",
+        "D-": "net.USB_DM",
+      }}
+    />
+
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0603"
+      connections={{ pin1: "net.EN", pin2: "net.V3_3" }}
+      schX={4}
+      schY={4}
+    />
+    <capacitor
+      name="C1"
+      capacitance="1uF"
+      footprint="0603"
+      connections={{ pin1: "net.EN", pin2: "net.GND" }}
+      schX={6}
+      schY={4}
+    />
+    <pushbutton
+      name="RESET"
+      footprint="pushbutton"
+      connections={{ pin1: "net.EN", pin2: "net.GND" }}
+      schX={8}
+      schY={4}
+    />
+
+    <resistor
+      name="R2"
+      resistance="10k"
+      footprint="0603"
+      connections={{ pin1: "net.BOOT", pin2: "net.V3_3" }}
+      schX={4}
+      schY={2}
+    />
+    <pushbutton
+      name="BOOT"
+      footprint="pushbutton"
+      connections={{ pin1: "net.BOOT", pin2: "net.GND" }}
+      schX={8}
+      schY={2}
+    />
+
+    <capacitor
+      name="C2"
+      capacitance="10uF"
+      footprint="0805"
+      connections={{ pin1: "net.V3_3", pin2: "net.GND" }}
+      schX={4}
+      schY={-4}
+    />
+    <capacitor
+      name="C3"
+      capacitance="100nF"
+      footprint="0603"
+      connections={{ pin1: "net.V3_3", pin2: "net.GND" }}
+      schX={6}
+      schY={-4}
+    />
+    <capacitor
+      name="C4"
+      capacitance="100nF"
+      footprint="0603"
+      connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+      schX={-9}
+      schY={4}
+    />
+
+    <chip
+      name="J2"
+      manufacturerPartNumber="I2C header"
+      footprint="pinrow4"
+      pinLabels={{ pin1: "3V3", pin2: "GND", pin3: "SDA", pin4: "SCL" }}
+      connections={{
+        "3V3": "net.V3_3",
+        GND: "net.GND",
+        SDA: "net.I2C_SDA",
+        SCL: "net.I2C_SCL",
+      }}
+      schX={12}
+      schY={3}
+    />
+
+    <chip
+      name="J3"
+      manufacturerPartNumber="SPI header"
+      footprint="pinrow6"
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "GND",
+        pin3: "MOSI",
+        pin4: "MISO",
+        pin5: "SCK",
+        pin6: "CS",
+      }}
+      connections={{
+        "3V3": "net.V3_3",
+        GND: "net.GND",
+        MOSI: "net.SPI_MOSI",
+        MISO: "net.SPI_MISO",
+        SCK: "net.SPI_SCK",
+        CS: "net.SPI_CS",
+      }}
+      schX={12}
+      schY={-3}
+    />
+
+  </board>
+)
+`}
+/>
+
+## Pin Groups
+
+| Group    | ESP32 pins used in the example        | Purpose                                                                          |
+| -------- | ------------------------------------- | -------------------------------------------------------------------------------- |
+| Power    | `3V3`, `GND1`, `GND2`, `GND3`         | Main ESP32 supply and return pins.                                               |
+| Reset    | `EN`                                  | Pulled up to 3.3 V, with a reset button and capacitor to ground.                 |
+| Boot     | `GPIO0`                               | Pulled up to 3.3 V, with a boot button to ground for programming mode.           |
+| USB-UART | `U0TXD`, `U0RXD`                      | Connects the ESP32 serial console and flashing interface to the USB-UART bridge. |
+| I2C      | `GPIO21`, `GPIO22`                    | Breaks out the usual SDA and SCL pins for sensors.                               |
+| SPI      | `GPIO23`, `GPIO19`, `GPIO18`, `GPIO5` | Breaks out MOSI, MISO, SCK, and CS for SPI peripherals.                          |
+
+## Adapting This for a Real PCB
+
+Before turning this schematic into a routed board, confirm the exact ESP32 module
+variant and its datasheet. The common review points are:
+
+- keep the antenna end of the module clear of copper, components, and ground pour
+  according to the module datasheet
+- keep the 10 uF and 100 nF 3.3 V capacitors close to the ESP32 module supply
+  pins
+- verify boot strapping pins before adding external pullups, pulldowns, or
+  peripherals
+- choose a 3.3 V regulator that can handle Wi-Fi transmit current peaks
+- cross TX and RX between the USB-UART bridge and the ESP32 module
