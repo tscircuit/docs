@@ -1,20 +1,36 @@
 ---
 title: Building a Class D Audio Amplifier HAT
-description: Build a Raspberry Pi HAT with a PAM8403 Class D amplifier, volume control, and speaker terminals.
+description: Build a Raspberry Pi HAT with a PAM8403 stereo Class D amplifier, dual volume control, speaker outputs, and bring-up checks.
 ---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-This tutorial walks through a Raspberry Pi HAT for a small stereo Class D amplifier. The design uses a PAM8403-compatible amplifier, a dual-gang volume control, local supply filtering, and terminal blocks for left and right speakers.
+This tutorial walks through a small stereo Class D amplifier HAT for a Raspberry Pi. The HAT takes low-level left/right audio from the Pi or an external DAC, routes it through a dual-gang audio potentiometer, and drives a PAM8403-compatible 3 W per-channel amplifier into left and right speaker terminal blocks.
+
+Class D amplifiers switch their output transistors at a high frequency and use the speaker load plus output filtering to recover the audio waveform. That makes them efficient and cool-running compared with linear amplifiers, but it also means layout matters: keep the high-current speaker loops short, keep audio input traces away from speaker outputs, and put supply bypassing right next to the amplifier.
 
 ## Requirements
 
-- PAM8403 or compatible 3 W per channel stereo amplifier.
-- Dual-gang 10 kΩ audio potentiometer for volume control.
-- Left and right speaker terminal blocks.
-- 100 µF bulk capacitor and 100 nF bypass capacitor near the amplifier.
+- PAM8403-compatible 3 W per-channel stereo Class D amplifier.
+- Dual-gang 10 kΩ audio potentiometer for left/right volume control.
+- Left and right 2-pin speaker terminal blocks.
+- 100 µF bulk capacitor plus 100 nF local bypass capacitor near the amplifier.
+- Raspberry Pi HAT connector for 5 V, ground, and optional PWM/I2S audio pins.
+- Optional 3-pin external audio header if you use a small DAC module instead of direct Pi PWM audio.
 
-## Step 1: Start with a HAT board
+## Audio integration choices
+
+A Raspberry Pi does not expose a high-quality analog line output on the 40-pin header by default. Use one of these approaches:
+
+1. **External I2S DAC module:** route the DAC line outputs into the HAT's `AUDIO_L`, `AUDIO_R`, and `AGND` header. This gives the best quality.
+2. **PWM audio with RC filter:** use PWM pins and a low-pass filter before the potentiometer. This is acceptable for simple beeps or speech, but noisier.
+3. **Pi 3.5 mm jack jumper:** if your Pi model has analog audio, route the jack output to the HAT input header.
+
+The example below keeps the amplifier section explicit and uses an `AUDIO_IN` header so the HAT can be paired with any of those sources.
+
+## Step 1: Create the HAT outline
 
 ```tsx
 import { RaspberryPiHatBoard } from "@tscircuit/common"
@@ -26,49 +42,146 @@ export default () => (
 )
 ```
 
-## Step 2: Add the amplifier and controls
+## Step 2: Add the amplifier and audio controls
+
+The PAM8403 has separate left/right inputs and differential speaker outputs. The dual-gang potentiometer attenuates both channels together.
 
 ```tsx
-<chip name="U1" footprint="soic8" manufacturerPartNumber="PAM8403" pcbX={0} pcbY={0} />
-<chip name="RV1" footprint="potentiometer_9mm" manufacturerPartNumber="Dual 10k audio pot" pcbX={-18} pcbY={0} />
-<chip name="J1" footprint="terminalblock_2" manufacturerPartNumber="Left speaker" pcbX={18} pcbY={8} />
-<chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="Right speaker" pcbX={18} pcbY={-8} />
+<chip
+  name="U1"
+  footprint="sop16"
+  manufacturerPartNumber="PAM8403"
+  pinLabels={{
+    1: "LOUT+",
+    2: "PVDDL",
+    3: "LOUT-",
+    4: "LIN",
+    5: "GND",
+    6: "RIN",
+    7: "ROUT-",
+    8: "PVDDR",
+    9: "ROUT+",
+    16: "VDD",
+  }}
+/>
+<chip name="RV1" footprint="potentiometer_9mm" manufacturerPartNumber="Dual 10k audio pot" />
+<chip name="J_AUDIO" footprint="pinrow3" manufacturerPartNumber="Audio input: L/R/GND" />
+<chip name="J_LEFT" footprint="terminalblock_2" manufacturerPartNumber="Left speaker" />
+<chip name="J_RIGHT" footprint="terminalblock_2" manufacturerPartNumber="Right speaker" />
 ```
 
-## Step 3: Add filtering
+## Step 3: Add supply filtering
+
+Place the 100 nF capacitor as close as possible to the amplifier `VDD` pin. Place the 100 µF bulk capacitor close to the amplifier power entry so bass transients do not pull the HAT 5 V rail down.
 
 ```tsx
-<capacitor name="C1" capacitance="100uF" footprint="cap_0603" pcbX={-6} pcbY={8} />
-<capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={-3} pcbY={8} />
+<capacitor name="C1" capacitance="100uF" footprint="cap_0603" />
+<capacitor name="C2" capacitance="100nF" footprint="0402" />
+<trace from=".C1 > .pin1" to="net.V5" />
+<trace from=".C1 > .pin2" to="net.GND" />
+<trace from=".C2 > .pin1" to=".U1 > .VDD" />
+<trace from=".C2 > .pin2" to="net.GND" />
 ```
 
-## Complete example
+## Schematic and 3D preview
 
-```tsx
+<CircuitPreview code={`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    <chip name="U1" footprint="soic8" manufacturerPartNumber="PAM8403" pcbX={0} pcbY={0} />
-    <chip name="RV1" footprint="potentiometer_9mm" manufacturerPartNumber="Dual 10k audio pot" pcbX={-18} pcbY={0} />
-    <chip name="J1" footprint="terminalblock_2" manufacturerPartNumber="Left speaker" pcbX={18} pcbY={8} />
-    <chip name="J2" footprint="terminalblock_2" manufacturerPartNumber="Right speaker" pcbX={18} pcbY={-8} />
-    <capacitor name="C1" capacitance="100uF" footprint="cap_0603" pcbX={-6} pcbY={8} />
-    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={-3} pcbY={8} />
-    <trace from=".HAT1_chip .V5_1" to=".U1 > .pin4" />
-    <trace from=".HAT1_chip .GND_1" to=".U1 > .pin2" />
-    <trace from=".RV1 > .pin2" to=".U1 > .pin3" />
-    <trace from=".RV1 > .pin5" to=".U1 > .pin5" />
-    <trace from=".U1 > .pin1" to=".J1 > .pin1" />
-    <trace from=".U1 > .pin7" to=".J2 > .pin1" />
+    <chip
+      name="U1"
+      footprint="sop16"
+      manufacturerPartNumber="PAM8403"
+      pcbX={0}
+      pcbY={0}
+      pinLabels={{
+        1: "LOUT+",
+        2: "PVDDL",
+        3: "LOUT-",
+        4: "LIN",
+        5: "GND",
+        6: "RIN",
+        7: "ROUT-",
+        8: "PVDDR",
+        9: "ROUT+",
+        16: "VDD",
+      }}
+    />
+    <chip name="RV1" footprint="potentiometer_9mm" manufacturerPartNumber="Dual 10k audio pot" pcbX={-18} pcbY={0} pinLabels={{ 1: "L_IN", 2: "L_WIPER", 3: "AGND", 4: "R_IN", 5: "R_WIPER", 6: "AGND" }} />
+    <chip name="J_AUDIO" footprint="pinrow3" manufacturerPartNumber="Audio input: L/R/GND" pcbX={-34} pcbY={0} pinLabels={{ 1: "LEFT", 2: "RIGHT", 3: "AGND" }} />
+    <chip name="J_LEFT" footprint="terminalblock_2" manufacturerPartNumber="Left speaker" pcbX={24} pcbY={9} pinLabels={{ 1: "L+", 2: "L-" }} />
+    <chip name="J_RIGHT" footprint="terminalblock_2" manufacturerPartNumber="Right speaker" pcbX={24} pcbY={-9} pinLabels={{ 1: "R+", 2: "R-" }} />
+    <capacitor name="C1" capacitance="100uF" footprint="cap_0603" pcbX={-8} pcbY={10} />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={-4} pcbY={10} />
+
+    <trace from=".HAT1_chip > .V5_1" to="net.V5" />
+    <trace from=".HAT1_chip > .GND_1" to="net.GND" />
+    <trace from="net.V5" to=".U1 > .VDD" />
+    <trace from="net.V5" to=".U1 > .PVDDL" />
+    <trace from="net.V5" to=".U1 > .PVDDR" />
+    <trace from=".U1 > .GND" to="net.GND" />
+    <trace from=".C1 > .pin1" to="net.V5" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from=".C2 > .pin1" to=".U1 > .VDD" />
+    <trace from=".C2 > .pin2" to="net.GND" />
+
+    <trace from=".J_AUDIO > .LEFT" to=".RV1 > .L_IN" />
+    <trace from=".J_AUDIO > .RIGHT" to=".RV1 > .R_IN" />
+    <trace from=".J_AUDIO > .AGND" to="net.GND" />
+    <trace from=".RV1 > .L_WIPER" to=".U1 > .LIN" />
+    <trace from=".RV1 > .R_WIPER" to=".U1 > .RIN" />
+    <trace from=".RV1 > .AGND" to="net.GND" />
+
+    <trace from=".U1 > .LOUT+" to=".J_LEFT > .L+" />
+    <trace from=".U1 > .LOUT-" to=".J_LEFT > .L-" />
+    <trace from=".U1 > .ROUT+" to=".J_RIGHT > .R+" />
+    <trace from=".U1 > .ROUT-" to=".J_RIGHT > .R-" />
   </RaspberryPiHatBoard>
 )
+`} />
+
+## Bill of materials
+
+| Ref | Part | Notes |
+| --- | --- | --- |
+| U1 | PAM8403 stereo Class D amplifier | 5 V, 3 W per channel into suitable speakers |
+| RV1 | Dual-gang 10 kΩ audio potentiometer | Audio/log taper preferred |
+| J_AUDIO | 3-pin audio input header | Left, right, analog ground |
+| J_LEFT/J_RIGHT | 2-pin terminal blocks | Speaker outputs |
+| C1 | 100 µF capacitor | Bulk 5 V storage |
+| C2 | 100 nF capacitor | Local high-frequency bypass |
+
+## Raspberry Pi audio configuration
+
+For an I2S DAC source, enable I2S in Raspberry Pi OS and select the DAC overlay required by your module. A typical `/boot/firmware/config.txt` setup looks like this:
+
+```ini
+dtparam=i2s=on
+# Example only: use the overlay for your actual DAC board.
+dtoverlay=hifiberry-dac
 ```
 
-## Layout and test checklist
+Then test a quiet audio file first:
 
-- Keep speaker output traces away from low-level audio inputs.
-- Use wider traces for power, ground, and speaker outputs.
-- Place speaker terminals at the board edge.
-- Verify there is no short between 5 V and ground before powering the HAT.
-- Start testing at low volume with inexpensive speakers.
+```bash
+speaker-test -t wav -c 2
+aplay /usr/share/sounds/alsa/Front_Left.wav
+```
+
+## Layout guidance
+
+- Keep the audio input header and potentiometer on the quiet side of the board.
+- Route speaker outputs as short, paired traces to the terminal blocks.
+- Do not run speaker outputs under the potentiometer or audio input header.
+- Use a solid ground return from the amplifier to the HAT ground pins.
+- Put `C2` directly beside `U1`; put `C1` close to the 5 V entry path.
+
+## Bring-up checks
+
+1. With no speakers connected, confirm there is no short between 5 V and ground.
+2. Power the Pi and verify 5 V appears at the amplifier supply pins.
+3. Start with the potentiometer fully down and play a low-volume stereo test.
+4. Connect inexpensive test speakers before connecting final speakers.
+5. If there is hiss or PWM noise, use an I2S DAC or improve the analog low-pass filtering before the HAT input.
