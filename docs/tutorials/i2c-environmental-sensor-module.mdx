@@ -1,0 +1,71 @@
+---
+title: Building an I2C Environmental Sensor Module
+description: Build a BME280 temperature, humidity, and pressure sensor module with I2C pull-ups and an optional OLED connector.
+---
+
+## Overview
+
+This tutorial builds a compact BME280 environmental sensor module. The board exposes power, ground, SDA, and SCL on a header, includes pull-up resistors for the I2C bus, and adds an optional connector for a small I2C OLED display.
+
+## Requirements
+
+- BME280 sensor for temperature, humidity, and pressure.
+- 4-pin host header with GND, VCC, SDA, and SCL.
+- 4.7 kΩ pull-up resistors on SDA and SCL.
+- 100 nF decoupling capacitor near the sensor.
+- Optional OLED header on the same I2C bus.
+
+## I2C pull-up explanation
+
+I2C devices pull the bus low but do not actively drive it high. Pull-up resistors return SDA and SCL to VCC when the bus is idle. For a short 3.3 V sensor module, 4.7 kΩ is a practical default.
+
+## Step 1: Add the sensor
+
+```tsx
+export default () => (
+  <board width="35mm" height="25mm">
+    <chip name="U1" footprint="qfn8" manufacturerPartNumber="BME280" pcbX={0} pcbY={0} />
+  </board>
+)
+```
+
+## Step 2: Add the host header and pull-ups
+
+```tsx
+<chip name="J1" footprint="pinrow4" manufacturerPartNumber="I2C host header" pcbX={-12} pcbY={0} />
+<resistor name="R1" resistance="4.7k" footprint="0402" pcbX={8} pcbY={5} />
+<resistor name="R2" resistance="4.7k" footprint="0402" pcbX={8} pcbY={-5} />
+```
+
+## Step 3: Add optional OLED expansion
+
+```tsx
+<chip name="J2" footprint="pinrow4" manufacturerPartNumber="Optional I2C OLED header" pcbX={12} pcbY={0} />
+```
+
+## Complete example
+
+```tsx
+export default () => (
+  <board width="35mm" height="25mm">
+    <chip name="U1" footprint="qfn8" manufacturerPartNumber="BME280" pcbX={0} pcbY={0} />
+    <chip name="J1" footprint="pinrow4" manufacturerPartNumber="I2C host header" pcbX={-12} pcbY={0} />
+    <chip name="J2" footprint="pinrow4" manufacturerPartNumber="Optional I2C OLED header" pcbX={12} pcbY={0} />
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={8} pcbY={5} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={8} pcbY={-5} />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={0} pcbY={7} />
+    <trace from=".J1 > .pin2" to=".U1 > .pin8" />
+    <trace from=".J1 > .pin1" to=".U1 > .pin1" />
+    <trace from=".J1 > .pin3" to=".U1 > .pin3" />
+    <trace from=".J1 > .pin4" to=".U1 > .pin4" />
+  </board>
+)
+```
+
+## Layout and bring-up checklist
+
+- Place the BME280 away from regulators and other heat sources.
+- Keep the decoupling capacitor close to the sensor power pins.
+- Label GND, VCC, SDA, and SCL on both headers.
+- Scan the I2C bus after assembly and confirm the expected BME280 address.
+- Compare sensor readings against a known reference during first test.
