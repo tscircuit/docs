@@ -1,0 +1,330 @@
+---
+title: Building a MicroMod Carrier Board
+description: Learn how to model a SparkFun MicroMod-style carrier board with an M.2 connector, shared power rails, I2C pull-ups, and common breakout headers.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+SparkFun MicroMod processor boards use a 75-pin M.2 edge connector so that the
+processor module can plug into different carrier boards. A carrier board usually
+provides the regulated 3.3 V rail, ground return, reset and boot controls, and
+breakouts for buses such as I2C, SPI, UART, SWD, PWM, and analog inputs.
+
+This tutorial shows a reusable tscircuit pattern for documenting a MicroMod
+carrier schematic. It intentionally focuses on the connector and signal mapping;
+before fabricating a real board, confirm the exact connector footprint, keepout,
+and mechanical dimensions against the MicroMod processor board and connector
+datasheets.
+
+## Start with the MicroMod M.2 socket
+
+Use `<connector />` with `standard="m2"` and add explicit labels for the pins
+you plan to route. The example below labels the most common carrier-board
+signals from the MicroMod v1.0 pinout and leaves unused keyed or secondary
+signals unconnected.
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+const microModPinLabels = {
+  pin1: "GND",
+  pin2: "V3_3",
+  pin3: "USB_D_P",
+  pin4: "USB_D_N",
+  pin6: "RESET",
+  pin9: "USB_VIN",
+  pin11: "BOOT",
+  pin12: "I2C_SDA",
+  pin14: "I2C_SCL",
+  pin16: "I2C_INT",
+  pin17: "UART_TX1",
+  pin19: "UART_RX1",
+  pin21: "SWDCK",
+  pin23: "SWDIO",
+  pin32: "PWM0",
+  pin34: "A0",
+  pin38: "A1",
+  pin41: "CAN_RX",
+  pin43: "CAN_TX",
+  pin55: "SPI_CS",
+  pin57: "SPI_SCK",
+  pin59: "SPI_COPI",
+  pin61: "SPI_CIPO",
+  pin74: "V3_3",
+  pin75: "GND",
+}
+
+export default () => (
+  <board width="60mm" height="36mm">
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      pinLabels={microModPinLabels}
+      schWidth="28mm"
+      schHeight="46mm"
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin6: "net.RESET",
+        pin11: "net.BOOT",
+        pin12: "net.I2C_SDA",
+        pin14: "net.I2C_SCL",
+        pin17: "net.UART_TX",
+        pin19: "net.UART_RX",
+        pin21: "net.SWDCK",
+        pin23: "net.SWDIO",
+        pin32: "net.PWM0",
+        pin34: "net.A0",
+        pin38: "net.A1",
+        pin55: "net.SPI_CS",
+        pin57: "net.SPI_SCK",
+        pin59: "net.SPI_COPI",
+        pin61: "net.SPI_CIPO",
+        pin74: "net.V3_3",
+        pin75: "net.GND",
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+  </board>
+)
+`}
+/>
+
+## Add carrier-board power
+
+MicroMod signals are 3.3 V compatible. Do not connect processor GPIO or bus
+signals directly to 5 V logic. The carrier board should provide a clean 3.3 V
+rail, local bulk capacitance, and small decoupling capacitors close to the
+connector power pins. If your carrier accepts USB or battery input, model that
+power path separately and feed the connector from the regulated rail.
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+const microModPinLabels = {
+  pin1: "GND",
+  pin2: "V3_3",
+  pin6: "RESET",
+  pin11: "BOOT",
+  pin12: "I2C_SDA",
+  pin14: "I2C_SCL",
+  pin74: "V3_3",
+  pin75: "GND",
+}
+
+export default () => (
+  <board width="64mm" height="42mm">
+    <net name="V3_3" isForPower />
+    <net name="GND" isGround />
+
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      pinLabels={microModPinLabels}
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin6: "net.RESET",
+        pin11: "net.BOOT",
+        pin12: "net.I2C_SDA",
+        pin14: "net.I2C_SCL",
+        pin74: "net.V3_3",
+        pin75: "net.GND",
+      }}
+      schWidth="24mm"
+      schHeight="26mm"
+    />
+
+    <capacitor
+      name="C_BULK"
+      capacitance="10uF"
+      footprint="0805"
+      connections={{ pos: "net.V3_3", neg: "net.GND" }}
+    />
+    <capacitor
+      name="C_DEC1"
+      capacitance="100nF"
+      footprint="0402"
+      connections={{ pos: "net.V3_3", neg: "net.GND" }}
+    />
+  </board>
+)
+`}
+/>
+
+## Break out common buses
+
+Carrier boards usually expose a small set of MicroMod signals rather than every
+pin. I2C is a good default because MicroMod defines `I2C_SDA` and `I2C_SCL` as
+open-drain signals that need pull-up resistors on the carrier board. UART, SPI,
+SWD, reset, and boot are common debugging and expansion connections.
+
+<CircuitPreview
+  splitView={false}
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+const microModPinLabels = {
+  pin1: "GND",
+  pin2: "V3_3",
+  pin6: "RESET",
+  pin11: "BOOT",
+  pin12: "I2C_SDA",
+  pin14: "I2C_SCL",
+  pin17: "UART_TX1",
+  pin19: "UART_RX1",
+  pin21: "SWDCK",
+  pin23: "SWDIO",
+  pin55: "SPI_CS",
+  pin57: "SPI_SCK",
+  pin59: "SPI_COPI",
+  pin61: "SPI_CIPO",
+  pin74: "V3_3",
+  pin75: "GND",
+}
+
+export default () => (
+  <board width="78mm" height="54mm">
+    <net name="V3_3" isForPower />
+    <net name="GND" isGround />
+
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      pinLabels={microModPinLabels}
+      schWidth="26mm"
+      schHeight="40mm"
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin6: "net.RESET",
+        pin11: "net.BOOT",
+        pin12: "net.I2C_SDA",
+        pin14: "net.I2C_SCL",
+        pin17: "net.UART_TX",
+        pin19: "net.UART_RX",
+        pin21: "net.SWDCK",
+        pin23: "net.SWDIO",
+        pin55: "net.SPI_CS",
+        pin57: "net.SPI_SCK",
+        pin59: "net.SPI_COPI",
+        pin61: "net.SPI_CIPO",
+        pin74: "net.V3_3",
+        pin75: "net.GND",
+      }}
+    />
+
+    <pinheader
+      name="J_I2C"
+      pinCount={4}
+      gender="female"
+      pitch="2.54mm"
+      pinLabels={["GND", "3V3", "SDA", "SCL"]}
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin3: "net.I2C_SDA",
+        pin4: "net.I2C_SCL",
+      }}
+    />
+    <resistor
+      name="R_SDA"
+      resistance="4.7k"
+      footprint="0402"
+      connections={{ pin1: "net.V3_3", pin2: "net.I2C_SDA" }}
+    />
+    <resistor
+      name="R_SCL"
+      resistance="4.7k"
+      footprint="0402"
+      connections={{ pin1: "net.V3_3", pin2: "net.I2C_SCL" }}
+    />
+
+    <pinheader
+      name="J_UART"
+      pinCount={4}
+      gender="male"
+      pitch="2.54mm"
+      pinLabels={["GND", "3V3", "TX", "RX"]}
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin3: "net.UART_TX",
+        pin4: "net.UART_RX",
+      }}
+    />
+
+    <pinheader
+      name="J_SPI"
+      pinCount={6}
+      gender="male"
+      pitch="2.54mm"
+      pinLabels={["GND", "3V3", "CIPO", "COPI", "SCK", "CS"]}
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin3: "net.SPI_CIPO",
+        pin4: "net.SPI_COPI",
+        pin5: "net.SPI_SCK",
+        pin6: "net.SPI_CS",
+      }}
+    />
+
+    <pinheader
+      name="J_SWD"
+      pinCount={4}
+      gender="male"
+      pitch="2.54mm"
+      pinLabels={["GND", "3V3", "SWDIO", "SWDCK"]}
+      connections={{
+        pin1: "net.GND",
+        pin2: "net.V3_3",
+        pin3: "net.SWDIO",
+        pin4: "net.SWDCK",
+      }}
+    />
+
+    <pushbutton
+      name="SW_RESET"
+      connections={{ pin1: "net.RESET", pin2: "net.GND" }}
+    />
+    <pushbutton
+      name="SW_BOOT"
+      connections={{ pin1: "net.BOOT", pin2: "net.GND" }}
+    />
+  </board>
+)
+`}
+/>
+
+## Layout checklist
+
+- Use the MicroMod connector drawing for pad geometry, key position, insertion
+  direction, and board-edge keepout.
+- Keep local 100 nF decoupling close to the 3.3 V and ground connector pins, and
+  add enough bulk capacitance for the processor board and any carrier peripherals.
+- Treat all exposed bus pins as 3.3 V logic unless a processor-board datasheet
+  explicitly says otherwise.
+- Put I2C pull-ups on the carrier board. Start with 4.7 kOhm for short traces
+  and adjust for bus capacitance and target speed.
+- Route USB and high-speed interfaces as controlled, short, matched differential
+  paths when you use them.
+- Mark intentionally unused MicroMod pins as no-connects in your design notes so
+  future carrier-board revisions do not route them by accident.
+
+## References
+
+- [SparkFun MicroMod Interface pin descriptions](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
+- [SparkFun MicroMod Interface pinout](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pinout.pdf)
+- [SparkFun Getting Started with MicroMod](https://learn.sparkfun.com/tutorials/getting-started-with-micromod)
+- [SparkFun MicroMod product page](https://www.sparkfun.com/micromod)
