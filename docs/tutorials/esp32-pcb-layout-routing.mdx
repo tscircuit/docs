@@ -1,0 +1,309 @@
+---
+title: ESP32 PCB Layout and Routing
+description: Route a small ESP32-WROOM carrier board with tscircuit, including boot/reset passives, a programming header, antenna keepout, and ground pours.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview";
+
+## Overview
+
+This tutorial starts from an ESP32 schematic-style connection list and turns it
+into a practical PCB layout. The example board uses a simplified ESP32-WROOM
+module footprint, a 6-pin programming header, boot and reset buttons, an
+indicator LED, and ground pours on both copper layers.
+
+The goal is not to copy every pin from a production ESP32 module. It is to show
+the layout moves you make after the circuit is connected:
+
+- put the module antenna at the board edge
+- keep decoupling capacitors close to 3.3 V pins
+- place boot and reset passives beside their ESP32 pins
+- route UART and strap signals away from the antenna region
+- pour ground after the critical component placement is stable
+
+## Complete Board
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  defaultView="pcb"
+  hide3DTab
+  showCourtyards
+  code={`
+const esp32PinLabels = {
+  pin1: ["GND_1"],
+  pin2: ["3V3"],
+  pin3: ["EN"],
+  pin10: ["GPIO25"],
+  pin24: ["GPIO2"],
+  pin25: ["BOOT_IO0"],
+  pin29: ["GPIO5"],
+  pin34: ["RX0"],
+  pin35: ["TX0"],
+  pin36: ["GPIO22"],
+  pin37: ["GPIO23"],
+  pin38: ["GND_3"],
+} as const
+
+const Esp32WroomDemo = (props: {
+name: string
+pcbX?: number
+pcbY?: number
+schX?: number
+schY?: number
+}) => (
+
+<chip
+  {...props}
+  pinLabels={esp32PinLabels}
+  schPortArrangement={{
+    leftSide: {
+      pins: ["3V3", "EN", "BOOT_IO0", "RX0", "TX0", "GND_1"],
+      direction: "top-to-bottom",
+    },
+    rightSide: {
+      pins: ["GPIO2", "GPIO5", "GPIO22", "GPIO23", "GPIO25", "GND_3"],
+      direction: "top-to-bottom",
+    },
+  }}
+  footprint={
+    <footprint>
+      <silkscreenrect pcbX={0} pcbY={0} width="18mm" height="25mm" />
+      <silkscreentext
+        text="ESP32-WROOM"
+        pcbX={0}
+        pcbY={0}
+        fontSize="1.1mm"
+        anchorAlignment="center"
+      />
+      <smtpad
+        portHints={["pin1"]}
+        pcbX="-9.4mm"
+        pcbY="7.5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin2"]}
+        pcbX="-9.4mm"
+        pcbY="5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin3"]}
+        pcbX="-9.4mm"
+        pcbY="2.5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin10"]}
+        pcbX="-9.4mm"
+        pcbY="0mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin24"]}
+        pcbX="-9.4mm"
+        pcbY="-2.5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin25"]}
+        pcbX="-9.4mm"
+        pcbY="-5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin29"]}
+        pcbX="9.4mm"
+        pcbY="-5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin34"]}
+        pcbX="9.4mm"
+        pcbY="-2.5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin35"]}
+        pcbX="9.4mm"
+        pcbY="0mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin36"]}
+        pcbX="9.4mm"
+        pcbY="2.5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin37"]}
+        pcbX="9.4mm"
+        pcbY="5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+      <smtpad
+        portHints={["pin38"]}
+        pcbX="9.4mm"
+        pcbY="7.5mm"
+        width="1.5mm"
+        height="0.9mm"
+        shape="rect"
+      />
+    </footprint>
+  }
+/>
+)
+
+export default () => (
+  <board width="44mm" height="54mm" autorouter="sequential-trace">
+    <Esp32WroomDemo name="U1" pcbX={0} pcbY={8} schX={0} schY={0} />
+
+    <pcbnoterect
+      pcbX={0}
+      pcbY={22}
+      width="22mm"
+      height="8mm"
+      color="#d97706"
+      strokeWidth={0.2}
+      isStrokeDashed
+    />
+    <pcbnotetext
+      pcbX={0}
+      pcbY={22}
+      text="ANTENNA KEEPOUT"
+      fontSize={0.9}
+      color="#d97706"
+      anchorAlignment="center"
+    />
+
+    <pinheader
+      name="J1"
+      pinCount={6}
+      pinLabels={{
+        pin1: "GND",
+        pin2: "3V3",
+        pin3: "TXD",
+        pin4: "RXD",
+        pin5: "EN",
+        pin6: "BOOT",
+      }}
+      pcbX={0}
+      pcbY={-20}
+      schX={-7}
+      schY={-6}
+    />
+
+    <resistor name="R_EN" resistance="10k" footprint="0402" pcbX={-13} pcbY={8} schX={-5} schY={4} />
+    <pushbutton name="SW_RESET" footprint="pushbutton" pcbX={-17} pcbY={2} schX={-5} schY={1} />
+    <resistor name="R_BOOT" resistance="10k" footprint="0402" pcbX={-13} pcbY={-2} schX={-5} schY={-2} />
+    <pushbutton name="SW_BOOT" footprint="pushbutton" pcbX={-17} pcbY={-8} schX={-5} schY={-5} />
+
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={-13} pcbY={14} schX={4} schY={3} />
+    <capacitor name="C2" capacitance="10uF" footprint="0603" pcbX={-16} pcbY={14} schX={4} schY={0} />
+
+    <resistor name="R_LED" resistance="1k" footprint="0402" pcbX={12} pcbY={-8} schX={5} schY={-3} />
+    <led name="D1" color="blue" footprint="0603" pcbX={16} pcbY={-8} schX={8} schY={-3} />
+
+    <trace from=".J1 > .pin1" to="net.GND" />
+    <trace from=".J1 > .pin2" to="net.V3_3" />
+    <trace from=".J1 > .pin3" to=".U1 > .RX0" />
+    <trace from=".J1 > .pin4" to=".U1 > .TX0" />
+    <trace from=".J1 > .pin5" to=".U1 > .EN" />
+    <trace from=".J1 > .pin6" to=".U1 > .BOOT_IO0" />
+
+    <trace from=".U1 > .3V3" to="net.V3_3" />
+    <trace from=".U1 > .GND_1" to="net.GND" />
+    <trace from=".U1 > .GND_3" to="net.GND" />
+    <trace from=".C1 > .pos" to="net.V3_3" />
+    <trace from=".C1 > .neg" to="net.GND" />
+    <trace from=".C2 > .pos" to="net.V3_3" />
+    <trace from=".C2 > .neg" to="net.GND" />
+
+    <trace from=".R_EN > .pos" to="net.V3_3" />
+    <trace from=".R_EN > .neg" to=".U1 > .EN" />
+    <trace from=".SW_RESET > .pin1" to=".U1 > .EN" />
+    <trace from=".SW_RESET > .pin2" to="net.GND" />
+
+    <trace from=".R_BOOT > .pos" to="net.V3_3" />
+    <trace from=".R_BOOT > .neg" to=".U1 > .BOOT_IO0" />
+    <trace from=".SW_BOOT > .pin1" to=".U1 > .BOOT_IO0" />
+    <trace from=".SW_BOOT > .pin2" to="net.GND" />
+
+    <trace from=".U1 > .GPIO2" to=".R_LED > .pos" />
+    <trace from=".R_LED > .neg" to=".D1 > .pos" />
+    <trace from=".D1 > .neg" to="net.GND" />
+
+    <copperpour connectsTo="net.GND" layer="top" clearance="0.25mm" />
+    <copperpour connectsTo="net.GND" layer="bottom" clearance="0.25mm" />
+
+  </board>
+)
+`}
+/>
+
+## Placement Strategy
+
+Place the ESP32 module before the small parts. The antenna end should sit at the
+edge of the PCB, with no copper, traces, headers, or mounting hardware under the
+keepout rectangle. In the example, the dashed rectangle marks the space to keep
+clear above the module.
+
+After the module is locked in, place parts by electrical priority:
+
+| Part                | Placement rule                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| `C1`, `C2`          | Put decoupling capacitors next to the 3.3 V and ground pads.                             |
+| `R_EN`, `SW_RESET`  | Keep the reset pullup and button near `EN`.                                              |
+| `R_BOOT`, `SW_BOOT` | Keep the boot pullup and button near `BOOT_IO0`.                                         |
+| `J1`                | Put the programming header where a cable can reach it without crossing the antenna side. |
+| `D1`, `R_LED`       | Move optional indicators away from RF and boot/reset routing.                            |
+
+## Routing Order
+
+Route the board in this order:
+
+1. Connect the local 3.3 V decoupling loop from `U1` to `C1` and `C2`.
+2. Connect `EN` and `BOOT_IO0` to their pullups and buttons.
+3. Route UART `TXD` and `RXD` from the header to the module.
+4. Route optional GPIO signals such as the indicator LED.
+5. Add the top and bottom ground pours after traces and placement are stable.
+
+This keeps the short, sensitive power and strap nets from being pushed around by
+less important routing. It also makes the remaining signals easier to inspect in
+the PCB viewer.
+
+## Adapting the Example
+
+For a production design, replace the simplified `Esp32WroomDemo` footprint with
+a verified footprint for the exact module variant. Keep the same layout
+principles:
+
+- preserve the antenna keepout from the module datasheet
+- use one 100 nF capacitor per nearby power pin and add a local bulk capacitor
+- keep reset and boot straps short and readable
+- avoid routing high-speed or noisy traces under the antenna
+- review the routed board in both PCB and schematic views before exporting
+  fabrication files
