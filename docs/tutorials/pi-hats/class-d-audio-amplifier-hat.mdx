@@ -1,0 +1,377 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: >-
+  Design a Raspberry Pi HAT that powers a PAM8403-style stereo Class D amplifier,
+  adds volume control, and exposes screw-terminal speaker outputs.
+---
+
+## Overview
+
+This tutorial walks through a compact Raspberry Pi HAT for a PAM8403-style
+Class D audio amplifier. The HAT takes 5V power from the Raspberry Pi header,
+accepts stereo line-level audio from a DAC or external audio header, adds a
+front-panel volume control, and drives left/right speaker terminal blocks.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["LIN"],
+        pin2: ["RIN"],
+        pin3: ["GND"],
+        pin4: ["VDD"],
+        pin5: ["SHDN"],
+        pin6: ["LOUTP"],
+        pin7: ["LOUTN"],
+        pin8: ["ROUTP"],
+        pin9: ["ROUTN"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LIN", "RIN", "SHDN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["LOUTP", "LOUTN", "ROUTP", "ROUTN"], direction: "top-to-bottom" },
+        topSide: { pins: ["VDD"], direction: "left-to-right" },
+        bottomSide: { pins: ["GND"], direction: "left-to-right" },
+      }}
+      pcbX={2}
+      pcbY={-8}
+    />
+
+    <connector
+      name="J_AUDIO"
+      footprint="pinrow3"
+      pinLabels={{ pin1: ["L_IN"], pin2: ["R_IN"], pin3: ["AGND"] }}
+      pcbX={-20}
+      pcbY={5}
+    />
+
+    <chip
+      name="RV1"
+      footprint="pinrow6"
+      manufacturerPartNumber="Dual 10k audio taper potentiometer"
+      pinLabels={{
+        pin1: ["L_IN"],
+        pin2: ["L_WIPER"],
+        pin3: ["L_GND"],
+        pin4: ["R_IN"],
+        pin5: ["R_WIPER"],
+        pin6: ["R_GND"],
+      }}
+      pcbX={-8}
+      pcbY={8}
+    />
+
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={-15} pcbY={1} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-15} pcbY={-3} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={8} pcbY={-3} />
+    <capacitor name="C4" capacitance="470uF" footprint="radial" polarized pcbX={14} pcbY={-3} />
+
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={4} pcbY={3} />
+
+    <connector
+      name="J_LEFT_SPK"
+      footprint="pinrow2"
+      pinLabels={{ pin1: ["L+"], pin2: ["L-"] }}
+      pcbX={20}
+      pcbY={4}
+    />
+    <connector
+      name="J_RIGHT_SPK"
+      footprint="pinrow2"
+      pinLabels={{ pin1: ["R+"], pin2: ["R-"] }}
+      pcbX={20}
+      pcbY={-8}
+    />
+
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .V5_1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 .SHDN" />
+
+    <trace from=".J_AUDIO .L_IN" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".RV1 .L_IN" />
+    <trace from=".RV1 .L_WIPER" to=".U1 .LIN" />
+    <trace from=".RV1 .L_GND" to=".HAT1_chip .GND_2" />
+
+    <trace from=".J_AUDIO .R_IN" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".RV1 .R_IN" />
+    <trace from=".RV1 .R_WIPER" to=".U1 .RIN" />
+    <trace from=".RV1 .R_GND" to=".HAT1_chip .GND_3" />
+    <trace from=".J_AUDIO .AGND" to=".HAT1_chip .GND_4" />
+
+    <trace from=".C3 > .pin1" to=".U1 .VDD" />
+    <trace from=".C3 > .pin2" to=".U1 .GND" />
+    <trace from=".C4 > .pin1" to=".U1 .VDD" />
+    <trace from=".C4 > .pin2" to=".U1 .GND" />
+
+    <trace from=".U1 .LOUTP" to=".J_LEFT_SPK .L+" />
+    <trace from=".U1 .LOUTN" to=".J_LEFT_SPK .L-" />
+    <trace from=".U1 .ROUTP" to=".J_RIGHT_SPK .R+" />
+    <trace from=".U1 .ROUTN" to=".J_RIGHT_SPK .R-" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What you will build
+
+The finished board includes:
+
+- A PAM8403-compatible Class D stereo amplifier for about 3W per channel into
+  suitable small speakers
+- A dual-gang 10k audio-taper potentiometer for left/right volume control
+- A three-pin stereo line input header (`L`, `R`, `GND`)
+- Left and right two-pin speaker terminals
+- Local 100nF and bulk 470uF supply capacitors near the amplifier
+- A shutdown pull-up so the amplifier starts when the HAT is powered
+
+The Raspberry Pi 40-pin header is used for **5V and ground**. Raspberry Pi GPIO
+pins do not provide line-level analog audio, so feed this HAT from a DAC, USB
+audio adapter, HDMI audio extractor, or another line-level source.
+
+## Component choices
+
+| Reference | Part | Purpose |
+| --------- | ---- | ------- |
+| U1 | PAM8403-style Class D amplifier | Efficient stereo speaker drive from 5V |
+| RV1 | Dual 10k audio-taper potentiometer | Tracks left/right volume together |
+| J_AUDIO | 3-pin audio input header | Line-level left, right, and ground input |
+| J_LEFT_SPK, J_RIGHT_SPK | 2-pin terminal blocks | Speaker outputs |
+| C1, C2 | 1uF coupling capacitors | Block DC from the upstream audio source |
+| C3 | 100nF ceramic capacitor | High-frequency supply decoupling |
+| C4 | 470uF electrolytic capacitor | Handles speaker-current transients |
+| R1 | 10k resistor | Pulls shutdown high to enable the amplifier |
+
+## How Class D amplification works
+
+A Class D amplifier rapidly switches its output devices instead of operating
+linearly like a Class AB amplifier. The speaker sees a filtered version of this
+switching waveform, so the amplifier wastes less power as heat. That efficiency
+is why a small 5V HAT can drive useful speaker volume without a large heatsink.
+
+For layout, treat the speaker outputs as noisy switching nets. Keep them short,
+route them away from the line-level input traces, and keep the decoupling
+capacitors close to the amplifier power pins.
+
+## Step 1: Add the HAT and amplifier
+
+Start with the Raspberry Pi HAT outline, then place the amplifier near the
+speaker terminals so high-current output traces stay short.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["LIN"],
+        pin2: ["RIN"],
+        pin3: ["GND"],
+        pin4: ["VDD"],
+        pin5: ["SHDN"],
+        pin6: ["LOUTP"],
+        pin7: ["LOUTN"],
+        pin8: ["ROUTP"],
+        pin9: ["ROUTN"],
+      }}
+      pcbX={2}
+      pcbY={-8}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 2: Add line input and volume control
+
+Use a 3-pin header for stereo line input and model the dual-gang potentiometer
+as a six-pin component. Each channel has an input end, a wiper, and a grounded
+end of the resistive track.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <connector
+      name="J_AUDIO"
+      footprint="pinrow3"
+      pinLabels={{ pin1: ["L_IN"], pin2: ["R_IN"], pin3: ["AGND"] }}
+      pcbX={-20}
+      pcbY={5}
+    />
+    <chip
+      name="RV1"
+      footprint="pinrow6"
+      manufacturerPartNumber="Dual 10k audio taper potentiometer"
+      pinLabels={{
+        pin1: ["L_IN"],
+        pin2: ["L_WIPER"],
+        pin3: ["L_GND"],
+        pin4: ["R_IN"],
+        pin5: ["R_WIPER"],
+        pin6: ["R_GND"],
+      }}
+      pcbX={-8}
+      pcbY={8}
+    />
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={-15} pcbY={1} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-15} pcbY={-3} />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 3: Add power filtering and shutdown control
+
+The PAM8403 runs from 5V. Put the 100nF ceramic close to the amplifier power
+pins, then place the bulk electrolytic nearby to supply speaker current peaks.
+A 10k pull-up keeps shutdown deasserted.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{ pin3: ["GND"], pin4: ["VDD"], pin5: ["SHDN"] }}
+      pcbX={2}
+      pcbY={-8}
+    />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={8} pcbY={-3} />
+    <capacitor name="C4" capacitance="470uF" footprint="radial" polarized pcbX={14} pcbY={-3} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={4} pcbY={3} />
+
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .V5_1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 .SHDN" />
+    <trace from=".C3 > .pin1" to=".U1 .VDD" />
+    <trace from=".C3 > .pin2" to=".U1 .GND" />
+    <trace from=".C4 > .pin1" to=".U1 .VDD" />
+    <trace from=".C4 > .pin2" to=".U1 .GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 4: Add speaker terminals and complete the circuit
+
+Class D bridge outputs are differential. Do not tie either speaker terminal to
+ground unless the amplifier datasheet explicitly says it is allowed.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["LIN"],
+        pin2: ["RIN"],
+        pin3: ["GND"],
+        pin4: ["VDD"],
+        pin5: ["SHDN"],
+        pin6: ["LOUTP"],
+        pin7: ["LOUTN"],
+        pin8: ["ROUTP"],
+        pin9: ["ROUTN"],
+      }}
+      pcbX={2}
+      pcbY={-8}
+    />
+    <connector name="J_AUDIO" footprint="pinrow3" pinLabels={{ pin1: ["L_IN"], pin2: ["R_IN"], pin3: ["AGND"] }} pcbX={-20} pcbY={5} />
+    <chip name="RV1" footprint="pinrow6" manufacturerPartNumber="Dual 10k audio taper potentiometer" pinLabels={{ pin1: ["L_IN"], pin2: ["L_WIPER"], pin3: ["L_GND"], pin4: ["R_IN"], pin5: ["R_WIPER"], pin6: ["R_GND"] }} pcbX={-8} pcbY={8} />
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={-15} pcbY={1} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-15} pcbY={-3} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={8} pcbY={-3} />
+    <capacitor name="C4" capacitance="470uF" footprint="radial" polarized pcbX={14} pcbY={-3} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={4} pcbY={3} />
+    <connector name="J_LEFT_SPK" footprint="pinrow2" pinLabels={{ pin1: ["L+"], pin2: ["L-"] }} pcbX={20} pcbY={4} />
+    <connector name="J_RIGHT_SPK" footprint="pinrow2" pinLabels={{ pin1: ["R+"], pin2: ["R-"] }} pcbX={20} pcbY={-8} />
+
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .V5_1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 .SHDN" />
+    <trace from=".J_AUDIO .L_IN" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".RV1 .L_IN" />
+    <trace from=".RV1 .L_WIPER" to=".U1 .LIN" />
+    <trace from=".RV1 .L_GND" to=".HAT1_chip .GND_2" />
+    <trace from=".J_AUDIO .R_IN" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".RV1 .R_IN" />
+    <trace from=".RV1 .R_WIPER" to=".U1 .RIN" />
+    <trace from=".RV1 .R_GND" to=".HAT1_chip .GND_3" />
+    <trace from=".J_AUDIO .AGND" to=".HAT1_chip .GND_4" />
+    <trace from=".C3 > .pin1" to=".U1 .VDD" />
+    <trace from=".C3 > .pin2" to=".U1 .GND" />
+    <trace from=".C4 > .pin1" to=".U1 .VDD" />
+    <trace from=".C4 > .pin2" to=".U1 .GND" />
+    <trace from=".U1 .LOUTP" to=".J_LEFT_SPK .L+" />
+    <trace from=".U1 .LOUTN" to=".J_LEFT_SPK .L-" />
+    <trace from=".U1 .ROUTP" to=".J_RIGHT_SPK .R+" />
+    <trace from=".U1 .ROUTN" to=".J_RIGHT_SPK .R-" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## PCB layout checklist
+
+- Put C3 within a few millimeters of U1 VDD/GND.
+- Keep C4 close to the amplifier and use a short, wide 5V path from the HAT
+  header.
+- Route `LIN` and `RIN` as quiet traces away from `LOUT*` and `ROUT*`.
+- Place speaker terminals at the board edge and label polarity clearly.
+- Leave mechanical clearance around the potentiometer shaft or panel connector.
+- If the speakers are off-board, twist each speaker pair to reduce radiated
+  noise.
+
+## Raspberry Pi audio integration
+
+The HAT receives audio on `J_AUDIO`; it does not synthesize analog audio from
+GPIO. Common options are:
+
+1. Use a USB audio dongle and wire its line output to `J_AUDIO`.
+2. Add an I2S DAC HAT or breakout and feed the DAC line output into `J_AUDIO`.
+3. Use HDMI audio extraction if your product already has HDMI in the enclosure.
+
+On Raspberry Pi OS, verify the selected audio device before connecting speakers:
+
+```bash
+aplay -l
+speaker-test -c 2 -t wav
+```
+
+Start with the volume low. If the output clips, reduce the software mixer level
+or the upstream DAC gain before increasing the HAT volume.
+
+## Bring-up checklist
+
+1. With the HAT unpowered, check for shorts between 5V and ground.
+2. Power the Raspberry Pi without speakers attached and confirm 5V reaches U1.
+3. Confirm `SHDN` is high through R1.
+4. Connect speakers, keep the volume low, then play a stereo test file.
+5. Check both speaker terminals for correct left/right channel mapping.
+6. Let the board play audio for several minutes and confirm U1 and C4 stay cool.
+
+## Next steps
+
+- Add an I2S DAC section so the HAT accepts digital audio directly.
+- Add an amplifier mute GPIO by driving `SHDN` from the Raspberry Pi through a
+  small transistor or level-safe buffer.
+- Add ferrite beads or an LC filter if your speaker cables are long.
+- Add mounting holes and a panel footprint for the volume knob.
