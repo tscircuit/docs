@@ -1,0 +1,322 @@
+---
+title: Building an I2C Environmental Sensor Module
+description: >-
+  Build a BME280 temperature, humidity, and pressure sensor module with I2C
+  pull-ups, an external header, and an optional OLED display header.
+---
+
+## Overview
+
+This tutorial builds a small I2C environmental sensor module around a BME280.
+The board exposes temperature, humidity, and barometric pressure over a 4-pin
+I2C header, includes the required pull-up resistors, and leaves a second header
+for an optional SSD1306-style OLED display on the same bus.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="35mm" height="25mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="BME280"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "CSB", "SDO"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <connector
+      name="J1"
+      footprint="pinrow4"
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }}
+      pcbX={-12}
+      pcbY={0}
+    />
+
+    <connector
+      name="J_OLED"
+      footprint="pinrow4"
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }}
+      pcbX={12}
+      pcbY={8}
+    />
+
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-2} pcbY={8} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={3} pcbY={8} />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={-7} pcbY={-7} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-2} pcbY={-7} />
+
+    <trace from=".J1 .VCC" to=".U1 .VDD" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+
+    <trace from=".R1 > .pin1" to=".J1 .VCC" />
+    <trace from=".R1 > .pin2" to=".J1 .SCL" />
+    <trace from=".R2 > .pin1" to=".J1 .VCC" />
+    <trace from=".R2 > .pin2" to=".J1 .SDA" />
+
+    <trace from=".C1 > .pin1" to=".U1 .VDD" />
+    <trace from=".C1 > .pin2" to=".U1 .GND" />
+    <trace from=".C2 > .pin1" to=".U1 .VDD" />
+    <trace from=".C2 > .pin2" to=".U1 .GND" />
+
+    <trace from=".U1 .CSB" to=".J1 .VCC" />
+    <trace from=".U1 .SDO" to=".J1 .GND" />
+
+    <trace from=".J_OLED .VCC" to=".J1 .VCC" />
+    <trace from=".J_OLED .GND" to=".J1 .GND" />
+    <trace from=".J_OLED .SCL" to=".J1 .SCL" />
+    <trace from=".J_OLED .SDA" to=".J1 .SDA" />
+  </board>
+)
+`} />
+
+## What you will build
+
+The module includes:
+
+- BME280 environmental sensor for temperature, humidity, and pressure
+- 4.7k pull-up resistors on `SCL` and `SDA`
+- 100nF and 1uF local supply capacitors near the sensor
+- A 4-pin host header for `VCC`, `GND`, `SCL`, and `SDA`
+- An optional OLED header that shares the same I2C bus
+- Fixed BME280 I2C configuration with `CSB` tied high and `SDO` tied low
+
+The example ties `SDO` low, which selects the common `0x76` BME280 address. Tie
+`SDO` high instead if your software expects `0x77`.
+
+## Bill of materials
+
+| Reference | Part | Notes |
+| --------- | ---- | ----- |
+| U1 | BME280 | Use the exact manufacturer footprint for production |
+| R1, R2 | 4.7k resistors | I2C pull-ups to the module supply rail |
+| C1 | 100nF capacitor | Place close to BME280 VDD/GND |
+| C2 | 1uF capacitor | Extra local supply smoothing |
+| J1 | 4-pin header | Host connection for power and I2C |
+| J_OLED | 4-pin header | Optional SSD1306-style I2C OLED display |
+
+## Step 1: Place the BME280
+
+Start with the sensor in the middle of the board. Keep it away from regulators,
+processors, and other heat sources so temperature readings are not biased.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="35mm" height="25mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="BME280"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+  </board>
+)
+`} />
+
+## Step 2: Add the external I2C header
+
+The host header should match the target system voltage. Most BME280 boards are
+used at 3.3V; only use 5V if your exact sensor module includes level shifting or
+a regulator that supports it.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="35mm" height="25mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="BME280"
+      pinLabels={{ pin1: ["VDD"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <connector
+      name="J1"
+      footprint="pinrow4"
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }}
+      pcbX={-12}
+      pcbY={0}
+    />
+    <trace from=".J1 .VCC" to=".U1 .VDD" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+  </board>
+)
+`} />
+
+## Step 3: Add I2C pull-ups and decoupling
+
+I2C requires pull-ups because devices pull the bus low and release it high. Use
+4.7k as a typical starting value for short cables at 100kHz or 400kHz.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="35mm" height="25mm">
+    <chip name="U1" footprint="soic8" manufacturerPartNumber="BME280" pinLabels={{ pin1: ["VDD"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }} pcbX={0} pcbY={0} />
+    <connector name="J1" footprint="pinrow4" pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }} pcbX={-12} pcbY={0} />
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-2} pcbY={8} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={3} pcbY={8} />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={-7} pcbY={-7} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-2} pcbY={-7} />
+
+    <trace from=".J1 .VCC" to=".U1 .VDD" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+    <trace from=".R1 > .pin1" to=".J1 .VCC" />
+    <trace from=".R1 > .pin2" to=".J1 .SCL" />
+    <trace from=".R2 > .pin1" to=".J1 .VCC" />
+    <trace from=".R2 > .pin2" to=".J1 .SDA" />
+    <trace from=".C1 > .pin1" to=".U1 .VDD" />
+    <trace from=".C1 > .pin2" to=".U1 .GND" />
+    <trace from=".C2 > .pin1" to=".U1 .VDD" />
+    <trace from=".C2 > .pin2" to=".U1 .GND" />
+  </board>
+)
+`} />
+
+## Step 4: Add the optional OLED header
+
+Many small OLED modules use the same four pins as the sensor. Put the OLED
+header on the edge of the board and route it as a bus stub.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="35mm" height="25mm">
+    <connector
+      name="J1"
+      footprint="pinrow4"
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }}
+      pcbX={-12}
+      pcbY={0}
+    />
+    <connector
+      name="J_OLED"
+      footprint="pinrow4"
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }}
+      pcbX={12}
+      pcbY={8}
+    />
+    <trace from=".J_OLED .VCC" to=".J1 .VCC" />
+    <trace from=".J_OLED .GND" to=".J1 .GND" />
+    <trace from=".J_OLED .SCL" to=".J1 .SCL" />
+    <trace from=".J_OLED .SDA" to=".J1 .SDA" />
+  </board>
+)
+`} />
+
+## PCB layout guidance
+
+- Place C1 next to U1 power pins before routing other signals.
+- Route `SCL` and `SDA` as a short pair and keep them away from noisy power
+  switching nodes.
+- Keep the BME280 exposed to ambient air; do not bury it under a display or a
+  hot regulator.
+- Put the external header near the board edge and label pin 1 clearly.
+- If using a cable longer than a few centimeters, lower the I2C clock or use
+  stronger pull-ups after checking the host current limits.
+- Leave copper clearance around the sensor opening if the enclosure needs fast
+  humidity response.
+
+## Arduino example
+
+Install the Adafruit BME280 and Unified Sensor libraries, then scan the common
+`0x76` address:
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found");
+    while (true) delay(1000);
+  }
+}
+
+void loop() {
+  Serial.print("Temperature: ");
+  Serial.print(bme.readTemperature());
+  Serial.println(" C");
+
+  Serial.print("Humidity: ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
+
+  Serial.print("Pressure: ");
+  Serial.print(bme.readPressure() / 100.0F);
+  Serial.println(" hPa");
+
+  delay(1000);
+}
+```
+
+## Raspberry Pi Python example
+
+Enable I2C with `raspi-config`, install an SMBus helper, and read the BME280
+from address `0x76`:
+
+```bash
+sudo raspi-config
+sudo apt install python3-smbus i2c-tools
+i2cdetect -y 1
+```
+
+```python
+from smbus2 import SMBus
+
+BME280_ADDR = 0x76
+
+with SMBus(1) as bus:
+    chip_id = bus.read_byte_data(BME280_ADDR, 0xD0)
+    print(f"BME280 chip id: 0x{chip_id:02x}")
+```
+
+For production code, use a BME280 library that applies the factory calibration
+coefficients before reporting compensated temperature, humidity, and pressure.
+
+## Bring-up checklist
+
+1. Check continuity from `J1` to U1 for `VCC`, `GND`, `SCL`, and `SDA`.
+2. Confirm `CSB` is tied high so the BME280 is in I2C mode.
+3. Confirm `SDO` selects the expected address (`0x76` low, `0x77` high).
+4. Power the board at the intended logic voltage and run an I2C scan.
+5. Read the BME280 chip ID before trusting environmental readings.
+6. Plug in the optional OLED only after the sensor works by itself.
+
+## Next steps
+
+- Add an address-selection solder jumper for `SDO`.
+- Add mounting holes and enclosure vents for faster air exchange.
+- Add a Qwiic/STEMMA QT connector for cable-compatible I2C wiring.
+- Add an interrupt-capable environmental threshold output for host wake-up.
