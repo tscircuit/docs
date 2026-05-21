@@ -1,0 +1,293 @@
+---
+title: Building an I2C Environmental Sensor Module HAT
+description: Build a Raspberry Pi HAT with a BME280 temperature, humidity, and pressure sensor, I2C pull-ups, optional OLED display, and an external I2C header.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial walks through a compact Raspberry Pi HAT for environmental sensing. The board uses a BME280 sensor for temperature, humidity, and barometric pressure, adds the I2C pull-up resistors the bus needs, exposes the same bus on a four-pin header, and leaves room for an optional SSD1306 OLED display.
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="BME280"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["SCK", "SCL"],
+        pin2: ["SDI", "SDA"],
+        pin3: "SDO",
+        pin4: "CSB",
+        pin5: "VDDIO",
+        pin6: "GND",
+        pin7: "VDD",
+        pin8: "NC",
+      }}
+      pcbX={-8}
+      pcbY={0}
+    />
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={4} pcbY={7} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={4} pcbY={4} />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={-14} pcbY={-7} />
+    <capacitor name="C2" capacitance="1uF" footprint="0402" pcbX={-9} pcbY={-7} />
+    <pinheader
+      name="J1"
+      pinCount={4}
+      pinLabels={["3V3", "GND", "SDA", "SCL"]}
+      schFacingDirection="right"
+      pcbX={16}
+      pcbY={0}
+    />
+    <chip
+      name="OLED1"
+      manufacturerPartNumber="SSD1306 OLED header"
+      footprint="pinrow4"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VCC",
+        pin3: "SCL",
+        pin4: "SDA",
+      }}
+      pcbX={0}
+      pcbY={-15}
+    />
+
+    <trace from=".HAT1_chip .V3_3" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .V3_3" to=".U1 .VDDIO" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .GPIO_2" to=".U1 .SDA" />
+    <trace from=".HAT1_chip .GPIO_3" to=".U1 .SCL" />
+    <trace from=".R1 > .pin1" to=".HAT1_chip .V3_3" />
+    <trace from=".R1 > .pin2" to=".U1 .SDA" />
+    <trace from=".R2 > .pin1" to=".HAT1_chip .V3_3" />
+    <trace from=".R2 > .pin2" to=".U1 .SCL" />
+    <trace from=".C1 > .pin1" to=".U1 .VDD" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".C2 > .pin1" to=".U1 .VDD" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".J1 .3V3" to=".HAT1_chip .V3_3" />
+    <trace from=".J1 .GND" to=".HAT1_chip .GND_1" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".OLED1 .VCC" to=".HAT1_chip .V3_3" />
+    <trace from=".OLED1 .GND" to=".HAT1_chip .GND_1" />
+    <trace from=".OLED1 .SDA" to=".U1 .SDA" />
+    <trace from=".OLED1 .SCL" to=".U1 .SCL" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What You Are Building
+
+The HAT has four useful sections:
+
+- BME280 sensor for temperature, humidity, and pressure
+- 4.7 kOhm pull-up resistors on SDA and SCL
+- 100 nF and 1 uF bypass capacitors near the sensor power pins
+- Shared I2C expansion header for an external cable or optional OLED display
+
+The Raspberry Pi already exposes I2C on GPIO2 and GPIO3. This board simply makes that bus reliable and easier to attach to a small sensor module.
+
+## Bill of Materials
+
+| Reference | Part | Value or package | Notes |
+| --- | --- | --- | --- |
+| U1 | BME280 | 8-pin sensor module or bare IC breakout | Measures temperature, humidity, and pressure |
+| R1, R2 | Resistors | 4.7 kOhm, 0402 or 0603 | I2C pull-ups to 3.3 V |
+| C1 | Capacitor | 100 nF | Local high-frequency decoupling |
+| C2 | Capacitor | 1 uF | Local bulk decoupling |
+| J1 | Pin header | 1x4, 2.54 mm | 3V3, GND, SDA, SCL expansion |
+| OLED1 | Optional OLED header | 1x4, 2.54 mm | For SSD1306-style I2C OLED modules |
+
+## Step 1: Start With the HAT Board
+
+Use `RaspberryPiHatBoard` so the outline and 40-pin header match the Raspberry Pi HAT shape.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Sensor circuit goes here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+## Step 2: Add the BME280
+
+The BME280 can operate over I2C or SPI. For this HAT we use I2C mode, so the important pins are `SDA`, `SCL`, `VDD`, `VDDIO`, and `GND`.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="BME280"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["SCK", "SCL"],
+        pin2: ["SDI", "SDA"],
+        pin3: "SDO",
+        pin4: "CSB",
+        pin5: "VDDIO",
+        pin6: "GND",
+        pin7: "VDD",
+        pin8: "NC",
+      }}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 3: Connect Power and I2C
+
+Connect the sensor to the Raspberry Pi 3.3 V rail and use GPIO2/GPIO3 for I2C. The Pi names those pins SDA1 and SCL1 in many pinout diagrams.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="BME280"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["SCK", "SCL"],
+        pin2: ["SDI", "SDA"],
+        pin5: "VDDIO",
+        pin6: "GND",
+        pin7: "VDD",
+      }}
+    />
+    <trace from=".HAT1_chip .V3_3" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .V3_3" to=".U1 .VDDIO" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .GPIO_2" to=".U1 .SDA" />
+    <trace from=".HAT1_chip .GPIO_3" to=".U1 .SCL" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 4: Add Pull-Ups and Decoupling
+
+I2C is an open-drain bus, so SDA and SCL need pull-up resistors. 4.7 kOhm is a good starting value for a short HAT trace. Place the bypass capacitors close to the BME280 power pins.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="BME280"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["SCK", "SCL"],
+        pin2: ["SDI", "SDA"],
+        pin5: "VDDIO",
+        pin6: "GND",
+        pin7: "VDD",
+      }}
+    />
+    <resistor name="R1" resistance="4.7k" footprint="0402" />
+    <resistor name="R2" resistance="4.7k" footprint="0402" />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" />
+    <capacitor name="C2" capacitance="1uF" footprint="0402" />
+    <trace from=".R1 > .pin1" to=".HAT1_chip .V3_3" />
+    <trace from=".R1 > .pin2" to=".U1 .SDA" />
+    <trace from=".R2 > .pin1" to=".HAT1_chip .V3_3" />
+    <trace from=".R2 > .pin2" to=".U1 .SCL" />
+    <trace from=".C1 > .pin1" to=".U1 .VDD" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".C2 > .pin1" to=".U1 .VDD" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 5: Add the Expansion Header and OLED Option
+
+The same I2C bus can leave the HAT through a small header. Keep the order friendly for jumper wires: power, ground, data, clock. The optional OLED header uses the same four nets.
+
+```tsx
+<pinheader
+  name="J1"
+  pinCount={4}
+  pinLabels={["3V3", "GND", "SDA", "SCL"]}
+  schFacingDirection="right"
+/>
+<chip
+  name="OLED1"
+  manufacturerPartNumber="SSD1306 OLED header"
+  footprint="pinrow4"
+  pinLabels={{
+    pin1: "GND",
+    pin2: "VCC",
+    pin3: "SCL",
+    pin4: "SDA",
+  }}
+/>
+```
+
+## PCB Layout Notes
+
+- Place the BME280 near a board edge and away from hot parts such as regulators.
+- Put C1 and C2 close to the BME280 power pins.
+- Keep SDA and SCL short and route them as a pair where practical.
+- Avoid copper pours directly under the sensing port if your BME280 package exposes one.
+- Put the optional OLED header on an edge so a display can sit above or beside the HAT.
+
+## Raspberry Pi Test Code
+
+Enable I2C with `raspi-config`, then install the Python libraries:
+
+```bash
+python3 -m pip install adafruit-circuitpython-bme280
+```
+
+Create `read_bme280.py`:
+
+```python
+import board
+import busio
+from adafruit_bme280 import basic as adafruit_bme280
+
+i2c = busio.I2C(board.SCL, board.SDA)
+bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
+
+print(f"Temperature: {bme280.temperature:.1f} C")
+print(f"Humidity: {bme280.relative_humidity:.1f} %")
+print(f"Pressure: {bme280.pressure:.1f} hPa")
+```
+
+Run it:
+
+```bash
+python3 read_bme280.py
+```
+
+If the script cannot find the sensor, run `i2cdetect -y 1`. Most BME280 boards appear at `0x76` or `0x77`.
+
+## Bring-Up Checklist
+
+- Confirm 3.3 V is present on the sensor before inserting the BME280.
+- Confirm SDA and SCL each measure high when idle.
+- Run `i2cdetect -y 1` and check for `0x76` or `0x77`.
+- Read temperature, humidity, and pressure for at least one minute.
+- Plug in the optional OLED only after the BME280 works by itself.
+
+## Common Fixes
+
+- No I2C address: check the HAT orientation and confirm I2C is enabled.
+- Address is `0x77` instead of `0x76`: update the Python `address` parameter.
+- Readings drift upward: move the sensor farther from heat sources or board regulators.
+- OLED works but BME280 disappears: lower the pull-ups to 3.3 kOhm or shorten the I2C cable.
