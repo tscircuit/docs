@@ -4,6 +4,27 @@ sidebar_position: 2
 description: Explore the key tscircuit repositories including core libraries, tools, and web components that power the ecosystem.
 ---
 
+## Choosing a Repository to Contribute To
+
+Use the project area to decide where an issue or pull request belongs.
+
+| If you want to improve... | Start in this repository |
+| ------------------------- | ------------------------ |
+| React circuit primitives, rendering behavior, or generated Circuit JSON | [tscircuit/core](https://github.com/tscircuit/core) |
+| Component prop definitions and TypeScript types | [tscircuit/props](https://github.com/tscircuit/props) |
+| Footprint string parsing or generated pad geometry | [tscircuit/footprinter](https://github.com/tscircuit/footprinter) |
+| Local project commands, package commands, or build/export flows | [tscircuit/cli](https://github.com/tscircuit/cli) |
+| Browser editor workflows and project pages | [tscircuit/tscircuit.com](https://github.com/tscircuit/tscircuit.com) |
+| Embedded previews used by docs and external sites | [tscircuit/runframe](https://github.com/tscircuit/runframe) |
+| PCB rendering and interaction | [tscircuit/pcb-viewer](https://github.com/tscircuit/pcb-viewer) |
+| 3D rendering and board previews | [tscircuit/3d-viewer](https://github.com/tscircuit/3d-viewer) |
+| KiCad, EasyEDA, or JLCPCB import/export behavior | [tscircuit/kicad-component-converter](https://github.com/tscircuit/kicad-component-converter), [tscircuit/easyeda-converter](https://github.com/tscircuit/easyeda-converter), or [tscircuit/jlcsearch](https://github.com/tscircuit/jlcsearch) |
+| Documentation, tutorials, and contributor guides | [tscircuit/docs](https://github.com/tscircuit/docs) |
+
+When in doubt, open the issue in the repository closest to the user-facing bug
+and link to related lower-level repositories in the description. Maintainers can
+move or cross-link the issue if the fix belongs elsewhere.
+
 | Repo                                                                          | Description                                                                                    | Open Issues                                                                                                                                 |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | [tscircuit/core](https://github.com/tscircuit/core)                           | Core library that powers tscircuit, handles conversion of React components into circuit boards | [![GitHub issues](https://img.shields.io/github/issues/tscircuit/core)](https://github.com/tscircuit/core/issues)                           |
