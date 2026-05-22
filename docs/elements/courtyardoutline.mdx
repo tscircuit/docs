@@ -75,3 +75,74 @@ export default () => (
 )
 `}
 />
+
+## Anchor Alignment Examples
+
+Use `anchorAlignment` with `pcbX` and `pcbY` when the same courtyard shape needs
+to be positioned from a specific corner or edge. This is useful for footprints
+that are laid out from a known mechanical datum instead of from the geometric
+center.
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => {
+  const outline = [
+    { x: -3, y: -2 },
+    { x: 3, y: -2 },
+    { x: 4, y: 1 },
+    { x: 0, y: 3 },
+    { x: -4, y: 1 },
+  ]
+
+  return (
+    <board width="36mm" height="28mm">
+      <chip
+        name="CENTER"
+        pcbX={-9}
+        footprint={
+          <footprint>
+            <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.8} holeDiameter={0.9} />
+            <courtyardoutline outline={outline} anchorAlignment="center" />
+          </footprint>
+        }
+      />
+      <chip
+        name="TOP_LEFT"
+        pcbX={9}
+        footprint={
+          <footprint>
+            <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.8} holeDiameter={0.9} />
+            <courtyardoutline
+              outline={outline}
+              pcbX={0}
+              pcbY={0}
+              anchorAlignment="top_left"
+            />
+          </footprint>
+        }
+      />
+      <chip
+        name="BOTTOM_RIGHT"
+        pcbX={0}
+        pcbY={8}
+        footprint={
+          <footprint>
+            <platedhole shape="circle" pcbX={0} pcbY={0} outerDiameter={1.8} holeDiameter={0.9} />
+            <courtyardoutline
+              outline={outline}
+              pcbX={0}
+              pcbY={0}
+              anchorAlignment="bottom_right"
+            />
+          </footprint>
+        }
+      />
+    </board>
+  )
+}
+`}
+/>
