@@ -4,6 +4,24 @@ sidebar_position: 2
 description: Explore the key tscircuit repositories including core libraries, tools, and web components that power the ecosystem.
 ---
 
+## User-Facing Tools
+
+These are the tools most users interact with directly when creating, previewing,
+or ordering circuits.
+
+| Tool | Repository | What Users Do With It |
+| ---- | ---------- | --------------------- |
+| Online editor | [tscircuit/tscircuit.com](https://github.com/tscircuit/tscircuit.com) | Create and edit circuit projects in the browser |
+| CLI | [tscircuit/cli](https://github.com/tscircuit/cli) | Run local projects, build outputs, install packages, and publish packages |
+| Runframe | [tscircuit/runframe](https://github.com/tscircuit/runframe) | Embed runnable circuit previews in docs, websites, and apps |
+| PCB viewer | [tscircuit/pcb-viewer](https://github.com/tscircuit/pcb-viewer) | Inspect generated PCB layouts interactively |
+| 3D viewer | [tscircuit/3d-viewer](https://github.com/tscircuit/3d-viewer) | Review 3D board previews and component placement |
+| Autorouting.com | [tscircuit/autorouting](https://github.com/tscircuit/autorouting) | Test and improve PCB routing algorithms |
+| Circuit JSON viewer | [tscircuit/circuit-json](https://github.com/tscircuit/circuit-json) | Work with the generated circuit data format used between tools |
+| Package registry | [tscircuit/registry](https://github.com/tscircuit/registry) | Find and publish reusable tscircuit packages |
+
+## Core Repositories
+
 | Repo                                                                          | Description                                                                                    | Open Issues                                                                                                                                 |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | [tscircuit/core](https://github.com/tscircuit/core)                           | Core library that powers tscircuit, handles conversion of React components into circuit boards | [![GitHub issues](https://img.shields.io/github/issues/tscircuit/core)](https://github.com/tscircuit/core/issues)                           |
