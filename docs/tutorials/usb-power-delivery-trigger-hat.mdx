@@ -1,0 +1,185 @@
+---
+title: USB Power Delivery Trigger HAT
+description: Build a Raspberry Pi HAT that negotiates USB Power Delivery voltages and exposes protected terminal block outputs.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial builds a USB Power Delivery trigger HAT. The board accepts USB-C
+input, uses a PD trigger/controller such as a CH224K, FP28XX, or PD2001 to
+request a fixed voltage, then exposes the negotiated output on terminal blocks.
+
+The example focuses on the control and power-path structure rather than a
+vendor-specific reference layout. Always compare the final schematic against the
+datasheet for the exact PD controller and voltage-selection mode you choose.
+
+## Circuit Requirements
+
+The HAT includes:
+
+- USB-C input connector
+- PD trigger/controller for 5V, 9V, 12V, 15V, or 20V negotiation
+- configuration pins for selecting the requested voltage
+- terminal block outputs for the negotiated rail and ground
+- status LED for power-good indication
+- input and output filtering capacitors
+
+## Final Circuit Preview
+
+<TscircuitIframe defaultView="3d" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      pcbX={-18}
+      pcbY={0}
+      schX={-6}
+    />
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="sop10"
+      pinLabels={{
+        pin1: ["VIN"],
+        pin2: ["GND"],
+        pin3: ["CC1"],
+        pin4: ["CC2"],
+        pin5: ["VOUT"],
+        pin6: ["PG"],
+        pin7: ["CFG1"],
+        pin8: ["CFG2"],
+        pin9: ["CFG3"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VIN", "GND", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["VOUT", "PG", "CFG1", "CFG2", "CFG3"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+    />
+    <chip
+      name="J2"
+      manufacturerPartNumber="2-pin terminal block"
+      footprint="pinrow2"
+      pinLabels={{ pin1: ["VOUT"], pin2: ["GND"] }}
+      pcbX={18}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-8} pcbY={7} />
+    <capacitor name="C2" capacitance="22uF" footprint="0805" pcbX={10} pcbY={7} />
+    <resistor name="R1" resistance="1k" footprint="0603" pcbX={8} pcbY={-7} />
+    <led name="D1" color="green" footprint="0603" pcbX={14} pcbY={-7} />
+    <resistor name="R2" resistance="10k" footprint="0603" pcbX={-5} pcbY={-8} />
+    <resistor name="R3" resistance="10k" footprint="0603" pcbX={0} pcbY={-8} />
+    <resistor name="R4" resistance="10k" footprint="0603" pcbX={5} pcbY={-8} />
+
+    <trace from=".J1 .VBUS1" to=".U1 .VIN" />
+    <trace from=".J1 .GND1" to=".U1 .GND" />
+    <trace from=".U1 .VOUT" to=".J2 .VOUT" />
+    <trace from=".U1 .GND" to=".J2 .GND" />
+    <trace from=".C1 .pin1" to=".U1 .VIN" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".C2 .pin1" to=".U1 .VOUT" />
+    <trace from=".C2 .pin2" to=".U1 .GND" />
+    <trace from=".U1 .PG" to=".R1 .pin1" />
+    <trace from=".R1 .pin2" to=".D1 .pos" />
+    <trace from=".D1 .neg" to=".U1 .GND" />
+    <trace from=".R2 .pin1" to=".U1 .CFG1" />
+    <trace from=".R3 .pin1" to=".U1 .CFG2" />
+    <trace from=".R4 .pin1" to=".U1 .CFG3" />
+    <trace from=".R2 .pin2" to=".U1 .GND" />
+    <trace from=".R3 .pin2" to=".U1 .GND" />
+    <trace from=".R4 .pin2" to=".U1 .GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 1: Add USB-C Input
+
+USB-C provides VBUS and ground. The PD controller uses the CC pins to negotiate
+the requested voltage with the charger.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="38mm" height="24mm">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+    />
+  </board>
+)
+`} />
+
+## Step 2: Add the PD Trigger Controller
+
+Wire VBUS and ground into the controller. Connect CC1 and CC2 according to the
+datasheet for your chosen controller package. The output pin provides the
+negotiated rail after a successful USB PD contract.
+
+## Step 3: Configure the Output Voltage
+
+Many trigger controllers use resistor straps or logic pins to choose the target
+voltage. The example uses three `10k` configuration resistors; replace their
+connections with the exact strap pattern from the controller datasheet for 5V,
+9V, 12V, 15V, or 20V.
+
+## Bill of Materials
+
+| Reference | Part | Notes |
+| --------- | ---- | ----- |
+| J1 | USB-C receptacle | Power input |
+| U1 | CH224K, FP28XX, or PD2001 | USB PD trigger/controller |
+| J2 | 2-pin terminal block | Negotiated output |
+| C1 | 10uF capacitor | Input bulk/filtering |
+| C2 | 22uF capacitor | Output bulk/filtering |
+| D1 | Green LED | Power-good indicator |
+| R1 | 1k resistor | LED current limit |
+| R2-R4 | 10k resistors | Voltage-selection straps |
+
+## Testing Procedure
+
+1. Inspect the board for shorts before plugging in USB-C power.
+2. Connect a USB PD-capable charger with current limiting if available.
+3. Measure the terminal block output with a multimeter before connecting a load.
+4. Confirm the selected voltage matches the strap configuration.
+5. Add load gradually and verify the controller and connector stay cool.
+
+## Example Host Code
+
+The HAT does not require software for fixed-voltage negotiation. If you add a
+GPIO-connected power-good signal, a Raspberry Pi can read it like this:
+
+```python
+from gpiozero import Button
+
+power_good = Button(17, pull_up=False)
+
+if power_good.is_pressed:
+    print("USB PD output is ready")
+else:
+    print("USB PD output is not ready")
+```
+
+## Layout Notes
+
+Keep the USB-C connector, controller input pins, and input capacitor close
+together. Use wide copper for VBUS and VOUT, keep the terminal block output path
+short, and choose capacitor voltage ratings comfortably above the highest output
+voltage you plan to request.
