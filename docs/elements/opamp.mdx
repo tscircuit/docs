@@ -1,0 +1,70 @@
+---
+title: <opamp />
+sidebar_position: 4.5
+description: >-
+  An operational amplifier element for analog circuits with built-in input,
+  output, and supply pin aliases.
+---
+
+## Overview
+
+An `<opamp />` represents an operational amplifier. It is useful for analog
+circuits such as gain stages, filters, and signal conditioning blocks.
+
+The element includes the standard op-amp connections for the inverting input,
+non-inverting input, output, and power pins.
+
+For parts with unusual pinouts or extra control pins, prefer [`<chip />`](./chip.mdx).
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  code={`
+export default () => (
+  <board width="10mm" height="10mm">
+    <net name="VCC" isPowerNet />
+    <net name="VEE" isGroundNet />
+
+    <opamp
+      name="U1"
+      footprint="soic8"
+      connections={{
+        non_inverting_input: "net.IN_POS",
+        inverting_input: "net.IN_NEG",
+        output: "net.OUT",
+        positive_supply: "net.VCC",
+        negative_supply: "net.VEE",
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+In this example, the op-amp is placed on a board and connected to named input,
+output, and supply nets.
+
+## Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `connections` | Net connections for the standard op-amp pins. | `{ output: "net.OUT" }` |
+| `footprint` | PCB footprint string or custom footprint. | `"soic8"` |
+| `symbolName` | Override the default schematic symbol name. | `"opamp_with_power"` |
+
+## Pins
+
+An op-amp has the following pins and aliases:
+
+- `pin1`/`non_inverting_input` - The non-inverting input
+- `pin2`/`inverting_input` - The inverting input
+- `pin3` or `pin4`/`output` - The output pin
+- `pin4` or `pin5`/`positive_supply`/`vcc`/`vdd` - The positive supply pin
+- `pin5` or `pin3`/`negative_supply`/`vee`/`vss`/`gnd` - The negative supply pin
+
+If you need a different pinout, multiple amplifier channels in one package, or
+extra enable/offset pins, use [`<chip />`](./chip.mdx) with explicit
+`pinLabels`.
