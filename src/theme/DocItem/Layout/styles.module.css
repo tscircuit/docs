@@ -22,6 +22,19 @@
   padding-right: 180px;
 }
 
+.docLayoutRow {
+  justify-content: center;
+}
+
+.docItemCol {
+  box-sizing: border-box;
+  flex: 0 1 1000px !important;
+  max-width: 1000px !important;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 @media (max-width: 800px) {
   .contentHeader {
     position: static;
@@ -38,8 +51,16 @@
   }
 }
 
-@media (min-width: 997px) {
+@media (min-width: 768px) {
   .docItemCol {
-    max-width: 75% !important;
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .docItemCol {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
