@@ -1,0 +1,202 @@
+---
+title: Class D Audio Amplifier HAT
+description: Build a Raspberry Pi HAT around a PAM8403 stereo Class D amplifier with volume control and speaker terminals.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial builds a compact stereo Class D amplifier HAT using a PAM8403.
+The PAM8403 can drive small left and right speakers at up to 3W per channel from
+a 5V rail, making it a practical choice for simple Raspberry Pi audio projects.
+
+The HAT includes audio input pins, a dual-gang volume control, the amplifier IC,
+speaker terminal outputs, and local decoupling for the power rail.
+
+## How Class D Amplification Works
+
+A Class D amplifier rapidly switches its output transistors instead of operating
+them in a continuous linear region. The speaker receives a filtered version of
+that switching waveform. This approach is efficient, produces less heat than a
+linear amplifier, and works well for battery-powered or compact boards.
+
+## Circuit Requirements
+
+The board needs:
+
+- PAM8403 stereo Class D amplifier
+- 5V and ground from the Raspberry Pi HAT header
+- left and right audio inputs
+- volume control before the amplifier inputs
+- left and right speaker terminal outputs
+- decoupling capacitors near the amplifier supply pins
+
+## Final Circuit Preview
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LIN"],
+        pin2: ["RIN"],
+        pin3: ["VDD"],
+        pin4: ["GND"],
+        pin5: ["LOUTP"],
+        pin6: ["LOUTN"],
+        pin7: ["ROUTP"],
+        pin8: ["ROUTN"],
+        pin9: ["SHDN"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LIN", "RIN", "SHDN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["LOUTP", "LOUTN", "ROUTP", "ROUTN"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+    />
+    <chip
+      name="RV1"
+      manufacturerPartNumber="dual 10k audio potentiometer"
+      footprint="pinrow6"
+      pinLabels={{
+        pin1: ["L_IN"],
+        pin2: ["L_WIPER"],
+        pin3: ["L_GND"],
+        pin4: ["R_IN"],
+        pin5: ["R_WIPER"],
+        pin6: ["R_GND"],
+      }}
+      pcbX={-18}
+      pcbY={0}
+    />
+    <chip
+      name="J1"
+      manufacturerPartNumber="audio input header"
+      footprint="pinrow3"
+      pinLabels={{ pin1: ["L"], pin2: ["R"], pin3: ["GND"] }}
+      pcbX={-28}
+      pcbY={0}
+    />
+    <chip
+      name="J2"
+      manufacturerPartNumber="left speaker terminal"
+      footprint="pinrow2"
+      pinLabels={{ pin1: ["L+"], pin2: ["L-"] }}
+      pcbX={18}
+      pcbY={6}
+    />
+    <chip
+      name="J3"
+      manufacturerPartNumber="right speaker terminal"
+      footprint="pinrow2"
+      pinLabels={{ pin1: ["R+"], pin2: ["R-"] }}
+      pcbX={18}
+      pcbY={-6}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-5} pcbY={9} />
+    <capacitor name="C2" capacitance="100nF" footprint="0603" pcbX={4} pcbY={9} />
+    <resistor name="R1" resistance="10k" footprint="0603" pcbX={-8} pcbY={-8} />
+
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".J1 .L" to=".RV1 .L_IN" />
+    <trace from=".J1 .R" to=".RV1 .R_IN" />
+    <trace from=".J1 .GND" to=".RV1 .L_GND" />
+    <trace from=".J1 .GND" to=".RV1 .R_GND" />
+    <trace from=".RV1 .L_WIPER" to=".U1 .LIN" />
+    <trace from=".RV1 .R_WIPER" to=".U1 .RIN" />
+    <trace from=".U1 .LOUTP" to=".J2 .L+" />
+    <trace from=".U1 .LOUTN" to=".J2 .L-" />
+    <trace from=".U1 .ROUTP" to=".J3 .R+" />
+    <trace from=".U1 .ROUTN" to=".J3 .R-" />
+    <trace from=".C1 .pin1" to=".U1 .VDD" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".C2 .pin1" to=".U1 .VDD" />
+    <trace from=".C2 .pin2" to=".U1 .GND" />
+    <trace from=".R1 .pin1" to=".U1 .VDD" />
+    <trace from=".R1 .pin2" to=".U1 .SHDN" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 1: Add the HAT Base
+
+Use `RaspberryPiHatBoard` to start with the expected HAT outline and 40-pin GPIO
+header. The amplifier can use the 5V and ground pins from this header.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LIN"],
+        pin2: ["RIN"],
+        pin3: ["VDD"],
+        pin4: ["GND"],
+      }}
+    />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 2: Add Volume Control
+
+A dual-gang potentiometer lets one knob adjust both channels. Route the left and
+right input signals to the potentiometer inputs, then route each wiper to the
+matching amplifier input.
+
+## Step 3: Add Speaker Outputs
+
+The PAM8403 uses bridge-tied-load outputs, so each speaker connects between a
+positive and negative output pair. Do not connect either speaker terminal to
+ground unless the amplifier datasheet explicitly allows it.
+
+## Raspberry Pi Audio Configuration
+
+For a Raspberry Pi analog audio source, route left, right, and ground from your
+audio output connector to the HAT input header. If you use I2S audio, add a DAC
+module before this amplifier stage and feed the DAC's analog outputs into the
+volume control.
+
+Example `/boot/firmware/config.txt` setting for analog audio:
+
+```txt
+dtparam=audio=on
+```
+
+Then use `raspi-config` or your desktop audio settings to select the analog
+output. Keep the Pi output volume moderate and use the HAT potentiometer for
+listening-level adjustment.
+
+## Layout Notes
+
+Place the 10uF and 100nF capacitors close to the PAM8403 supply pins. Keep the
+speaker traces wider than the signal traces, separate speaker output routing
+from the low-level audio inputs, and keep the volume-control traces short to
+reduce noise pickup.
+
+## Bill of Materials
+
+| Reference | Part | Notes |
+| --------- | ---- | ----- |
+| U1 | PAM8403 | 3W per channel stereo Class D amplifier |
+| RV1 | Dual 10k audio potentiometer | Left/right volume control |
+| J1 | 3-pin audio input header | Left, right, ground |
+| J2, J3 | 2-pin speaker terminals | Left and right speaker outputs |
+| C1 | 10uF capacitor | Bulk supply decoupling |
+| C2 | 100nF capacitor | High-frequency decoupling |
+| R1 | 10k resistor | Pulls shutdown/enable high |
