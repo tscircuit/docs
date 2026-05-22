@@ -1,0 +1,141 @@
+---
+title: I2C Environmental Sensor Module
+description: Build a small BME280-based environmental sensor module with I2C pull-ups, an optional OLED header, and external connector pins.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial walks through a compact I2C environmental sensor module built
+around a BME280 temperature, humidity, and pressure sensor. The board exposes
+power, ground, SDA, and SCL on a header so it can connect to a microcontroller,
+Raspberry Pi, or breadboard wiring harness.
+
+## Circuit Requirements
+
+The module needs:
+
+- a BME280 sensor connected to the I2C bus
+- pull-up resistors on SDA and SCL
+- decoupling near the sensor power pins
+- a 4-pin external connector for power and I2C
+- an optional OLED expansion header sharing the same I2C bus
+
+## Final Circuit Preview
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="32mm" height="24mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="BME280"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VDD", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "CSB", "SDO"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <pinheader
+      name="J1"
+      pinCount={4}
+      pitch="2.54mm"
+      pcbX={-12}
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SDA"], pin4: ["SCL"] }}
+    />
+    <pinheader
+      name="J2"
+      pinCount={4}
+      pitch="2.54mm"
+      pcbX={12}
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SDA"], pin4: ["SCL"] }}
+    />
+    <resistor name="R1" resistance="4.7k" footprint="0603" pcbX={-5} pcbY={8} />
+    <resistor name="R2" resistance="4.7k" footprint="0603" pcbX={1} pcbY={8} />
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={6} pcbY={-6} />
+
+    <trace from=".J1 .VCC" to=".U1 .VDD" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".R1 .pin1" to=".J1 .VCC" />
+    <trace from=".R1 .pin2" to=".J1 .SDA" />
+    <trace from=".R2 .pin1" to=".J1 .VCC" />
+    <trace from=".R2 .pin2" to=".J1 .SCL" />
+    <trace from=".C1 .pin1" to=".U1 .VDD" />
+    <trace from=".C1 .pin2" to=".U1 .GND" />
+    <trace from=".J2 .VCC" to=".J1 .VCC" />
+    <trace from=".J2 .GND" to=".J1 .GND" />
+    <trace from=".J2 .SDA" to=".J1 .SDA" />
+    <trace from=".J2 .SCL" to=".J1 .SCL" />
+  </board>
+)
+`} />
+
+## Step 1: Add the Sensor
+
+The BME280 is the main part on the module. In a production design you should
+match the footprint and pinout to the exact package and supplier part you plan
+to order.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="32mm" height="24mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="BME280"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+      }}
+    />
+  </board>
+)
+`} />
+
+## Step 2: Add Pull-Up Resistors
+
+I2C is an open-drain bus, so SDA and SCL need pull-up resistors. `4.7k` is a
+common starting value for short sensor-module wiring at standard I2C speeds.
+
+## Step 3: Add Headers
+
+`J1` is the main host connector. `J2` is optional and can be used for a small
+OLED display or another I2C device. Both headers share the same VCC, GND, SDA,
+and SCL nets.
+
+## Example Microcontroller Code
+
+```ts
+import { Bme280 } from "your-bme280-driver"
+
+const sensor = new Bme280({ bus: 1, address: 0x76 })
+await sensor.init()
+
+const reading = await sensor.read()
+console.log({
+  temperatureC: reading.temperature,
+  humidityPercent: reading.humidity,
+  pressurePa: reading.pressure,
+})
+```
+
+## Layout Guidance
+
+Place the decoupling capacitor close to the sensor power pins, keep SDA and SCL
+short when possible, and avoid placing hot components directly next to the
+sensor package because that can skew temperature readings.
