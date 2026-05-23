@@ -10,7 +10,7 @@ import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
 ## Overview
 
-This tutorial walks through a compact Raspberry Pi HAT for logging temperature, relative humidity, and barometric pressure with a BME280 over I2C. The design includes the support parts that make an I2C sensor board reliable in the field: local decoupling, SDA/SCL pull-up resistors, an optional OLED display header, and a keyed external header for mounting the sensor away from the Pi.
+This tutorial walks through a compact Raspberry Pi HAT for logging temperature, relative humidity, and barometric pressure with a BME280 over I2C. The design uses a common 3.3 V BME280 breakout/module footprint so the tutorial stays buildable without hand-soldering the bare LGA sensor. It includes the support parts that make an I2C sensor board reliable in the field: local decoupling, SDA/SCL pull-up resistors, an optional OLED display header, and an unkeyed external 1x4 header for mounting the sensor away from the Pi.
 
 <TscircuitIframe defaultView="3d" code={`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
@@ -19,19 +19,17 @@ export default () => (
   <RaspberryPiHatBoard name="HAT1">
     <chip
       name="U1"
-      manufacturerPartNumber="BME280"
-      footprint="soic8"
+      manufacturerPartNumber="BME280 3.3V I2C breakout module"
+      footprint="pinrow4"
       pinLabels={{
-        pin1: ["SDA"],
-        pin2: ["SCL"],
-        pin3: ["GND"],
-        pin4: ["VCC"],
-        pin5: ["CSB"],
-        pin6: ["SDO"],
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
       }}
       schPortArrangement={{
         leftSide: { pins: ["SDA", "SCL"], direction: "top-to-bottom" },
-        rightSide: { pins: ["VCC", "GND", "CSB", "SDO"], direction: "top-to-bottom" },
+        rightSide: { pins: ["VCC", "GND"], direction: "top-to-bottom" },
       }}
       pcbX={0}
       pcbY={0}
@@ -72,8 +70,6 @@ export default () => (
     <trace from=".C1 > .pin2" to=".U1 .GND" />
     <trace from=".C2 > .pin1" to=".U1 .VCC" />
     <trace from=".C2 > .pin2" to=".U1 .GND" />
-    <trace from=".U1 .CSB" to=".U1 .VCC" />
-    <trace from=".U1 .SDO" to=".U1 .GND" />
     <trace from=".J1 .VCC" to=".HAT1_chip .V3_3" />
     <trace from=".J1 .GND" to=".HAT1_chip .GND_1" />
     <trace from=".J1 .SCL" to=".U1 .SCL" />
@@ -94,7 +90,7 @@ The HAT exposes one BME280 sensor on the Pi's primary I2C bus and provides a sec
 
 | Ref | Part | Notes |
 | --- | --- | --- |
-| U1 | BME280 environmental sensor | Temperature, humidity, and pressure sensor in I2C mode |
+| U1 | BME280 3.3 V I2C breakout/module | Temperature, humidity, and pressure sensor; use a module with `VCC`, `GND`, `SCL`, and `SDA` pins |
 | R1, R2 | 4.7 kΩ resistors | Pull SDA and SCL up to 3.3 V |
 | C1 | 100 nF capacitor | High-frequency local decoupling near U1 |
 | C2 | 1 µF capacitor | Bulk decoupling for the sensor/header area |
@@ -117,7 +113,7 @@ export default () => (
 
 ## Step 2: Add the BME280 in I2C mode
 
-The BME280 can speak SPI or I2C. For this HAT we tie `CSB` high to select I2C mode and tie `SDO` low so the sensor uses the common `0x76` I2C address. Tie `SDO` high instead if you need the alternate `0x77` address.
+The bare BME280 is an LGA sensor with separate supply and mode pins, but this tutorial targets the common 3.3 V I2C breakout/module version. Use a module that already straps the sensor for I2C and exposes `VCC`, `GND`, `SCL`, and `SDA`. Most modules default to address `0x76`; some expose an address jumper for `0x77`.
 
 <CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
@@ -126,9 +122,9 @@ export default () => (
   <RaspberryPiHatBoard name="HAT1">
     <chip
       name="U1"
-      manufacturerPartNumber="BME280"
-      footprint="soic8"
-      pinLabels={{ pin1: ["SDA"], pin2: ["SCL"], pin3: ["GND"], pin4: ["VCC"], pin5: ["CSB"], pin6: ["SDO"] }}
+      manufacturerPartNumber="BME280 3.3V I2C breakout module"
+      footprint="pinrow4"
+      pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }}
       pcbX={0}
       pcbY={0}
     />
@@ -136,15 +132,13 @@ export default () => (
     <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
     <trace from=".HAT1_chip .GPIO_2" to=".U1 .SDA" />
     <trace from=".HAT1_chip .GPIO_3" to=".U1 .SCL" />
-    <trace from=".U1 .CSB" to=".U1 .VCC" />
-    <trace from=".U1 .SDO" to=".U1 .GND" />
   </RaspberryPiHatBoard>
 )
 `} />
 
 ## Step 3: Add I2C pull-up resistors
 
-I2C lines are open-drain, so the bus needs pull-ups. Use 4.7 kΩ as a good default for a short Pi HAT. If you add long cables or several modules, verify rise time with an oscilloscope and consider stronger pull-ups such as 2.2 kΩ.
+I2C lines are open-drain, so the bus needs pull-ups. Use 4.7 kΩ as a good default for a short Pi HAT. Many BME280 breakouts and OLED modules already include onboard SDA/SCL pull-ups; if J1 or J2 connects to those modules, leave R1/R2 unpopulated as DNP or remove the duplicate module pull-ups so the effective bus resistance does not become too strong. If you add long cables or several modules, verify rise time with an oscilloscope and adjust the installed pull-up value.
 
 ```tsx
 <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-12} pcbY={8} />
@@ -170,7 +164,7 @@ Place a 100 nF capacitor within a few millimeters of the BME280 supply pin and a
 
 ## Step 5: Add optional OLED and external headers
 
-Use the same pin order on both headers so a cable can be shared between the optional OLED and an external sensor pod: `VCC`, `GND`, `SCL`, `SDA`. Mark pin 1 clearly on the silkscreen.
+Use the same pin order on both unkeyed headers so a cable can be shared between the optional OLED and an external sensor pod: `VCC`, `GND`, `SCL`, `SDA`. Mark pin 1 clearly on the silkscreen, and use keyed cables or a keyed connector footprint if field mis-plugging is likely.
 
 ```tsx
 <chip
@@ -202,7 +196,7 @@ Enable I2C and confirm the device is visible:
 ```bash
 sudo raspi-config nonint do_i2c 0
 sudo reboot
-sudo apt-get install -y i2c-tools python3-pip
+sudo apt-get install -y i2c-tools python3-pip python3-venv
 i2cdetect -y 1
 ```
 
@@ -228,10 +222,32 @@ while True:
     time.sleep(2)
 ```
 
-Install the library with:
+On current Raspberry Pi OS releases, install the CircuitPython library in a virtual environment instead of the system Python environment:
 
 ```bash
-pip3 install adafruit-circuitpython-bme280
+python3 -m venv ~/bme280-env
+source ~/bme280-env/bin/activate
+pip install adafruit-circuitpython-bme280
+```
+
+### Microcontroller example: Raspberry Pi Pico / MicroPython
+
+The same sensor module can be read from a small microcontroller. Wire `VCC` to `3V3`, `GND` to `GND`, `SDA` to `GP4`, and `SCL` to `GP5`, then use a BME280 MicroPython driver such as `bme280_float.py`.
+
+```python
+from machine import I2C, Pin
+from time import sleep
+import bme280_float as bme280
+
+i2c = I2C(0, scl=Pin(5), sda=Pin(4), freq=100_000)
+sensor = bme280.BME280(i2c=i2c, address=0x76)
+
+while True:
+    temperature, pressure, humidity = sensor.values
+    print("Temperature:", temperature)
+    print("Pressure:", pressure)
+    print("Humidity:", humidity)
+    sleep(2)
 ```
 
 ## Bring-up checklist
