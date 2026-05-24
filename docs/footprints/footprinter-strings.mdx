@@ -287,7 +287,7 @@ Parameters:
 
 Quad Flat Package (QFP) footprint with configurable number of pins.
 
-<FootprintPreview footprints={["qfp32", "qfp44"]} />
+<FootprintPreview footprints={["qfp32_thermalpad", "qfp32_w7_l7_p0.5_pw0.3_pl0.6_thermalpad1.5mmx1mm"]} />
 
 Parameters:
 
@@ -298,6 +298,8 @@ Parameters:
 | `p` | `"0.8mm"` | Pin pitch (center-to-center distance between adjacent pins) |
 | `pw` | `"0.25mm"` | Pin width |
 | `pl` | `"0.6mm"` | Pin length (exposed pad length) |
+| `thermalpad` | `false` | Set to `true` to add a centered exposed thermal pad (`_thermalpad`). |
+| `thermalpad{width}x{height}` | n/a | Thermal pad sizing suffix (e.g. `_thermalpad1.5mmx1mm`) used to set both thermal pad width and height. |
 
 ## qfn
 
