@@ -754,6 +754,14 @@ body {
   box-sizing: border-box;
 }
 
+@media (min-width: 997px) {
+  .doc-section-subtitle {
+    max-width: 1000px;
+    margin-left: clamp(2rem, 5vw, 5rem);
+    margin-right: auto;
+  }
+}
+
 @media (max-width: 768px) {
   .doc-section-subtitle {
     padding-left: 2rem;
@@ -851,11 +859,14 @@ article h4 {
   display: none !important;
 }
 
-/* Force center all documentation content */
-.col:not(.col--3) {
-  max-width: 1000px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
+@media (min-width: 997px) {
+  main[class*="docMainContainer"]
+    > .container.padding-top--md.padding-bottom--lg {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
 }
 
 /* Force section overview to center - using stable attribute selector */
@@ -899,7 +910,7 @@ article h4 {
       article
     )[class*="generatedIndexPage"] {
     max-width: 1000px !important;
-    margin-left: auto !important;
+    margin-left: clamp(2rem, 5vw, 5rem) !important;
     margin-right: auto !important;
     width: 1000px !important;
   }

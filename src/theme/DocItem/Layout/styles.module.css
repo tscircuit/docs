@@ -3,6 +3,17 @@
   margin-top: 0;
 }
 
+:global(.col).docItemCol {
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.docItemContainer {
+  width: 100%;
+  max-width: 1000px;
+}
+
 .docItemWithButton {
   position: relative;
 }
@@ -40,6 +51,11 @@
 
 @media (min-width: 997px) {
   .docItemCol {
-    max-width: 75% !important;
+    flex: 1 1 auto;
+  }
+
+  .docItemContainer {
+    margin-left: clamp(2rem, 5vw, 5rem);
+    margin-right: auto;
   }
 }
