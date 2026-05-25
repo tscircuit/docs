@@ -1,0 +1,48 @@
+---
+title: JLCPCB Footprints
+sidebar_position: 2
+description: Use JLCPCB supplier part numbers directly with the `jlcpcb:` footprint prefix
+---
+
+tscircuit can load PCB footprints directly from JLCPCB/EasyEDA part records. Any element that accepts a `footprint` property can reference a JLCPCB part by using the `jlcpcb:` prefix followed by the supplier part number.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Basic Usage
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      footprint="jlcpcb:C2040"
+    />
+  </board>
+)`}
+/>
+
+The recommended format is `jlcpcb:C<part-number>`, for example `jlcpcb:C2040`.
+
+For example, the RP2040 can be referenced directly with:
+
+```tsx
+<chip name="U1" manufacturerPartNumber="RP2040" footprint="jlcpcb:C2040" />
+```
+
+## What Gets Loaded
+
+When you use a `jlcpcb:` footprint string, tscircuit fetches the part's PCB footprint data from the configured parts engine. In the default platform, this uses the JLCPCB/EasyEDA part catalog and can also attach 3D model data when it is available.
+
+Use this when you only need the PCB footprint (and optional 3D model). If you also need a generated symbol, port definitions, or a reusable TSX component, use [Importing from JLCPCB](/guides/importing-modules-and-chips/importing-from-jlcpcb) instead.
+
+## Search for Part Numbers
+
+You can discover valid JLCPCB part numbers with:
+
+```bash
+tsci search --jlcpcb RP2040
+```
+
+Search results now include qualified footprint strings like `jlcpcb:C2040`, which can be copied directly into your `footprint` prop.
