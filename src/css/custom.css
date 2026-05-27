@@ -63,10 +63,8 @@
   line-height: 1;
   padding: 0 0.75rem;
   text-decoration: none;
-  transition:
-    border-color var(--ifm-transition-fast) ease,
-    color var(--ifm-transition-fast) ease,
-    background var(--ifm-transition-fast) ease;
+  transition: border-color var(--ifm-transition-fast) ease, color
+    var(--ifm-transition-fast) ease, background var(--ifm-transition-fast) ease;
   white-space: nowrap;
 }
 
