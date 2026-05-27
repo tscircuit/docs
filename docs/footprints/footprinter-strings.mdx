@@ -285,19 +285,23 @@ Parameters:
 
 ## qfp
 
-Quad Flat Package (QFP) footprint with configurable number of pins.
+Quad Flat Package (QFP) footprint with configurable number of pins. Add
+`thermalpad` for a centered exposed pad, or pass dimensions such as
+`thermalpad3x3mm` to size it.
 
-<FootprintPreview footprints={["qfp32", "qfp44"]} />
+<FootprintPreview footprints={["qfp32", "qfp32_thermalpad", "qfp32_thermalpad3x3mm"]} />
 
 Parameters:
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `num_pins` | `32` | Total number of pins (must be divisible by 4) |
-| `body_size` | `"7mm"` | Size of the package body (square) |
+| `w` | _calculated_ | Package body width |
+| `h` | _same as `w`_ | Package body height |
 | `p` | `"0.8mm"` | Pin pitch (center-to-center distance between adjacent pins) |
 | `pw` | `"0.25mm"` | Pin width |
 | `pl` | `"0.6mm"` | Pin length (exposed pad length) |
+| `thermalpad` | _none_ | Center exposed thermal pad. Use `thermalpad` for the default size or `thermalpad3x3mm` for a custom width and height. |
 
 ## qfn
 
@@ -428,4 +432,3 @@ Parameters:
 | `pl` | `"1.30mm"` | Pad length |
 | `pw` | `"1.70mm"` | Pad width |
 | `p` | `"3.5mm"` | Pin pitch |
-
