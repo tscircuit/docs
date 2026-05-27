@@ -49,6 +49,35 @@
   opacity: 0.6;
 }
 
+.edit-page-button {
+  align-items: center;
+  background: var(--ifm-background-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 6px;
+  color: var(--ifm-color-emphasis-700);
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 500;
+  gap: 0.4rem;
+  height: 32px;
+  line-height: 1;
+  padding: 0 0.75rem;
+  text-decoration: none;
+  transition:
+    border-color var(--ifm-transition-fast) ease,
+    color var(--ifm-transition-fast) ease,
+    background var(--ifm-transition-fast) ease;
+  white-space: nowrap;
+}
+
+.edit-page-button:hover,
+.edit-page-button:focus-visible {
+  background: var(--ifm-color-emphasis-100);
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
 button {
   all: unset;
   cursor: pointer;

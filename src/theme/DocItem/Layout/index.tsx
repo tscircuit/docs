@@ -13,6 +13,7 @@ import DocBreadcrumbs from "@theme/DocBreadcrumbs"
 import ContentVisibility from "@theme/ContentVisibility"
 import type { Props } from "@theme/DocItem/Layout"
 import CopyPageButton from "@site/src/components/CopyPageButton"
+import EditPageButton from "@site/src/components/EditPageButton"
 
 import styles from "./styles.module.css"
 
@@ -56,7 +57,10 @@ export default function DocItemLayout({ children }: Props): ReactNode {
             <div className={styles.docItemWithButton}>
               <DocItemContent>
                 <div className={styles.contentHeader}>
-                  <CopyPageButton />
+                  <div className={styles.contentActions}>
+                    <EditPageButton />
+                    <CopyPageButton />
+                  </div>
                 </div>
                 {children}
               </DocItemContent>

@@ -12,14 +12,21 @@
   z-index: 10;
 }
 
-.contentHeader :global(.copy-page-button-container) {
+.contentActions {
   position: absolute;
   top: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.contentHeader :global(.copy-page-button-container) {
+  position: relative;
 }
 
 .docItemWithButton :global(.markdown) > :global(h1):first-child {
-  padding-right: 180px;
+  padding-right: 290px;
 }
 
 @media (max-width: 800px) {
@@ -28,8 +35,9 @@
     margin-bottom: 1rem;
   }
 
-  .contentHeader :global(.copy-page-button-container) {
+.contentActions {
     position: relative;
+    flex-wrap: wrap;
   }
 
   .docItemWithButton :global(.markdown) > :global(h1):first-child {
