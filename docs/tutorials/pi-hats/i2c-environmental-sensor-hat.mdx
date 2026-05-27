@@ -21,20 +21,20 @@ export default () => (
     <chip
       name="U1"
       manufacturerPartNumber="BME280"
-      footprint="soic8"
+      footprint="bga8_grid4x2_p0.65mm_pad0.35mm"
       pinLabels={{
-        pin1: ["VCC"],
-        pin2: ["GND"],
-        pin3: ["SDA"],
-        pin4: ["SCL"],
-        pin5: ["CSB"],
-        pin6: ["SDO"],
-        pin7: ["NC1"],
-        pin8: ["NC2"],
+        pin1: ["GND"],
+        pin2: ["CSB"],
+        pin3: ["SDI", "SDA"],
+        pin4: ["SCK", "SCL"],
+        pin5: ["SDO"],
+        pin6: ["VDDIO"],
+        pin7: ["GND2"],
+        pin8: ["VDD"],
       }}
       schPortArrangement={{
-        leftSide: { pins: ["VCC", "GND"], direction: "top-to-bottom" },
-        rightSide: { pins: ["SDA", "SCL", "CSB", "SDO"], direction: "top-to-bottom" },
+        leftSide: { pins: ["VDD", "VDDIO", "GND", "GND2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SDI", "SCK", "CSB", "SDO"], direction: "top-to-bottom" },
       }}
       pcbX={4}
       pcbY={2}
@@ -52,24 +52,26 @@ export default () => (
       pcbY={-8}
     />
 
-    <trace from=".HAT1_chip .V3_3_1" to=".U1 .VCC" />
+    <trace from=".HAT1_chip .V3_3_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .V3_3_1" to=".U1 .VDDIO" />
     <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
-    <trace from=".HAT1_chip .GPIO_2" to=".U1 .SDA" />
-    <trace from=".HAT1_chip .GPIO_3" to=".U1 .SCL" />
-    <trace from=".U1 .CSB" to=".HAT1_chip .V3_3_1" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND2" />
+    <trace from=".HAT1_chip .GPIO_2" to=".U1 .SDI" />
+    <trace from=".HAT1_chip .GPIO_3" to=".U1 .SCK" />
+    <trace from=".U1 .CSB" to=".U1 .VDDIO" />
     <trace from=".U1 .SDO" to=".HAT1_chip .GND_1" />
     <trace from=".R1 > .pin1" to=".HAT1_chip .V3_3_1" />
-    <trace from=".R1 > .pin2" to=".U1 .SDA" />
+    <trace from=".R1 > .pin2" to=".U1 .SDI" />
     <trace from=".R2 > .pin1" to=".HAT1_chip .V3_3_1" />
-    <trace from=".R2 > .pin2" to=".U1 .SCL" />
-    <trace from=".C1 > .pin1" to=".U1 .VCC" />
+    <trace from=".R2 > .pin2" to=".U1 .SCK" />
+    <trace from=".C1 > .pin1" to=".U1 .VDDIO" />
     <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
-    <trace from=".C2 > .pin1" to=".U1 .VCC" />
+    <trace from=".C2 > .pin1" to=".U1 .VDD" />
     <trace from=".C2 > .pin2" to=".HAT1_chip .GND_1" />
     <trace from=".J1 .VCC" to=".HAT1_chip .V3_3_1" />
     <trace from=".J1 .GND" to=".HAT1_chip .GND_1" />
-    <trace from=".J1 .SDA" to=".U1 .SDA" />
-    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".J1 .SDA" to=".U1 .SDI" />
+    <trace from=".J1 .SCL" to=".U1 .SCK" />
   </RaspberryPiHatBoard>
 )
 `} />
@@ -78,8 +80,8 @@ export default () => (
 
 The HAT should:
 
-- Power the BME280 from the Raspberry Pi 3.3V rail
-- Connect BME280 SDA and SCL to GPIO2 and GPIO3
+- Power the BME280 `VDD` and `VDDIO` pins from the Raspberry Pi 3.3V rail
+- Connect BME280 `SDI` and `SCK` to GPIO2 and GPIO3 for I2C data and clock
 - Add 4.7k pull-up resistors on both I2C lines
 - Add local decoupling near the sensor
 - Provide a 4-pin expansion header for an optional I2C OLED display
@@ -97,8 +99,9 @@ The HAT should:
 ## Step 1: Add the HAT and Sensor
 
 Start with the Raspberry Pi HAT template and place the BME280. The BME280 can
-run in SPI mode, but this design ties it into I2C mode by using SDA and SCL. Tie
-`CSB` high so the sensor uses I2C, then tie `SDO` low for address `0x76`.
+run in SPI mode, but this design ties it into I2C mode by using `SDI` as SDA
+and `SCK` as SCL. Tie `CSB` high so the sensor uses I2C, then tie `SDO` low for
+address `0x76`.
 
 <CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
@@ -108,16 +111,16 @@ export default () => (
     <chip
       name="U1"
       manufacturerPartNumber="BME280"
-      footprint="soic8"
+      footprint="bga8_grid4x2_p0.65mm_pad0.35mm"
       pinLabels={{
-        pin1: ["VCC"],
-        pin2: ["GND"],
-        pin3: ["SDA"],
-        pin4: ["SCL"],
-        pin5: ["CSB"],
-        pin6: ["SDO"],
-        pin7: ["NC1"],
-        pin8: ["NC2"],
+        pin1: ["GND"],
+        pin2: ["CSB"],
+        pin3: ["SDI", "SDA"],
+        pin4: ["SCK", "SCL"],
+        pin5: ["SDO"],
+        pin6: ["VDDIO"],
+        pin7: ["GND2"],
+        pin8: ["VDD"],
       }}
     />
   </RaspberryPiHatBoard>
@@ -127,14 +130,17 @@ export default () => (
 ## Step 2: Wire Power and I2C
 
 Connect the sensor to the Raspberry Pi 3.3V rail, ground, and I2C pins. On the
-40-pin Raspberry Pi header, GPIO2 is SDA and GPIO3 is SCL.
+40-pin Raspberry Pi header, GPIO2 is SDA and GPIO3 is SCL; on the BME280 those
+signals land on `SDI` and `SCK`.
 
 ```tsx
-<trace from=".HAT1_chip .V3_3_1" to=".U1 .VCC" />
+<trace from=".HAT1_chip .V3_3_1" to=".U1 .VDD" />
+<trace from=".HAT1_chip .V3_3_1" to=".U1 .VDDIO" />
 <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
-<trace from=".HAT1_chip .GPIO_2" to=".U1 .SDA" />
-<trace from=".HAT1_chip .GPIO_3" to=".U1 .SCL" />
-<trace from=".U1 .CSB" to=".HAT1_chip .V3_3_1" />
+<trace from=".HAT1_chip .GND_1" to=".U1 .GND2" />
+<trace from=".HAT1_chip .GPIO_2" to=".U1 .SDI" />
+<trace from=".HAT1_chip .GPIO_3" to=".U1 .SCK" />
+<trace from=".U1 .CSB" to=".U1 .VDDIO" />
 <trace from=".U1 .SDO" to=".HAT1_chip .GND_1" />
 ```
 
@@ -151,28 +157,32 @@ export default () => (
     <chip
       name="U1"
       manufacturerPartNumber="BME280"
-      footprint="soic8"
+      footprint="bga8_grid4x2_p0.65mm_pad0.35mm"
       pinLabels={{
-        pin1: ["VCC"],
-        pin2: ["GND"],
-        pin3: ["SDA"],
-        pin4: ["SCL"],
+        pin1: ["GND"],
+        pin2: ["CSB"],
+        pin3: ["SDI", "SDA"],
+        pin4: ["SCK", "SCL"],
+        pin5: ["SDO"],
+        pin6: ["VDDIO"],
+        pin7: ["GND2"],
+        pin8: ["VDD"],
       }}
     />
     <resistor name="R1" resistance="4.7k" footprint="0402" />
     <resistor name="R2" resistance="4.7k" footprint="0402" />
     <trace from=".R1 > .pin1" to=".HAT1_chip .V3_3_1" />
-    <trace from=".R1 > .pin2" to=".U1 .SDA" />
+    <trace from=".R1 > .pin2" to=".U1 .SDI" />
     <trace from=".R2 > .pin1" to=".HAT1_chip .V3_3_1" />
-    <trace from=".R2 > .pin2" to=".U1 .SCL" />
+    <trace from=".R2 > .pin2" to=".U1 .SCK" />
   </RaspberryPiHatBoard>
 )
 `} />
 
 ## Step 4: Add Decoupling
 
-Place the 100nF capacitor as close as possible to the BME280 power pins. The 1uF
-capacitor can sit nearby on the 3.3V rail to absorb slower supply changes.
+Place the 100nF capacitor close to `VDDIO` and ground. The 1uF capacitor can sit
+nearby between `VDD` and ground to absorb slower supply changes on the 3.3V rail.
 
 ## Step 5: Add an Optional OLED Header
 
@@ -189,8 +199,8 @@ unique I2C address.
 />
 <trace from=".J1 .VCC" to=".HAT1_chip .V3_3_1" />
 <trace from=".J1 .GND" to=".HAT1_chip .GND_1" />
-<trace from=".J1 .SDA" to=".U1 .SDA" />
-<trace from=".J1 .SCL" to=".U1 .SCL" />
+<trace from=".J1 .SDA" to=".U1 .SDI" />
+<trace from=".J1 .SCL" to=".U1 .SCK" />
 ```
 
 ## PCB Layout Guidance
@@ -272,7 +282,7 @@ import busio
 from adafruit_bme280 import basic as adafruit_bme280
 
 i2c = busio.I2C(board.SCL, board.SDA)
-bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
+bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
 
 while True:
     print("Temperature: {:.1f} C".format(bme280.temperature))
