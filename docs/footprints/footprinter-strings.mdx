@@ -305,19 +305,23 @@ Parameters:
 
 ## qfn
 
-Quad Flat No-Lead (QFN) package footprint with configurable number of pins.
+Quad Flat No-Lead (QFN) package footprint with configurable number of pins. Add
+`thermalpad` for a centered exposed pad, or pass dimensions such as
+`thermalpad3.1x3.1mm` to size it.
 
-<FootprintPreview footprints={["qfn20", "qfn32"]} />
+<FootprintPreview footprints={["qfn20", "qfn32_thermalpad", "qfn32_thermalpad3.1x3.1mm"]} />
 
 Parameters:
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `num_pins` | `20` | Total number of pins (must be divisible by 4) |
-| `body_size` | `"4mm"` | Size of the package body (square) |
+| `w` | _calculated_ | Package body width |
+| `h` | _same as `w`_ | Package body height |
 | `p` | `"0.5mm"` | Pin pitch (center-to-center distance between adjacent pins) |
 | `pw` | `"0.25mm"` | Pin width |
-| `pl` | `"0.4mm"` | Pin length (exposed pad length) |
+| `pl` | `"0.875mm"` | Pin length (exposed pad length) |
+| `thermalpad` | _none_ | Center exposed thermal pad. Use `thermalpad` for the default size or `thermalpad3.1x3.1mm` for a custom width and height. |
 
 ## sot23
 
