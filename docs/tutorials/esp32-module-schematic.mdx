@@ -1,0 +1,178 @@
+---
+title: ESP32 Module Reference Schematic
+description: Create a schematic-only ESP32 module example with USB power, regulation, reset, boot mode, and GPIO headers.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# ESP32 Module Reference Schematic
+
+This schematic-only example shows the supporting circuit that usually sits
+around an ESP32-WROOM-style module: USB power, a 3.3 V regulator, decoupling
+capacitors, reset and boot buttons, and two GPIO headers.
+
+<CircuitPreview
+  defaultView="schematic"
+  browser3dView={false}
+  code={`
+export default () => (
+  <board width="60mm" height="40mm" routingDisabled>
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      schX={0}
+      schY={0}
+      footprint="pinrow19"
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "EN",
+        pin3: "IO36",
+        pin4: "IO39",
+        pin5: "IO34",
+        pin6: "IO35",
+        pin7: "IO32",
+        pin8: "IO33",
+        pin9: "IO25",
+        pin10: "IO26",
+        pin11: "IO27",
+        pin12: "IO14",
+        pin13: "GND",
+        pin14: "IO13",
+        pin15: "IO12",
+        pin16: "IO0",
+        pin17: "IO2",
+        pin18: "TXD0",
+        pin19: "RXD0",
+      }}
+    />
+
+    <connector
+      name="J1"
+      schX={-8}
+      schY={3}
+      pcbX={-23}
+      pcbY={0}
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "GND",
+      }}
+    />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="AP2112K-3.3"
+      footprint="sot23_5"
+      schX={-4}
+      schY={3}
+      pinLabels={{
+        pin1: "VIN",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "NC",
+        pin5: "VOUT",
+      }}
+    />
+
+    <capacitor name="C1" capacitance="10uF" schX={-6} schY={1.5} />
+    <capacitor name="C2" capacitance="10uF" schX={-2} schY={1.5} />
+    <capacitor name="C3" capacitance="100nF" schX={2.5} schY={2.5} />
+    <resistor name="R1" resistance="10k" schX={2.5} schY={3.5} />
+    <pushbutton name="SW1" schX={4.5} schY={3.5} />
+    <pushbutton name="SW2" schX={4.5} schY={-3.5} />
+    <resistor name="R2" resistance="10k" schX={2.5} schY={-3.5} />
+
+    <pinheader
+      name="J2"
+      pinCount={8}
+      schX={7}
+      schY={1}
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "GND",
+        pin3: "IO36",
+        pin4: "IO39",
+        pin5: "IO34",
+        pin6: "IO35",
+        pin7: "IO32",
+        pin8: "IO33",
+      }}
+    />
+    <pinheader
+      name="J3"
+      pinCount={8}
+      schX={7}
+      schY={-3}
+      pinLabels={{
+        pin1: "IO25",
+        pin2: "IO26",
+        pin3: "IO27",
+        pin4: "IO14",
+        pin5: "IO13",
+        pin6: "IO12",
+        pin7: "TXD0",
+        pin8: "RXD0",
+      }}
+    />
+
+    <trace from=".J1 .VBUS" to=".U2 .VIN" />
+    <trace from=".U2 .VOUT" to="net.3V3" />
+    <trace from=".U2 .EN" to="net.VBUS" />
+    <trace from=".U2 .GND" to="net.GND" />
+    <trace from=".C1 .pin1" to="net.VBUS" />
+    <trace from=".C1 .pin2" to="net.GND" />
+    <trace from=".C2 .pin1" to="net.3V3" />
+    <trace from=".C2 .pin2" to="net.GND" />
+    <trace from=".C3 .pin1" to="net.3V3" />
+    <trace from=".C3 .pin2" to="net.GND" />
+
+    <trace from=".U1 .3V3" to="net.3V3" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".R1 .pin1" to="net.3V3" />
+    <trace from=".R1 .pin2" to=".U1 .EN" />
+    <trace from=".SW1 .pin1" to=".U1 .EN" />
+    <trace from=".SW1 .pin2" to="net.GND" />
+    <trace from=".R2 .pin1" to="net.3V3" />
+    <trace from=".R2 .pin2" to=".U1 .IO0" />
+    <trace from=".SW2 .pin1" to=".U1 .IO0" />
+    <trace from=".SW2 .pin2" to="net.GND" />
+
+    <trace from=".J2 .3V3" to="net.3V3" />
+    <trace from=".J2 .GND" to="net.GND" />
+    <trace from=".J2 .IO36" to=".U1 .IO36" />
+    <trace from=".J2 .IO39" to=".U1 .IO39" />
+    <trace from=".J2 .IO34" to=".U1 .IO34" />
+    <trace from=".J2 .IO35" to=".U1 .IO35" />
+    <trace from=".J2 .IO32" to=".U1 .IO32" />
+    <trace from=".J2 .IO33" to=".U1 .IO33" />
+
+    <trace from=".J3 .IO25" to=".U1 .IO25" />
+    <trace from=".J3 .IO26" to=".U1 .IO26" />
+    <trace from=".J3 .IO27" to=".U1 .IO27" />
+    <trace from=".J3 .IO14" to=".U1 .IO14" />
+    <trace from=".J3 .IO13" to=".U1 .IO13" />
+    <trace from=".J3 .IO12" to=".U1 .IO12" />
+    <trace from=".J3 .TXD0" to=".U1 .TXD0" />
+    <trace from=".J3 .RXD0" to=".U1 .RXD0" />
+  </board>
+)
+`}
+/>
+
+## What the Blocks Do
+
+The USB-C connector supplies `VBUS` and `GND`. The AP2112-style regulator
+converts `VBUS` to `3V3`, and the input/output capacitors keep both rails
+stable.
+
+The `EN` net has a 10 kΩ pull-up and a reset pushbutton to ground. The `IO0`
+net has the same pull-up pattern, plus a boot button that pulls `IO0` low when
+you need the ESP32 to enter bootloader mode.
+
+The two pin headers break out power and common GPIO nets so the module can be
+connected to sensors, buttons, or another board.
+
+## Extending the Example
+
+For a production board, add the exact ESP32 module footprint you plan to order,
+USB data lines if you include a USB-to-UART bridge, and any ESD protection or
+power filtering required by your enclosure and cable length.
