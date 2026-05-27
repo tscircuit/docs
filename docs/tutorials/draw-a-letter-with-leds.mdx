@@ -1,0 +1,163 @@
+---
+title: Draw a Letter with LEDs
+description: Build a simple letter-shaped LED board by mapping a bitmap pattern to LED positions.
+---
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+# Draw a Letter with LEDs
+
+This tutorial shows how to turn a small bitmap pattern into a PCB layout. The
+example draws the letter `H` with LEDs, but the same approach works for any
+letter or icon that can be represented as a grid of `1` and `0` values.
+
+<TscircuitIframe defaultView="pcb" code={`
+const letterPattern = [
+  "1...1",
+  "1...1",
+  "1...1",
+  "11111",
+  "1...1",
+  "1...1",
+  "1...1",
+]
+
+const ledPositions = letterPattern.flatMap((row, rowIndex) =>
+  row
+    .split("")
+    .map((cell, colIndex) => ({ cell, rowIndex, colIndex }))
+    .filter(({ cell }) => cell === "1")
+    .map(({ rowIndex, colIndex }) => ({
+      x: (colIndex - 2) * 5,
+      y: (3 - rowIndex) * 5,
+    })),
+)
+
+export default () => (
+  <board width="42mm" height="52mm">
+    <pinheader
+      name="J1"
+      pinCount={2}
+      footprint="pinrow2"
+      pcbX={0}
+      pcbY={-21}
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+      }}
+    />
+
+    {ledPositions.map(({ x, y }, index) => {
+      const ledName = \`LED\${index + 1}\`
+      const resistorName = \`R\${index + 1}\`
+
+      return (
+        <group key={ledName}>
+          <led
+            name={ledName}
+            color="red"
+            footprint="0603"
+            pcbX={x}
+            pcbY={y}
+            schX={x / 4}
+            schY={y / 4}
+          />
+          <resistor
+            name={resistorName}
+            resistance="330"
+            footprint="0603"
+            pcbX={x + 1.8}
+            pcbY={y - 1.8}
+            schX={x / 4 + 1.5}
+            schY={y / 4}
+          />
+          <trace from={\`.\${resistorName} .pin1\`} to=".J1 .VCC" />
+          <trace from={\`.\${resistorName} .pin2\`} to={\`.\${ledName} .pin1\`} />
+          <trace from={\`.\${ledName} .pin2\`} to=".J1 .GND" />
+        </group>
+      )
+    })}
+  </board>
+)
+`} />
+
+## 1. Define the Letter
+
+Start with a string array where each row describes one horizontal slice of the
+letter. Use `1` where an LED should be placed and `.` where the board should be
+empty.
+
+```tsx
+const letterPattern = [
+  "1...1",
+  "1...1",
+  "1...1",
+  "11111",
+  "1...1",
+  "1...1",
+  "1...1",
+]
+```
+
+## 2. Convert Grid Cells into Positions
+
+The pattern is converted to a list of coordinates before rendering. Centering
+the coordinates around `(0, 0)` keeps the letter easy to place on the board.
+
+```tsx
+const ledPositions = letterPattern.flatMap((row, rowIndex) =>
+  row
+    .split("")
+    .map((cell, colIndex) => ({ cell, rowIndex, colIndex }))
+    .filter(({ cell }) => cell === "1")
+    .map(({ rowIndex, colIndex }) => ({
+      x: (colIndex - 2) * 5,
+      y: (3 - rowIndex) * 5,
+    })),
+)
+```
+
+## 3. Place Each LED and Resistor
+
+Each `1` becomes an LED with its own current-limiting resistor. The two-pin
+header gives the board simple `VCC` and `GND` inputs.
+
+```tsx
+{ledPositions.map(({ x, y }, index) => {
+  const ledName = \`LED\${index + 1}\`
+  const resistorName = \`R\${index + 1}\`
+
+  return (
+    <group key={ledName}>
+      <led name={ledName} color="red" footprint="0603" pcbX={x} pcbY={y} />
+      <resistor
+        name={resistorName}
+        resistance="330"
+        footprint="0603"
+        pcbX={x + 1.8}
+        pcbY={y - 1.8}
+      />
+      <trace from={\`.\${resistorName} .pin1\`} to=".J1 .VCC" />
+      <trace from={\`.\${resistorName} .pin2\`} to={\`.\${ledName} .pin1\`} />
+      <trace from={\`.\${ledName} .pin2\`} to=".J1 .GND" />
+    </group>
+  )
+})}
+```
+
+## 4. Try Another Letter
+
+To draw a different letter, change only the `letterPattern`. For example, a
+small `T` could be represented as:
+
+```tsx
+const letterPattern = [
+  "11111",
+  "..1..",
+  "..1..",
+  "..1..",
+  "..1..",
+  "..1..",
+  "..1..",
+]
+```
