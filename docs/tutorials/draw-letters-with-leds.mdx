@@ -1,0 +1,496 @@
+---
+title: "Draw Letters with LEDs"
+description: "Create LED letter displays using tscircuit and the @tscircuit/alphabet library"
+---
+
+## Overview
+
+This tutorial will walk you through creating a reusable `LedLetter` component that displays any capital letter (A-Z) using LEDs on a PCB. We'll use the `@tscircuit/alphabet` library to get letter shape data and mathematically calculate LED positions along each letter's strokes.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="pcb" code={`
+import { lineAlphabet } from "@tscircuit/alphabet"
+
+export const LedLetter = ({
+  letter,
+  power,
+  gnd,
+  pcbX = 0,
+  pcbY = 0,
+  schX = 0,
+  schY = 0,
+  scale = 10,
+  color = "red",
+  namePrefix = "",
+}) => {
+  const lines = lineAlphabet[letter.toUpperCase()]
+  if (!lines) return null
+
+  const positions = []
+  for (const line of lines) {
+    const dx = line.x2 - line.x1
+    const dy = line.y2 - line.y1
+    const segLen = Math.sqrt(dx * dx + dy * dy)
+    const n = Math.max(1, Math.round(segLen * scale / 3))
+    for (let i = 0; i <= n; i++) {
+      const t = n === 0 ? 0.5 : i / n
+      positions.push({
+        px: pcbX + (line.x1 + t * dx - 0.5) * scale,
+        py: pcbY + (0.5 - (line.y1 + t * dy)) * scale,
+      })
+    }
+  }
+
+  return (
+    <group>
+      {positions.map((pos, i) => {
+        const ledName = namePrefix + "LED" + i
+        const resName = namePrefix + "R" + i
+        const sx = schX + (i % 5) * 2
+        const sy = schY + Math.floor(i / 5) * 2
+        return (
+          <group key={i}>
+            <led
+              name={ledName}
+              color={color}
+              footprint="0603"
+              pcbX={pos.px}
+              pcbY={pos.py}
+              schX={sx}
+              schY={sy}
+            />
+            <resistor
+              name={resName}
+              resistance="330"
+              footprint="0402"
+              pcbX={pos.px + 0.8}
+              pcbY={pos.py}
+              schX={sx + 0.8}
+              schY={sy}
+            />
+            <trace from={"." + resName + " .pin1"} to={power} />
+            <trace from={"." + resName + " .pin2"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={gnd} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="60mm" height="30mm" routingDisabled>
+    <LedLetter
+      letter="A"
+      power="net.VCC"
+      gnd="net.GND"
+      pcbX={-15}
+      pcbY={0}
+      schX={-8}
+      schY={-4}
+      namePrefix="A_"
+    />
+    <LedLetter
+      letter="B"
+      power="net.VCC"
+      gnd="net.GND"
+      pcbX={0}
+      pcbY={0}
+      schX={0}
+      schY={-4}
+      namePrefix="B_"
+    />
+    <LedLetter
+      letter="C"
+      power="net.VCC"
+      gnd="net.GND"
+      pcbX={15}
+      pcbY={0}
+      schX={8}
+      schY={-4}
+      namePrefix="C_"
+    />
+  </board>
+)
+`} />
+
+## The @tscircuit/alphabet Library
+
+The `@tscircuit/alphabet` library provides letter shape data as line segments. Each letter is represented as an array of `{x1, y1, x2, y2}` objects, where coordinates are normalized to the [0, 1] range.
+
+```tsx
+import { lineAlphabet } from "@tscircuit/alphabet"
+
+const aLines = lineAlphabet["A"]
+// Array of {x1, y1, x2, y2} - each object is a line segment (stroke) of the letter
+```
+
+The letter "A" typically has three strokes: the left diagonal, the right diagonal, and the horizontal crossbar. Each stroke is a line segment with start and end coordinates. Because the coordinates are normalized, we can scale them to any size on the PCB.
+
+## Placing LEDs Along Letter Strokes
+
+To display a letter with LEDs, we need to convert the normalized line segment coordinates into PCB positions. For each line segment, we calculate how many LEDs to place based on the segment length, then distribute them evenly along the stroke.
+
+The coordinate conversion flips the Y-axis because `lineAlphabet` uses SVG conventions (Y increases downward) while PCB coordinates use standard electronics conventions (Y increases upward).
+
+<CircuitPreview defaultView="pcb" hide3DTab code={`
+import { lineAlphabet } from "@tscircuit/alphabet"
+
+export default () => {
+  const lines = lineAlphabet["A"]
+  const scale = 10
+  const pcbX = 0
+  const pcbY = 0
+
+  const positions = []
+  for (const line of lines) {
+    const dx = line.x2 - line.x1
+    const dy = line.y2 - line.y1
+    const segLen = Math.sqrt(dx * dx + dy * dy)
+    const n = Math.max(1, Math.round(segLen * scale / 3))
+    for (let i = 0; i <= n; i++) {
+      const t = n === 0 ? 0.5 : i / n
+      positions.push({
+        x: pcbX + (line.x1 + t * dx - 0.5) * scale,
+        y: pcbY + (0.5 - (line.y1 + t * dy)) * scale,
+      })
+    }
+  }
+
+  return (
+    <board width="20mm" height="20mm" routingDisabled>
+      {positions.map((pos, i) => (
+        <led
+          key={i}
+          name={"LED" + i}
+          color="red"
+          footprint="0603"
+          pcbX={pos.x}
+          pcbY={pos.y}
+        />
+      ))}
+    </board>
+  )
+}
+`} />
+
+Here we place LEDs along each stroke of the letter "A". Longer strokes get more LEDs — the number is calculated as `Math.max(1, Math.round(segmentLength * scale / 3))`, where `3` is the approximate spacing between LEDs in millimeters.
+
+The position formula centers the letter around `(pcbX, pcbY)`:
+- **X position**: `pcbX + (x - 0.5) * scale` — offsets by -0.5 to center horizontally
+- **Y position**: `pcbY + (0.5 - y) * scale` — flips the Y-axis and centers vertically
+
+## Adding Current-Limiting Resistors
+
+Each LED needs a current-limiting resistor in series. For a 5V supply and a typical red LED with ~2V forward voltage, a 330Ω resistor limits the current to approximately 9mA — a safe operating current for most SMD LEDs.
+
+The wiring for each LED is: **power net → resistor → LED anode → LED cathode → ground net**.
+
+<CircuitPreview defaultView="pcb" hide3DTab code={`
+import { lineAlphabet } from "@tscircuit/alphabet"
+
+export default () => {
+  const lines = lineAlphabet["A"]
+  const scale = 10
+  const pcbX = 0
+  const pcbY = 0
+
+  const positions = []
+  for (const line of lines) {
+    const dx = line.x2 - line.x1
+    const dy = line.y2 - line.y1
+    const segLen = Math.sqrt(dx * dx + dy * dy)
+    const n = Math.max(1, Math.round(segLen * scale / 3))
+    for (let i = 0; i <= n; i++) {
+      const t = n === 0 ? 0.5 : i / n
+      positions.push({
+        x: pcbX + (line.x1 + t * dx - 0.5) * scale,
+        y: pcbY + (0.5 - (line.y1 + t * dy)) * scale,
+      })
+    }
+  }
+
+  return (
+    <board width="20mm" height="20mm" routingDisabled>
+      {positions.map((pos, i) => {
+        const ledName = "LED" + i
+        const resName = "R" + i
+        return (
+          <group key={i}>
+            <led
+              name={ledName}
+              color="red"
+              footprint="0603"
+              pcbX={pos.x}
+              pcbY={pos.y}
+            />
+            <resistor
+              name={resName}
+              resistance="330"
+              footprint="0402"
+              pcbX={pos.x + 0.8}
+              pcbY={pos.y}
+            />
+            <trace from={"." + resName + " .pin1"} to="net.VCC" />
+            <trace from={"." + resName + " .pin2"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to="net.GND" />
+          </group>
+        )
+      })}
+    </board>
+  )
+}
+`} />
+
+Each resistor is placed 0.8mm to the right of its corresponding LED on the PCB. The 0402 footprint is used for resistors to keep the layout compact, while 0603 LEDs are easier to see and solder.
+
+## The Complete LedLetter Component
+
+Now let's wrap everything into a reusable `LedLetter` component. It accepts a `letter` prop, power and ground nets, position offsets for both PCB and schematic views, a scale factor, LED color, and a name prefix to ensure unique component names when multiple letters are placed on the same board.
+
+<CircuitPreview defaultView="pcb" code={`
+import { lineAlphabet } from "@tscircuit/alphabet"
+
+export const LedLetter = ({
+  letter,
+  power,
+  gnd,
+  pcbX = 0,
+  pcbY = 0,
+  schX = 0,
+  schY = 0,
+  scale = 10,
+  color = "red",
+  namePrefix = "",
+}) => {
+  const lines = lineAlphabet[letter.toUpperCase()]
+  if (!lines) return null
+
+  const positions = []
+  for (const line of lines) {
+    const dx = line.x2 - line.x1
+    const dy = line.y2 - line.y1
+    const segLen = Math.sqrt(dx * dx + dy * dy)
+    const n = Math.max(1, Math.round(segLen * scale / 3))
+    for (let i = 0; i <= n; i++) {
+      const t = n === 0 ? 0.5 : i / n
+      positions.push({
+        px: pcbX + (line.x1 + t * dx - 0.5) * scale,
+        py: pcbY + (0.5 - (line.y1 + t * dy)) * scale,
+      })
+    }
+  }
+
+  return (
+    <group>
+      {positions.map((pos, i) => {
+        const ledName = namePrefix + "LED" + i
+        const resName = namePrefix + "R" + i
+        const sx = schX + (i % 5) * 2
+        const sy = schY + Math.floor(i / 5) * 2
+        return (
+          <group key={i}>
+            <led
+              name={ledName}
+              color={color}
+              footprint="0603"
+              pcbX={pos.px}
+              pcbY={pos.py}
+              schX={sx}
+              schY={sy}
+            />
+            <resistor
+              name={resName}
+              resistance="330"
+              footprint="0402"
+              pcbX={pos.px + 0.8}
+              pcbY={pos.py}
+              schX={sx + 0.8}
+              schY={sy}
+            />
+            <trace from={"." + resName + " .pin1"} to={power} />
+            <trace from={"." + resName + " .pin2"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={gnd} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="20mm" height="20mm" routingDisabled>
+    <LedLetter
+      letter="A"
+      power="net.VCC"
+      gnd="net.GND"
+      pcbX={0}
+      pcbY={0}
+      schX={-4}
+      schY={-4}
+      namePrefix="A_"
+    />
+  </board>
+)
+`} />
+
+The component calculates LED positions along each stroke of the letter, places a resistor next to each LED, and wires them in series. The `namePrefix` prop ensures that component names don't collide when multiple `LedLetter` instances are used on the same board.
+
+### Component Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `letter` | `string` | required | The capital letter to display (A-Z) |
+| `power` | `string` | required | Power net identifier (e.g. `"net.VCC"`) |
+| `gnd` | `string` | required | Ground net identifier (e.g. `"net.GND"`) |
+| `pcbX` | `number` | `0` | X offset on PCB (mm) |
+| `pcbY` | `number` | `0` | Y offset on PCB (mm) |
+| `schX` | `number` | `0` | X offset in schematic |
+| `schY` | `number` | `0` | Y offset in schematic |
+| `scale` | `number` | `10` | Letter size in mm |
+| `color` | `string` | `"red"` | LED color |
+| `namePrefix` | `string` | `""` | Prefix for component names |
+
+## Displaying Multiple Letters
+
+To display multiple letters, place several `LedLetter` components on the same board with different positions and name prefixes. Each letter should have a unique `namePrefix` to avoid component name collisions.
+
+<CircuitPreview defaultView="pcb" code={`
+import { lineAlphabet } from "@tscircuit/alphabet"
+
+export const LedLetter = ({
+  letter,
+  power,
+  gnd,
+  pcbX = 0,
+  pcbY = 0,
+  schX = 0,
+  schY = 0,
+  scale = 10,
+  color = "red",
+  namePrefix = "",
+}) => {
+  const lines = lineAlphabet[letter.toUpperCase()]
+  if (!lines) return null
+
+  const positions = []
+  for (const line of lines) {
+    const dx = line.x2 - line.x1
+    const dy = line.y2 - line.y1
+    const segLen = Math.sqrt(dx * dx + dy * dy)
+    const n = Math.max(1, Math.round(segLen * scale / 3))
+    for (let i = 0; i <= n; i++) {
+      const t = n === 0 ? 0.5 : i / n
+      positions.push({
+        px: pcbX + (line.x1 + t * dx - 0.5) * scale,
+        py: pcbY + (0.5 - (line.y1 + t * dy)) * scale,
+      })
+    }
+  }
+
+  return (
+    <group>
+      {positions.map((pos, i) => {
+        const ledName = namePrefix + "LED" + i
+        const resName = namePrefix + "R" + i
+        const sx = schX + (i % 5) * 2
+        const sy = schY + Math.floor(i / 5) * 2
+        return (
+          <group key={i}>
+            <led
+              name={ledName}
+              color={color}
+              footprint="0603"
+              pcbX={pos.px}
+              pcbY={pos.py}
+              schX={sx}
+              schY={sy}
+            />
+            <resistor
+              name={resName}
+              resistance="330"
+              footprint="0402"
+              pcbX={pos.px + 0.8}
+              pcbY={pos.py}
+              schX={sx + 0.8}
+              schY={sy}
+            />
+            <trace from={"." + resName + " .pin1"} to={power} />
+            <trace from={"." + resName + " .pin2"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={gnd} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="60mm" height="30mm" routingDisabled>
+    <LedLetter
+      letter="T"
+      power="net.VCC"
+      gnd="net.GND"
+      pcbX={-20}
+      pcbY={0}
+      schX={-12}
+      schY={-4}
+      namePrefix="T_"
+    />
+    <LedLetter
+      letter="S"
+      power="net.VCC"
+      gnd="net.GND"
+      pcbX={-8}
+      pcbY={0}
+      schX={-4}
+      schY={-4}
+      namePrefix="S_"
+    />
+    <LedLetter
+      letter="C"
+      power="net.VCC"
+      gnd="net.GND"
+      pcbX={4}
+      pcbY={0}
+      schX={4}
+      schY={-4}
+      namePrefix="C_"
+    />
+  </board>
+)
+`} />
+
+## Customizing Your Design
+
+### Changing the LED Color
+
+Pass a different `color` prop to change the LED color:
+
+```tsx
+<LedLetter letter="A" color="blue" power="net.VCC" gnd="net.GND" />
+```
+
+Available colors include `red`, `green`, `blue`, `yellow`, and `white`.
+
+### Adjusting Letter Size
+
+The `scale` prop controls the letter size in millimeters. Increase it for larger displays:
+
+```tsx
+<LedLetter letter="A" scale={15} power="net.VCC" gnd="net.GND" />
+```
+
+### Changing the Footprint
+
+You can switch to 0402 LEDs for a denser layout by modifying the `footprint` prop in the component. Similarly, you can change the resistor footprint.
+
+### Adjusting Resistance
+
+For different supply voltages, adjust the resistance value. For a 3.3V supply with a red LED (~2V forward voltage), a 150Ω resistor gives approximately 8.7mA:
+
+```tsx
+<resistor resistance="150" footprint="0402" />
+```
