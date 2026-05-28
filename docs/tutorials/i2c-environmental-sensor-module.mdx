@@ -1,0 +1,358 @@
+---
+title: Build an I2C Environmental Sensor Module
+description: Learn how to design a small BME280-based temperature, humidity, and pressure sensor module with I2C pull-ups, headers, decoupling, and an optional OLED display connector.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial walks through a compact I2C environmental sensor module built
+around the BME280. The board exposes power and I2C on a 4-pin header, includes
+the required pull-up resistors, adds local decoupling capacitors, and leaves an
+optional OLED header on the same I2C bus.
+
+The finished module can report:
+
+- Temperature
+- Relative humidity
+- Barometric pressure
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="34mm" height="24mm" routingDisabled>
+    <chip
+      name="U1"
+      footprint="smdpinrow8"
+      manufacturerPartNumber="BME280"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "CSB",
+        pin3: "SDI",
+        pin4: "SCK",
+        pin5: "SDO",
+        pin6: "VDDIO",
+        pin7: "VDD",
+        pin8: "GND2",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VDD", "VDDIO", "GND", "GND2"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["SCK", "SDI", "CSB", "SDO"],
+        },
+      }}
+      connections={{
+        VDD: "net.V3_3",
+        VDDIO: "net.V3_3",
+        GND: "net.GND",
+        GND2: "net.GND",
+        SCK: "net.SCL",
+        SDI: "net.SDA",
+        CSB: "net.V3_3",
+        SDO: "net.GND",
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <pinheader
+      name="J1"
+      pinCount={4}
+      pitch="2.54mm"
+      gender="male"
+      footprint="pinrow4"
+      showSilkscreenPinLabels
+      pinLabels={["VCC", "GND", "SDA", "SCL"]}
+      connections={{
+        VCC: "net.V3_3",
+        GND: "net.GND",
+        SDA: "net.SDA",
+        SCL: "net.SCL",
+      }}
+      pcbX={-12}
+      pcbY={0}
+    />
+
+    <pinheader
+      name="J2"
+      pinCount={4}
+      pitch="2.54mm"
+      gender="female"
+      footprint="pinrow4"
+      showSilkscreenPinLabels
+      pinLabels={["GND", "VCC", "SCL", "SDA"]}
+      connections={{
+        GND: "net.GND",
+        VCC: "net.V3_3",
+        SCL: "net.SCL",
+        SDA: "net.SDA",
+      }}
+      pcbX={12}
+      pcbY={0}
+    />
+
+    <resistor
+      name="R1"
+      footprint="0603"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3_3", pin2: "net.SDA" }}
+      pcbX={-4}
+      pcbY={-8}
+    />
+    <resistor
+      name="R2"
+      footprint="0603"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3_3", pin2: "net.SCL" }}
+      pcbX={4}
+      pcbY={-8}
+    />
+    <capacitor
+      name="C1"
+      footprint="0603"
+      capacitance="100nF"
+      connections={{ pos: "net.V3_3", neg: "net.GND" }}
+      pcbX={-4}
+      pcbY={8}
+    />
+    <capacitor
+      name="C2"
+      footprint="0603"
+      capacitance="1uF"
+      connections={{ pos: "net.V3_3", neg: "net.GND" }}
+      pcbX={4}
+      pcbY={8}
+    />
+  </board>
+)
+`} />
+
+## Parts
+
+| Ref | Part | Notes |
+| --- | --- | --- |
+| U1 | BME280 | Temperature, humidity, and pressure sensor. Use the I2C mode wiring shown below. |
+| R1, R2 | 4.7k resistors | Pull SDA and SCL up to 3.3V. |
+| C1 | 100nF capacitor | Place close to the sensor supply pins. |
+| C2 | 1uF capacitor | Bulk decoupling for the module input. |
+| J1 | 4-pin male header | Main host connection: VCC, GND, SDA, SCL. |
+| J2 | 4-pin female header | Optional OLED display connection on the same I2C bus. |
+
+## Design Goals
+
+The module is intentionally simple:
+
+- Use 3.3V logic so it can connect directly to most modern microcontrollers.
+- Put the BME280 in I2C mode by tying `CSB` high.
+- Select address `0x76` by tying `SDO` low. Tie `SDO` high instead if you need
+  address `0x77`.
+- Keep pull-up resistors on the module so a host board can talk to it with only
+  four wires.
+- Add an optional OLED connector because many sensor projects show readings on
+  a small SSD1306 display.
+
+## Step 1: Add the Sensor
+
+The BME280 has separate core and interface supply pins. For a simple 3.3V
+module, connect both `VDD` and `VDDIO` to the same 3.3V rail.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+export default () => (
+  <board width="22mm" height="16mm">
+    <chip
+      name="U1"
+      footprint="smdpinrow8"
+      manufacturerPartNumber="BME280"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "CSB",
+        pin3: "SDI",
+        pin4: "SCK",
+        pin5: "SDO",
+        pin6: "VDDIO",
+        pin7: "VDD",
+        pin8: "GND2",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VDD", "VDDIO", "GND", "GND2"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["SCK", "SDI", "CSB", "SDO"],
+        },
+      }}
+      connections={{
+        VDD: "net.V3_3",
+        VDDIO: "net.V3_3",
+        GND: "net.GND",
+        GND2: "net.GND",
+        SCK: "net.SCL",
+        SDI: "net.SDA",
+        CSB: "net.V3_3",
+        SDO: "net.GND",
+      }}
+    />
+  </board>
+)
+`} />
+
+The important I2C-mode connections are:
+
+- `SCK` becomes `SCL`.
+- `SDI` becomes `SDA`.
+- `CSB` goes to 3.3V to select I2C instead of SPI.
+- `SDO` selects the I2C address.
+
+## Step 2: Add the Host Header
+
+Most host boards expect a 4-pin sensor header. Use the same order on your
+silkscreen that you use in code so it is easy to cable the module correctly.
+
+```tsx
+<pinheader
+  name="J1"
+  pinCount={4}
+  pitch="2.54mm"
+  gender="male"
+  footprint="pinrow4"
+  showSilkscreenPinLabels
+  pinLabels={["VCC", "GND", "SDA", "SCL"]}
+  connections={{
+    VCC: "net.V3_3",
+    GND: "net.GND",
+    SDA: "net.SDA",
+    SCL: "net.SCL",
+  }}
+/>
+```
+
+If your host board already has I2C pull-ups, you can leave R1 and R2
+unpopulated or use solder jumpers in a later revision. For a standalone module,
+populate them.
+
+## Step 3: Add I2C Pull-ups
+
+I2C devices only pull the bus low. The bus idles high through pull-up
+resistors, so SDA and SCL each need a resistor to 3.3V.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+export default () => (
+  <board width="24mm" height="16mm">
+    <pinheader
+      name="J1"
+      pinCount={4}
+      pitch="2.54mm"
+      gender="male"
+      footprint="pinrow4"
+      pinLabels={["VCC", "GND", "SDA", "SCL"]}
+      connections={{
+        VCC: "net.V3_3",
+        GND: "net.GND",
+        SDA: "net.SDA",
+        SCL: "net.SCL",
+      }}
+    />
+    <resistor
+      name="R1"
+      footprint="0603"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3_3", pin2: "net.SDA" }}
+    />
+    <resistor
+      name="R2"
+      footprint="0603"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3_3", pin2: "net.SCL" }}
+    />
+  </board>
+)
+`} />
+
+`4.7k` is a good default for a short 3.3V cable. For very long wires or a bus
+with several modules, you may need to calculate the pull-up value from bus
+capacitance and rise-time requirements.
+
+## Step 4: Add Decoupling Capacitors
+
+Place the 100nF capacitor as close as possible to the BME280 supply pins. The
+1uF capacitor can sit near the incoming header to absorb slower supply changes.
+
+```tsx
+<capacitor
+  name="C1"
+  footprint="0603"
+  capacitance="100nF"
+  connections={{ pos: "net.V3_3", neg: "net.GND" }}
+/>
+<capacitor
+  name="C2"
+  footprint="0603"
+  capacitance="1uF"
+  connections={{ pos: "net.V3_3", neg: "net.GND" }}
+/>
+```
+
+## Step 5: Add an Optional OLED Header
+
+Many small displays use the same four I2C signals. Adding an optional OLED
+header lets the module become a tiny local readout board without changing the
+sensor circuit.
+
+```tsx
+<pinheader
+  name="J2"
+  pinCount={4}
+  pitch="2.54mm"
+  gender="female"
+  footprint="pinrow4"
+  showSilkscreenPinLabels
+  pinLabels={["GND", "VCC", "SCL", "SDA"]}
+  connections={{
+    GND: "net.GND",
+    VCC: "net.V3_3",
+    SCL: "net.SCL",
+    SDA: "net.SDA",
+  }}
+/>
+```
+
+Check the display module pinout before assembly. OLED breakout boards often use
+`GND, VCC, SCL, SDA`, but not all vendors keep the same order.
+
+## Layout Checklist
+
+- Put U1 away from hot regulators, LEDs, and microcontrollers so temperature
+  readings are not biased by local heat.
+- Keep a small opening around the sensor so airflow can reach it.
+- Route SDA and SCL as short, direct traces and keep them away from noisy power
+  switching nodes.
+- Place C1 near the BME280 supply pins before routing long traces elsewhere.
+- Label the header pins on silkscreen. Sensor boards are often wired by hand.
+- If the module might be used on a 5V host, add a regulator and I2C level
+  shifting before connecting it directly.
+
+## Firmware Smoke Test
+
+After assembly, run a quick I2C scan from your host. The module should appear at
+`0x76` with the default `SDO`-to-ground wiring.
+
+```ts
+// Pseudocode for a host board test.
+const sensor = await i2c.openDevice(0x76)
+const chipId = await sensor.readRegister(0xd0)
+
+if (chipId !== 0x60) {
+  throw new Error("BME280 was not detected")
+}
+```
+
+Once the chip responds, use a BME280 driver library for your host platform and
+verify that temperature, humidity, and pressure readings change when you breathe
+near the sensor or gently warm the board.
