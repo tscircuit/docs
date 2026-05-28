@@ -1,0 +1,937 @@
+---
+title: Building an Arduino Uno Schematic
+description: >-
+  Learn how to build an Arduino Uno schematic with the ATmega328P microcontroller,
+  16MHz crystal oscillator, reset circuit, power supply, and LED indicators using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building an Arduino Uno schematic using tscircuit. We'll cover the ATmega328P microcontroller, 16MHz crystal oscillator with load capacitors, reset circuit, power supply with an LDO voltage regulator, decoupling capacitors, and LED indicators — the essential components that make up the Arduino Uno.
+
+The Arduino Uno is one of the most popular development boards in the maker community. At its heart is the ATmega328P microcontroller running at 16MHz with 32KB of Flash, 2KB of SRAM, and 1KB of EEPROM. This schematic-only design focuses on the core circuitry needed to get the ATmega328P up and running.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-10}
+        schY={4}
+      />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-5.0"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "VO"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["VI"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6187"] }}
+        schX={-5}
+        schY={4}
+      />
+
+      <chip
+        name="U1"
+        manufacturerPartNumber="ATmega328P-PU"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["PC6/RESET", "PD0/RXD", "PD1/TXD", "PD2/INT0", "PD3/INT1", "PD4", "VCC", "GND", "PB6/XTAL1", "PB7/XTAL2", "PD5", "PD6", "PD7"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["PC5/A5/SCL", "PC4/A4/SDA", "PC3/A3", "PC2/A2", "PC1/A1", "PC0/A0", "GND2", "AREF", "AVCC", "PB5/D13/SCK", "PB4/D12/MISO", "PB3/D11/MOSI", "PB2/D10", "PB1/D9", "PB0/D8"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C82151"] }}
+        schX={5}
+        schY={0}
+      />
+
+      <chip
+        name="Y1"
+        manufacturerPartNumber="CSTCE16M0V53-R0"
+        schWidth={2}
+        schHeight={2}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["1"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["3"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C126020"] }}
+        schX={5}
+        schY={-6}
+      />
+
+      <capacitor
+        name="C1"
+        capacitance="22pF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C1555"] }}
+        schX={3}
+        schY={-8}
+      />
+
+      <capacitor
+        name="C2"
+        capacitance="22pF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C1555"] }}
+        schX={7}
+        schY={-8}
+      />
+
+      <capacitor
+        name="C3"
+        capacitance="100nF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C307514"] }}
+        schX={2}
+        schY={-4}
+      />
+
+      <capacitor
+        name="C4"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-7}
+        schY={1}
+      />
+
+      <capacitor
+        name="C5"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-3}
+        schY={1}
+      />
+
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={4}
+      />
+
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        schX={-2}
+        schY={4}
+      />
+
+      <led
+        name="LED_PWR"
+        color="green"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72043"] }}
+        schX={10}
+        schY={4}
+      />
+
+      <resistor
+        name="R2"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={10}
+        schY={6}
+      />
+
+      <led
+        name="LED_D13"
+        color="yellow"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72044"] }}
+        schX={10}
+        schY={-2}
+      />
+
+      <resistor
+        name="R3"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={10}
+        schY={0}
+      />
+
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V5" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".C4 .pos" to="net.VBUS" />
+      <trace from=".C4 .neg" to="net.GND" />
+      <trace from=".C5 .pos" to="net.V5" />
+      <trace from=".C5 .neg" to="net.GND" />
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+      <trace from=".C3 .pos" to="net.V5" />
+      <trace from=".C3 .neg" to="net.GND" />
+      <trace from=".Y1 .1" to=".U1 .PB6/XTAL1" />
+      <trace from=".Y1 .3" to=".U1 .PB7/XTAL2" />
+      <trace from=".C1 .pos" to=".U1 .PB6/XTAL1" />
+      <trace from=".C1 .neg" to="net.GND" />
+      <trace from=".C2 .pos" to=".U1 .PB7/XTAL2" />
+      <trace from=".C2 .neg" to="net.GND" />
+      <trace from=".R1 .pos" to="net.V5" />
+      <trace from=".R1 .neg" to=".U1 .PC6/RESET" />
+      <trace from=".SW1 .pin1" to=".U1 .PC6/RESET" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+      <trace from=".R2 .pos" to="net.V5" />
+      <trace from=".R2 .neg" to=".LED_PWR .pos" />
+      <trace from=".LED_PWR .neg" to="net.GND" />
+      <trace from=".R3 .pos" to=".U1 .PB5/D13/SCK" />
+      <trace from=".R3 .neg" to=".LED_D13 .pos" />
+      <trace from=".LED_D13 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Arduino Uno Minimum System Requirements
+
+The Arduino Uno's core circuit needs the following to operate reliably:
+
+- **Power Supply** — The ATmega328P requires a stable 5V supply. We use a USB-C connector with an AMS1117-5.0 LDO to step down USB's 5V (VBUS) to a regulated 5V rail.
+- **Clock Circuit** — A 16MHz ceramic resonator (or crystal with load capacitors) provides the system clock. Two 22pF capacitors are needed as load capacitors for a crystal oscillator.
+- **Reset Circuit** — The RESET pin (PC6) must be pulled high via a 10k resistor. A push button pulls it low to reset the microcontroller.
+- **Decoupling Capacitors** — A 100nF ceramic capacitor close to the ATmega328P's power pins filters high-frequency noise, while 10uF bulk capacitors stabilize the LDO input and output.
+- **LED Indicators** — A green power LED indicates the board is powered, and a yellow LED on digital pin 13 (PB5/SCK) provides a user-controllable indicator.
+
+## Building the Circuit Step by Step
+
+### Step 1: ATmega328P Microcontroller
+
+The ATmega328P-PU is the heart of the Arduino Uno. It comes in a 28-pin DIP package with 23 general-purpose I/O lines, 32KB of Flash memory, and operates at up to 20MHz (the Arduino Uno runs it at 16MHz).
+
+We define it using the `<chip>` component with pin labels matching the ATmega328P-PU pinout. The left side contains the reset pin, port D pins, power, ground, and crystal pins. The right side contains the analog pins, AREF, AVCC, and port B pins (including the SPI and digital pins).
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <chip
+        name="U1"
+        manufacturerPartNumber="ATmega328P-PU"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["PC6/RESET", "PD0/RXD", "PD1/TXD", "PD2/INT0", "PD3/INT1", "PD4", "VCC", "GND", "PB6/XTAL1", "PB7/XTAL2", "PD5", "PD6", "PD7"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["PC5/A5/SCL", "PC4/A4/SDA", "PC3/A3", "PC2/A2", "PC1/A1", "PC0/A0", "GND2", "AREF", "AVCC", "PB5/D13/SCK", "PB4/D12/MISO", "PB3/D11/MOSI", "PB2/D10", "PB1/D9", "PB0/D8"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C82151"] }}
+      />
+    </board>
+  )
+}
+`} />
+
+The `schPortArrangement` property controls how pins appear on the schematic symbol. Each side has a `direction` (top-to-bottom) and an array of pin names. The pin names use the format `PORT/PIN_FUNCTION` to show both the port name and the Arduino pin name.
+
+### Step 2: Power Supply (USB-C + LDO)
+
+The Arduino Uno operates at 5V. We use a USB-C connector as the power source and an AMS1117-5.0 LDO (Low Dropout Regulator) to provide a stable 5V output. The `SmdUsbC` component provides the USB-C connector, and we add 10uF capacitors on both the input and output of the LDO for stability.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-10}
+        schY={4}
+      />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-5.0"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "VO"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["VI"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6187"] }}
+        schX={-5}
+        schY={4}
+      />
+
+      <capacitor
+        name="C4"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-7}
+        schY={1}
+      />
+
+      <capacitor
+        name="C5"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-3}
+        schY={1}
+      />
+
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V5" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".C4 .pos" to="net.VBUS" />
+      <trace from=".C4 .neg" to="net.GND" />
+      <trace from=".C5 .pos" to="net.V5" />
+      <trace from=".C5 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+The AMS1117-5.0 takes the USB VBUS (5V) as input and outputs a regulated 5V. While this seems redundant (5V in, 5V out), the LDO provides a clean, stable voltage even when the USB supply fluctuates. In the actual Arduino Uno, the LDO input comes from the DC barrel jack (7-12V), but for simplicity we connect it to VBUS here.
+
+### Step 3: Connect Power to ATmega328P
+
+Now we connect the 5V output from the LDO to the ATmega328P's power pins. The ATmega328P has two power pins: VCC (digital supply) and AVCC (analog supply). Both must be connected to 5V. It also has two GND pins. We add a 100nF decoupling capacitor close to the chip's power pins to filter high-frequency noise.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-10}
+        schY={4}
+      />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-5.0"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: { direction: "top-to-bottom", pins: ["GND", "VO"] },
+          rightSide: { direction: "top-to-bottom", pins: ["VI"] }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6187"] }}
+        schX={-5}
+        schY={4}
+      />
+
+      <chip
+        name="U1"
+        manufacturerPartNumber="ATmega328P-PU"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["PC6/RESET", "PD0/RXD", "PD1/TXD", "PD2/INT0", "PD3/INT1", "PD4", "VCC", "GND", "PB6/XTAL1", "PB7/XTAL2", "PD5", "PD6", "PD7"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["PC5/A5/SCL", "PC4/A4/SDA", "PC3/A3", "PC2/A2", "PC1/A1", "PC0/A0", "GND2", "AREF", "AVCC", "PB5/D13/SCK", "PB4/D12/MISO", "PB3/D11/MOSI", "PB2/D10", "PB1/D9", "PB0/D8"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C82151"] }}
+        schX={5}
+        schY={0}
+      />
+
+      <capacitor name="C4" capacitance="10uF" footprint="0805" supplierPartNumbers={{ jlcpcb: ["C15850"] }} schX={-7} schY={1} />
+      <capacitor name="C5" capacitance="10uF" footprint="0805" supplierPartNumbers={{ jlcpcb: ["C15850"] }} schX={-3} schY={1} />
+      <capacitor name="C3" capacitance="100nF" footprint="0402" supplierPartNumbers={{ jlcpcb: ["C307514"] }} schX={2} schY={-4} />
+
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V5" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".C4 .pos" to="net.VBUS" />
+      <trace from=".C4 .neg" to="net.GND" />
+      <trace from=".C5 .pos" to="net.V5" />
+      <trace from=".C5 .neg" to="net.GND" />
+
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+      <trace from=".C3 .pos" to="net.V5" />
+      <trace from=".C3 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+The 100nF decoupling capacitor (C3) is critical for reliable operation. It acts as a local energy reservoir that can supply instantaneous current when the ATmega328P switches its outputs, preventing voltage dips on the power rail that could cause erratic behavior.
+
+### Step 4: 16MHz Clock Circuit
+
+The ATmega328P requires an external clock source for accurate timing. The Arduino Uno uses a 16MHz crystal oscillator with two 22pF load capacitors. The crystal connects to the XTAL1 (PB6) and XTAL2 (PB7) pins.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <chip
+        name="U1"
+        manufacturerPartNumber="ATmega328P-PU"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["PC6/RESET", "PD0/RXD", "PD1/TXD", "PD2/INT0", "PD3/INT1", "PD4", "VCC", "GND", "PB6/XTAL1", "PB7/XTAL2", "PD5", "PD6", "PD7"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["PC5/A5/SCL", "PC4/A4/SDA", "PC3/A3", "PC2/A2", "PC1/A1", "PC0/A0", "GND2", "AREF", "AVCC", "PB5/D13/SCK", "PB4/D12/MISO", "PB3/D11/MOSI", "PB2/D10", "PB1/D9", "PB0/D8"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C82151"] }}
+        schX={5}
+        schY={0}
+      />
+
+      <chip
+        name="Y1"
+        manufacturerPartNumber="16MHz Crystal"
+        schWidth={2}
+        schHeight={2}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["1"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["2"]
+          }
+        }}
+        schX={5}
+        schY={-6}
+      />
+
+      <capacitor
+        name="C1"
+        capacitance="22pF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C1555"] }}
+        schX={3}
+        schY={-8}
+      />
+
+      <capacitor
+        name="C2"
+        capacitance="22pF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C1555"] }}
+        schX={7}
+        schY={-8}
+      />
+
+      <trace from=".Y1 .1" to=".U1 .PB6/XTAL1" />
+      <trace from=".Y1 .2" to=".U1 .PB7/XTAL2" />
+      <trace from=".C1 .pos" to=".U1 .PB6/XTAL1" />
+      <trace from=".C1 .neg" to="net.GND" />
+      <trace from=".C2 .pos" to=".U1 .PB7/XTAL2" />
+      <trace from=".C2 .neg" to="net.GND" />
+
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+The 22pF load capacitors are required for the crystal to oscillate at the correct frequency. The capacitor values are specified by the crystal manufacturer and depend on the crystal's load capacitance specification. For a typical 16MHz crystal with 16pF load capacitance, two 22pF capacitors provide the correct load (accounting for stray PCB capacitance of about 5pF on each pin).
+
+### Step 5: Reset Circuit
+
+The ATmega328P has an active-low reset pin (PC6/RESET). For normal operation, this pin must be held high. We use a 10k pull-up resistor to VCC and a push button to ground — pressing the button pulls RESET low, restarting the microcontroller.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <chip
+        name="U1"
+        manufacturerPartNumber="ATmega328P-PU"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["PC6/RESET", "PD0/RXD", "PD1/TXD", "PD2/INT0", "PD3/INT1", "PD4", "VCC", "GND", "PB6/XTAL1", "PB7/XTAL2", "PD5", "PD6", "PD7"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["PC5/A5/SCL", "PC4/A4/SDA", "PC3/A3", "PC2/A2", "PC1/A1", "PC0/A0", "GND2", "AREF", "AVCC", "PB5/D13/SCK", "PB4/D12/MISO", "PB3/D11/MOSI", "PB2/D10", "PB1/D9", "PB0/D8"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C82151"] }}
+        schX={5}
+        schY={0}
+      />
+
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={4}
+      />
+
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        schX={-2}
+        schY={4}
+      />
+
+      <trace from=".R1 .pos" to="net.V5" />
+      <trace from=".R1 .neg" to=".U1 .PC6/RESET" />
+      <trace from=".SW1 .pin1" to=".U1 .PC6/RESET" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+The 10k pull-up resistor keeps RESET at 5V during normal operation. When the push button is pressed, it creates a direct path from RESET to GND, pulling the pin low and triggering a reset. In the actual Arduino Uno, a 100nF capacitor is also placed in parallel with the button for auto-reset during programming via the serial DTR signal, but we omit it here for simplicity.
+
+### Step 6: LED Indicators
+
+The Arduino Uno has two important LEDs: a green power LED that indicates the board is powered, and a yellow LED connected to digital pin 13 (PB5/SCK) that serves as a built-in test indicator. Each LED has a 1k current-limiting resistor.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <chip
+        name="U1"
+        manufacturerPartNumber="ATmega328P-PU"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["PC6/RESET", "PD0/RXD", "PD1/TXD", "PD2/INT0", "PD3/INT1", "PD4", "VCC", "GND", "PB6/XTAL1", "PB7/XTAL2", "PD5", "PD6", "PD7"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["PC5/A5/SCL", "PC4/A4/SDA", "PC3/A3", "PC2/A2", "PC1/A1", "PC0/A0", "GND2", "AREF", "AVCC", "PB5/D13/SCK", "PB4/D12/MISO", "PB3/D11/MOSI", "PB2/D10", "PB1/D9", "PB0/D8"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C82151"] }}
+        schX={5}
+        schY={0}
+      />
+
+      <led
+        name="LED_PWR"
+        color="green"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72043"] }}
+        schX={10}
+        schY={4}
+      />
+
+      <resistor
+        name="R2"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={10}
+        schY={6}
+      />
+
+      <led
+        name="LED_D13"
+        color="yellow"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72044"] }}
+        schX={10}
+        schY={-2}
+      />
+
+      <resistor
+        name="R3"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={10}
+        schY={0}
+      />
+
+      <trace from=".R2 .pos" to="net.V5" />
+      <trace from=".R2 .neg" to=".LED_PWR .pos" />
+      <trace from=".LED_PWR .neg" to="net.GND" />
+      <trace from=".R3 .pos" to=".U1 .PB5/D13/SCK" />
+      <trace from=".R3 .neg" to=".LED_D13 .pos" />
+      <trace from=".LED_D13 .neg" to="net.GND" />
+
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+The power LED (green) is connected between VCC and GND through a 1k resistor — it's always on when the board is powered. The D13 LED (yellow) is connected to PB5/SCK through a 1k resistor. When pin 13 is driven HIGH in your Arduino sketch, current flows from the pin through the resistor and LED to ground, lighting it up. This is the LED that blinks when you run the classic "Blink" sketch.
+
+### Step 7: Complete Schematic
+
+Now we combine all the sub-circuits into the complete Arduino Uno schematic. This includes the USB-C power supply, AMS1117-5.0 LDO regulator, ATmega328P microcontroller, 16MHz crystal with load capacitors, decoupling capacitors, reset circuit, and both LED indicators.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="80mm" height="60mm" routingDisabled>
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-10}
+        schY={4}
+      />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-5.0"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "VO"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["VI"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6187"] }}
+        schX={-5}
+        schY={4}
+      />
+
+      <chip
+        name="U1"
+        manufacturerPartNumber="ATmega328P-PU"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["PC6/RESET", "PD0/RXD", "PD1/TXD", "PD2/INT0", "PD3/INT1", "PD4", "VCC", "GND", "PB6/XTAL1", "PB7/XTAL2", "PD5", "PD6", "PD7"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["PC5/A5/SCL", "PC4/A4/SDA", "PC3/A3", "PC2/A2", "PC1/A1", "PC0/A0", "GND2", "AREF", "AVCC", "PB5/D13/SCK", "PB4/D12/MISO", "PB3/D11/MOSI", "PB2/D10", "PB1/D9", "PB0/D8"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C82151"] }}
+        schX={5}
+        schY={0}
+      />
+
+      <chip
+        name="Y1"
+        manufacturerPartNumber="CSTCE16M0V53-R0"
+        schWidth={2}
+        schHeight={2}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["1"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["3"]
+          }
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C126020"] }}
+        schX={5}
+        schY={-6}
+      />
+
+      <capacitor
+        name="C1"
+        capacitance="22pF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C1555"] }}
+        schX={3}
+        schY={-8}
+      />
+
+      <capacitor
+        name="C2"
+        capacitance="22pF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C1555"] }}
+        schX={7}
+        schY={-8}
+      />
+
+      <capacitor
+        name="C3"
+        capacitance="100nF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C307514"] }}
+        schX={2}
+        schY={-4}
+      />
+
+      <capacitor
+        name="C4"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-7}
+        schY={1}
+      />
+
+      <capacitor
+        name="C5"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-3}
+        schY={1}
+      />
+
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={4}
+      />
+
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        schX={-2}
+        schY={4}
+      />
+
+      <led
+        name="LED_PWR"
+        color="green"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72043"] }}
+        schX={10}
+        schY={4}
+      />
+
+      <resistor
+        name="R2"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={10}
+        schY={6}
+      />
+
+      <led
+        name="LED_D13"
+        color="yellow"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72044"] }}
+        schX={10}
+        schY={-2}
+      />
+
+      <resistor
+        name="R3"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={10}
+        schY={0}
+      />
+
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V5" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".C4 .pos" to="net.VBUS" />
+      <trace from=".C4 .neg" to="net.GND" />
+      <trace from=".C5 .pos" to="net.V5" />
+      <trace from=".C5 .neg" to="net.GND" />
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+      <trace from=".C3 .pos" to="net.V5" />
+      <trace from=".C3 .neg" to="net.GND" />
+      <trace from=".Y1 .1" to=".U1 .PB6/XTAL1" />
+      <trace from=".Y1 .3" to=".U1 .PB7/XTAL2" />
+      <trace from=".C1 .pos" to=".U1 .PB6/XTAL1" />
+      <trace from=".C1 .neg" to="net.GND" />
+      <trace from=".C2 .pos" to=".U1 .PB7/XTAL2" />
+      <trace from=".C2 .neg" to="net.GND" />
+      <trace from=".R1 .pos" to="net.V5" />
+      <trace from=".R1 .neg" to=".U1 .PC6/RESET" />
+      <trace from=".SW1 .pin1" to=".U1 .PC6/RESET" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+      <trace from=".R2 .pos" to="net.V5" />
+      <trace from=".R2 .neg" to=".LED_PWR .pos" />
+      <trace from=".LED_PWR .neg" to="net.GND" />
+      <trace from=".R3 .pos" to=".U1 .PB5/D13/SCK" />
+      <trace from=".R3 .neg" to=".LED_D13 .pos" />
+      <trace from=".LED_D13 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Component Reference
+
+| Component | Designator | JLCPCB Part # | Description |
+|-----------|-----------|---------------|-------------|
+| ATmega328P-PU | U1 | C82151 | 8-bit AVR microcontroller (DIP-28) |
+| AMS1117-5.0 | U2 | C6187 | 5V LDO voltage regulator |
+| 16MHz Crystal/Resonator | Y1 | C126020 | 16MHz ceramic resonator |
+| 22pF Capacitor | C1, C2 | C1555 | Crystal load capacitors (0402) |
+| 100nF Capacitor | C3 | C307514 | ATmega328P decoupling capacitor (0402) |
+| 10uF Capacitor | C4, C5 | C15850 | LDO input/output bulk capacitors (0805) |
+| 10k Resistor | R1 | C25744 | Reset pull-up resistor (0402) |
+| 1k Resistor | R2, R3 | C11702 | LED current-limiting resistors (0402) |
+| Green LED | LED_PWR | C72043 | Power indicator LED (0603) |
+| Yellow LED | LED_D13 | C72044 | D13 user indicator LED (0603) |
+| Push Button | SW1 | — | Reset button |
+| USB-C Connector | J1 | — | Power input (via SmdUsbC) |
+
+## ATmega328P Pin Mapping
+
+The ATmega328P-PU pin names map to Arduino pin numbers as follows:
+
+| ATmega328P Pin | Arduino Pin | Function |
+|----------------|-------------|----------|
+| PC0 | A0 | Analog input 0 |
+| PC1 | A1 | Analog input 1 |
+| PC2 | A2 | Analog input 2 |
+| PC3 | A3 | Analog input 3 |
+| PC4 | A4/SDA | Analog input 4 / I2C Data |
+| PC5 | A5/SCL | Analog input 5 / I2C Clock |
+| PD0 | D0/RX | Digital pin 0 / Serial Receive |
+| PD1 | D1/TX | Digital pin 1 / Serial Transmit |
+| PD2 | D2 | Digital pin 2 / INT0 |
+| PD3 | D3~ | Digital pin 3 / INT1 / PWM |
+| PD4 | D4 | Digital pin 4 |
+| PD5 | D5~ | Digital pin 5 / PWM |
+| PD6 | D6~ | Digital pin 6 / PWM |
+| PD7 | D7 | Digital pin 7 |
+| PB0 | D8 | Digital pin 8 |
+| PB1 | D9~ | Digital pin 9 / PWM |
+| PB2 | D10~ | Digital pin 10 / PWM / SS |
+| PB3 | D11~ | Digital pin 11 / PWM / MOSI |
+| PB4 | D12 | Digital pin 12 / MISO |
+| PB5 | D13 | Digital pin 13 / SCK / Built-in LED |
+
+Pins marked with ~ support PWM output via the `analogWrite()` function.
+
+## Next Steps
+
+- **Add a USB-to-Serial bridge** — Add an ATmega16U2 or CH340G chip to enable programming the ATmega328P directly via USB
+- **Add pin headers** — Add female pin headers to expose all I/O pins for prototyping, just like the real Arduino Uno
+- **Add ICSP header** — Add a 2x3 pin header for In-Circuit Serial Programming
+- **Add a 3.3V regulator** — Add an LP2985-3.3 to provide a 3.3V output for low-voltage peripherals
+- **Order the PCB** — Follow the [Ordering Prototypes](/building-electronics/ordering-prototypes) guide to manufacture your board
