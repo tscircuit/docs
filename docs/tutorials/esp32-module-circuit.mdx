@@ -1,0 +1,979 @@
+---
+title: Building an ESP32 Module Circuit
+description: >-
+  Learn how to build an ESP32-WROOM-32 minimal system circuit with power supply,
+  reset, boot mode selection, and status LED using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building an ESP32-WROOM-32 minimal system circuit using tscircuit. We'll cover the power supply with an LDO voltage regulator, decoupling capacitors, reset and boot mode circuits, and a status LED — everything needed to get an ESP32 module up and running.
+
+The ESP32 is a popular low-cost microcontroller with integrated Wi-Fi and Bluetooth, making it ideal for IoT projects. A minimal system circuit ensures the ESP32 can boot reliably and communicate over serial.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="60mm" height="80mm" routingDisabled>
+      {/* USB-C Connector */}
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-8}
+        schY={3}
+      />
+
+      {/* LDO Voltage Regulator - AMS1117-3.3 */}
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-3.3"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "VO"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["VI"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6186"] }}
+        schX={-3}
+        schY={3}
+      />
+
+      {/* ESP32-WROOM-32 Module */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-WROOM-32"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "3V3", "EN", "IO0", "IO2", "IO4", "IO5", "IO12", "IO13", "IO14", "IO15", "IO16", "IO17", "IO25", "IO26"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["GND1", "VDD", "IO34", "IO35", "IO32", "IO33", "IO27", "IO23", "IO22", "IO21", "IO19", "TX", "RX"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "3V3"],
+          pin3: ["pin3", "EN"],
+          pin4: ["pin4", "IO0"],
+          pin5: ["pin5", "IO2"],
+          pin6: ["pin6", "IO4"],
+          pin7: ["pin7", "IO5"],
+          pin8: ["pin8", "IO12"],
+          pin9: ["pin9", "IO13"],
+          pin10: ["pin10", "IO14"],
+          pin11: ["pin11", "IO15"],
+          pin12: ["pin12", "IO16"],
+          pin13: ["pin13", "IO17"],
+          pin14: ["pin14", "IO25"],
+          pin15: ["pin15", "IO26"],
+          pin16: ["pin16", "GND1"],
+          pin17: ["pin17", "VDD"],
+          pin18: ["pin18", "IO34"],
+          pin19: ["pin19", "IO35"],
+          pin20: ["pin20", "IO32"],
+          pin21: ["pin21", "IO33"],
+          pin22: ["pin22", "IO27"],
+          pin23: ["pin23", "IO23"],
+          pin24: ["pin24", "IO22"],
+          pin25: ["pin25", "IO21"],
+          pin26: ["pin26", "IO19"],
+          pin27: ["pin27", "TX"],
+          pin28: ["pin28", "RX"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C829502"] }}
+        schX={5}
+        schY={0}
+      />
+
+      {/* Input Capacitor for LDO - 10uF */}
+      <capacitor
+        name="C1"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-5}
+        schY={0}
+      />
+
+      {/* Output Capacitor for LDO - 10uF */}
+      <capacitor
+        name="C2"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-1}
+        schY={0}
+      />
+
+      {/* Decoupling Capacitor near ESP32 - 0.1uF */}
+      <capacitor
+        name="C3"
+        capacitance="0.1uF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C307514"] }}
+        schX={2}
+        schY={-5}
+      />
+
+      {/* Pull-up Resistor for EN - 10k */}
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={-2}
+      />
+
+      {/* Pull-up Resistor for IO0 - 10k */}
+      <resistor
+        name="R2"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={-4}
+      />
+
+      {/* Reset Button */}
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        schX={-2}
+        schY={-2}
+      />
+
+      {/* Status LED */}
+      <led
+        name="LED1"
+        color="blue"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72041"] }}
+        schX={9}
+        schY={-4}
+      />
+
+      {/* LED Current Limiting Resistor - 1k */}
+      <resistor
+        name="R3"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={9}
+        schY={-2}
+      />
+
+      {/* Power Traces */}
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V3_3" />
+      <trace from=".U2 .GND" to="net.GND" />
+
+      {/* Input Cap for LDO */}
+      <trace from=".C1 .pos" to="net.VBUS" />
+      <trace from=".C1 .neg" to="net.GND" />
+
+      {/* Output Cap for LDO */}
+      <trace from=".C2 .pos" to="net.V3_3" />
+      <trace from=".C2 .neg" to="net.GND" />
+
+      {/* ESP32 Power */}
+      <trace from=".U1 .3V3" to="net.V3_3" />
+      <trace from=".U1 .VDD" to="net.V3_3" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND1" to="net.GND" />
+
+      {/* Decoupling Cap */}
+      <trace from=".C3 .pos" to="net.V3_3" />
+      <trace from=".C3 .neg" to="net.GND" />
+
+      {/* EN Pull-up */}
+      <trace from=".R1 .pos" to="net.V3_3" />
+      <trace from=".R1 .neg" to=".U1 .EN" />
+
+      {/* Reset Button */}
+      <trace from=".SW1 .pin1" to=".U1 .EN" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+
+      {/* IO0 Pull-up */}
+      <trace from=".R2 .pos" to="net.V3_3" />
+      <trace from=".R2 .neg" to=".U1 .IO0" />
+
+      {/* Status LED */}
+      <trace from=".R3 .pos" to="net.V3_3" />
+      <trace from=".R3 .neg" to=".LED1 .pos" />
+      <trace from=".LED1 .neg" to=".U1 .IO2" />
+    </board>
+  )
+}
+`} />
+
+## ESP32 Minimum System Requirements
+
+An ESP32 minimum system needs the following to boot reliably:
+
+- **Power Supply** — The ESP32 requires a stable 3.3V supply. We use a USB-C connector with an AMS1117-3.3 LDO to step down 5V from USB to 3.3V.
+- **Decoupling Capacitors** — 10uF bulk capacitors on the LDO input and output, plus a 0.1uF ceramic capacitor close to the ESP32 for high-frequency noise filtering.
+- **Reset Circuit** — The EN (CHIP_PU) pin must be pulled high via a 10k resistor. A push button pulls it low to reset the chip.
+- **Boot Mode Selection** — The GPIO0 pin determines the boot mode. Pulled high for normal boot (flash mode), pulled low for download mode.
+- **Status LED** — A blue LED on GPIO2 provides visual feedback (GPIO2 also serves as a debug output during boot).
+
+## Building the Circuit Step by Step
+
+### Step 1: ESP32-WROOM-32 Module
+
+The ESP32-WROOM-32 is a module that integrates the ESP32 chip, Flash memory, and antenna into a single package. We define it using the `<chip>` component with pin labels matching the module's pinout.
+
+The ESP32-WROOM-32 has 38 pins total. For our schematic, we include the essential pins: power (3V3, VDD, GND), control (EN, IO0), communication (TX, RX), and several GPIO pins.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="60mm" height="80mm" routingDisabled>
+      {/* ESP32-WROOM-32 Module */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-WROOM-32"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "3V3", "EN", "IO0", "IO2", "IO4", "IO5", "IO12", "IO13", "IO14", "IO15", "IO16", "IO17", "IO25", "IO26"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["GND1", "VDD", "IO34", "IO35", "IO32", "IO33", "IO27", "IO23", "IO22", "IO21", "IO19", "TX", "RX"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "3V3"],
+          pin3: ["pin3", "EN"],
+          pin4: ["pin4", "IO0"],
+          pin5: ["pin5", "IO2"],
+          pin6: ["pin6", "IO4"],
+          pin7: ["pin7", "IO5"],
+          pin8: ["pin8", "IO12"],
+          pin9: ["pin9", "IO13"],
+          pin10: ["pin10", "IO14"],
+          pin11: ["pin11", "IO15"],
+          pin12: ["pin12", "IO16"],
+          pin13: ["pin13", "IO17"],
+          pin14: ["pin14", "IO25"],
+          pin15: ["pin15", "IO26"],
+          pin16: ["pin16", "GND1"],
+          pin17: ["pin17", "VDD"],
+          pin18: ["pin18", "IO34"],
+          pin19: ["pin19", "IO35"],
+          pin20: ["pin20", "IO32"],
+          pin21: ["pin21", "IO33"],
+          pin22: ["pin22", "IO27"],
+          pin23: ["pin23", "IO23"],
+          pin24: ["pin24", "IO22"],
+          pin25: ["pin25", "IO21"],
+          pin26: ["pin26", "IO19"],
+          pin27: ["pin27", "TX"],
+          pin28: ["pin28", "RX"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C829502"] }}
+      />
+    </board>
+  )
+}
+`} />
+
+### Step 2: Power Supply (USB-C + LDO)
+
+The ESP32 operates at 3.3V, but USB provides 5V. We use an AMS1117-3.3 LDO (Low Dropout Regulator) to step down the voltage. The `SmdUsbC` component provides the USB-C connector, and we add 10uF capacitors on both the input and output of the LDO for stability.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="60mm" height="80mm" routingDisabled>
+      {/* USB-C Connector */}
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-8}
+        schY={3}
+      />
+
+      {/* LDO Voltage Regulator - AMS1117-3.3 */}
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-3.3"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "VO"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["VI"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6186"] }}
+        schX={-3}
+        schY={3}
+      />
+
+      {/* Input Capacitor for LDO - 10uF */}
+      <capacitor
+        name="C1"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-5}
+        schY={0}
+      />
+
+      {/* Output Capacitor for LDO - 10uF */}
+      <capacitor
+        name="C2"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-1}
+        schY={0}
+      />
+
+      {/* Power Traces */}
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V3_3" />
+      <trace from=".U2 .GND" to="net.GND" />
+
+      {/* Input Cap for LDO */}
+      <trace from=".C1 .pos" to="net.VBUS" />
+      <trace from=".C1 .neg" to="net.GND" />
+
+      {/* Output Cap for LDO */}
+      <trace from=".C2 .pos" to="net.V3_3" />
+      <trace from=".C2 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+### Step 3: Connect Power to ESP32
+
+Now we connect the 3.3V output from the LDO to the ESP32's power pins. The ESP32-WROOM-32 has two 3.3V pins (3V3 and VDD) and two GND pins. We also add a 0.1uF decoupling capacitor close to the ESP32's power pins to filter high-frequency noise.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="60mm" height="80mm" routingDisabled>
+      {/* USB-C Connector */}
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-8}
+        schY={3}
+      />
+
+      {/* LDO Voltage Regulator */}
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-3.3"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: { direction: "top-to-bottom", pins: ["GND", "VO"] },
+          rightSide: { direction: "top-to-bottom", pins: ["VI"] }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6186"] }}
+        schX={-3}
+        schY={3}
+      />
+
+      {/* ESP32-WROOM-32 Module */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-WROOM-32"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "3V3", "EN", "IO0", "IO2", "IO4", "IO5", "IO12", "IO13", "IO14", "IO15", "IO16", "IO17", "IO25", "IO26"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["GND1", "VDD", "IO34", "IO35", "IO32", "IO33", "IO27", "IO23", "IO22", "IO21", "IO19", "TX", "RX"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "3V3"],
+          pin3: ["pin3", "EN"],
+          pin4: ["pin4", "IO0"],
+          pin5: ["pin5", "IO2"],
+          pin6: ["pin6", "IO4"],
+          pin7: ["pin7", "IO5"],
+          pin8: ["pin8", "IO12"],
+          pin9: ["pin9", "IO13"],
+          pin10: ["pin10", "IO14"],
+          pin11: ["pin11", "IO15"],
+          pin12: ["pin12", "IO16"],
+          pin13: ["pin13", "IO17"],
+          pin14: ["pin14", "IO25"],
+          pin15: ["pin15", "IO26"],
+          pin16: ["pin16", "GND1"],
+          pin17: ["pin17", "VDD"],
+          pin18: ["pin18", "IO34"],
+          pin19: ["pin19", "IO35"],
+          pin20: ["pin20", "IO32"],
+          pin21: ["pin21", "IO33"],
+          pin22: ["pin22", "IO27"],
+          pin23: ["pin23", "IO23"],
+          pin24: ["pin24", "IO22"],
+          pin25: ["pin25", "IO21"],
+          pin26: ["pin26", "IO19"],
+          pin27: ["pin27", "TX"],
+          pin28: ["pin28", "RX"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C829502"] }}
+        schX={5}
+        schY={0}
+      />
+
+      {/* Capacitors */}
+      <capacitor name="C1" capacitance="10uF" footprint="0805" supplierPartNumbers={{ jlcpcb: ["C15850"] }} schX={-5} schY={0} />
+      <capacitor name="C2" capacitance="10uF" footprint="0805" supplierPartNumbers={{ jlcpcb: ["C15850"] }} schX={-1} schY={0} />
+      <capacitor name="C3" capacitance="0.1uF" footprint="0402" supplierPartNumbers={{ jlcpcb: ["C307514"] }} schX={2} schY={-5} />
+
+      {/* LDO Power Traces */}
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V3_3" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".C1 .pos" to="net.VBUS" />
+      <trace from=".C1 .neg" to="net.GND" />
+      <trace from=".C2 .pos" to="net.V3_3" />
+      <trace from=".C2 .neg" to="net.GND" />
+
+      {/* ESP32 Power */}
+      <trace from=".U1 .3V3" to="net.V3_3" />
+      <trace from=".U1 .VDD" to="net.V3_3" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND1" to="net.GND" />
+
+      {/* Decoupling Cap */}
+      <trace from=".C3 .pos" to="net.V3_3" />
+      <trace from=".C3 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+### Step 4: Reset and Boot Mode Circuits
+
+The ESP32 has two critical control pins:
+
+- **EN (CHIP_PU)** — The enable/reset pin. Must be pulled high (3.3V) for normal operation. Pulling it low resets the chip. We use a 10k pull-up resistor and a push button to ground.
+- **IO0** — Determines the boot mode. Pulled high = normal boot from flash, pulled low = serial download mode. We use a 10k pull-up resistor for normal operation.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="60mm" height="80mm" routingDisabled>
+      {/* ESP32-WROOM-32 Module */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-WROOM-32"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "3V3", "EN", "IO0", "IO2", "IO4", "IO5", "IO12", "IO13", "IO14", "IO15", "IO16", "IO17", "IO25", "IO26"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["GND1", "VDD", "IO34", "IO35", "IO32", "IO33", "IO27", "IO23", "IO22", "IO21", "IO19", "TX", "RX"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "3V3"],
+          pin3: ["pin3", "EN"],
+          pin4: ["pin4", "IO0"],
+          pin5: ["pin5", "IO2"],
+          pin6: ["pin6", "IO4"],
+          pin7: ["pin7", "IO5"],
+          pin8: ["pin8", "IO12"],
+          pin9: ["pin9", "IO13"],
+          pin10: ["pin10", "IO14"],
+          pin11: ["pin11", "IO15"],
+          pin12: ["pin12", "IO16"],
+          pin13: ["pin13", "IO17"],
+          pin14: ["pin14", "IO25"],
+          pin15: ["pin15", "IO26"],
+          pin16: ["pin16", "GND1"],
+          pin17: ["pin17", "VDD"],
+          pin18: ["pin18", "IO34"],
+          pin19: ["pin19", "IO35"],
+          pin20: ["pin20", "IO32"],
+          pin21: ["pin21", "IO33"],
+          pin22: ["pin22", "IO27"],
+          pin23: ["pin23", "IO23"],
+          pin24: ["pin24", "IO22"],
+          pin25: ["pin25", "IO21"],
+          pin26: ["pin26", "IO19"],
+          pin27: ["pin27", "TX"],
+          pin28: ["pin28", "RX"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C829502"] }}
+        schX={5}
+        schY={0}
+      />
+
+      {/* Pull-up Resistor for EN - 10k */}
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={-2}
+      />
+
+      {/* Pull-up Resistor for IO0 - 10k */}
+      <resistor
+        name="R2"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={-4}
+      />
+
+      {/* Reset Button */}
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        schX={-2}
+        schY={-2}
+      />
+
+      {/* ESP32 Power */}
+      <trace from=".U1 .3V3" to="net.V3_3" />
+      <trace from=".U1 .VDD" to="net.V3_3" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND1" to="net.GND" />
+
+      {/* EN Pull-up */}
+      <trace from=".R1 .pos" to="net.V3_3" />
+      <trace from=".R1 .neg" to=".U1 .EN" />
+
+      {/* Reset Button - pulls EN low when pressed */}
+      <trace from=".SW1 .pin1" to=".U1 .EN" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+
+      {/* IO0 Pull-up for normal boot */}
+      <trace from=".R2 .pos" to="net.V3_3" />
+      <trace from=".R2 .neg" to=".U1 .IO0" />
+    </board>
+  )
+}
+`} />
+
+### Step 5: Status LED
+
+We add a blue LED on GPIO2 with a 1k current-limiting resistor. GPIO2 is useful for a status LED because it also outputs a debug signal during boot — the LED will pulse briefly when the ESP32 starts up, providing visual confirmation that the board is working.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="60mm" height="80mm" routingDisabled>
+      {/* ESP32-WROOM-32 Module */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-WROOM-32"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "3V3", "EN", "IO0", "IO2", "IO4", "IO5", "IO12", "IO13", "IO14", "IO15", "IO16", "IO17", "IO25", "IO26"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["GND1", "VDD", "IO34", "IO35", "IO32", "IO33", "IO27", "IO23", "IO22", "IO21", "IO19", "TX", "RX"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "3V3"],
+          pin3: ["pin3", "EN"],
+          pin4: ["pin4", "IO0"],
+          pin5: ["pin5", "IO2"],
+          pin6: ["pin6", "IO4"],
+          pin7: ["pin7", "IO5"],
+          pin8: ["pin8", "IO12"],
+          pin9: ["pin9", "IO13"],
+          pin10: ["pin10", "IO14"],
+          pin11: ["pin11", "IO15"],
+          pin12: ["pin12", "IO16"],
+          pin13: ["pin13", "IO17"],
+          pin14: ["pin14", "IO25"],
+          pin15: ["pin15", "IO26"],
+          pin16: ["pin16", "GND1"],
+          pin17: ["pin17", "VDD"],
+          pin18: ["pin18", "IO34"],
+          pin19: ["pin19", "IO35"],
+          pin20: ["pin20", "IO32"],
+          pin21: ["pin21", "IO33"],
+          pin22: ["pin22", "IO27"],
+          pin23: ["pin23", "IO23"],
+          pin24: ["pin24", "IO22"],
+          pin25: ["pin25", "IO21"],
+          pin26: ["pin26", "IO19"],
+          pin27: ["pin27", "TX"],
+          pin28: ["pin28", "RX"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C829502"] }}
+        schX={5}
+        schY={0}
+      />
+
+      {/* Status LED */}
+      <led
+        name="LED1"
+        color="blue"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72041"] }}
+        schX={9}
+        schY={-4}
+      />
+
+      {/* LED Current Limiting Resistor - 1k */}
+      <resistor
+        name="R3"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={9}
+        schY={-2}
+      />
+
+      {/* ESP32 Power */}
+      <trace from=".U1 .3V3" to="net.V3_3" />
+      <trace from=".U1 .VDD" to="net.V3_3" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND1" to="net.GND" />
+
+      {/* Status LED - active low on IO2 */}
+      <trace from=".R3 .pos" to="net.V3_3" />
+      <trace from=".R3 .neg" to=".LED1 .pos" />
+      <trace from=".LED1 .neg" to=".U1 .IO2" />
+    </board>
+  )
+}
+`} />
+
+### Step 6: Complete Circuit
+
+Now we combine all the sub-circuits into the complete ESP32 minimum system. This includes the USB-C power supply, LDO regulator, ESP32 module, decoupling capacitors, reset circuit, boot mode selection, and status LED.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="60mm" height="80mm" routingDisabled>
+      {/* USB-C Connector */}
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        schX={-8}
+        schY={3}
+      />
+
+      {/* LDO Voltage Regulator - AMS1117-3.3 */}
+      <chip
+        name="U2"
+        manufacturerPartNumber="AMS1117-3.3"
+        schWidth={2}
+        schHeight={3}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "VO"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["VI"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "VO"],
+          pin3: ["pin3", "VI"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C6186"] }}
+        schX={-3}
+        schY={3}
+      />
+
+      {/* ESP32-WROOM-32 Module */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-WROOM-32"
+        schWidth={5}
+        schHeight={8}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["GND", "3V3", "EN", "IO0", "IO2", "IO4", "IO5", "IO12", "IO13", "IO14", "IO15", "IO16", "IO17", "IO25", "IO26"]
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["GND1", "VDD", "IO34", "IO35", "IO32", "IO33", "IO27", "IO23", "IO22", "IO21", "IO19", "TX", "RX"]
+          }
+        }}
+        pinLabels={{
+          pin1: ["pin1", "GND"],
+          pin2: ["pin2", "3V3"],
+          pin3: ["pin3", "EN"],
+          pin4: ["pin4", "IO0"],
+          pin5: ["pin5", "IO2"],
+          pin6: ["pin6", "IO4"],
+          pin7: ["pin7", "IO5"],
+          pin8: ["pin8", "IO12"],
+          pin9: ["pin9", "IO13"],
+          pin10: ["pin10", "IO14"],
+          pin11: ["pin11", "IO15"],
+          pin12: ["pin12", "IO16"],
+          pin13: ["pin13", "IO17"],
+          pin14: ["pin14", "IO25"],
+          pin15: ["pin15", "IO26"],
+          pin16: ["pin16", "GND1"],
+          pin17: ["pin17", "VDD"],
+          pin18: ["pin18", "IO34"],
+          pin19: ["pin19", "IO35"],
+          pin20: ["pin20", "IO32"],
+          pin21: ["pin21", "IO33"],
+          pin22: ["pin22", "IO27"],
+          pin23: ["pin23", "IO23"],
+          pin24: ["pin24", "IO22"],
+          pin25: ["pin25", "IO21"],
+          pin26: ["pin26", "IO19"],
+          pin27: ["pin27", "TX"],
+          pin28: ["pin28", "RX"]
+        }}
+        supplierPartNumbers={{ jlcpcb: ["C829502"] }}
+        schX={5}
+        schY={0}
+      />
+
+      {/* Input Capacitor for LDO - 10uF */}
+      <capacitor
+        name="C1"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-5}
+        schY={0}
+      />
+
+      {/* Output Capacitor for LDO - 10uF */}
+      <capacitor
+        name="C2"
+        capacitance="10uF"
+        footprint="0805"
+        supplierPartNumbers={{ jlcpcb: ["C15850"] }}
+        schX={-1}
+        schY={0}
+      />
+
+      {/* Decoupling Capacitor near ESP32 - 0.1uF */}
+      <capacitor
+        name="C3"
+        capacitance="0.1uF"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C307514"] }}
+        schX={2}
+        schY={-5}
+      />
+
+      {/* Pull-up Resistor for EN - 10k */}
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={-2}
+      />
+
+      {/* Pull-up Resistor for IO0 - 10k */}
+      <resistor
+        name="R2"
+        resistance="10k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C25744"] }}
+        schX={0}
+        schY={-4}
+      />
+
+      {/* Reset Button */}
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        schX={-2}
+        schY={-2}
+      />
+
+      {/* Status LED */}
+      <led
+        name="LED1"
+        color="blue"
+        footprint="0603"
+        supplierPartNumbers={{ jlcpcb: ["C72041"] }}
+        schX={9}
+        schY={-4}
+      />
+
+      {/* LED Current Limiting Resistor - 1k */}
+      <resistor
+        name="R3"
+        resistance="1k"
+        footprint="0402"
+        supplierPartNumbers={{ jlcpcb: ["C11702"] }}
+        schX={9}
+        schY={-2}
+      />
+
+      {/* Power Traces */}
+      <trace from=".U2 .VI" to="net.VBUS" />
+      <trace from=".U2 .VO" to="net.V3_3" />
+      <trace from=".U2 .GND" to="net.GND" />
+
+      {/* Input Cap for LDO */}
+      <trace from=".C1 .pos" to="net.VBUS" />
+      <trace from=".C1 .neg" to="net.GND" />
+
+      {/* Output Cap for LDO */}
+      <trace from=".C2 .pos" to="net.V3_3" />
+      <trace from=".C2 .neg" to="net.GND" />
+
+      {/* ESP32 Power */}
+      <trace from=".U1 .3V3" to="net.V3_3" />
+      <trace from=".U1 .VDD" to="net.V3_3" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND1" to="net.GND" />
+
+      {/* Decoupling Cap */}
+      <trace from=".C3 .pos" to="net.V3_3" />
+      <trace from=".C3 .neg" to="net.GND" />
+
+      {/* EN Pull-up */}
+      <trace from=".R1 .pos" to="net.V3_3" />
+      <trace from=".R1 .neg" to=".U1 .EN" />
+
+      {/* Reset Button */}
+      <trace from=".SW1 .pin1" to=".U1 .EN" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+
+      {/* IO0 Pull-up */}
+      <trace from=".R2 .pos" to="net.V3_3" />
+      <trace from=".R2 .neg" to=".U1 .IO0" />
+
+      {/* Status LED */}
+      <trace from=".R3 .pos" to="net.V3_3" />
+      <trace from=".R3 .neg" to=".LED1 .pos" />
+      <trace from=".LED1 .neg" to=".U1 .IO2" />
+    </board>
+  )
+}
+`} />
+
+## Component Reference
+
+| Component | Designator | JLCPCB Part # | Description |
+|-----------|-----------|---------------|-------------|
+| ESP32-WROOM-32 | U1 | C829502 | Wi-Fi + Bluetooth MCU module |
+| AMS1117-3.3 | U2 | C6186 | 3.3V LDO voltage regulator |
+| 10uF Capacitor | C1, C2 | C15850 | LDO input/output bulk capacitor (0805) |
+| 0.1uF Capacitor | C3 | C307514 | ESP32 decoupling capacitor (0402) |
+| 10k Resistor | R1, R2 | C25744 | EN and IO0 pull-up resistors (0402) |
+| 1k Resistor | R3 | C11702 | LED current-limiting resistor (0402) |
+| Blue LED | LED1 | C72041 | Status indicator LED (0603) |
+| Push Button | SW1 | — | Reset button |
+| USB-C Connector | J1 | — | Power input (via SmdUsbC) |
+
+## Boot Mode Summary
+
+The ESP32 boot mode is determined by the state of specific pins at startup:
+
+| IO0 | IO2 | IO12 | EN | Boot Mode |
+|-----|-----|------|-----|-----------|
+| H | - | - | ↑ | SPI Flash Boot (normal) |
+| L | - | - | ↑ | Download Boot (UART) |
+| - | - | H | ↑ | SPI Flash Boot |
+| - | - | L | ↑ | SDIO Boot (rarely used) |
+
+In our circuit, IO0 is pulled high by R2 (10k), so the ESP32 will boot from SPI Flash by default. To enter download mode, you would hold the BOOT button (not shown — connect IO0 to GND) while pressing and releasing the RESET button.
+
+## Next Steps
+
+- **Add a USB-to-UART bridge** — Add a CP2102 or CH340 chip to enable programming via USB without an external programmer
+- **Add a BOOT button** — Add a second push button on IO0 to easily enter download mode
+- **Expand GPIO connections** — Add pin headers to expose all GPIO pins for prototyping
+- **Add battery charging** — Integrate a LiPo battery charger like the TP4056 for portable projects
+- **Order the PCB** — Follow the [Ordering Prototypes](/building-electronics/ordering-prototypes) guide to manufacture your board
