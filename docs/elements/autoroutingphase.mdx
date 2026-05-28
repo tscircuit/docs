@@ -98,6 +98,36 @@ export default () => (
   "demo-autorouter.ts": squigglyAutorouterFile,
 }
 
+export const connectionRerouteFiles = {
+  "connection-reroute.circuit.tsx": `import { createSquigglyAutorouter } from "./demo-autorouter"
+
+export default () => (
+  <board width="18mm" height="12mm">
+    <testpoint name="T1" pcbX={-7} pcbY={3} padDiameter="0.8mm" />
+    <testpoint name="T2" pcbX={7} pcbY={3} padDiameter="0.8mm" />
+    <testpoint name="M1" pcbX={-7} pcbY={0} padDiameter="0.8mm" />
+    <testpoint name="M2" pcbX={7} pcbY={0} padDiameter="0.8mm" />
+    <testpoint name="B1" pcbX={-7} pcbY={-3} padDiameter="0.8mm" />
+    <testpoint name="B2" pcbX={7} pcbY={-3} padDiameter="0.8mm" />
+
+    <autoroutingphase phaseIndex={0} />
+    <autoroutingphase
+      phaseIndex={1}
+      reroute
+      connection="M1.pin1"
+      autorouter={{
+        algorithmFn: createSquigglyAutorouter,
+      }}
+    />
+
+    <trace from="T1.pin1" to="T2.pin1" routingPhaseIndex={0} />
+    <trace from="M1.pin1" to="M2.pin1" routingPhaseIndex={0} />
+    <trace from="B1.pin1" to="B2.pin1" routingPhaseIndex={0} />
+  </board>
+)`,
+  "demo-autorouter.ts": squigglyAutorouterFile,
+}
+
 export const withoutRerouteCode = `export default () => (
   <board width="18mm" height="12mm">
     <testpoint name="T1" pcbX={-7} pcbY={3} padDiameter="0.8mm" />
@@ -151,6 +181,40 @@ board. The reroute phase does not need traces assigned to it because `reroute`
 creates a reroute pass from the previous output. Only routes crossing the
 rectangle from `x=0` to `x=8` and `y=-5` to `y=5` are reconsidered.
 
+## Reroute Selected Connections
+
+Use `connection` or `connections` when a phase should target traces by endpoint
+instead of by region. The selector may use normal port selector syntax, such as
+`"U1.pin1"` or `".U1 > .pin1"`.
+
+When `reroute` is set without `region`, only matching connections are routed in
+that phase. Previously routed traces remain in place and are treated as
+obstacles.
+
+<CircuitPreview
+  defaultView="pcb"
+  fsMap={connectionRerouteFiles}
+  entrypoint="connection-reroute.circuit.tsx"
+/>
+
+```tsx
+<autoroutingphase
+  phaseIndex={1}
+  reroute
+  connection="M1.pin1"
+/>
+```
+
+Use `connections` to target more than one connection in the same phase:
+
+```tsx
+<autoroutingphase
+  phaseIndex={1}
+  reroute
+  connections={["M1.pin1", "B1.pin1"]}
+/>
+```
+
 ## Assign Traces and Nets to Phases
 
 Use `routingPhaseIndex` on a `<trace />` to put that trace into a phase:
@@ -180,6 +244,8 @@ Phases run in ascending `phaseIndex` order. Traces and nets without a
 | `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
 | `reroute` | `boolean` | Makes this phase reroute traces produced by earlier phases instead of routing newly assigned traces. |
 | `region` | `{ shape: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reroute. Required for `reroute`. |
+| `connection` | `string` | Port selector for a connection to include in this phase. With `reroute`, reroutes only that connection. |
+| `connections` | `string[]` | Port selectors for multiple connections to include in this phase. With `reroute`, reroutes only those connections. |
 
 For custom phase autorouters with `algorithmFn`, see
 [Create or Use a Custom Autorouter](../advanced/create-or-use-custom-autorouter.mdx).
