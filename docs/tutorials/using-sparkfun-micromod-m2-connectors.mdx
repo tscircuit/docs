@@ -1,0 +1,187 @@
+---
+title: Using SparkFun MicroMod M.2 Connectors
+description: Model SparkFun MicroMod carrier boards with an M.2 connector, named interface nets, and reusable processor-module wiring.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+SparkFun MicroMod processor boards plug into a carrier board through an M.2
+connector. In tscircuit, the carrier-side connector is best modeled as a
+`<connector />` with the `m2` standard hint plus MicroMod-specific pin labels.
+
+The important habit is to name the electrical interface first: power rails,
+reset, boot, I2C, SPI, UART, USB, SDIO, analog pins, PWM pins, and general GPIO.
+Then you can reuse those names across carrier boards without tying every design
+to a specific processor module.
+
+## References
+
+Keep the SparkFun pinout open while assigning the exact pin numbers for your
+board:
+
+- [SparkFun MicroMod Interface v1.0 - Pin Descriptions](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
+- [SparkFun MicroMod Interface v1.0 - Pinout](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pinout.pdf)
+- [Designing with MicroMod](https://learn.sparkfun.com/tutorials/designing-with-micromod)
+- [Getting Started with MicroMod](https://learn.sparkfun.com/tutorials/getting-started-with-micromod)
+
+## Minimal Carrier Connector
+
+Start by giving the connector a stable name and labeling the signals that your
+carrier board actually uses. The example below shows a practical subset for a
+sensor or display carrier: 3.3 V power, ground, I2C, SPI, UART, reset, boot, and
+two GPIO nets.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+const microModPins = {
+  1: "GND",
+  2: "V3_3",
+  3: "I2C_SDA",
+  4: "I2C_SCL",
+  5: "SPI_COPI",
+  6: "SPI_CIPO",
+  7: "SPI_SCK",
+  8: "SPI_CS",
+  9: "UART_TX",
+  10: "UART_RX",
+  11: "RESET",
+  12: "BOOT",
+  13: "G0",
+  14: "G1",
+} as const
+
+export default () => (
+  <board width="50mm" height="35mm">
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      pinLabels={microModPins}
+      schPinSpacing="0.65mm"
+      schWidth="22mm"
+    />
+  </board>
+)
+  `}
+/>
+
+The numbers above are intentionally compact for the example. For production
+hardware, expand `pinLabels` to match the full SparkFun MicroMod pinout and keep
+the names aligned with SparkFun's published signal groups.
+
+## Connect a Qwiic Peripheral
+
+MicroMod carriers commonly expose I2C through Qwiic. Once the M.2 connector
+labels are in place, route peripherals by net name instead of routing to raw pin
+numbers.
+
+<CircuitPreview
+  splitView
+  defaultView="schematic"
+  code={`
+const microModPins = {
+  1: "GND",
+  2: "V3_3",
+  3: "I2C_SDA",
+  4: "I2C_SCL",
+  11: "RESET",
+} as const
+
+export default () => (
+  <board width="50mm" height="35mm">
+    <connector
+      name="J_MICROMOD"
+      standard="m2"
+      pinLabels={microModPins}
+      pcbX={-10}
+      pcbY={0}
+    />
+    <connector
+      name="J_QWIIC"
+      pinLabels={{
+        1: "GND",
+        2: "V3_3",
+        3: "I2C_SDA",
+        4: "I2C_SCL",
+      }}
+      footprint="jst-sh-4"
+      pcbX={15}
+      pcbY={0}
+    />
+    <trace from=".J_MICROMOD > .I2C_SDA" to=".J_QWIIC > .I2C_SDA" />
+    <trace from=".J_MICROMOD > .I2C_SCL" to=".J_QWIIC > .I2C_SCL" />
+    <trace from=".J_MICROMOD > .V3_3" to=".J_QWIIC > .V3_3" />
+    <trace from=".J_MICROMOD > .GND" to=".J_QWIIC > .GND" />
+  </board>
+)
+  `}
+/>
+
+## Reusable MicroMod Connector Component
+
+For real projects, keep the connector definition in a small reusable component.
+That makes it easy to share the same MicroMod net names across several carrier
+boards and to swap a partial pin map for a full one later.
+
+```tsx
+import type { CommonLayoutProps } from "tscircuit"
+
+export const microModCarrierPins = {
+  1: "GND",
+  2: "V3_3",
+  3: "I2C_SDA",
+  4: "I2C_SCL",
+  5: "SPI_COPI",
+  6: "SPI_CIPO",
+  7: "SPI_SCK",
+  8: "SPI_CS",
+  9: "UART_TX",
+  10: "UART_RX",
+  11: "RESET",
+  12: "BOOT",
+  13: "G0",
+  14: "G1",
+} as const
+
+export const MicroModM2Connector = (props: CommonLayoutProps) => (
+  <connector
+    name="J_MICROMOD"
+    standard="m2"
+    pinLabels={microModCarrierPins}
+    schPinSpacing="0.65mm"
+    schWidth="22mm"
+    {...props}
+  />
+)
+```
+
+Use that component inside a carrier board:
+
+```tsx
+import { MicroModM2Connector } from "./MicroModM2Connector"
+
+export default () => (
+  <board width="60mm" height="40mm">
+    <MicroModM2Connector pcbX={-12} pcbY={0} />
+    <led name="D_STATUS" footprint="0603" pcbX={16} pcbY={6} />
+    <resistor name="R_STATUS" resistance="1k" footprint="0603" pcbX={16} pcbY={0} />
+    <trace from=".J_MICROMOD > .G0" to=".R_STATUS > .pin1" />
+    <trace from=".R_STATUS > .pin2" to=".D_STATUS > .anode" />
+    <trace from=".D_STATUS > .cathode" to=".J_MICROMOD > .GND" />
+  </board>
+)
+```
+
+## Design Checklist
+
+- Use `standard="m2"` on the carrier connector so downstream tooling knows this
+  is an M.2-style board interface.
+- Copy exact pin numbers from the SparkFun pinout PDF before sending a PCB to
+  fabrication.
+- Keep the net names close to SparkFun's signal names: `I2C_SDA`, `I2C_SCL`,
+  `SPI_COPI`, `SPI_CIPO`, `SPI_SCK`, `UART_TX`, `UART_RX`, `RESET`, `BOOT`,
+  `USB_D+`, `USB_D-`, `G0`, `G1`, and so on.
+- Prefer named traces such as `.J_MICROMOD > .I2C_SDA` over raw connector pin
+  references. The schematic stays readable even when the physical pin map grows.
+- Leave unused MicroMod pins out of the first schematic, then add them as your
+  carrier board needs them.
