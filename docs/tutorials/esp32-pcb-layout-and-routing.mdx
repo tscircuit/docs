@@ -1,0 +1,226 @@
+---
+title: ESP32 PCB Layout and Routing
+description: Place and route an ESP32 module board with USB power, boot/reset controls, antenna keepout, and stable power traces.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial shows a practical ESP32 board layout flow in tscircuit. The example
+uses an ESP32-WROOM style module, a USB-C power/input connector, a 3.3 V
+regulator, boot and reset buttons, and local decoupling capacitors.
+
+The most important layout choices are:
+
+- Put the ESP32 module at the board edge so the antenna points away from copper,
+  mounting holes, and large components.
+- Keep the USB connector, regulator, and bulk capacitor close together so the
+  5 V input path is short.
+- Put decoupling capacitors close to the ESP32 3.3 V pins.
+- Route power nets wider than signal nets, then let the autorouter handle the
+  remaining UART, boot, enable, and indicator traces.
+
+## Board Outline And Major Placement
+
+Start with a board size that leaves a clear antenna edge. The ESP32 module sits
+near the top of the board, the USB connector sits on the left edge, and the
+regulator stays between USB 5 V and the ESP32 3.3 V rail.
+
+<CircuitPreview
+  splitView
+  defaultView="pcb"
+  code={`
+import { ESP32_WROOM_32DC as Esp32Module } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC"
+
+export default () => (
+  <board width="58mm" height="42mm" autorouter="freerouting">
+    <Esp32Module
+      name="U1"
+      pcbX={8}
+      pcbY={7}
+      schX={0}
+      schY={3}
+      pcbRotation="0deg"
+    />
+
+    <connector
+      name="J_USB"
+      pcbX={-25}
+      pcbY={-8}
+      schX={-6}
+      schY={0}
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "D-",
+        pin3: "D+",
+        pin4: "GND",
+      }}
+      standard="usb_c"
+    />
+
+    <chip
+      name="U2"
+      pcbX={-11}
+      pcbY={-8}
+      schX={-2.5}
+      schY={0}
+      footprint="sot223"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VOUT",
+        pin3: "VIN",
+      }}
+    />
+
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-17} pcbY={-14} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={-5} pcbY={-14} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={2} pcbY={-6} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={9} pcbY={-6} />
+
+    <pushbutton name="SW_BOOT" pcbX={-7} pcbY={12} schX={-2} schY={-3} />
+    <pushbutton name="SW_RESET" pcbX={4} pcbY={12} schX={2} schY={-3} />
+    <resistor name="R_BOOT" resistance="10k" footprint="0402" pcbX={-7} pcbY={18} />
+    <resistor name="R_EN" resistance="10k" footprint="0402" pcbX={4} pcbY={18} />
+    <led name="LED_PWR" footprint="0603" pcbX={-21} pcbY={10} schX={-5} schY={-4} />
+    <resistor name="R_LED" resistance="1k" footprint="0402" pcbX={-17} pcbY={10} />
+  </board>
+)
+`}
+/>
+
+## Power Nets
+
+Name the power rails first and give them wider trace widths. The USB connector
+feeds the regulator, the regulator creates `V3_3`, and every decoupling capacitor
+returns to `GND`.
+
+<CircuitPreview
+  splitView
+  defaultView="pcb"
+  code={`
+import { ESP32_WROOM_32DC as Esp32Module } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC"
+
+export default () => (
+  <board width="58mm" height="42mm" autorouter="freerouting">
+    <net name="VBUS" traceWidth="0.5mm" />
+    <net name="V3_3" traceWidth="0.35mm" />
+    <net name="GND" traceWidth="0.35mm" />
+
+    <Esp32Module name="U1" pcbX={8} pcbY={7} />
+    <connector
+      name="J_USB"
+      pcbX={-25}
+      pcbY={-8}
+      pinLabels={{ pin1: "VBUS", pin2: "D-", pin3: "D+", pin4: "GND" }}
+      standard="usb_c"
+    />
+    <chip
+      name="U2"
+      pcbX={-11}
+      pcbY={-8}
+      footprint="sot223"
+      pinLabels={{ pin1: "GND", pin2: "VOUT", pin3: "VIN" }}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-17} pcbY={-14} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={-5} pcbY={-14} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={2} pcbY={-6} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={9} pcbY={-6} />
+
+    <trace from=".J_USB > .VBUS" to=".U2 > .VIN" />
+    <trace from=".U2 > .VOUT" to="net.V3_3" />
+    <trace from=".U1 > .V3_3" to="net.V3_3" />
+    <trace from=".C1 > .pos" to="net.VBUS" />
+    <trace from=".C2 > .pos" to="net.V3_3" />
+    <trace from=".C3 > .pos" to="net.V3_3" />
+    <trace from=".C4 > .pos" to="net.V3_3" />
+
+    <trace from=".J_USB > .GND" to="net.GND" />
+    <trace from=".U2 > .GND" to="net.GND" />
+    <trace from=".U1 > .GND" to="net.GND" />
+    <trace from=".C1 > .neg" to="net.GND" />
+    <trace from=".C2 > .neg" to="net.GND" />
+    <trace from=".C3 > .neg" to="net.GND" />
+    <trace from=".C4 > .neg" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+## Boot, Reset, And UART Signals
+
+ESP32 boards normally need pull-ups on `EN` and `IO0`, plus buttons that pull
+those nets to ground. Keep those buttons near the module edge so they are easy
+to press and the traces stay short.
+
+<CircuitPreview
+  splitView
+  defaultView="schematic"
+  code={`
+import { ESP32_WROOM_32DC as Esp32Module } from "@tsci/AnasSarkiz.ESP32_WROOM_32DC"
+
+export default () => (
+  <board width="58mm" height="42mm" autorouter="freerouting">
+    <net name="V3_3" />
+    <net name="GND" />
+
+    <Esp32Module name="U1" pcbX={8} pcbY={7} />
+    <pushbutton name="SW_BOOT" pcbX={-7} pcbY={12} />
+    <pushbutton name="SW_RESET" pcbX={4} pcbY={12} />
+    <resistor name="R_BOOT" resistance="10k" footprint="0402" pcbX={-7} pcbY={18} />
+    <resistor name="R_EN" resistance="10k" footprint="0402" pcbX={4} pcbY={18} />
+
+    <pinheader
+      name="J_UART"
+      pcbX={23}
+      pcbY={-12}
+      pinCount={4}
+      gender="male"
+      pitch="2.54mm"
+      pinLabels={["V3_3", "GND", "TXD0", "RXD0"]}
+      footprint="pinrow4"
+    />
+
+    <trace from=".R_BOOT > .pos" to="net.V3_3" />
+    <trace from=".R_BOOT > .neg" to=".U1 > .IO0" />
+    <trace from=".SW_BOOT > .pin1" to=".U1 > .IO0" />
+    <trace from=".SW_BOOT > .pin2" to="net.GND" />
+
+    <trace from=".R_EN > .pos" to="net.V3_3" />
+    <trace from=".R_EN > .neg" to=".U1 > .EN" />
+    <trace from=".SW_RESET > .pin1" to=".U1 > .EN" />
+    <trace from=".SW_RESET > .pin2" to="net.GND" />
+
+    <trace from=".J_UART > .V3_3" to="net.V3_3" />
+    <trace from=".J_UART > .GND" to="net.GND" />
+    <trace from=".J_UART > .TXD0" to=".U1 > .RXD0" />
+    <trace from=".J_UART > .RXD0" to=".U1 > .TXD0" />
+  </board>
+)
+`}
+/>
+
+## Routing Checklist
+
+Before sending the board out, check these layout constraints:
+
+| Area | What to check |
+| --- | --- |
+| Antenna | Keep the ESP32 antenna beyond the board edge or over a copper-free keepout. |
+| 3.3 V rail | Use a wider trace from regulator output to ESP32 3.3 V and decoupling capacitors. |
+| Ground | Give each decoupling capacitor a short route back to ground. |
+| USB | Keep `D+` and `D-` close together and avoid routing them under noisy power parts. |
+| Boot/reset | Confirm `IO0` and `EN` have pull-ups and momentary pull-down buttons. |
+| UART | Cross the external header's `TXD0` to ESP32 `RXD0`, and `RXD0` to ESP32 `TXD0`. |
+
+## Practical Iteration Flow
+
+During placement, set `routingDisabled` on the board for fast previews. Once the
+module, regulator, connector, buttons, and capacitors are in stable positions,
+remove `routingDisabled`, keep the power net widths, and let the autorouter
+complete the signal routes.
+
+If the router struggles, move decoupling capacitors closer to the ESP32, increase
+board width near the USB connector, or separate the UART header from the power
+input path. Small placement changes usually solve more routing problems than
+adding manual trace paths early.
