@@ -1,0 +1,159 @@
+---
+title: tscircuit Tools Overview
+description: Explore the different user-facing tools in the tscircuit ecosystem for designing, previewing, and manufacturing PCBs.
+sidebar_position: 5
+---
+
+tscircuit provides a suite of tools for every stage of the electronics design workflow. Whether you prefer working in the browser, from the command line, or embedding circuit previews in your own app, there's a tool for you.
+
+## Online Editor
+
+**[tscircuit.com/editor](https://tscircuit.com/editor)**
+
+The online editor is the fastest way to get started with tscircuit. It provides a full-featured IDE in your browser where you can write React/TypeScript circuit code, see live schematic and PCB previews, and export fabrication files — no installation required.
+
+- Live schematic, PCB, and 3D previews
+- AI-assisted circuit generation
+- Package registry and snippet sharing
+- One-click export to fabrication files (Gerber, BOM, CPL)
+
+## Command Line Interface (CLI)
+
+**[`tsci`](./command-line/tsci-dev.md)**
+
+The `tsci` CLI lets you develop tscircuit projects locally with your preferred editor and tooling. It provides a development server with hot-reload, package management, and export capabilities.
+
+```bash
+# Install globally
+npm install -g @tscircuit/cli
+
+# Start development server
+tsci dev
+
+# Export fabrication files
+tsci export
+```
+
+Key commands:
+
+| Command | Description |
+| --- | --- |
+| `tsci dev` | Start local dev server with live preview |
+| `tsci init` | Initialize a new tscircuit project |
+| `tsci add` | Add a dependency or package |
+| `tsci export` | Export to Gerber, BOM, or other formats |
+| `tsci push` | Publish a package to the registry |
+| `tsci clone` | Clone a package from the registry |
+
+See the [Command Line section](./command-line/tsci-dev.md) for full documentation of all commands.
+
+## PCB Viewer
+
+**[@tscircuit/pcb-viewer](https://github.com/tscircuit/pcb-viewer)**
+
+A React component for rendering interactive PCB layouts. Use it to embed PCB previews in your own web applications.
+
+```tsx
+import { PCBViewer } from "@tscircuit/pcb-viewer"
+
+function MyComponent() {
+  return <PCBViewer circuitJson={circuitJson} />
+}
+```
+
+Features:
+
+- Interactive pan and zoom
+- Layer visibility controls
+- Component highlighting and selection
+- Focus-on-hover for subcircuits
+
+## 3D Viewer
+
+**[@tscircuit/3d-viewer](https://github.com/tscircuit/3d-viewer)**
+
+A React component for rendering 3D previews of PCBs. It renders STEP models, component bodies, and board outlines in a WebGL viewport.
+
+```tsx
+import { ThreejsViewer } from "@tscircuit/3d-viewer"
+
+function MyComponent() {
+  return <ThreejsViewer circuitJson={circuitJson} />
+}
+```
+
+## RunFrame
+
+**[@tscircuit/runframe](https://github.com/tscircuit/runframe)**
+
+RunFrame is an all-in-one React component that combines the editor, schematic viewer, PCB viewer, and 3D viewer into a single embeddable frame. It's the same component that powers the online editor.
+
+```tsx
+import { RunFrame } from "@tscircuit/runframe"
+
+function MyComponent() {
+  return <RunFrame code={circuitCode} />
+}
+```
+
+RunFrame handles code evaluation, circuit compilation, and rendering automatically.
+
+## Autorouting
+
+**[autorouting.com](https://autorouting.com)**
+
+The tscircuit autorouter automatically routes traces on your PCB. It's integrated into the online editor and CLI, but you can also use the [autorouting API](./web-apis/autorouting-api.mdx) directly.
+
+The autorouter supports:
+
+- Single-layer and multi-layer routing
+- Custom autorouter implementations
+- Different effort levels (fast vs. thorough)
+
+## Circuit JSON Converters
+
+tscircuit uses **Circuit JSON** as its intermediate representation. Several converter tools transform Circuit JSON into different output formats:
+
+| Converter | Output | Use Case |
+| --- | --- | --- |
+| `circuit-json-to-gerber` | Gerber files | PCB fabrication |
+| `circuit-json-to-step` | STEP 3D model | Mechanical integration |
+| `circuit-json-to-svg` | SVG images | Documentation and web display |
+| `circuit-json-to-kicad` | KiCad format | Interop with KiCad |
+| `easyeda-converter` | tscircuit format | Import from JLCPCB/EasyEDA |
+
+These converters are used internally by the CLI and online editor but can also be used programmatically.
+
+## Package Registry
+
+**[registry.tscircuit.com](https://registry.tscircuit.com)**
+
+The tscircuit package registry hosts reusable circuit packages. You can publish your own components and circuits for others to use, or install community packages into your projects.
+
+```bash
+# Install a package from the registry
+tsci add @tsci/seveibar.push-button
+
+# Publish your own package
+tsci push
+```
+
+## JLCsearch
+
+**[jlcsearch.tscircuit.com](https://jlcsearch.tscircuit.com)**
+
+JLCsearch is a search engine for JLCPCB components. It provides an API for finding parts by footprint, package, or specifications, and integrates directly with the tscircuit editor for easy part selection.
+
+See the [JLCsearch API](./web-apis/jlcsearch-api.md) for programmatic access.
+
+## Choosing the Right Tool
+
+| Goal | Recommended Tool |
+| --- | --- |
+| Quick prototyping | [Online Editor](https://tscircuit.com/editor) |
+| Local development | [CLI (`tsci`)](./command-line/tsci-dev.md) |
+| Embedding in a web app | [RunFrame](https://github.com/tscircuit/runframe) |
+| Custom PCB viewer | [PCB Viewer](https://github.com/tscircuit/pcb-viewer) |
+| Batch fabrication export | CLI `tsci export` |
+| Finding JLCPCB parts | [JLCsearch](https://jlcsearch.tscircuit.com) |
+| Sharing reusable circuits | [Package Registry](https://registry.tscircuit.com) |
