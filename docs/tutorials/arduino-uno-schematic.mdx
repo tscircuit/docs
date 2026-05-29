@@ -1,0 +1,524 @@
+---
+title: Arduino Uno Schematic
+description: Build a schematic-only Arduino Uno compatible circuit with the ATmega328P core, USB-UART bridge, power rails, reset circuit, clock, and headers.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial builds a schematic-only Arduino Uno compatible board in
+tscircuit. The goal is not to route a PCB; it is to capture the recognizable
+functional blocks that make the Uno useful as a reference design:
+
+- ATmega328P microcontroller core
+- USB-UART bridge for programming and serial monitor access
+- 5 V and 3.3 V power rails
+- 16 MHz crystal and load capacitors
+- reset pull-up, reset button, and auto-reset capacitor
+- digital, analog, power, and ICSP headers
+- built-in `L` LED on `D13`
+
+## Full Schematic Snippet
+
+Use this snippet as a starting point for documentation, education, or a
+schematic-only compatibility reference. It keeps each block named clearly so you
+can replace the generic footprints with exact manufacturer parts later.
+
+<CircuitPreview
+  alwaysShowCode
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="120mm" height="80mm" routingDisabled>
+    <net name="VUSB" />
+    <net name="V5" />
+    <net name="V3_3" />
+    <net name="VIN" />
+    <net name="GND" />
+    <net name="RESET" />
+    <net name="AREF" />
+    <net name="XTAL1" />
+    <net name="XTAL2" />
+
+    <chip
+      name="U1"
+      footprint="dip28"
+      schWidth="34mm"
+      schHeight="52mm"
+      pinLabels={{
+        pin1: "RESET",
+        pin2: "D0_RX",
+        pin3: "D1_TX",
+        pin4: "D2",
+        pin5: "D3_PWM",
+        pin6: "D4",
+        pin7: "VCC",
+        pin8: "GND",
+        pin9: "XTAL1",
+        pin10: "XTAL2",
+        pin11: "D5_PWM",
+        pin12: "D6_PWM",
+        pin13: "D7",
+        pin14: "D8",
+        pin15: "D9_PWM",
+        pin16: "D10_PWM_SS",
+        pin17: "D11_PWM_MOSI",
+        pin18: "D12_MISO",
+        pin19: "D13_SCK",
+        pin20: "AVCC",
+        pin21: "AREF",
+        pin22: "AGND",
+        pin23: "A0",
+        pin24: "A1",
+        pin25: "A2",
+        pin26: "A3",
+        pin27: "A4_SDA",
+        pin28: "A5_SCL",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "RESET",
+            "D0_RX",
+            "D1_TX",
+            "D2",
+            "D3_PWM",
+            "D4",
+            "D5_PWM",
+            "D6_PWM",
+            "D7",
+          ],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "D8",
+            "D9_PWM",
+            "D10_PWM_SS",
+            "D11_PWM_MOSI",
+            "D12_MISO",
+            "D13_SCK",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4_SDA",
+            "A5_SCL",
+          ],
+        },
+        topSide: {
+          direction: "left-to-right",
+          pins: ["VCC", "AVCC", "AREF"],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["GND", "AGND", "XTAL1", "XTAL2"],
+        },
+      }}
+      connections={{
+        VCC: "net.V5",
+        AVCC: "net.V5",
+        GND: "net.GND",
+        AGND: "net.GND",
+        AREF: "net.AREF",
+        RESET: "net.RESET",
+        XTAL1: "net.XTAL1",
+        XTAL2: "net.XTAL2",
+        D0_RX: "net.D0_RX",
+        D1_TX: "net.D1_TX",
+        D2: "net.D2",
+        D3_PWM: "net.D3_PWM",
+        D4: "net.D4",
+        D5_PWM: "net.D5_PWM",
+        D6_PWM: "net.D6_PWM",
+        D7: "net.D7",
+        D8: "net.D8",
+        D9_PWM: "net.D9_PWM",
+        D10_PWM_SS: "net.D10_PWM_SS",
+        D11_PWM_MOSI: "net.D11_PWM_MOSI",
+        D12_MISO: "net.D12_MISO",
+        D13_SCK: "net.D13_SCK",
+        A0: "net.A0",
+        A1: "net.A1",
+        A2: "net.A2",
+        A3: "net.A3",
+        A4_SDA: "net.A4_SDA",
+        A5_SCL: "net.A5_SCL",
+      }}
+    />
+
+    <chip
+      name="U2"
+      footprint="soic16"
+      schX={-38}
+      schY={12}
+      schWidth="26mm"
+      schHeight="34mm"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+        pin3: "TXD",
+        pin4: "RXD",
+        pin5: "DTR",
+        pin6: "UD+",
+        pin7: "UD-",
+        pin8: "XI",
+        pin9: "XO",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["UD+", "UD-", "DTR"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["TXD", "RXD"],
+        },
+        topSide: {
+          direction: "left-to-right",
+          pins: ["VCC"],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["GND", "XI", "XO"],
+        },
+      }}
+      connections={{
+        VCC: "net.V5",
+        GND: "net.GND",
+        TXD: "net.D0_RX",
+        RXD: "net.D1_TX",
+        DTR: "net.DTR",
+        "UD+": "net.USB_D_PLUS",
+        "UD-": "net.USB_D_MINUS",
+      }}
+    />
+
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      schX={-68}
+      schY={12}
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "D-",
+        pin3: "D+",
+        pin4: "GND",
+      }}
+      connections={{
+        VBUS: "net.VUSB",
+        "D-": "net.USB_D_MINUS",
+        "D+": "net.USB_D_PLUS",
+        GND: "net.GND",
+      }}
+    />
+    <fuse
+      name="F_USB"
+      footprint="0603"
+      currentRating="500mA"
+      voltageRating="6V"
+      schX={-52}
+      schY={2}
+      connections={{ pin1: "net.VUSB", pin2: "net.V5" }}
+    />
+
+    <chip
+      name="U3"
+      footprint="sot223"
+      schX={-36}
+      schY={-26}
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VOUT",
+        pin3: "VIN",
+      }}
+      connections={{
+        VIN: "net.VIN",
+        VOUT: "net.V5",
+        GND: "net.GND",
+      }}
+    />
+
+    <chip
+      name="U4"
+      footprint="sot23-5"
+      schX={-12}
+      schY={-26}
+      pinLabels={{
+        pin1: "VIN",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "NC",
+        pin5: "VOUT",
+      }}
+      connections={{
+        VIN: "net.V5",
+        VOUT: "net.V3_3",
+        GND: "net.GND",
+        EN: "net.V5",
+      }}
+    />
+
+    <crystal
+      name="Y1"
+      frequency="16MHz"
+      loadCapacitance="18pF"
+      footprint="hc49"
+      schX={2}
+      schY={-32}
+    />
+    <capacitor
+      name="C1"
+      capacitance="22pF"
+      footprint="0402"
+      schX={-8}
+      schY={-42}
+      connections={{ pos: "net.XTAL1", neg: "net.GND" }}
+    />
+    <capacitor
+      name="C2"
+      capacitance="22pF"
+      footprint="0402"
+      schX={12}
+      schY={-42}
+      connections={{ pos: "net.XTAL2", neg: "net.GND" }}
+    />
+
+    <resistor
+      name="R_RESET"
+      resistance="10k"
+      footprint="0402"
+      schX={-16}
+      schY={34}
+      connections={{ pos: "net.V5", neg: "net.RESET" }}
+    />
+    <capacitor
+      name="C_RESET"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-34}
+      schY={30}
+      connections={{ pos: "net.DTR", neg: "net.RESET" }}
+    />
+    <pushbutton
+      name="SW_RESET"
+      schX={-2}
+      schY={34}
+      connections={{ pin1: "net.RESET", pin2: "net.GND" }}
+    />
+
+    <led
+      name="LED_L"
+      color="yellow"
+      footprint="0603"
+      schX={30}
+      schY={18}
+    />
+    <resistor
+      name="R_L"
+      resistance="1k"
+      footprint="0402"
+      schX={42}
+      schY={18}
+      connections={{ pos: "net.D13_SCK", neg: ".LED_L > .anode" }}
+    />
+    <trace from=".LED_L > .cathode" to="net.GND" />
+
+    <connector
+      name="J_DIGITAL_LOW"
+      schX={52}
+      schY={32}
+      pinLabels={{
+        pin1: "D0/RX",
+        pin2: "D1/TX",
+        pin3: "D2",
+        pin4: "D3 PWM",
+        pin5: "D4",
+        pin6: "D5 PWM",
+        pin7: "D6 PWM",
+        pin8: "D7",
+      }}
+      connections={{
+        "D0/RX": "net.D0_RX",
+        "D1/TX": "net.D1_TX",
+        D2: "net.D2",
+        "D3 PWM": "net.D3_PWM",
+        D4: "net.D4",
+        "D5 PWM": "net.D5_PWM",
+        "D6 PWM": "net.D6_PWM",
+        D7: "net.D7",
+      }}
+    />
+    <connector
+      name="J_DIGITAL_HIGH"
+      schX={52}
+      schY={4}
+      pinLabels={{
+        pin1: "D8",
+        pin2: "D9 PWM",
+        pin3: "D10 PWM/SS",
+        pin4: "D11 PWM/MOSI",
+        pin5: "D12/MISO",
+        pin6: "D13/SCK",
+        pin7: "GND",
+        pin8: "AREF",
+        pin9: "SDA",
+        pin10: "SCL",
+      }}
+      connections={{
+        D8: "net.D8",
+        "D9 PWM": "net.D9_PWM",
+        "D10 PWM/SS": "net.D10_PWM_SS",
+        "D11 PWM/MOSI": "net.D11_PWM_MOSI",
+        "D12/MISO": "net.D12_MISO",
+        "D13/SCK": "net.D13_SCK",
+        GND: "net.GND",
+        AREF: "net.AREF",
+        SDA: "net.A4_SDA",
+        SCL: "net.A5_SCL",
+      }}
+    />
+    <connector
+      name="J_ANALOG"
+      schX={52}
+      schY={-22}
+      pinLabels={{
+        pin1: "A0",
+        pin2: "A1",
+        pin3: "A2",
+        pin4: "A3",
+        pin5: "A4/SDA",
+        pin6: "A5/SCL",
+      }}
+      connections={{
+        A0: "net.A0",
+        A1: "net.A1",
+        A2: "net.A2",
+        A3: "net.A3",
+        "A4/SDA": "net.A4_SDA",
+        "A5/SCL": "net.A5_SCL",
+      }}
+    />
+    <connector
+      name="J_POWER"
+      schX={-62}
+      schY={-24}
+      pinLabels={{
+        pin1: "RESET",
+        pin2: "3V3",
+        pin3: "5V",
+        pin4: "GND",
+        pin5: "GND",
+        pin6: "VIN",
+      }}
+      connections={{
+        RESET: "net.RESET",
+        "3V3": "net.V3_3",
+        "5V": "net.V5",
+        GND: "net.GND",
+        VIN: "net.VIN",
+      }}
+    />
+    <connector
+      name="J_ICSP"
+      schX={26}
+      schY={-34}
+      pinLabels={{
+        pin1: "MISO",
+        pin2: "V5",
+        pin3: "SCK",
+        pin4: "MOSI",
+        pin5: "RESET",
+        pin6: "GND",
+      }}
+      connections={{
+        MISO: "net.D12_MISO",
+        V5: "net.V5",
+        SCK: "net.D13_SCK",
+        MOSI: "net.D11_PWM_MOSI",
+        RESET: "net.RESET",
+        GND: "net.GND",
+      }}
+    />
+
+    <capacitor
+      name="C_DECOUPLE_1"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-18}
+      schY={-42}
+      connections={{ pos: "net.V5", neg: "net.GND" }}
+    />
+    <capacitor
+      name="C_DECOUPLE_2"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-28}
+      schY={-42}
+      connections={{ pos: "net.V5", neg: "net.GND" }}
+    />
+    <capacitor
+      name="C_AREF"
+      capacitance="100nF"
+      footprint="0402"
+      schX={24}
+      schY={30}
+      connections={{ pos: "net.AREF", neg: "net.GND" }}
+    />
+
+    <trace from=".Y1 > .pin1" to="net.XTAL1" />
+    <trace from=".Y1 > .pin2" to="net.XTAL2" />
+  </board>
+)
+`}
+/>
+
+## Block Notes
+
+### Microcontroller Core
+
+The ATmega328P symbol groups user-facing GPIO on the left and right, then keeps
+power, reference, ground, and oscillator pins on the top and bottom. That makes
+the schematic easier to read than a strict DIP pin order while still preserving
+the Uno pin names.
+
+### USB-UART And Auto Reset
+
+The USB connector feeds a small USB-UART bridge. The bridge `TXD` pin connects
+to `D0_RX`, `RXD` connects to `D1_TX`, and `DTR` passes through `C_RESET` to the
+`RESET` net. That auto-reset capacitor is what lets the bootloader reset when
+the serial port opens during upload.
+
+### Power Rails
+
+`VIN` feeds a 5 V regulator, USB VBUS feeds the 5 V rail through `F_USB`, and
+the 5 V rail feeds a 3.3 V regulator. The schematic includes both rails on
+`J_POWER`, matching the mental model users expect from an Uno compatible board.
+Keep decoupling capacitors close to the microcontroller and regulator pins when
+you later convert this into a PCB.
+
+### Clock And Reset
+
+The 16 MHz crystal uses two 22 pF load capacitors to ground. `R_RESET` pulls
+reset high, and `SW_RESET` pulls it low when pressed.
+
+### Headers
+
+The headers expose the Uno-style groups:
+
+- `J_DIGITAL_LOW` for `D0` through `D7`
+- `J_DIGITAL_HIGH` for `D8` through `D13`, `AREF`, `SDA`, and `SCL`
+- `J_ANALOG` for `A0` through `A5`
+- `J_POWER` for reset, power, and ground
+- `J_ICSP` for SPI programming
+
+## Extending The Snippet
+
+For a manufacturable Uno-compatible PCB, replace the generic footprints with
+the exact connectors, regulators, USB-UART bridge, and microcontroller package
+you plan to source. Then add PCB placement, keepouts, and routing constraints in
+a separate layout-focused tutorial or component.
