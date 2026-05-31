@@ -1,0 +1,231 @@
+---
+title: Arduino Uno Schematic
+description: Create a schematic-only Arduino Uno core with an ATmega328P, reset pull-up, oscillator, power rails, and the four main shield headers.
+---
+
+## Overview
+
+This tutorial builds the schematic portion of an Arduino Uno-style board. It
+focuses on the ATmega328P core, reset pull-up resistor, clock circuit, and the
+four main headers that make the board compatible with Arduino shields.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+const atmega328pPins = {
+  pin1: "RESET",
+  pin2: "PD0_RXD",
+  pin3: "PD1_TXD",
+  pin4: "PD2_D2",
+  pin5: "PD3_D3_PWM",
+  pin6: "PD4_D4",
+  pin7: "VCC",
+  pin8: "GND1",
+  pin9: "XTAL1",
+  pin10: "XTAL2",
+  pin11: "PD5_D5_PWM",
+  pin12: "PD6_D6_PWM",
+  pin13: "PD7_D7",
+  pin14: "PB0_D8",
+  pin15: "PB1_D9_PWM",
+  pin16: "PB2_D10_PWM",
+  pin17: "PB3_D11_MOSI",
+  pin18: "PB4_D12_MISO",
+  pin19: "PB5_D13_SCK",
+  pin20: "AVCC",
+  pin21: "AREF",
+  pin22: "GND2",
+  pin23: "PC0_A0",
+  pin24: "PC1_A1",
+  pin25: "PC2_A2",
+  pin26: "PC3_A3",
+  pin27: "PC4_A4_SDA",
+  pin28: "PC5_A5_SCL",
+} as const
+
+export default () => (
+  <board width="120mm" height="85mm" routingDisabled>
+    <chip
+      name="U1"
+      footprint="dip28_wide"
+      manufacturerPartNumber="ATMEGA328P-PU"
+      pinLabels={atmega328pPins}
+      schWidth="20mm"
+      schHeight="38mm"
+      schX={0}
+      schY={0}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "RESET",
+            "PD0_RXD",
+            "PD1_TXD",
+            "PD2_D2",
+            "PD3_D3_PWM",
+            "PD4_D4",
+            "PD5_D5_PWM",
+            "PD6_D6_PWM",
+            "PD7_D7",
+            "XTAL1",
+            "XTAL2",
+          ],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "VCC",
+            "AVCC",
+            "AREF",
+            "GND1",
+            "GND2",
+            "PB5_D13_SCK",
+            "PB4_D12_MISO",
+            "PB3_D11_MOSI",
+            "PB2_D10_PWM",
+            "PB1_D9_PWM",
+            "PB0_D8",
+            "PC5_A5_SCL",
+            "PC4_A4_SDA",
+            "PC3_A3",
+            "PC2_A2",
+            "PC1_A1",
+            "PC0_A0",
+          ],
+        },
+      }}
+    />
+
+    <pinheader
+      name="J1"
+      pinCount={8}
+      footprint="pinrow8"
+      gender="female"
+      pinLabels={["D0_RX", "D1_TX", "D2", "D3_PWM", "D4", "D5_PWM", "D6_PWM", "D7"]}
+      schX={-32}
+      schY={12}
+      schFacingDirection="right"
+    />
+    <pinheader
+      name="J2"
+      pinCount={10}
+      footprint="pinrow10"
+      gender="female"
+      pinLabels={["SCL", "SDA", "AREF", "GND", "D13_SCK", "D12_MISO", "D11_MOSI", "D10_PWM", "D9_PWM", "D8"]}
+      schX={32}
+      schY={12}
+      schFacingDirection="left"
+    />
+    <pinheader
+      name="J3"
+      pinCount={8}
+      footprint="pinrow8"
+      gender="female"
+      pinLabels={["IOREF", "RESET", "V3_3", "V5", "GND1", "GND2", "VIN", "NC"]}
+      schX={-32}
+      schY={-18}
+      schFacingDirection="right"
+    />
+    <pinheader
+      name="J4"
+      pinCount={6}
+      footprint="pinrow6"
+      gender="female"
+      pinLabels={["A0", "A1", "A2", "A3", "A4_SDA", "A5_SCL"]}
+      schX={32}
+      schY={-18}
+      schFacingDirection="left"
+    />
+
+    <resistor name="R1" resistance="10k" footprint="0603" schX={-16} schY={23} />
+    <crystal name="Y1" frequency="16MHz" loadCapacitance="22pF" footprint="hc49" schX={-17} schY={-9} />
+    <capacitor name="C1" capacitance="22pF" footprint="0603" schX={-23} schY={-13} />
+    <capacitor name="C2" capacitance="22pF" footprint="0603" schX={-11} schY={-13} />
+    <capacitor name="C3" capacitance="100nF" footprint="0603" schX={14} schY={22} />
+    <capacitor name="C4" capacitance="100nF" footprint="0603" schX={20} schY={22} />
+
+    <trace from="R1.pin1" to="net.V5" />
+    <trace from="R1.pin2" to="net.RESET" />
+    <trace from="U1.RESET" to="net.RESET" />
+    <trace from="J3.RESET" to="net.RESET" />
+
+    <trace from="U1.XTAL1" to="Y1.pin1" />
+    <trace from="U1.XTAL2" to="Y1.pin2" />
+    <trace from="Y1.pin1" to="C1.pin1" />
+    <trace from="Y1.pin2" to="C2.pin1" />
+    <trace from="C1.pin2" to="net.GND" />
+    <trace from="C2.pin2" to="net.GND" />
+
+    <trace from="U1.VCC" to="net.V5" />
+    <trace from="U1.AVCC" to="net.V5" />
+    <trace from="U1.GND1" to="net.GND" />
+    <trace from="U1.GND2" to="net.GND" />
+    <trace from="U1.AREF" to="J2.AREF" />
+    <trace from="C3.pin1" to="net.V5" />
+    <trace from="C3.pin2" to="net.GND" />
+    <trace from="C4.pin1" to="net.V5" />
+    <trace from="C4.pin2" to="net.GND" />
+
+    <trace from="J3.IOREF" to="net.V5" />
+    <trace from="J3.V5" to="net.V5" />
+    <trace from="J3.V3_3" to="net.V3_3" />
+    <trace from="J3.GND1" to="net.GND" />
+    <trace from="J3.GND2" to="net.GND" />
+    <trace from="J3.VIN" to="net.VIN" />
+    <trace from="J2.GND" to="net.GND" />
+
+    <trace from="U1.PD0_RXD" to="J1.D0_RX" />
+    <trace from="U1.PD1_TXD" to="J1.D1_TX" />
+    <trace from="U1.PD2_D2" to="J1.D2" />
+    <trace from="U1.PD3_D3_PWM" to="J1.D3_PWM" />
+    <trace from="U1.PD4_D4" to="J1.D4" />
+    <trace from="U1.PD5_D5_PWM" to="J1.D5_PWM" />
+    <trace from="U1.PD6_D6_PWM" to="J1.D6_PWM" />
+    <trace from="U1.PD7_D7" to="J1.D7" />
+
+    <trace from="U1.PB5_D13_SCK" to="J2.D13_SCK" />
+    <trace from="U1.PB4_D12_MISO" to="J2.D12_MISO" />
+    <trace from="U1.PB3_D11_MOSI" to="J2.D11_MOSI" />
+    <trace from="U1.PB2_D10_PWM" to="J2.D10_PWM" />
+    <trace from="U1.PB1_D9_PWM" to="J2.D9_PWM" />
+    <trace from="U1.PB0_D8" to="J2.D8" />
+    <trace from="U1.PC4_A4_SDA" to="J2.SDA" />
+    <trace from="U1.PC5_A5_SCL" to="J2.SCL" />
+
+    <trace from="U1.PC0_A0" to="J4.A0" />
+    <trace from="U1.PC1_A1" to="J4.A1" />
+    <trace from="U1.PC2_A2" to="J4.A2" />
+    <trace from="U1.PC3_A3" to="J4.A3" />
+    <trace from="U1.PC4_A4_SDA" to="J4.A4_SDA" />
+    <trace from="U1.PC5_A5_SCL" to="J4.A5_SCL" />
+  </board>
+)
+`} />
+
+## Header Layout
+
+The four headers mirror the groups used on an Arduino Uno:
+
+- `J1` carries digital pins D0-D7.
+- `J2` carries SCL, SDA, AREF, ground, and digital pins D8-D13.
+- `J3` carries IOREF, reset, 3.3 V, 5 V, ground, VIN, and one no-connect slot.
+- `J4` carries analog pins A0-A5.
+
+Keeping those groups separate makes the schematic easier to compare with the
+physical shield-header layout.
+
+## Reset And Clock
+
+`R1` is the 10 kOhm pull-up that holds `RESET` high during normal operation. The
+reset header pin and the ATmega328P reset pin both share `net.RESET`, so adding a
+button or programming connector later only requires tying into that same net.
+
+The 16 MHz crystal uses two 22 pF load capacitors to ground. The tutorial also
+adds two 100 nF decoupling capacitors for the `VCC` and `AVCC` pins.
+
+## Extending The Schematic
+
+This schematic intentionally stops before the USB interface, regulator, and
+auto-reset circuit. To keep building toward a complete Uno, add the USB-to-serial
+interface on `D0_RX` and `D1_TX`, route the power input through a regulator, and
+connect the reset net to the USB serial DTR signal through a small capacitor.
