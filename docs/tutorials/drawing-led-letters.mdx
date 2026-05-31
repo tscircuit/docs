@@ -1,0 +1,164 @@
+---
+title: Drawing Letters With LEDs
+description: Build a reusable LedLetter component that turns any capital A-Z letter into a small PCB display with one resistor per LED.
+---
+
+## Overview
+
+This tutorial shows how to build a reusable `LedLetter` component. The component
+uses a 5x7 pixel font, places 0603 LEDs for each lit pixel, and adds one series
+resistor per LED so the schematic and PCB layout stay electrically explicit.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="pcb" code={`
+const LETTER_PIXELS = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  G: ["01111", "10000", "10000", "10111", "10001", "10001", "01111"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  J: ["00111", "00010", "00010", "00010", "10010", "10010", "01100"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+  Q: ["01110", "10001", "10001", "10001", "10101", "10010", "01101"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+  W: ["10001", "10001", "10001", "10101", "10101", "10101", "01010"],
+  X: ["10001", "10001", "01010", "00100", "01010", "10001", "10001"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  Z: ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
+} as const
+
+type Letter = keyof typeof LETTER_PIXELS
+
+type LedLetterProps = {
+  letter?: Letter
+  power?: string
+  gnd?: string
+  ledColor?: "red" | "green" | "blue" | "yellow" | "white"
+  dotPitchMm?: number
+}
+
+export const LedLetter = ({
+  letter = "A",
+  power = "net.V3_3",
+  gnd = "net.GND",
+  ledColor = "red",
+  dotPitchMm = 2.2,
+}: LedLetterProps) => {
+  const requestedLetter = letter.toUpperCase()
+  const safeLetter = (requestedLetter in LETTER_PIXELS ? requestedLetter : "A") as Letter
+  const pattern = LETTER_PIXELS[safeLetter]
+  const rows = pattern.length
+  const cols = pattern[0].length
+  const xOffset = -((cols - 1) * dotPitchMm) / 2
+  const yOffset = ((rows - 1) * dotPitchMm) / 2
+
+  const activeDots = pattern.flatMap((rowPattern, rowIndex) =>
+    rowPattern
+      .split("")
+      .map((cell, colIndex) => ({ cell, rowIndex, colIndex }))
+      .filter(({ cell }) => cell === "1")
+  )
+
+  return (
+    <group name={"LETTER_" + safeLetter}>
+      {activeDots.map(({ rowIndex, colIndex }) => {
+        const ledName = "D_" + safeLetter + "_" + rowIndex + "_" + colIndex
+        const resistorName = "R_" + safeLetter + "_" + rowIndex + "_" + colIndex
+        const x = xOffset + colIndex * dotPitchMm
+        const y = yOffset - rowIndex * dotPitchMm
+        const schX = colIndex * 2.1
+        const schY = -rowIndex * 1.2
+
+        return (
+          <group name={"PIXEL_" + rowIndex + "_" + colIndex}>
+            <resistor
+              name={resistorName}
+              footprint="0603"
+              resistance="1k"
+              pcbX={x - 0.85}
+              pcbY={y}
+              schX={schX - 0.8}
+              schY={schY}
+            />
+            <led
+              name={ledName}
+              footprint="0603"
+              color={ledColor}
+              pcbX={x + 0.85}
+              pcbY={y}
+              schX={schX + 0.8}
+              schY={schY}
+            />
+            <trace from={"." + resistorName + " .pos"} to={power} />
+            <trace from={"." + resistorName + " .neg"} to={"." + ledName + " .pos"} />
+            <trace from={"." + ledName + " .neg"} to={gnd} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="22mm" height="25mm" routingDisabled>
+    <LedLetter letter="A" power="net.V3_3" gnd="net.GND" />
+  </board>
+)
+`} />
+
+## How the Component Works
+
+`LETTER_PIXELS` stores each capital letter as seven rows of five cells. A `1`
+means "place an LED here" and a `0` means "leave the cell empty." Because the
+component receives the letter as a prop, the same implementation can draw any
+capital letter from A to Z.
+
+Each active pixel expands into three things:
+
+- one 0603 LED
+- one 0603 resistor
+- three traces: power to resistor, resistor to LED, and LED to ground
+
+That keeps the design easy to inspect in both schematic and PCB views.
+
+## Try Another Letter
+
+Change the `letter` prop to any capital letter:
+
+```tsx
+<LedLetter letter="K" power="net.V3_3" gnd="net.GND" ledColor="green" />
+```
+
+If you want a larger sign, increase `dotPitchMm`. For example, `dotPitchMm={3}`
+spreads the LEDs farther apart while keeping the same 5x7 letter pattern.
+
+## Reusing It In A Board
+
+Place the component alongside your power input and route the shared power and
+ground nets into the letter:
+
+```tsx
+export default () => (
+  <board width="30mm" height="30mm">
+    <LedLetter letter="Z" power="net.VBUS" gnd="net.GND" ledColor="blue" />
+  </board>
+)
+```
+
+For a battery-powered board, adjust the resistor value based on your LED forward
+voltage and desired current. The tutorial uses `1k` as a conservative starter
+value for small indicator-style LEDs.
