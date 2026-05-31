@@ -1,0 +1,118 @@
+---
+title: Contributing to tscircuit
+description: >-
+  A comprehensive guide to contributing to the tscircuit open-source project.
+  Learn about the different repositories, how to choose where to contribute,
+  and the contribution workflow.
+---
+
+# Contributing to tscircuit
+
+Thank you for your interest in contributing to tscircuit! This guide will help
+you understand the project structure and find the right place to make your
+contribution.
+
+## Project Overview
+
+tscircuit is an open-source EDA (Electronic Design Automation) framework that
+lets you design PCBs and schematics using TypeScript/React. The project is
+organized into several repositories, each serving a specific purpose.
+
+## Core Libraries
+
+These repositories contain the core engine and data structures that power tscircuit.
+
+| Repository | Description | Good First Issue? |
+|-----------|-------------|-------------------|
+| [tscircuit/core](https://github.com/tscircuit/core) | The core circuit engine that processes React components into circuit data | Intermediate |
+| [tscircuit/circuit-json](https://github.com/tscircuit/circuit-json) | The standard circuit JSON format used across all tscircuit tools | Beginner-friendly |
+| [tscircuit/footprinter](https://github.com/tscircuit/footprinter) | Footprint generation library for PCB components | Intermediate |
+| [tscircuit/schematic-symbols](https://github.com/tscircuit/schematic-symbols) | SVG schematic symbol library | Beginner-friendly |
+| [tscircuit/props](https://github.com/tscircuit/props) | Shared TypeScript type definitions for component props | Beginner-friendly |
+
+## Developer Tools
+
+These repositories provide the development environment and tooling.
+
+| Repository | Description | Good First Issue? |
+|-----------|-------------|-------------------|
+| [tscircuit/tscircuit](https://github.com/tscircuit/tscircuit) | The CLI and development runtime | Intermediate |
+| [tscircuit/builder](https://github.com/tscircuit/builder) | Circuit builder API for programmatic PCB design | Intermediate |
+| [tscircuit/circuit-to-svg](https://github.com/tscircuit/circuit-to-svg) | Converts circuit JSON to SVG visualizations | Beginner-friendly |
+| [tscircuit/pnp-locator](https://github.com/tscircuit/pnp-locator) | Pick-and-place file parser and locator | Beginner-friendly |
+
+## Web Applications & Viewers
+
+These repositories are the web-based tools and viewers.
+
+| Repository | Description | Good First Issue? |
+|-----------|-------------|-------------------|
+| [tscircuit/docs](https://github.com/tscircuit/docs) | Documentation site (Docusaurus) | Beginner-friendly |
+| [tscircuit/snippets](https://github.com/tscircuit/snippets) | Online code editor and snippet sharing | Intermediate |
+| [tscircuit/registry](https://github.com/tscircuit/registry) | Component registry and package manager | Intermediate |
+| [tscircuit/pcb-viewer](https://github.com/tscircuit/pcb-viewer) | React PCB viewer component | Intermediate |
+| [tscircuit/schematic-viewer](https://github.com/tscircuit/schematic-viewer) | React schematic viewer component | Intermediate |
+
+## Converters & Integrations
+
+These repositories handle format conversion and third-party integrations.
+
+| Repository | Description | Good First Issue? |
+|-----------|-------------|-------------------|
+| [tscircuit/kicad-converter](https://github.com/tscircuit/kicad-converter) | KiCad to tscircuit format converter | Intermediate |
+| [tscircuit/eagle-converter](https://github.com/tscircuit/eagle-converter) | Eagle to tscircuit format converter | Intermediate |
+| [tscircuit/jlcparts](https://github.com/tscircuit/jlcparts) | JLCPCB parts database integration | Beginner-friendly |
+
+## How to Choose Where to Contribute
+
+### New Contributors
+
+If you're new to the project, start with:
+
+1. **Documentation** (`tscircuit/docs`) — Writing tutorials, fixing typos, improving guides
+2. **Type definitions** (`tscircuit/props`) — Adding or improving TypeScript types
+3. **Schematic symbols** (`tscircuit/schematic-symbols`) — Adding new SVG symbols
+4. **Circuit JSON** (`tscircuit/circuit-json`) — Adding new element types
+
+### Experienced Contributors
+
+If you're comfortable with the codebase:
+
+1. **Core engine** (`tscircuit/core`) — Fixing bugs, adding new component types
+2. **Footprint generation** (`tscircuit/footprinter`) — Adding new footprint patterns
+3. **CLI/Runtime** (`tscircuit/tscircuit`) — Improving developer experience
+
+### Design-Focused Contributors
+
+If you have PCB design experience:
+
+1. **Tutorials** (`tscircuit/docs`) — Creating real-world circuit tutorials
+2. **Example circuits** — Building reference designs
+3. **Footprint verification** — Testing and validating footprints
+
+## Contribution Workflow
+
+1. **Find an issue** — Look for issues labeled `💎 Bounty` or `good first issue`
+2. **Claim the issue** — Comment `/claim #issue-number` on the issue
+3. **Fork and branch** — Create a feature branch from `main`
+4. **Make your changes** — Follow the code style and conventions
+5. **Test locally** — Run `bun run typecheck` and `bun run build`
+6. **Submit a PR** — Reference the issue number in your PR description
+7. **Address review feedback** — Respond to code review comments
+
+## Getting Help
+
+- [Discord](https://tscircuit.com/discord) — Join the community
+- [GitHub Discussions](https://github.com/orgs/tscircuit/discussions) — Ask questions
+- [Documentation](https://docs.tscircuit.com) — Read the docs
+
+## Bounty Program
+
+tscircuit runs a bounty program for specific issues. Look for the `💎 Bounty`
+label on issues. Bounty amounts vary based on complexity.
+
+To claim a bounty:
+1. Find an issue with the `💎 Bounty` label
+2. Comment `/claim #issue-number` to claim it
+3. Submit a PR that addresses the issue
+4. Once merged, the bounty will be paid out
