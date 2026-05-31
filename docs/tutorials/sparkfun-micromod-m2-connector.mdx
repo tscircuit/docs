@@ -1,0 +1,91 @@
+---
+title: SparkFun MicroMod M.2 Connector Tutorial
+description: >-
+  Learn how to use the SparkFun MicroMod M.2 connector standard with tscircuit
+  to design carrier boards for processor and function modules.
+---
+
+import CircuitPreview from '@site/src/components/CircuitPreview';
+import { TscircuitIframe } from "../../src/components/TscircuitIframe"
+
+## Overview
+
+The [SparkFun MicroMod](https://www.sparkfun.com/micromod) ecosystem uses an M.2
+edge connector to pair processor boards with function boards (carrier boards). This
+tutorial shows how to design a MicroMod carrier board using tscircuit.
+
+## The MicroMod M.2 Connector
+
+The MicroMod connector is a standard M.2 Key M edge connector with 75 pins.
+
+### Key Pin Groups
+
+| Pin Group | Pins | Description |
+|-----------|------|-------------|
+| Power | 3.3V, V_USB | Power supply pins |
+| I2C | SDA, SCL | I2C bus (Qwiic compatible) |
+| SPI | COPI, CIPO, SCK, CS | SPI bus |
+| UART | TX, RX | Serial communication |
+| ADC | A0-A5 | Analog inputs |
+| GPIO | D0-D5 | Digital I/O |
+
+## Basic M.2 Connector Setup
+
+<TscircuitIframe defaultActiveTab="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <connector name="M2" standard="m2" pcbX={0} pcbY={0} />
+  </board>
+`}
+/>
+
+## Carrier Board with I2C Sensor
+
+<TscircuitIframe defaultActiveTab="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <connector name="M2" standard="m2" pcbX={0} pcbY={0}
+      connections={{ SDA: "net.I2C_SDA", SCL: "net.I2C_SCL", "3.3V": "net.PWR_3V3", GND: "net.GND" }} />
+    <chip name="U1" footprint="bme280" pcbX={30} pcbY={0}
+      connections={{ SDA: "net.I2C_SDA", SCL: "net.I2C_SCL", VCC: "net.PWR_3V3", GND: "net.GND" }} />
+    <resistor name="R1" resistance="4.7k" footprint="0402"
+      connections={{ pin1: "net.PWR_3V3", pin2: "net.I2C_SDA" }} pcbX={15} pcbY={10} />
+    <resistor name="R2" resistance="4.7k" footprint="0402"
+      connections={{ pin1: "net.PWR_3V3", pin2: "net.I2C_SCL" }} pcbX={15} pcbY={-10} />
+  </board>
+`}
+/>
+
+## Carrier Board with Status LED
+
+<TscircuitIframe defaultActiveTab="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <connector name="M2" standard="m2" pcbX={0} pcbY={0}
+      connections={{ D0: "net.LED_CTRL", "3.3V": "net.PWR_3V3", GND: "net.GND" }} />
+    <resistor name="R_LED" resistance="330" footprint="0402"
+      connections={{ pin1: "net.LED_CTRL", pin2: "net.LED_ANODE" }} pcbX={20} pcbY={0} />
+    <led name="D1" footprint="0603" color="green"
+      connections={{ anode: "net.LED_ANODE", cathode: "net.GND" }} pcbX={30} pcbY={0} />
+  </board>
+`}
+/>
+
+## MicroMod Pin Reference
+
+| Pin | Name | Description |
+|-----|------|-------------|
+| 1 | 3.3V | 3.3V regulated output |
+| 2 | V_USB | USB VBUS (5V) |
+| 3 | GND | Ground |
+| 4 | SDA | I2C Data |
+| 5 | SCL | I2C Clock |
+| 6 | D0 | GPIO / PWM0 |
+| 7 | D1 | GPIO / PWM1 |
+| 8 | A0 | Analog Input |
+
+## References
+
+- [MicroMod Pin Descriptions](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
+- [MicroMod Pinout](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pinout.pdf)
+- [Getting Started with MicroMod](https://learn.sparkfun.com/tutorials/getting-started-with-micromod)
