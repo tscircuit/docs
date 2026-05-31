@@ -425,7 +425,7 @@ The PAM8403 provides two logic-level control pins:
 
 | Pin | Active | Behavior |
 |-----|--------|----------|
-| SHUTDOWN | LOW | Disables the amplifier entirely (typical <1 A current draw) |
+| SHUTDOWN | LOW | Disables the amplifier entirely (typical `<1 µA` current draw) |
 | MUTE | HIGH | Mutes the audio output while keeping the amplifier powered |
 
 In our circuit, SHUTDOWN is tied to V5 (always enabled) and MUTE is tied to GND (never muted). For more control, connect these to GPIO pins on a microcontroller:
