@@ -8,7 +8,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-`<schematicsection />` groups schematic components into named, labeled regions. Each section draws a bounding box around its member components and renders a display label. When multiple sections exist, automatic dividing lines separate them.
+`<schematicsection />` groups schematic components into named, labeled regions. Each section draws a bounding box around its member components and renders a display label. You can control the label size with `sectionTitleFontSize`. When multiple sections exist, automatic dividing lines separate them.
 
 Components opt in to a section by setting `schSectionName` to match the section's `name` prop.
 
@@ -61,6 +61,7 @@ export default () => (
 |------|------|----------|-------------|
 | `name` | `string` | Yes | Identifier matched by `schSectionName` on member components |
 | `displayName` | `string` | No | Label rendered in the top-left corner of the section region |
+| `sectionTitleFontSize` | `number \| string` | No | Font size for the section title label. Defaults to `0.18` schematic units. |
 
 ## Component `schSectionName`
 
@@ -74,4 +75,3 @@ Any component that accepts schematic position props also accepts `schSectionName
   schSectionName="power"
 />
 ```
-
