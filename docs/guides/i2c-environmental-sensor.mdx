@@ -1,0 +1,492 @@
+---
+title: I2C Environmental Sensor Module
+description: >-
+  Build an I2C environmental sensor module using tscircuit. Connect a BME280
+  temperature, humidity, and pressure sensor to a Raspberry Pi Pico over I2C,
+  and learn how to read environmental data for weather stations, indoor climate
+  monitoring, and IoT applications.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial walks through building an I2C environmental sensor module using tscircuit. We'll connect a BME280 sensor — which measures temperature, humidity, and barometric pressure — to a Raspberry Pi Pico over the I2C bus. This sensor module is perfect for weather stations, indoor climate monitoring, greenhouse automation, and IoT data logging.
+
+<TscircuitIframe defaultView="3d" code={`
+import { usePICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => {
+  const U1 = usePICO_W("U1")
+  return (
+    <board width="45mm" height="35mm" routingDisabled>
+      <U1 pcbY={0} pcbX={-10} />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="BME280"
+        footprint="lga8"
+        pinLabels={{
+          pin1: ["VDD"],
+          pin2: ["GND"],
+          pin3: ["CSB"],
+          pin4: ["SDI"],
+          pin5: ["SDO"],
+          pin6: ["SCK"],
+          pin7: ["SDO"],
+          pin8: ["VDDIO"],
+        }}
+        schPortArrangement={{
+          leftSide: { pins: ["VDD", "GND", "CSB", "SDI"], direction: "top-to-bottom" },
+          rightSide: { pins: ["VDDIO", "SDO", "SCK", "SDO"], direction: "top-to-bottom" },
+        }}
+        pcbX={12}
+        pcbY={0}
+      />
+
+      <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={6} pcbY={-8} />
+      <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={9} pcbY={-8} />
+
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={12} pcbY={-5} />
+
+      <trace from={U1.VBUS} to="net.V5" />
+      <trace from={U1.GND1} to="net.GND" />
+      <trace from={U1.GND2} to="net.GND" />
+      <trace from={U1.GND3} to="net.GND" />
+
+      <trace from={U1.GP4_SPI0RX_I2C0SDA_UART1TX} to=".U2 .SDI" />
+      <trace from={U1.GP5_SPI0CSn_I2C0SCL_UART1RX} to=".U2 .SCK" />
+
+      <trace from=".R1 .pos" to={U1.GP4_SPI0RX_I2C0SDA_UART1TX} />
+      <trace from=".R1 .neg" to="net.V5" />
+      <trace from=".R2 .pos" to={U1.GP5_SPI0CSn_I2C0SCL_UART1RX} />
+      <trace from=".R2 .neg" to="net.V5" />
+
+      <trace from=".U2 .VDD" to="net.V5" />
+      <trace from=".U2 .VDDIO" to="net.V5" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".U2 .CSB" to="net.V5" />
+
+      <trace from=".C1 .pos" to="net.V5" />
+      <trace from=".C1 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## What is the BME280?
+
+The **BME280** is an integrated environmental sensor from Bosch Sensortec that combines three sensing elements in one tiny package:
+
+| Measurement | Range | Accuracy | Resolution |
+|-------------|-------|----------|------------|
+| Temperature | -40 C to +85 C | ±1.0 C | 0.01 C |
+| Humidity | 0% to 100% RH | ±3% RH | 0.008% RH |
+| Pressure | 300 hPa to 1100 hPa | ±1.0 hPa | 0.18 Pa |
+
+The sensor communicates over I2C or SPI, making it easy to interface with any microcontroller. Its small LGA-8 package (2.5mm x 2.5mm) makes it ideal for compact designs.
+
+### How the BME280 Works
+
+- **Temperature**: Uses an integrated band-gap temperature sensor
+- **Humidity**: Measures the change in capacitance of a polymer dielectric layer as it absorbs moisture from the air
+- **Pressure**: Uses a piezo-resistive MEMS element that changes resistance when atmospheric pressure deforms a silicon membrane
+
+The raw sensor readings are compensated using factory-calibrated coefficients stored in the sensor's internal registers, giving accurate, calibrated output values.
+
+## Circuit Requirements
+
+Our environmental sensor module needs to:
+
+- Host a Raspberry Pi Pico W as the I2C bus master
+- Connect a BME280 on the I2C bus at address 0x76 (or 0x77)
+- Include I2C pull-up resistors (4.7k to V5)
+- Include a decoupling capacitor for clean sensor readings
+- Be compact enough for a weather station or IoT enclosure
+
+## Understanding I2C Communication
+
+**I2C (Inter-Integrated Circuit)** is a two-wire serial protocol that allows multiple devices to share the same bus:
+
+- **SDA (Serial Data)**: Bi-directional data line
+- **SCL (Serial Clock)**: Clock signal controlled by the master
+
+Each device on the bus has a unique 7-bit address. The BME280 typically uses address `0x76` (when the SDO pin is pulled to GND) or `0x77` (when SDO is pulled to VDDIO).
+
+I2C requires **pull-up resistors** on both SDA and SCL lines — typically 4.7k that pull the lines up to the logic level voltage (3.3V or 5V). Without these resistors, the lines would float and communication would fail.
+
+## Building the Circuit Step by Step
+
+### Step 1: Add the Raspberry Pi Pico W
+
+The Pico W serves as both the I2C master and provides WiFi connectivity for sending sensor data to the cloud.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { usePICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => {
+  const U1 = usePICO_W("U1")
+  return (
+    <board width="45mm" height="35mm" routingDisabled>
+      <U1 pcbY={0} pcbX={-10} />
+    </board>
+  )
+}
+`} />
+
+### Step 2: Add the BME280 Sensor
+
+The BME280 communicates over I2C using its SDI (SDA) and SCK (SCL) pins. We tie CSB high to select I2C mode (instead of SPI).
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { usePICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => {
+  const U1 = usePICO_W("U1")
+  return (
+    <board width="45mm" height="35mm" routingDisabled>
+      <U1 pcbY={0} pcbX={-10} />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="BME280"
+        footprint="lga8"
+        pinLabels={{
+          pin1: ["VDD"],
+          pin2: ["GND"],
+          pin3: ["CSB"],
+          pin4: ["SDI"],
+          pin5: ["SDO"],
+          pin6: ["SCK"],
+          pin7: ["SDO"],
+          pin8: ["VDDIO"],
+        }}
+        schPortArrangement={{
+          leftSide: { pins: ["VDD", "GND", "CSB", "SDI"], direction: "top-to-bottom" },
+          rightSide: { pins: ["VDDIO", "SDO", "SCK", "SDO"], direction: "top-to-bottom" },
+        }}
+        pcbX={12}
+        pcbY={0}
+      />
+    </board>
+  )
+}
+`} />
+
+### Step 3: Add I2C Pull-Up Resistors
+
+I2C requires pull-up resistors on both SDA and SCL. Without these, the open-drain lines would never go high. 4.7k is a common and safe value for standard (100kHz) and fast (400kHz) I2C modes.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { usePICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => {
+  const U1 = usePICO_W("U1")
+  return (
+    <board width="45mm" height="35mm" routingDisabled>
+      <U1 pcbY={0} pcbX={-10} />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="BME280"
+        footprint="lga8"
+        pinLabels={{
+          pin1: ["VDD"],
+          pin2: ["GND"],
+          pin3: ["CSB"],
+          pin4: ["SDI"],
+          pin5: ["SDO"],
+          pin6: ["SCK"],
+          pin7: ["SDO"],
+          pin8: ["VDDIO"],
+        }}
+        schPortArrangement={{
+          leftSide: { pins: ["VDD", "GND", "CSB", "SDI"], direction: "top-to-bottom" },
+          rightSide: { pins: ["VDDIO", "SDO", "SCK", "SDO"], direction: "top-to-bottom" },
+        }}
+        pcbX={12}
+        pcbY={0}
+      />
+
+      <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={6} pcbY={-8} />
+      <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={9} pcbY={-8} />
+    </board>
+  )
+}
+`} />
+
+### Step 4: Add a Decoupling Capacitor
+
+A 100nF decoupling capacitor close to the BME280's VDD pin filters out high-frequency noise from the power supply, ensuring stable sensor readings.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { usePICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => {
+  const U1 = usePICO_W("U1")
+  return (
+    <board width="45mm" height="35mm" routingDisabled>
+      <U1 pcbY={0} pcbX={-10} />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="BME280"
+        footprint="lga8"
+        pinLabels={{
+          pin1: ["VDD"],
+          pin2: ["GND"],
+          pin3: ["CSB"],
+          pin4: ["SDI"],
+          pin5: ["SDO"],
+          pin6: ["SCK"],
+          pin7: ["SDO"],
+          pin8: ["VDDIO"],
+        }}
+        schPortArrangement={{
+          leftSide: { pins: ["VDD", "GND", "CSB", "SDI"], direction: "top-to-bottom" },
+          rightSide: { pins: ["VDDIO", "SDO", "SCK", "SDO"], direction: "top-to-bottom" },
+        }}
+        pcbX={12}
+        pcbY={0}
+      />
+
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={12} pcbY={-5} />
+    </board>
+  )
+}
+`} />
+
+### Step 5: Wire Everything Together
+
+Now we connect all the pieces — I2C bus from Pico to BME280, pull-up resistors to V5, decoupling capacitor, and power rails.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { usePICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => {
+  const U1 = usePICO_W("U1")
+  return (
+    <board width="45mm" height="35mm" routingDisabled>
+      <U1 pcbY={0} pcbX={-10} />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="BME280"
+        footprint="lga8"
+        pinLabels={{
+          pin1: ["VDD"],
+          pin2: ["GND"],
+          pin3: ["CSB"],
+          pin4: ["SDI"],
+          pin5: ["SDO"],
+          pin6: ["SCK"],
+          pin7: ["SDO"],
+          pin8: ["VDDIO"],
+        }}
+        schPortArrangement={{
+          leftSide: { pins: ["VDD", "GND", "CSB", "SDI"], direction: "top-to-bottom" },
+          rightSide: { pins: ["VDDIO", "SDO", "SCK", "SDO"], direction: "top-to-bottom" },
+        }}
+        pcbX={12}
+        pcbY={0}
+      />
+
+      <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={6} pcbY={-8} />
+      <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={9} pcbY={-8} />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={12} pcbY={-5} />
+
+      <trace from={U1.VBUS} to="net.V5" />
+      <trace from={U1.GND1} to="net.GND" />
+      <trace from={U1.GND2} to="net.GND" />
+      <trace from={U1.GND3} to="net.GND" />
+
+      <trace from={U1.GP4_SPI0RX_I2C0SDA_UART1TX} to=".U2 .SDI" />
+      <trace from={U1.GP5_SPI0CSn_I2C0SCL_UART1RX} to=".U2 .SCK" />
+
+      <trace from=".R1 .pos" to={U1.GP4_SPI0RX_I2C0SDA_UART1TX} />
+      <trace from=".R1 .neg" to="net.V5" />
+      <trace from=".R2 .pos" to={U1.GP5_SPI0CSn_I2C0SCL_UART1RX} />
+      <trace from=".R2 .neg" to="net.V5" />
+
+      <trace from=".U2 .VDD" to="net.V5" />
+      <trace from=".U2 .VDDIO" to="net.V5" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".U2 .CSB" to="net.V5" />
+
+      <trace from=".C1 .pos" to="net.V5" />
+      <trace from=".C1 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Pico W Pin Map for I2C
+
+The Raspberry Pi Pico W has two I2C peripherals:
+
+| I2C Bus | SDA Pin | SCL Pin | Physical Pin |
+|---------|---------|---------|--------------|
+| I2C0    | GP4     | GP5     | Pin 6, 7    |
+| I2C1    | GP6     | GP7     | Pin 9, 10   |
+
+In our circuit, we use **I2C0** with GP4 as SDA and GP5 as SCL. The Pico W's `usePICO_W` hook exposes pins with their full function names: `GP4_SPI0RX_I2C0SDA_UART1TX` and `GP5_SPI0CSn_I2C0SCL_UART1RX`.
+
+## Reading Sensor Data
+
+Once your PCB is assembled, you can read sensor data using MicroPython on the Pico or a C/C++ firmware.
+
+### MicroPython Example
+
+```python
+from machine import Pin, I2C
+import bme280
+import time
+
+i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=400000)
+bme = bme280.BME280(i2c=i2c)
+
+while True:
+    temp, pressure, humidity = bme.read_compensated_data()
+
+    # Convert pressure from Pa to hPa and temperature to degrees Celsius
+    pressure_hpa = pressure / 25600.0
+    temp_c = temp / 100.0
+    humidity_pct = humidity / 1024.0
+
+    print(f"Temperature: {temp_c:.1f} C")
+    print(f"Pressure: {pressure_hpa:.1f} hPa")
+    print(f"Humidity: {humidity_pct:.1f} %")
+    print("---")
+
+    time.sleep(2)
+```
+
+### Arduino / C++ Example
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.setSDA(4);
+  Wire.setSCL(5);
+
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found!");
+    while (1);
+  }
+}
+
+void loop() {
+  Serial.print("Temperature: ");
+  Serial.print(bme.readTemperature());
+  Serial.println(" C");
+
+  Serial.print("Pressure: ");
+  Serial.print(bme.readPressure() / 100.0F);
+  Serial.println(" hPa");
+
+  Serial.print("Humidity: ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
+
+  Serial.println("---");
+  delay(2000);
+}
+```
+
+## PCB Layout
+
+Here is the complete PCB layout with the Pico W, BME280, pull-up resistors, and decoupling capacitor:
+
+<CircuitPreview hideSchematicTab hide3DTab defaultView="pcb" code={`
+import { usePICO_W } from "@tsci/seveibar.PICO_W"
+
+export default () => {
+  const U1 = usePICO_W("U1")
+  return (
+    <board width="45mm" height="35mm" routingDisabled>
+      <U1 pcbY={0} pcbX={-10} />
+
+      <chip
+        name="U2"
+        manufacturerPartNumber="BME280"
+        footprint="lga8"
+        pinLabels={{
+          pin1: ["VDD"],
+          pin2: ["GND"],
+          pin3: ["CSB"],
+          pin4: ["SDI"],
+          pin5: ["SDO"],
+          pin6: ["SCK"],
+          pin7: ["SDO"],
+          pin8: ["VDDIO"],
+        }}
+        schPortArrangement={{
+          leftSide: { pins: ["VDD", "GND", "CSB", "SDI"], direction: "top-to-bottom" },
+          rightSide: { pins: ["VDDIO", "SDO", "SCK", "SDO"], direction: "top-to-bottom" },
+        }}
+        pcbX={12}
+        pcbY={0}
+      />
+
+      <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={6} pcbY={-8} />
+      <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={9} pcbY={-8} />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={12} pcbY={-5} />
+
+      <trace from={U1.VBUS} to="net.V5" />
+      <trace from={U1.GND1} to="net.GND" />
+      <trace from={U1.GND2} to="net.GND" />
+      <trace from={U1.GND3} to="net.GND" />
+
+      <trace from={U1.GP4_SPI0RX_I2C0SDA_UART1TX} to=".U2 .SDI" />
+      <trace from={U1.GP5_SPI0CSn_I2C0SCL_UART1RX} to=".U2 .SCK" />
+
+      <trace from=".R1 .pos" to={U1.GP4_SPI0RX_I2C0SDA_UART1TX} />
+      <trace from=".R1 .neg" to="net.V5" />
+      <trace from=".R2 .pos" to={U1.GP5_SPI0CSn_I2C0SCL_UART1RX} />
+      <trace from=".R2 .neg" to="net.V5" />
+
+      <trace from=".U2 .VDD" to="net.V5" />
+      <trace from=".U2 .VDDIO" to="net.V5" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".U2 .CSB" to="net.V5" />
+
+      <trace from=".C1 .pos" to="net.V5" />
+      <trace from=".C1 .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Design Tips
+
+- **Keep I2C traces short**: Long traces add capacitance that can distort the I2C signals. Keep SDA and SCL traces under 10cm when possible
+- **Place the decoupling capacitor close**: The 100nF cap should be as close as possible to the BME280 VDD/GND pins
+- **Avoid heat near the sensor**: The BME280's temperature reading is affected by nearby heat sources. Keep it away from voltage regulators and the Pico's main processor
+- **Consider a ground pour**: A solid ground pour on the PCB helps with noise immunity and thermal stability
+
+## Troubleshooting I2C
+
+If your sensor isn't responding, check these common issues:
+
+- **Missing pull-up resistors**: Verify both SDA and SCL have 4.7k pull-ups to V5
+- **Wrong I2C address**: Scan the bus to find the sensor. The BME280 defaults to 0x76 when SDO is pulled low, 0x77 when pulled high
+- **Power supply noise**: Add additional decoupling (10 F electrolytic in parallel with the 100nF ceramic)
+- **Incorrect pin mapping**: Double-check your GP4 (SDA) and GP5 (SCL) assignments
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading them to JLCPCB. Follow the instructions from [Ordering Prototypes](/building-electronics/ordering-prototypes).
+
+## Next Steps
+
+- Add an OLED display (SSD1306) on the same I2C bus to show real-time readings
+- Add a microSD card slot for data logging
+- Connect the Pico W to WiFi and stream sensor data to a cloud dashboard
+- Expand with additional I2C sensors: light sensor (BH1750), air quality (CCS811), or soil moisture
+- 3D print an enclosure and add a small solar panel for outdoor deployment

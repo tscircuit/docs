@@ -1,0 +1,565 @@
+---
+title: USB Power Delivery Trigger HAT
+description: >-
+  Learn how to design a USB Power Delivery Trigger HAT using tscircuit. This HAT
+  negotiates higher voltages (9V, 12V, 15V, 20V) from a USB-C PD power source
+  using a CH224K trigger IC, perfect for powering motors, LEDs, or other
+  high-power peripherals.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial walks through designing a USB Power Delivery (PD) Trigger HAT using tscircuit. A USB PD Trigger HAT negotiates higher voltages from a USB-C PD power source—unlocking 9V, 12V, 15V, or 20V instead of the default 5V. This is ideal for powering motors, high-brightness LEDs, audio amplifiers, or any project needing more than the standard 500mA at 5V.
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C-16P"
+      footprint="ssop16"
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VBUS1"],
+        pin3: ["CC1"],
+        pin4: ["D-"],
+        pin5: ["D+"],
+        pin6: ["SBU1"],
+        pin7: ["VBUS2"],
+        pin8: ["GND"],
+        pin9: ["GND"],
+        pin10: ["VBUS3"],
+        pin11: ["CC2"],
+        pin12: ["D+"],
+        pin13: ["D-"],
+        pin14: ["SBU2"],
+        pin15: ["VBUS4"],
+        pin16: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS1", "D-", "D+", "SBU1", "VBUS2", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["VBUS3", "D+", "D-", "SBU2", "VBUS4", "GND", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={-22}
+      pcbY={0}
+    />
+
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="sot23-6"
+      pinLabels={{
+        pin1: ["sel"],
+        pin2: ["vout"],
+        pin3: ["gnd"],
+        pin4: ["cc"],
+        pin5: ["nc"],
+        pin6: ["pg"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["sel", "cc", "nc"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vout", "gnd", "pg"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      footprint="sot223"
+      pinLabels={{
+        pin1: ["gnd"],
+        pin2: ["vout"],
+        pin3: ["vin"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["gnd"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vin", "vout"], direction: "top-to-bottom" },
+      }}
+      pcbX={12}
+      pcbY={0}
+    />
+
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={12} pcbY={-5} />
+    <capacitor name="C2" capacitance="10uF" footprint="0603" pcbX={12} pcbY={5} />
+
+    <pinheader name="H1" pinCount={4} pcbX={22} pcbY={0} />
+
+    <trace from=".J1 .VBUS1" to=".U1 .vout" />
+    <trace from=".J1 .VBUS2" to=".U1 .vout" />
+    <trace from=".J1 .VBUS3" to=".U1 .vout" />
+    <trace from=".J1 .VBUS4" to=".U1 .vout" />
+    <trace from=".J1 .GND" to="net.GND" />
+
+    <trace from=".J1 .CC1" to=".U1 .cc" />
+    <trace from=".J1 .CC2" to=".U1 .cc" />
+
+    <trace from=".U1 .gnd" to="net.GND" />
+
+    <trace from=".U1 .vout" to=".U2 .vin" />
+    <trace from=".U1 .vout" to=".H1 .pin1" />
+
+    <trace from=".U2 .gnd" to="net.GND" />
+    <trace from=".U2 .vout" to=".C1 .pos" />
+    <trace from=".U2 .vout" to=".H1 .pin3" />
+    <trace from=".C1 .neg" to="net.GND" />
+
+    <trace from=".C2 .pos" to=".U1 .vout" />
+    <trace from=".C2 .neg" to="net.GND" />
+
+    <trace from=".H1 .pin2" to="net.GND" />
+    <trace from=".H1 .pin4" to="net.GND" />
+  </board>
+)
+`} />
+
+## What is USB Power Delivery?
+
+USB Power Delivery (USB PD) is a fast-charging standard that allows USB-C devices to negotiate higher power levels. Standard USB provides 5V at up to 500mA (2.5W), but USB PD can deliver:
+
+| Voltage | Max Current | Max Power |
+|---------|-------------|-----------|
+| 5V      | 3A          | 15W       |
+| 9V      | 3A          | 27W       |
+| 12V     | 3A          | 36W       |
+| 15V     | 3A          | 45W       |
+| 20V     | 5A          | 100W      |
+
+### How PD Negotiation Works
+
+When you plug a USB-C PD charger into a device, communication happens over the **CC (Configuration Channel)** pins. The process works like this:
+
+1. **Detection**: The charger (source) detects a device (sink) on the CC line with a pull-down resistor
+2. **Capability Advertisement**: The source sends its supported voltage/current profiles to the sink
+3. **Request**: The sink requests a specific voltage from the available profiles
+4. **Acceptance**: The source switches to the requested voltage and signals "power ready"
+5. **Delivery**: Power flows at the negotiated voltage
+
+### PD Trigger ICs
+
+A **PD Trigger IC** handles this negotiation automatically. Instead of implementing the complex USB PD protocol yourself, a tiny chip like the **CH224K** or **IP2721** does it all:
+
+- **CH224K**: Configurable via a single resistor or pin. Supports 5V/9V/12V/15V/20V output. SOT-23-6 package, costs under $0.15.
+- **IP2721**: Similar functionality with additional protection features. Supports up to 100W.
+
+The trigger IC connects to the CC pins of the USB-C port and handles the entire PD handshake, outputting the negotiated voltage on its VOUT pin.
+
+## Circuit Requirements
+
+Our USB PD Trigger HAT needs to:
+
+- Accept USB-C input with PD negotiation
+- Output a configurable PD voltage (e.g., 12V or 20V)
+- Provide a regulated 3.3V rail for logic-level devices
+- Expose power rails via pin headers for downstream use
+
+## Building the Circuit Step by Step
+
+### Step 1: Add the USB-C Connector
+
+The USB-C connector provides access to VBUS (power), CC (configuration), and GND pins. We use all four VBUS pins to handle the full current capacity.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C-16P"
+      footprint="ssop16"
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VBUS1"],
+        pin3: ["CC1"],
+        pin4: ["D-"],
+        pin5: ["D+"],
+        pin6: ["SBU1"],
+        pin7: ["VBUS2"],
+        pin8: ["GND"],
+        pin9: ["GND"],
+        pin10: ["VBUS3"],
+        pin11: ["CC2"],
+        pin12: ["D+"],
+        pin13: ["D-"],
+        pin14: ["SBU2"],
+        pin15: ["VBUS4"],
+        pin16: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS1", "D-", "D+", "SBU1", "VBUS2", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["VBUS3", "D+", "D-", "SBU2", "VBUS4", "GND", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={-22}
+      pcbY={0}
+    />
+  </board>
+)
+`} />
+
+### Step 2: Add the PD Trigger IC (CH224K)
+
+The CH224K is a 6-pin chip. The key pins are:
+
+- **CC**: Connects to both CC1 and CC2 of the USB-C port for PD negotiation
+- **VOUT**: Outputs the negotiated voltage (e.g., 12V)
+- **SEL**: Configuration pin — setting this pin high/low selects the desired output voltage
+- **PG**: Power Good indicator — goes high when negotiation is complete and power is stable
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C-16P"
+      footprint="ssop16"
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VBUS1"],
+        pin3: ["CC1"],
+        pin4: ["D-"],
+        pin5: ["D+"],
+        pin6: ["SBU1"],
+        pin7: ["VBUS2"],
+        pin8: ["GND"],
+        pin9: ["GND"],
+        pin10: ["VBUS3"],
+        pin11: ["CC2"],
+        pin12: ["D+"],
+        pin13: ["D-"],
+        pin14: ["SBU2"],
+        pin15: ["VBUS4"],
+        pin16: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS1", "D-", "D+", "SBU1", "VBUS2", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["VBUS3", "D+", "D-", "SBU2", "VBUS4", "GND", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={-22}
+      pcbY={0}
+    />
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="sot23-6"
+      pinLabels={{
+        pin1: ["sel"],
+        pin2: ["vout"],
+        pin3: ["gnd"],
+        pin4: ["cc"],
+        pin5: ["nc"],
+        pin6: ["pg"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["sel", "cc", "nc"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vout", "gnd", "pg"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+  </board>
+)
+`} />
+
+### Step 3: Add a 3.3V Voltage Regulator
+
+Most microcontrollers and logic circuits run at 3.3V. We add an AMS1117-3.3 regulator to derive 3.3V from the PD voltage. Input and output capacitors are essential for stability.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      footprint="sot223"
+      pinLabels={{
+        pin1: ["gnd"],
+        pin2: ["vout"],
+        pin3: ["vin"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["gnd"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vin", "vout"], direction: "top-to-bottom" },
+      }}
+      pcbX={12}
+      pcbY={0}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={12} pcbY={-5} />
+    <capacitor name="C2" capacitance="10uF" footprint="0603" pcbX={12} pcbY={5} />
+  </board>
+)
+`} />
+
+### Step 4: Add Output Headers
+
+Pin headers make it easy to tap into the PD voltage and 3.3V rail for downstream circuits.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <pinheader name="H1" pinCount={4} pcbX={22} pcbY={0} />
+  </board>
+)
+`} />
+
+### Step 5: Wire Everything Together
+
+Now we connect all components — USB-C VBUS to the PD trigger IC, CC pins for negotiation, the regulator, and the output headers.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C-16P"
+      footprint="ssop16"
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VBUS1"],
+        pin3: ["CC1"],
+        pin4: ["D-"],
+        pin5: ["D+"],
+        pin6: ["SBU1"],
+        pin7: ["VBUS2"],
+        pin8: ["GND"],
+        pin9: ["GND"],
+        pin10: ["VBUS3"],
+        pin11: ["CC2"],
+        pin12: ["D+"],
+        pin13: ["D-"],
+        pin14: ["SBU2"],
+        pin15: ["VBUS4"],
+        pin16: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS1", "D-", "D+", "SBU1", "VBUS2", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["VBUS3", "D+", "D-", "SBU2", "VBUS4", "GND", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={-22}
+      pcbY={0}
+    />
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="sot23-6"
+      pinLabels={{
+        pin1: ["sel"],
+        pin2: ["vout"],
+        pin3: ["gnd"],
+        pin4: ["cc"],
+        pin5: ["nc"],
+        pin6: ["pg"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["sel", "cc", "nc"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vout", "gnd", "pg"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      footprint="sot223"
+      pinLabels={{
+        pin1: ["gnd"],
+        pin2: ["vout"],
+        pin3: ["vin"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["gnd"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vin", "vout"], direction: "top-to-bottom" },
+      }}
+      pcbX={12}
+      pcbY={0}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={12} pcbY={-5} />
+    <capacitor name="C2" capacitance="10uF" footprint="0603" pcbX={12} pcbY={5} />
+    <pinheader name="H1" pinCount={4} pcbX={22} pcbY={0} />
+
+    <trace from=".J1 .VBUS1" to=".U1 .vout" />
+    <trace from=".J1 .VBUS2" to=".U1 .vout" />
+    <trace from=".J1 .VBUS3" to=".U1 .vout" />
+    <trace from=".J1 .VBUS4" to=".U1 .vout" />
+    <trace from=".J1 .GND" to="net.GND" />
+
+    <trace from=".J1 .CC1" to=".U1 .cc" />
+    <trace from=".J1 .CC2" to=".U1 .cc" />
+
+    <trace from=".U1 .gnd" to="net.GND" />
+
+    <trace from=".U1 .vout" to=".U2 .vin" />
+    <trace from=".U1 .vout" to=".H1 .pin1" />
+
+    <trace from=".U2 .gnd" to="net.GND" />
+    <trace from=".U2 .vout" to=".C1 .pos" />
+    <trace from=".U2 .vout" to=".H1 .pin3" />
+    <trace from=".C1 .neg" to="net.GND" />
+
+    <trace from=".C2 .pos" to=".U1 .vout" />
+    <trace from=".C2 .neg" to="net.GND" />
+
+    <trace from=".H1 .pin2" to="net.GND" />
+    <trace from=".H1 .pin4" to="net.GND" />
+  </board>
+)
+`} />
+
+## Configuring the Output Voltage
+
+The CH224K trigger IC detects the desired voltage based on the state of the `SEL` pin. The CH224K supports multiple configuration modes:
+
+### Resistor-Based Configuration (CH224K)
+
+Connect a resistor between the SEL pin and GND to select the output voltage:
+
+| Resistance | Output Voltage |
+|------------|----------------|
+| NC (float) | 5V             |
+| 10k       | 9V             |
+| 5.1k      | 12V            |
+| 3.3k      | 15V            |
+| 2k        | 20V            |
+
+In our circuit, you can replace the `SEL` pin connection with a specific resistor to set the desired voltage. For example, to select 12V output:
+
+```tsx
+<resistor name="R_SEL" resistance="5.1k" footprint="0402" pcbX={-5} pcbY={-5} />
+<trace from=".U1 .sel" to=".R_SEL .pos" />
+<trace from=".R_SEL .neg" to="net.GND" />
+```
+
+## Output Pin Header Reference
+
+The 4-pin output header provides:
+
+| Pin | Signal | Description |
+|-----|--------|-------------|
+| 1   | VPD    | Negotiated PD voltage (e.g., 12V) |
+| 2   | GND    | Ground |
+| 3   | V3.3   | Regulated 3.3V output |
+| 4   | GND    | Ground |
+
+## Safety Considerations
+
+- **Minimum Load**: Some PD chargers require a minimum current draw to maintain the negotiated voltage. If the output drops unexpectedly, add a small load resistor
+- **Heat Dissipation**: At higher voltages, the AMS1117 may get hot if drawing significant current on the 3.3V rail. Consider a switching regulator for high-current 3.3V loads
+- **Inrush Current**: Add a bulk capacitor (10-100 F) on the PD output if powering inductive loads like motors
+- **Reverse Current Protection**: Add a Schottky diode if there's any risk of back-feeding voltage into the PD trigger IC
+
+## PCB Layout
+
+Here is the full PCB layout with all components positioned:
+
+<CircuitPreview hideSchematicTab hide3DTab defaultView="pcb" code={`
+export default () => (
+  <board width="65mm" height="30mm">
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-C-16P"
+      footprint="ssop16"
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VBUS1"],
+        pin3: ["CC1"],
+        pin4: ["D-"],
+        pin5: ["D+"],
+        pin6: ["SBU1"],
+        pin7: ["VBUS2"],
+        pin8: ["GND"],
+        pin9: ["GND"],
+        pin10: ["VBUS3"],
+        pin11: ["CC2"],
+        pin12: ["D+"],
+        pin13: ["D-"],
+        pin14: ["SBU2"],
+        pin15: ["VBUS4"],
+        pin16: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS1", "D-", "D+", "SBU1", "VBUS2", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["VBUS3", "D+", "D-", "SBU2", "VBUS4", "GND", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={-22}
+      pcbY={0}
+    />
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="sot23-6"
+      pinLabels={{
+        pin1: ["sel"],
+        pin2: ["vout"],
+        pin3: ["gnd"],
+        pin4: ["cc"],
+        pin5: ["nc"],
+        pin6: ["pg"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["sel", "cc", "nc"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vout", "gnd", "pg"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <chip
+      name="U2"
+      manufacturerPartNumber="AMS1117-3.3"
+      footprint="sot223"
+      pinLabels={{
+        pin1: ["gnd"],
+        pin2: ["vout"],
+        pin3: ["vin"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["gnd"], direction: "top-to-bottom" },
+        rightSide: { pins: ["vin", "vout"], direction: "top-to-bottom" },
+      }}
+      pcbX={12}
+      pcbY={0}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={12} pcbY={-5} />
+    <capacitor name="C2" capacitance="10uF" footprint="0603" pcbX={12} pcbY={5} />
+    <pinheader name="H1" pinCount={4} pcbX={22} pcbY={0} />
+
+    <trace from=".J1 .VBUS1" to=".U1 .vout" />
+    <trace from=".J1 .VBUS2" to=".U1 .vout" />
+    <trace from=".J1 .VBUS3" to=".U1 .vout" />
+    <trace from=".J1 .VBUS4" to=".U1 .vout" />
+    <trace from=".J1 .GND" to="net.GND" />
+
+    <trace from=".J1 .CC1" to=".U1 .cc" />
+    <trace from=".J1 .CC2" to=".U1 .cc" />
+
+    <trace from=".U1 .gnd" to="net.GND" />
+
+    <trace from=".U1 .vout" to=".U2 .vin" />
+    <trace from=".U1 .vout" to=".H1 .pin1" />
+
+    <trace from=".U2 .gnd" to="net.GND" />
+    <trace from=".U2 .vout" to=".C1 .pos" />
+    <trace from=".U2 .vout" to=".H1 .pin3" />
+    <trace from=".C1 .neg" to="net.GND" />
+
+    <trace from=".C2 .pos" to=".U1 .vout" />
+    <trace from=".C2 .neg" to="net.GND" />
+
+    <trace from=".H1 .pin2" to="net.GND" />
+    <trace from=".H1 .pin4" to="net.GND" />
+  </board>
+)
+`} />
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files (Gerbers) and uploading them to JLCPCB. Follow the instructions from [Ordering Prototypes](/building-electronics/ordering-prototypes).
+
+## Next Steps
+
+- Add a toggle switch or jumper to select between multiple PD voltage levels
+- Integrate a microcontroller to monitor the PG (Power Good) signal
+- Add an INA219 current sensor to measure power consumption
+- Pair with a Class D audio amplifier HAT that needs a 12V supply
+- Design a custom enclosure using the 3D CAD model from tscircuit

@@ -1,0 +1,572 @@
+---
+title: Class D Audio Amplifier HAT
+description: >-
+  Design a Class D audio amplifier HAT using tscircuit with a PAM8403 stereo
+  amplifier IC. Learn how Class D amplification achieves high efficiency and
+  build a compact speaker driver module perfect for portable audio projects.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial walks through designing a Class D audio amplifier HAT using tscircuit. We'll use the PAM8403 — a popular 3W+3W stereo Class D amplifier — to drive a pair of speakers from a line-level audio input. Class D amplifiers are perfect for battery-powered and portable audio projects because of their high efficiency (often above 90%).
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LOUT-"],
+        pin2: ["PGNDL"],
+        pin3: ["LOUT+"],
+        pin4: ["VDD"],
+        pin5: ["LIN+"],
+        pin6: ["LIN-"],
+        pin7: ["BYPASS"],
+        pin8: ["SHUTDOWN"],
+        pin9: ["MUTE"],
+        pin10: ["VREF"],
+        pin11: ["RIN+"],
+        pin12: ["RIN-"],
+        pin13: ["VDD"],
+        pin14: ["ROUT+"],
+        pin15: ["PGNDR"],
+        pin16: ["ROUT-"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LOUT-", "PGNDL", "LOUT+", "VDD", "LIN+", "LIN-", "BYPASS", "SHUTDOWN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["ROUT-", "PGNDR", "ROUT+", "VDD", "RIN+", "RIN-", "VREF", "MUTE"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <capacitor name="C1" capacitance="100uF" footprint="0805" pcbX={-8} pcbY={-8} />
+    <capacitor name="C2" capacitance="100uF" footprint="0805" pcbX={0} pcbY={-8} />
+    <capacitor name="C3" capacitance="1uF" footprint="0603" pcbX={-8} pcbY={8} />
+    <capacitor name="C4" capacitance="1uF" footprint="0603" pcbX={0} pcbY={8} />
+
+    <capacitor name="C_BYPASS" capacitance="1uF" footprint="0402" pcbX={-5} pcbY={-12} />
+
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-10} pcbY={3} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={-6} pcbY={3} />
+    <resistor name="R3" resistance="10k" footprint="0402" pcbX={6} pcbY={3} />
+    <resistor name="R4" resistance="10k" footprint="0402" pcbX={10} pcbY={3} />
+
+    <pinheader name="J1" pinCount={4} pcbX={-15} pcbY={0} />
+    <pinheader name="J2" pinCount={2} pcbX={15} pcbY={-5} />
+    <pinheader name="J3" pinCount={2} pcbX={15} pcbY={5} />
+
+    <trace from=".J1 .pin1" to="net.V5" />
+    <trace from=".J1 .pin2" to="net.GND" />
+    <trace from=".J1 .pin3" to=".R1 .pos" />
+    <trace from=".J1 .pin4" to=".R3 .pos" />
+
+    <trace from=".R1 .neg" to=".U1 .LIN+" />
+    <trace from=".R2 .pos" to=".U1 .LIN+" />
+    <trace from=".R2 .neg" to="net.GND" />
+
+    <trace from=".R3 .neg" to=".U1 .RIN+" />
+    <trace from=".R4 .pos" to=".U1 .RIN+" />
+    <trace from=".R4 .neg" to="net.GND" />
+
+    <trace from=".C3 .pos" to=".U1 .LIN+" />
+    <trace from=".C3 .neg" to=".R1 .neg" />
+    <trace from=".C4 .pos" to=".U1 .RIN+" />
+    <trace from=".C4 .neg" to=".R3 .neg" />
+
+    <trace from=".U1 .LIN-" to="net.GND" />
+    <trace from=".U1 .RIN-" to="net.GND" />
+
+    <trace from=".U1 .VDD" to="net.V5" />
+    <trace from=".U1 .PGNDL" to="net.GND" />
+    <trace from=".U1 .PGNDR" to="net.GND" />
+
+    <trace from=".U1 .SHUTDOWN" to="net.V5" />
+    <trace from=".U1 .MUTE" to="net.GND" />
+
+    <trace from=".C_BYPASS .pos" to=".U1 .BYPASS" />
+    <trace from=".C_BYPASS .neg" to="net.GND" />
+
+    <trace from=".C1 .pos" to="net.V5" />
+    <trace from=".C1 .neg" to="net.GND" />
+    <trace from=".C2 .pos" to="net.V5" />
+    <trace from=".C2 .neg" to="net.GND" />
+
+    <trace from=".U1 .LOUT+" to=".J2 .pin1" />
+    <trace from=".U1 .LOUT-" to=".J2 .pin2" />
+    <trace from=".U1 .ROUT+" to=".J3 .pin1" />
+    <trace from=".U1 .ROUT-" to=".J3 .pin2" />
+  </board>
+)
+`} />
+
+## What is Class D Amplification?
+
+Class D amplifiers work fundamentally differently from traditional linear amplifiers (Class A, B, or AB). Instead of using transistors in their linear region, Class D amps use transistors as switches — rapidly turning them on and off.
+
+### How Class D Works
+
+1. **PWM Modulation**: The incoming audio signal is compared to a high-frequency triangular wave (typically 250kHz–1MHz), producing a Pulse Width Modulated (PWM) signal
+2. **Switching Stage**: This PWM signal drives MOSFETs that switch the power supply voltage on and off at the PWM frequency
+3. **LC Filter (or Filterless)**: A low-pass filter (or the speaker's own inductance in "filterless" designs) removes the high-frequency switching noise, leaving only the amplified audio
+
+### Why Class D?
+
+| Feature | Class AB | Class D |
+|---------|----------|---------|
+| Efficiency | 50–70% | 85–95% |
+| Heat | High (needs heatsink) | Low (often no heatsink) |
+| Size | Large | Compact |
+| Battery life | Short | Long |
+| Audio quality | Very good | Very good (modern ICs) |
+
+Class D is the dominant technology for portable speakers, soundbars, car audio, and any battery-powered audio device.
+
+### The PAM8403
+
+The **PAM8403** is one of the most widely used Class D amplifier ICs. Key features:
+
+- **3W per channel** into 4 speakers at 5V
+- **Filterless operation** — no output LC filter needed
+- **Stereo output** — two independent channels
+- **>90% efficiency**
+- **SOP-16 package** — easy to hand-solder
+- **Built-in** shutdown, mute, and pop suppression
+
+## Circuit Requirements
+
+Our Class D amplifier HAT needs to:
+
+- Accept stereo line-level audio input (left and right)
+- Amplify both channels via the PAM8403
+- Output to two separate speakers through pin headers
+- Include power supply decoupling for clean audio
+- Support shutdown and mute control
+- Be powered by a 5V supply
+
+## Building the Circuit Step by Step
+
+### Step 1: Add the PAM8403 Amplifier IC
+
+The PAM8403 is a 16-pin chip with distinct left and right channels. The pin arrangement groups related functions together: power on the top, inputs in the middle, and control on the bottom.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LOUT-"],
+        pin2: ["PGNDL"],
+        pin3: ["LOUT+"],
+        pin4: ["VDD"],
+        pin5: ["LIN+"],
+        pin6: ["LIN-"],
+        pin7: ["BYPASS"],
+        pin8: ["SHUTDOWN"],
+        pin9: ["MUTE"],
+        pin10: ["VREF"],
+        pin11: ["RIN+"],
+        pin12: ["RIN-"],
+        pin13: ["VDD"],
+        pin14: ["ROUT+"],
+        pin15: ["PGNDR"],
+        pin16: ["ROUT-"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LOUT-", "PGNDL", "LOUT+", "VDD", "LIN+", "LIN-", "BYPASS", "SHUTDOWN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["ROUT-", "PGNDR", "ROUT+", "VDD", "RIN+", "RIN-", "VREF", "MUTE"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+  </board>
+)
+`} />
+
+### Step 2: Add Input Coupling Capacitors
+
+Audio input signals often have a DC offset. Input coupling capacitors (C3, C4) block this DC offset, passing only the AC audio signal to the amplifier. Use 1 F ceramic capacitors for good low-frequency response.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LOUT-"],
+        pin2: ["PGNDL"],
+        pin3: ["LOUT+"],
+        pin4: ["VDD"],
+        pin5: ["LIN+"],
+        pin6: ["LIN-"],
+        pin7: ["BYPASS"],
+        pin8: ["SHUTDOWN"],
+        pin9: ["MUTE"],
+        pin10: ["VREF"],
+        pin11: ["RIN+"],
+        pin12: ["RIN-"],
+        pin13: ["VDD"],
+        pin14: ["ROUT+"],
+        pin15: ["PGNDR"],
+        pin16: ["ROUT-"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LOUT-", "PGNDL", "LOUT+", "VDD", "LIN+", "LIN-", "BYPASS", "SHUTDOWN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["ROUT-", "PGNDR", "ROUT+", "VDD", "RIN+", "RIN-", "VREF", "MUTE"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <capacitor name="C3" capacitance="1uF" footprint="0603" pcbX={-8} pcbY={8} />
+    <capacitor name="C4" capacitance="1uF" footprint="0603" pcbX={0} pcbY={8} />
+  </board>
+)
+`} />
+
+### Step 3: Add Input Bias Resistors
+
+Input bias resistors (R1–R4) set the input impedance and provide a DC path to ground for the amplifier inputs. The 10k resistors form a voltage divider that establishes the correct DC bias point. LIN- and RIN- are tied directly to ground for single-ended input configuration.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LOUT-"],
+        pin2: ["PGNDL"],
+        pin3: ["LOUT+"],
+        pin4: ["VDD"],
+        pin5: ["LIN+"],
+        pin6: ["LIN-"],
+        pin7: ["BYPASS"],
+        pin8: ["SHUTDOWN"],
+        pin9: ["MUTE"],
+        pin10: ["VREF"],
+        pin11: ["RIN+"],
+        pin12: ["RIN-"],
+        pin13: ["VDD"],
+        pin14: ["ROUT+"],
+        pin15: ["PGNDR"],
+        pin16: ["ROUT-"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LOUT-", "PGNDL", "LOUT+", "VDD", "LIN+", "LIN-", "BYPASS", "SHUTDOWN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["ROUT-", "PGNDR", "ROUT+", "VDD", "RIN+", "RIN-", "VREF", "MUTE"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-10} pcbY={3} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={-6} pcbY={3} />
+    <resistor name="R3" resistance="10k" footprint="0402" pcbX={6} pcbY={3} />
+    <resistor name="R4" resistance="10k" footprint="0402" pcbX={10} pcbY={3} />
+  </board>
+)
+`} />
+
+### Step 4: Add Power Supply Decoupling
+
+Class D amplifiers draw current in short, high-amplitude pulses at the switching frequency. Large bulk capacitors (100 F) supply these current pulses and prevent voltage sag on the power rail. Place them as close as possible to the VDD pins.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <capacitor name="C1" capacitance="100uF" footprint="0805" pcbX={-8} pcbY={-8} />
+    <capacitor name="C2" capacitance="100uF" footprint="0805" pcbX={0} pcbY={-8} />
+  </board>
+)
+`} />
+
+### Step 5: Add Bypass Capacitor
+
+The BYPASS pin requires a 1 F capacitor to ground. This capacitor filters the internal reference voltage, reducing noise and improving Power Supply Rejection Ratio (PSRR).
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <capacitor name="C_BYPASS" capacitance="1uF" footprint="0402" pcbX={-5} pcbY={-12} />
+  </board>
+)
+`} />
+
+### Step 6: Wire Everything Together
+
+Now we assemble the complete circuit — amplifier IC, input coupling, bias resistors, power decoupling, control pins, and speaker outputs.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LOUT-"],
+        pin2: ["PGNDL"],
+        pin3: ["LOUT+"],
+        pin4: ["VDD"],
+        pin5: ["LIN+"],
+        pin6: ["LIN-"],
+        pin7: ["BYPASS"],
+        pin8: ["SHUTDOWN"],
+        pin9: ["MUTE"],
+        pin10: ["VREF"],
+        pin11: ["RIN+"],
+        pin12: ["RIN-"],
+        pin13: ["VDD"],
+        pin14: ["ROUT+"],
+        pin15: ["PGNDR"],
+        pin16: ["ROUT-"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LOUT-", "PGNDL", "LOUT+", "VDD", "LIN+", "LIN-", "BYPASS", "SHUTDOWN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["ROUT-", "PGNDR", "ROUT+", "VDD", "RIN+", "RIN-", "VREF", "MUTE"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <capacitor name="C1" capacitance="100uF" footprint="0805" pcbX={-8} pcbY={-8} />
+    <capacitor name="C2" capacitance="100uF" footprint="0805" pcbX={0} pcbY={-8} />
+    <capacitor name="C3" capacitance="1uF" footprint="0603" pcbX={-8} pcbY={8} />
+    <capacitor name="C4" capacitance="1uF" footprint="0603" pcbX={0} pcbY={8} />
+    <capacitor name="C_BYPASS" capacitance="1uF" footprint="0402" pcbX={-5} pcbY={-12} />
+
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-10} pcbY={3} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={-6} pcbY={3} />
+    <resistor name="R3" resistance="10k" footprint="0402" pcbX={6} pcbY={3} />
+    <resistor name="R4" resistance="10k" footprint="0402" pcbX={10} pcbY={3} />
+
+    <pinheader name="J1" pinCount={4} pcbX={-15} pcbY={0} />
+    <pinheader name="J2" pinCount={2} pcbX={15} pcbY={-5} />
+    <pinheader name="J3" pinCount={2} pcbX={15} pcbY={5} />
+
+    <trace from=".J1 .pin1" to="net.V5" />
+    <trace from=".J1 .pin2" to="net.GND" />
+    <trace from=".J1 .pin3" to=".R1 .pos" />
+    <trace from=".J1 .pin4" to=".R3 .pos" />
+
+    <trace from=".R1 .neg" to=".U1 .LIN+" />
+    <trace from=".R2 .pos" to=".U1 .LIN+" />
+    <trace from=".R2 .neg" to="net.GND" />
+
+    <trace from=".R3 .neg" to=".U1 .RIN+" />
+    <trace from=".R4 .pos" to=".U1 .RIN+" />
+    <trace from=".R4 .neg" to="net.GND" />
+
+    <trace from=".C3 .pos" to=".U1 .LIN+" />
+    <trace from=".C3 .neg" to=".R1 .neg" />
+    <trace from=".C4 .pos" to=".U1 .RIN+" />
+    <trace from=".C4 .neg" to=".R3 .neg" />
+
+    <trace from=".U1 .LIN-" to="net.GND" />
+    <trace from=".U1 .RIN-" to="net.GND" />
+
+    <trace from=".U1 .VDD" to="net.V5" />
+    <trace from=".U1 .PGNDL" to="net.GND" />
+    <trace from=".U1 .PGNDR" to="net.GND" />
+
+    <trace from=".U1 .SHUTDOWN" to="net.V5" />
+    <trace from=".U1 .MUTE" to="net.GND" />
+
+    <trace from=".C_BYPASS .pos" to=".U1 .BYPASS" />
+    <trace from=".C_BYPASS .neg" to="net.GND" />
+
+    <trace from=".C1 .pos" to="net.V5" />
+    <trace from=".C1 .neg" to="net.GND" />
+    <trace from=".C2 .pos" to="net.V5" />
+    <trace from=".C2 .neg" to="net.GND" />
+
+    <trace from=".U1 .LOUT+" to=".J2 .pin1" />
+    <trace from=".U1 .LOUT-" to=".J2 .pin2" />
+    <trace from=".U1 .ROUT+" to=".J3 .pin1" />
+    <trace from=".U1 .ROUT-" to=".J3 .pin2" />
+  </board>
+)
+`} />
+
+## Connector Pinout Reference
+
+### Input Header (J1) — 4-pin
+
+| Pin | Signal | Description |
+|-----|--------|-------------|
+| 1   | V5     | 5V power input |
+| 2   | GND    | Ground |
+| 3   | LIN    | Left channel audio input |
+| 4   | RIN    | Right channel audio input |
+
+### Speaker Outputs (J2, J3) — 2-pin each
+
+| Pin | Signal | Description |
+|-----|--------|-------------|
+| 1   | LOUT+ / ROUT+ | Positive speaker terminal |
+| 2   | LOUT- / ROUT- | Negative speaker terminal |
+
+> **Important**: PAM8403 outputs are **bridged (BTL)**. Do NOT connect the negative speaker terminals to ground, and do NOT connect them together. Each speaker connects only to its own + and - outputs.
+
+## Control Pins Explained
+
+The PAM8403 provides two logic-level control pins:
+
+| Pin | Active | Behavior |
+|-----|--------|----------|
+| SHUTDOWN | LOW | Disables the amplifier entirely (typical <1 A current draw) |
+| MUTE | HIGH | Mutes the audio output while keeping the amplifier powered |
+
+In our circuit, SHUTDOWN is tied to V5 (always enabled) and MUTE is tied to GND (never muted). For more control, connect these to GPIO pins on a microcontroller:
+
+```tsx
+<trace from=".U1 .SHUTDOWN" to="net.SHDN" />
+<trace from=".U1 .MUTE" to="net.MUTE" />
+```
+
+Then drive them from your microcontroller — pull SHUTDOWN LOW to power down, pull MUTE HIGH to mute.
+
+## Choosing Speakers
+
+The PAM8403 is optimized for 4 speakers at 5V, delivering up to 3W per channel. Here's the power vs. impedance relationship at 5V:
+
+| Speaker Impedance | Power per Channel | THD |
+|-------------------|-------------------|-----|
+| 4               | 3W                | 10% |
+| 8               | 1.5W              | 10% |
+
+For best results, use 3W–5W rated 4 speakers. The amplifier can drive 8 speakers at reduced power, which may be suitable for headphone-level volumes.
+
+## PCB Layout Guidelines
+
+<CircuitPreview hideSchematicTab hide3DTab defaultView="pcb" code={`
+export default () => (
+  <board width="50mm" height="35mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["LOUT-"],
+        pin2: ["PGNDL"],
+        pin3: ["LOUT+"],
+        pin4: ["VDD"],
+        pin5: ["LIN+"],
+        pin6: ["LIN-"],
+        pin7: ["BYPASS"],
+        pin8: ["SHUTDOWN"],
+        pin9: ["MUTE"],
+        pin10: ["VREF"],
+        pin11: ["RIN+"],
+        pin12: ["RIN-"],
+        pin13: ["VDD"],
+        pin14: ["ROUT+"],
+        pin15: ["PGNDR"],
+        pin16: ["ROUT-"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["LOUT-", "PGNDL", "LOUT+", "VDD", "LIN+", "LIN-", "BYPASS", "SHUTDOWN"], direction: "top-to-bottom" },
+        rightSide: { pins: ["ROUT-", "PGNDR", "ROUT+", "VDD", "RIN+", "RIN-", "VREF", "MUTE"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <capacitor name="C1" capacitance="100uF" footprint="0805" pcbX={-8} pcbY={-8} />
+    <capacitor name="C2" capacitance="100uF" footprint="0805" pcbX={0} pcbY={-8} />
+    <capacitor name="C3" capacitance="1uF" footprint="0603" pcbX={-8} pcbY={8} />
+    <capacitor name="C4" capacitance="1uF" footprint="0603" pcbX={0} pcbY={8} />
+    <capacitor name="C_BYPASS" capacitance="1uF" footprint="0402" pcbX={-5} pcbY={-12} />
+
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-10} pcbY={3} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={-6} pcbY={3} />
+    <resistor name="R3" resistance="10k" footprint="0402" pcbX={6} pcbY={3} />
+    <resistor name="R4" resistance="10k" footprint="0402" pcbX={10} pcbY={3} />
+
+    <pinheader name="J1" pinCount={4} pcbX={-15} pcbY={0} />
+    <pinheader name="J2" pinCount={2} pcbX={15} pcbY={-5} />
+    <pinheader name="J3" pinCount={2} pcbX={15} pcbY={5} />
+
+    <trace from=".J1 .pin1" to="net.V5" />
+    <trace from=".J1 .pin2" to="net.GND" />
+    <trace from=".J1 .pin3" to=".R1 .pos" />
+    <trace from=".J1 .pin4" to=".R3 .pos" />
+
+    <trace from=".R1 .neg" to=".U1 .LIN+" />
+    <trace from=".R2 .pos" to=".U1 .LIN+" />
+    <trace from=".R2 .neg" to="net.GND" />
+
+    <trace from=".R3 .neg" to=".U1 .RIN+" />
+    <trace from=".R4 .pos" to=".U1 .RIN+" />
+    <trace from=".R4 .neg" to="net.GND" />
+
+    <trace from=".C3 .pos" to=".U1 .LIN+" />
+    <trace from=".C3 .neg" to=".R1 .neg" />
+    <trace from=".C4 .pos" to=".U1 .RIN+" />
+    <trace from=".C4 .neg" to=".R3 .neg" />
+
+    <trace from=".U1 .LIN-" to="net.GND" />
+    <trace from=".U1 .RIN-" to="net.GND" />
+
+    <trace from=".U1 .VDD" to="net.V5" />
+    <trace from=".U1 .PGNDL" to="net.GND" />
+    <trace from=".U1 .PGNDR" to="net.GND" />
+
+    <trace from=".U1 .SHUTDOWN" to="net.V5" />
+    <trace from=".U1 .MUTE" to="net.GND" />
+
+    <trace from=".C_BYPASS .pos" to=".U1 .BYPASS" />
+    <trace from=".C_BYPASS .neg" to="net.GND" />
+
+    <trace from=".C1 .pos" to="net.V5" />
+    <trace from=".C1 .neg" to="net.GND" />
+    <trace from=".C2 .pos" to="net.V5" />
+    <trace from=".C2 .neg" to="net.GND" />
+
+    <trace from=".U1 .LOUT+" to=".J2 .pin1" />
+    <trace from=".U1 .LOUT-" to=".J2 .pin2" />
+    <trace from=".U1 .ROUT+" to=".J3 .pin1" />
+    <trace from=".U1 .ROUT-" to=".J3 .pin2" />
+  </board>
+)
+`} />
+
+Key layout tips for Class D amplifiers:
+
+- **Keep power traces wide**: Use wide traces (at least 0.5mm) for VDD and output paths to minimize voltage drop
+- **Separate power and signal grounds**: Connect PGNDL and PGNDR with a star-ground approach to avoid ground loops
+- **Place decoupling close**: C1 and C2 should be as close as possible to the VDD pins — within 5mm
+- **Keep input traces away from outputs**: Route audio inputs away from the high-current switching outputs to prevent coupling
+- **Use a ground pour**: A solid ground plane on the bottom layer helps with both noise and thermal performance
+
+## Powering the Amplifier
+
+The PAM8403 operates from 2.5V to 5.5V. For best performance:
+
+- **5V USB power**: The simplest option. Use a USB power bank or wall adapter. At 5V you get the full 3W+3W
+- **3.7V Li-Ion battery**: Lower output power (~1.5W per channel) but excellent for portable use
+- **Pair with a USB PD Trigger HAT**: For higher voltage systems, use a PD trigger to negotiate 9V or 12V, then regulate down to 5V with a buck converter
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading them to JLCPCB. Follow the instructions from [Ordering Prototypes](/building-electronics/ordering-prototypes).
+
+## Next Steps
+
+- Add a potentiometer for volume control on the input
+- Add a 3.5mm audio jack instead of (or in addition to) pin headers
+- Integrate a Bluetooth audio module (e.g., MH-M18) for wireless streaming
+- Add an I2S DAC (e.g., PCM5102A) for higher-quality digital audio input
+- Design a speaker enclosure and use the 3D CAD model from tscircuit for fit-checking
+- Combine with a USB PD Trigger HAT to build a complete portable speaker system
