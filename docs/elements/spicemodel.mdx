@@ -1,0 +1,117 @@
+---
+title: <spicemodel />
+description: Attach a custom SPICE subcircuit model to a tscircuit component.
+---
+
+## Overview
+
+`<spicemodel />` attaches a SPICE `.subckt` model to a source component for
+analog simulation. Use it when a component needs behavior that is not covered by
+the built-in SPICE output, such as a vendor model, an op-amp macro-model, or a
+custom diode model.
+
+The model is usually passed through the parent component's `spiceModel` prop.
+During simulation, tscircuit maps the `.subckt` pins to the parent component's
+ports and emits a subcircuit instance into the generated SPICE netlist.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+const rectifierDiodeModel = \`
+.subckt RECTIFIER_DIODE ANODE CATHODE
+D1 ANODE CATHODE DGEN
+.model DGEN D
+.ends RECTIFIER_DIODE
+\`
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource
+      name="V1"
+      voltage="5V"
+      frequency="60Hz"
+      waveShape="sinewave"
+    />
+    <chip
+      name="D1"
+      footprint="0402"
+      pinLabels={{
+        pin1: "ANODE",
+        pin2: "CATHODE",
+      }}
+      spiceModel={<spicemodel source={rectifierDiodeModel} />}
+    />
+    <resistor name="RLOAD" resistance="1k" />
+
+    <trace from=".V1 > .pin1" to=".D1 > .ANODE" />
+    <trace from=".D1 > .CATHODE" to=".RLOAD > .pin1" />
+    <trace from=".RLOAD > .pin2" to=".V1 > .pin2" />
+
+    <voltageprobe name="VP_IN" connectsTo=".V1 > .pin1" />
+    <voltageprobe name="VP_OUT" connectsTo=".RLOAD > .pin1" />
+    <analogsimulation duration="100ms" spiceEngine="ngspice" />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description | Example |
+| --- | --- | --- |
+| `source` | SPICE source text containing a `.subckt` declaration. | `` `.subckt LM358 1 2 3 4 5 ...` `` |
+| `spicePinMapping` | Optional map from `.subckt` pin names to parent component port names. Use this when the SPICE model pins do not match the tscircuit port names. | `{{ "1": "pin1", "2": "pin2" }}` |
+
+## Pin Mapping
+
+If a `.subckt` pin name matches a parent component port name, no mapping is
+needed. In the diode example above, `ANODE` and `CATHODE` match the chip's
+`pinLabels`.
+
+Use `spicePinMapping` when the model uses different pin names or numeric pins:
+
+```tsx
+const lm358Model = `
+.subckt LM358 1 2 3 4 5
+RIN 2 3 10Meg
+.ends LM358
+`
+
+export default () => (
+  <board>
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: "OUT",
+        pin2: "IN-",
+        pin3: "IN+",
+        pin4: "V-",
+        pin5: "V+",
+      }}
+      spiceModel={
+        <spicemodel
+          source={lm358Model}
+          spicePinMapping={{
+            "1": "pin1",
+            "2": "pin2",
+            "3": "pin3",
+            "4": "pin4",
+            "5": "pin5",
+          }}
+        />
+      }
+    />
+  </board>
+)
+```
+
+Every `.subckt` pin must resolve to exactly one parent port. If a mapped SPICE
+pin is not present in the `.subckt`, or if a pin cannot be resolved to a port,
+tscircuit reports a `source_invalid_component_property_error` for `spiceModel`.
