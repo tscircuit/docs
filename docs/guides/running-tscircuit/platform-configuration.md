@@ -15,8 +15,6 @@ Some use cases:
 - Organizations may want to customize the cloud autorouter to avoid sending sensitive designs outside your company
 - Organizations may want to introduce custom footprint strings
   using a prefix like `footprint="my-company:*"`
-- Organizations may want to provide vendor-specific behavior, such as a custom
-  TI parts engine or `ti:` footprint library
 - Organizations may want to use their own internal registry for importing circuits instead of [tscircuit.com](https://tscircuit.com)
 - For [autorouting.com](https://autorouting.com), we configure the platform to not perform any autorouting
 
@@ -93,7 +91,6 @@ const circuitJson = await circuitRunner.getCircuitJson()
 
 ## External Vendor Integrations
 
-Vendor-specific integrations do not need to be built into `@tscircuit/eval`.
 You can provide them through a custom platform configuration instead.
 
 For a concrete example, see
