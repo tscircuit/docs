@@ -5,50 +5,34 @@ description: Configure your tscircuit project settings
 
 The `tscircuit.config.json` file is a project-level configuration file that allows you to customize settings for your tscircuit project. This file should be placed in the root of your project directory and is automatically created when you run `tsci init`.
 
-`tscircuit.config.json` is designed for serializable project settings. It is a
-good place for entrypoints, build options, snapshot preferences, and other JSON
-configuration.
-
-If you need function-valued platform settings such as a custom `partsEngine` or
-`footprintLibraryMap`, keep those in a separate JS/TS module and pass that
-platform config from your runtime or local tooling instead of trying to embed
-them directly in `tscircuit.config.json`.
-
 ## Example
 
 ```json
 {
   "mainEntrypoint": "lib/circuits/main-board.tsx",
-  "ignoredFiles": [
-    "dist",
-    "build",
-    "coverage",
-    "*.log",
-    ".DS_Store",
-    "temp"
-  ]
+  "ignoredFiles": ["dist", "build", "coverage", "*.log", ".DS_Store", "temp"]
 }
 ```
 
 ## Configuration Options
 
-| Property | Description |
-| --- | --- |
-| `$schema` | [Optional JSON schema reference for editor tooling.](#schema) |
-| `mainEntrypoint` | [Primary entry file for builds and dev workflows.](#mainentrypoint) |
-| `previewComponentPath` | [Overrides which component is used for preview images/GLTF.](#previewcomponentpath) |
-| `siteDefaultComponentPath` | [Default component shown in generated static sites.](#sitedefaultcomponentpath) |
-| `ignoredFiles` | [Extra file and directory ignore patterns for CLI workflows.](#ignoredfiles) |
-| `includeBoardFiles` | [Glob list for which board files are built or snapshotted.](#includeboardfiles) |
-| `snapshotsDir` | [Centralized directory for snapshot outputs.](#snapshotsdir) |
-| `prebuildCommand` | [Command to run before builds.](#prebuildcommand) |
-| `buildCommand` | [Override command used for cloud builds.](#buildcommand) |
-| `kicadProjectEntrypointPath` | [Entry file for KiCad project generation.](#kicadprojectentrypointpath) |
-| `kicadLibraryEntrypointPath` | [Entry file for KiCad footprint library generation.](#kicadlibraryentrypointpath) |
-| `kicadLibraryName` | [Name for the generated KiCad library.](#kicadlibraryname) |
+| Property                          | Description                                                                         |
+| --------------------------------- | ----------------------------------------------------------------------------------- |
+| `$schema`                         | [Optional JSON schema reference for editor tooling.](#schema)                       |
+| `mainEntrypoint`                  | [Primary entry file for builds and dev workflows.](#mainentrypoint)                 |
+| `previewComponentPath`            | [Overrides which component is used for preview images/GLTF.](#previewcomponentpath) |
+| `siteDefaultComponentPath`        | [Default component shown in generated static sites.](#sitedefaultcomponentpath)     |
+| `ignoredFiles`                    | [Extra file and directory ignore patterns for CLI workflows.](#ignoredfiles)        |
+| `includeBoardFiles`               | [Glob list for which board files are built or snapshotted.](#includeboardfiles)     |
+| `snapshotsDir`                    | [Centralized directory for snapshot outputs.](#snapshotsdir)                        |
+| `prebuildCommand`                 | [Command to run before builds.](#prebuildcommand)                                   |
+| `buildCommand`                    | [Override command used for cloud builds.](#buildcommand)                            |
+| `kicadProjectEntrypointPath`      | [Entry file for KiCad project generation.](#kicadprojectentrypointpath)             |
+| `kicadLibraryEntrypointPath`      | [Entry file for KiCad footprint library generation.](#kicadlibraryentrypointpath)   |
+| `kicadLibraryName`                | [Name for the generated KiCad library.](#kicadlibraryname)                          |
 | `alwaysUseLatestTscircuitOnCloud` | [Force latest tscircuit version in cloud builds.](#alwaysuselatesttscircuitoncloud) |
-| `build` | [Build output toggles for CLI builds.](#build) |
-| `pcbSnapshotSettings` | [Rendering options for PCB snapshots and preview images.](#pcbsnapshotsettings) |
+| `build`                           | [Build output toggles for CLI builds.](#build)                                      |
+| `pcbSnapshotSettings`             | [Rendering options for PCB snapshots and preview images.](#pcbsnapshotsettings)     |
 
 ### $schema
 
@@ -145,13 +129,7 @@ Specifies paths or directory names that should be ignored when the dev server sy
 
 ```json
 {
-  "ignoredFiles": [
-    "dist",
-    "build",
-    ".git",
-    "*.log",
-    "temp"
-  ]
+  "ignoredFiles": ["dist", "build", ".git", "*.log", "temp"]
 }
 ```
 
@@ -362,6 +340,7 @@ Toggle build outputs for `tsci build`.
 ```
 
 **Options:**
+
 - `circuitJson` (`boolean`): Enable circuit JSON output in build.
 - `kicadProject` (`boolean`): Enable KiCad project output (`.kicad_pro`, `.kicad_sch`, `.kicad_pcb`) in build.
 - `kicadLibrary` (`boolean`): Enable KiCad library output in build.
@@ -390,6 +369,7 @@ Controls rendering options for PCB images generated by `tsci snapshot` and `tsci
 ```
 
 **Options:**
+
 - `showCourtyards` (`boolean`): Render courtyard outlines around components. Courtyards define the keepout boundary for a footprint. Defaults to `false`.
 - `showPcbNotes` (`boolean`): Render PCB notes layer in the output image. Defaults to `false`.
 - `showFabricationNotes` (`boolean`): Render fabrication notes layer in the output image. Defaults to `false`.
