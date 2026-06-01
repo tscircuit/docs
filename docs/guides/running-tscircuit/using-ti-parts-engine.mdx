@@ -1,0 +1,85 @@
+---
+title: Using ti-parts-engine
+description: Configure TI-backed part lookup and explicit `ti:` footprints through a custom platform config
+sidebar_position: 5
+---
+
+`@tscircuit/ti-parts-engine` is an external helper package for local TI-backed
+development workflows. It is not built into `@tscircuit/eval` by default.
+Instead, provide it through a custom platform configuration.
+
+## Install from GitHub
+
+`ti-parts-engine` is currently installed directly from GitHub:
+
+```bash
+bun add -D github:tscircuit/ti-parts-engine
+```
+
+## Use TI as a Custom Parts Engine
+
+If your local tooling loads a JS/TS platform config module, you can keep the TI
+parts engine in a `tscircuit.config.ts`-style file:
+
+```ts
+import { createTiPartsEngine } from "@tscircuit/ti-parts-engine"
+
+export default {
+  platformConfig: {
+    partsEngine: createTiPartsEngine({
+      // local CLI/dev usage only
+      partnerToken: process.env.PARTNER_TOKEN!,
+    }),
+  },
+}
+```
+
+This wires TI-backed automatic part lookup through `platform.partsEngine`.
+
+:::info
+Keep `PARTNER_TOKEN` in local development tooling only. Do not expose it to
+browser clients or commit it to your repository.
+:::
+
+## Use Explicit `ti:` Footprint Strings
+
+If you want to use explicit footprint strings such as
+`footprint="ti:MSP430"`, you also need a TI footprint library mapping. The
+easiest way to wire both pieces together is `createTiPlatformConfig(...)`:
+
+```ts
+import { createTiPlatformConfig } from "@tscircuit/ti-parts-engine"
+
+export default {
+  platformConfig: createTiPlatformConfig({
+    partnerToken: process.env.PARTNER_TOKEN!,
+  }),
+}
+```
+
+This configures:
+
+- `partsEngine` for TI-backed part lookup
+- `footprintLibraryMap.ti` for explicit `ti:` footprint strings
+
+If you only provide `createTiPartsEngine(...)`, automatic TI part lookup works,
+but the `ti:` footprint prefix is not added by itself.
+
+## Programmatic Usage
+
+You can also pass the same platform config directly when creating a runner or
+root circuit:
+
+```ts
+import { createTiPlatformConfig } from "@tscircuit/ti-parts-engine"
+import { RootCircuit } from "@tscircuit/core"
+
+const circuit = new RootCircuit({
+  platform: createTiPlatformConfig({
+    partnerToken: process.env.PARTNER_TOKEN!,
+  }),
+})
+```
+
+For more background on platform customization, see
+[Platform Configuration](./platform-configuration).

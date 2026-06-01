@@ -5,6 +5,15 @@ description: Configure your tscircuit project settings
 
 The `tscircuit.config.json` file is a project-level configuration file that allows you to customize settings for your tscircuit project. This file should be placed in the root of your project directory and is automatically created when you run `tsci init`.
 
+`tscircuit.config.json` is designed for serializable project settings. It is a
+good place for entrypoints, build options, snapshot preferences, and other JSON
+configuration.
+
+If you need function-valued platform settings such as a custom `partsEngine` or
+`footprintLibraryMap`, keep those in a separate JS/TS module and pass that
+platform config from your runtime or local tooling instead of trying to embed
+them directly in `tscircuit.config.json`.
+
 ## Example
 
 ```json
