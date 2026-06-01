@@ -4,17 +4,11 @@ description: Configure TI-backed part lookup and explicit `ti:` footprints throu
 sidebar_position: 5
 ---
 
-`@tscircuit/ti-parts-engine` is an external helper package for local TI-backed
-development workflows. It is not built into `@tscircuit/eval` by default.
-Instead, provide it through a custom platform configuration.
+`@tscircuit/ti-parts-engine` helps you provide TI-backed behavior through a
+custom platform configuration in local development workflows.
 
-## Install from GitHub
-
-`ti-parts-engine` is currently installed directly from GitHub:
-
-```bash
-bun add -D github:tscircuit/ti-parts-engine
-```
+This guide assumes `@tscircuit/ti-parts-engine` is available in your local
+development environment.
 
 ## Use TI as a Custom Parts Engine
 
@@ -65,13 +59,43 @@ This configures:
 If you only provide `createTiPartsEngine(...)`, automatic TI part lookup works,
 but the `ti:` footprint prefix is not added by itself.
 
-## Programmatic Usage
+## Example User Project Files
 
-You can also pass the same platform config directly when creating a runner or
-root circuit:
+If your local tooling supports a JS/TS platform config module, a minimal TI
+footprint project can look like this:
+
+`index.circuit.tsx`
+
+```tsx
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip name="U1" footprint="ti:MSP430" />
+  </board>
+)
+```
+
+`tscircuit.config.ts`
 
 ```ts
 import { createTiPlatformConfig } from "@tscircuit/ti-parts-engine"
+
+export default {
+  platformConfig: createTiPlatformConfig({
+    // local CLI/dev usage only
+    partnerToken: process.env.PARTNER_TOKEN!,
+  }),
+}
+```
+
+This is a local CLI/dev style workflow. Do not expose a real `PARTNER_TOKEN`
+to browser clients.
+
+## Programmatic Usage
+
+You can also pass the same `createTiPlatformConfig(...)` result directly when
+creating a runner or root circuit:
+
+```ts
 import { RootCircuit } from "@tscircuit/core"
 
 const circuit = new RootCircuit({
