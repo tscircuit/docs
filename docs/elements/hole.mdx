@@ -18,14 +18,16 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Hole Shapes
 
-Two hole shapes are supported:
+Three hole shapes are supported:
 
 - `circle` - A circular hole (default)
 - `pill` - A pill-shaped hole (rounded rectangle)
+- `rect` - A rectangular hole
 
 ### Circle Hole
 
-A circular hole is the most common type used for mounting:
+A circular hole is the most common type used for mounting. Provide either
+`diameter` or `radius`:
 
 <CircuitPreview
   defaultView="3d"
@@ -33,7 +35,7 @@ A circular hole is the most common type used for mounting:
   browser3dView={false}
   code={`export default () => (
     <board width="30mm" height="20mm">
-      <hole diameter="3mm" pcbX={0} pcbY={0} />
+      <hole radius="1.5mm" pcbX={0} pcbY={0} />
     </board>
   )`}
 />
@@ -59,9 +61,31 @@ Pill-shaped holes are useful for mounting components that need elongated holes o
   )`}
 />
 
+### Rectangular Hole
+
+Rectangular holes are useful when you need a slot with straight edges:
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  browser3dView={false}
+  code={`export default () => (
+    <board width="30mm" height="20mm">
+      <hole
+        shape="rect"
+        width="5mm"
+        height="2mm"
+        pcbX={0}
+        pcbY={0}
+      />
+    </board>
+  )`}
+/>
+
 ### Rotated Pill Hole
 
-Pill-shaped holes can be rotated using the `pcbRotation` property:
+Pill-shaped and rectangular holes can be rotated using the `pcbRotation`
+property:
 
 <CircuitPreview
   defaultView="pcb"
@@ -76,6 +100,8 @@ Pill-shaped holes can be rotated using the `pcbRotation` property:
         pcbX={0} 
         pcbY={0}
         pcbRotation="45deg"
+        solderMaskMargin="0.2mm"
+        coveredWithSolderMask={false}
       />
     </board>
   )`}
@@ -85,10 +111,13 @@ Pill-shaped holes can be rotated using the `pcbRotation` property:
 
 | Property | Shape | Type | Default | Description |
 |----------|-------|------|---------|-------------|
-| shape | all | `"circle"` \| `"pill"` | `"circle"` | Shape of the hole |
+| shape | all | `"circle"` \| `"pill"` \| `"rect"` | `"circle"` | Shape of the hole |
 | diameter | circle | number \| string | - | Diameter of the circular hole |
-| width | pill | number \| string | - | Width of the pill-shaped hole |
-| height | pill | number \| string | - | Height of the pill-shaped hole |
+| radius | circle | number \| string | - | Radius of the circular hole |
+| width | pill, rect | number \| string | - | Width of the pill-shaped or rectangular hole |
+| height | pill, rect | number \| string | - | Height of the pill-shaped or rectangular hole |
+| solderMaskMargin | all | number \| string | - | Solder mask opening margin around the hole |
+| coveredWithSolderMask | all | boolean | - | Whether the hole should be covered by solder mask |
 | pcbX | all | number | 0 | X position of the hole center on the PCB |
 | pcbY | all | number | 0 | Y position of the hole center on the PCB |
-| pcbRotation | pill | number \| string | 0 | Rotation angle in degrees (e.g., `"45deg"` or `45`) |
+| pcbRotation | pill, rect | number \| string | 0 | Rotation angle in degrees (e.g., `"45deg"` or `45`) |
