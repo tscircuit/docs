@@ -104,12 +104,32 @@ can quickly understand the routing problem before running a router.
 
 Use one of these approaches:
 
-- A Graphic Debug screenshot or link that shows the obstacles, connections, and
-  expected route behavior.
+- A Cosmos server or similar local sample viewer that loads the dataset samples
+  and renders them with
+  [`graphics-debug`](https://github.com/tscircuit/graphics-debug) from
+  tscircuit. Contributors should be able to browse samples, inspect obstacles
+  and connections, and understand the expected route behavior without writing a
+  custom script.
 - An SVG generated with
   [`circuit-to-svg`](https://github.com/tscircuit/circuit-to-svg) when the
   dataset starts from Circuit JSON.
 
-The visualization should make it clear why the dataset is interesting, such as a
-hard obstacle pattern, dense node layout, known failure case, solved high-density
-route, or minimal regression fixture.
+The visualization should live with the dataset and make it clear why each sample
+is interesting, such as a hard obstacle pattern, dense node layout, known failure
+case, solved high-density route, or minimal regression fixture.
+
+## Add snapshot tests
+
+Datasets should include a small test suite that renders representative samples
+and checks them against snapshots. Snapshot tests make it easier to catch
+unexpected changes in generated Simple Route JSON, Graphic Debug output, or SVG
+rendering.
+
+Prefer snapshots that are easy to inspect when they fail:
+
+- Use Graphic Debug snapshots for datasets focused on routing obstacles,
+  connections, or solver behavior.
+- Use `circuit-to-svg` snapshots for datasets that start from Circuit JSON and
+  need a PCB or schematic rendering.
+- Include at least one snapshot for each important sample category in the
+  dataset, not only the smallest sample.
