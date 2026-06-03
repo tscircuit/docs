@@ -1,0 +1,66 @@
+---
+title: Custom Platform Config
+description: Pass a custom platformConfig from tscircuit.config.ts.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+Use `tscircuit.config.ts` when your project needs a custom `platformConfig`, such
+as a private parts engine or a custom footprint library.
+
+## Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  entrypoint="example.tsx"
+  fsMap={{
+    "example.tsx": `export default () => (
+    <board width="10mm" height="10mm">
+      <resistor name="R1" resistance="1k" footprint="ti:C1234" />
+    </board>
+  )
+`,
+    "tscircuit.config.ts": `
+      export default {
+        platformConfig: {
+          footprintLibraryMap: {
+            ti: async () => ({
+              footprintCircuitJson: [
+                {
+                  pcb_component_id: "pcb_component_0",
+                  type: "pcb_component",
+                  source_component_id: "source_component_0",
+                  center: { x: 0, y: 0 },
+                  width: 2,
+                  height: 2,
+                  layer: "top",
+                  rotation: 0,
+                  obstructs_within_bounds: true,
+                },
+                {
+                  type: "pcb_smtpad",
+                  pcb_smtpad_id: "pcb_smtpad_0",
+                  pcb_component_id: "pcb_component_0",
+                  shape: "rect",
+                  port_hints: ["1"],
+                  x: -0.6,
+                  y: 0,
+                  width: 0.5,
+                  height: 1,
+                  layer: "top",
+                  rotation: 0,
+                },
+              ],
+            }),
+          },
+        },
+      }`,
+  }}
+/>
+
+
+The CLI reads `tscircuit.config.json` for project settings and
+`tscircuit.config.ts` for runtime platform customization. Use
+`footprintLibraryMap` to resolve custom footprint prefixes such as `ti:*`.
