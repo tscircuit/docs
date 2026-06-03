@@ -64,3 +64,13 @@ as a private parts engine or a custom footprint library.
 The CLI reads `tscircuit.config.json` for project settings and
 `tscircuit.config.ts` for runtime platform customization. Use
 `footprintLibraryMap` to resolve custom footprint prefixes such as `ti:*`.
+
+## PlatformConfig Structure
+
+The structure of `platformConfig` is defined by the
+[`PlatformConfig` type](https://github.com/tscircuit/props/blob/main/lib/platformConfig.ts)
+in `@tscircuit/props`.
+
+For a higher-level overview of common fields such as `partsEngine`,
+`registryApiUrl`, `cloudAutorouterUrl`, and `footprintLibraryMap`, see
+[Platform Configuration](./platform-configuration.md).
