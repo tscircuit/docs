@@ -28,6 +28,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | `pcbY` | length | Y coordinate of the rectangle center on the PCB silkscreen. |
 | `width` | length | Width of the rectangle. |
 | `height` | length | Height of the rectangle. |
+| `cornerRadius` | length | Corner radius for rounded rectangle corners. |
 | `strokeWidth` | length | Thickness of the rectangle outline. |
 | `filled` | boolean | When `true`, fills the rectangle instead of drawing only the outline. |
 | `hasStroke` | boolean | When `false`, hides the outline even if `filled` is not set. |
@@ -44,6 +45,26 @@ Use `strokeWidth` to control the outline thickness of the rectangle. This is hel
     <footprint name="U1">
       <silkscreenrect pcbX={-2} pcbY={0} width={2} height={2} strokeWidth={0.1} />
       <silkscreenrect pcbX={2} pcbY={0} width={2} height={2} strokeWidth={0.35} />
+    </footprint>
+  </board>
+  )
+`} />
+
+## Rounded Corners
+
+Use `cornerRadius` to round the corners of a silkscreen rectangle.
+
+<CircuitPreview code={`
+  export default () => (
+  <board width="6mm" height="5mm">
+    <footprint name="U1">
+      <silkscreenrect
+        pcbX={0}
+        pcbY={0}
+        width={3}
+        height={2}
+        cornerRadius={0.4}
+      />
     </footprint>
   </board>
   )
