@@ -5,24 +5,25 @@ description: Learn how to build a simple USB-powered flashlight circuit using ts
 
 ## Overview
 
-This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+This tutorial walks you through building a compact USB-powered flashlight using tscircuit.
+The circuit takes 5 V from a USB-C connector, passes it through a push button and a
+current-limiting resistor, and lights a red LED.
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
 <TscircuitIframe defaultView="3d" code={`
-
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
   return (
-   <board width="12mm" height="30mm">
+    <board width="12mm" height="30mm">
       <SmdUsbC
-      name="J1"
-      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
-      pcbY={-10}
-      schX={-4}
-    />
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
       <pushbutton
         name="SW1"
         footprint="pushbutton"
@@ -32,7 +33,164 @@ export default () => {
         pcbY={-1}
       />
       <led name="LED" color="red" footprint="0603" pcbY={12} />
-     
+      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+      <trace from=".R1 .neg" to=".LED .pos" />
+      <trace from=".LED .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Objectives
+
+- Understand how to bring 5 V USB power onto a PCB with a USB-C connector
+- Wire a pushbutton as a momentary switch in series with the load
+- Calculate and place a current-limiting resistor for an LED
+- Place and connect all components inside a small 12 × 30 mm board
+
+## Requirements
+
+- The board must draw power from a USB-C connector (VBUS = 5 V, GND)
+- A momentary pushbutton must interrupt the circuit so the LED is off when released
+- A 1 kΩ resistor must limit the LED current to a safe level (~4 mA at 5 V)
+- All components must fit on a 12 × 30 mm two-layer PCB
+
+## Components
+
+| Reference | Component | Footprint | Notes |
+|-----------|-----------|-----------|-------|
+| J1 | SMD USB-C connector | `@tsci/seveibar.smd-usb-c` | VBUS (5 V) + GND |
+| SW1 | Pushbutton | `pushbutton` | Momentary normally-open |
+| R1 | Resistor 1 kΩ | `0603` | Current limiter for LED |
+| LED | Red LED | `0603` | Forward voltage ~2 V |
+
+### Resistor calculation
+
+With VBUS = 5 V and a red LED forward voltage V_f ≈ 2 V:
+
+```
+I = (V_supply - V_f) / R = (5 - 2) / 1000 = 3 mA
+```
+
+3 mA is well within the safe operating range for a standard 0603 LED (typically 20 mA max).
+
+## Step-by-step build
+
+### Step 1 — USB-C connector
+
+Start with the USB-C connector. It exposes `VBUS1`, `VBUS2` (both 5 V) and `GND1`, `GND2`.
+Tie both VBUS pins to `net.VBUS` and both GND pins to `net.GND`.
+
+<CircuitPreview defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
+    </board>
+  )
+}
+`} />
+
+### Step 2 — Push button
+
+Add a momentary push button (`SW1`). When pressed, `pin2` (connected to `net.VBUS`) passes
+current through to `pin1`. `pin1` connects forward to the positive terminal of the resistor
+`.R1 > .pos` — tscircuit resolves this reference once `R1` is declared in the next step.
+
+<CircuitPreview defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+    </board>
+  )
+}
+`} />
+
+### Step 3 — Current-limiting resistor and LED
+
+Add resistor `R1` (1 kΩ) and the red LED. Connect them in series:
+- `R1.neg` → `LED.pos` (resistor output to LED anode)
+- `LED.neg` → `net.GND` (LED cathode to ground)
+
+<CircuitPreview defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+      <led name="LED" color="red" footprint="0603" pcbY={12} />
+      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+      <trace from=".R1 .neg" to=".LED .pos" />
+      <trace from=".LED .neg" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Final circuit
+
+The completed circuit on the PCB. All four components fit within the 12 × 30 mm board outline.
+The USB-C connector sits at the bottom edge, the push button in the middle, and the resistor
+and LED stack toward the top.
+
+<TscircuitIframe defaultView="pcb" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="12mm" height="30mm">
+      <SmdUsbC
+        name="J1"
+        connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+        pcbY={-10}
+        schX={-4}
+      />
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        layer="top"
+        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        pcbX={0}
+        pcbY={-1}
+      />
+      <led name="LED" color="red" footprint="0603" pcbY={12} />
       <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
       <trace from=".R1 .neg" to=".LED .pos" />
       <trace from=".LED .neg" to="net.GND" />
