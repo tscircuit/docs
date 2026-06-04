@@ -5,6 +5,8 @@ description: >-
   suit the platform the tscircuit code is running on.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
 ## Overview
 
 The Platform Configuration allows you to change tscircuit behavior to best suit
@@ -78,9 +80,28 @@ export default {
 You can now use TI components inside tscircuit with automatically loaded SPICE
 and footprints:
 
-```tsx
-<chip name="U1" footprint="ti:LM358" />
-```
+<CircuitPreview
+  defaultView="pcb"
+  mainComponentPath="index.circuit.tsx"
+  fsMap={{
+    "package.json": JSON.stringify({
+      dependencies: {
+        "@tscircuit/ti-parts-engine": "github:tscircuit/ti-parts-engine",
+      },
+    }),
+    "tscircuit.config.ts": `import { createTiPlatformConfig } from "@tscircuit/ti-parts-engine"
+
+export default {
+  platformConfig: createTiPlatformConfig(),
+}
+`,
+    "index.circuit.tsx": `export default () => (
+    <board width="20mm" height="20mm">
+      <chip name="U1" footprint="ti:LM358" />
+    </board>
+  )`,
+  }}
+/>
 
 ### Provide a platform programmatically
 
