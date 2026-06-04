@@ -51,6 +51,39 @@ if tscircuit finds parts for a vendor, you don't have to use that vendor!
 Want more platform features? Tell us about your use case in [this GitHub Discussion!](https://github.com/orgs/tscircuit/discussions/514)
 :::
 
+### Configure a project with `tscircuit.config.ts`
+
+For CLI projects, define a `platformConfig` export in `tscircuit.config.ts` at
+the root of your project. This lets every board in the project use the same
+parts engine, autorouter, registry, or footprint libraries without passing a
+platform object into each circuit manually.
+
+For example, the TI parts engine can define components from Texas Instruments
+part data. First install it as a development dependency:
+
+```sh
+bun add -D github:tscircuit/ti-parts-engine
+```
+
+Then configure it in your project:
+
+```ts title="tscircuit.config.ts"
+import { createTiPlatformConfig } from "@tscircuit/ti-parts-engine"
+
+export default {
+  platformConfig: createTiPlatformConfig(),
+}
+```
+
+You can now use TI components inside tscircuit with automatically loaded SPICE
+and footprints:
+
+```tsx
+<chip name="U1" footprint="ti:LM358" />
+```
+
+### Provide a platform programmatically
+
 When you initialize a `RootCircuit`, you can provide the platform configuration
 as the `{ platform }` parameter:
 
