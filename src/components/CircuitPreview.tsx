@@ -207,24 +207,39 @@ export default function CircuitPreview({
       Object.values(editableFsMap ?? {})[0] ||
       editableCode
 
+  const addMainComponentPath = (url: string) => {
+    if (!mainComponentPath || typeof fsMapOrCode === "string") return url
+
+    const separator = url.includes("?") ? "&" : "?"
+    return `${url}${separator}main_component_path=${encodeURIComponent(
+      mainComponentPath,
+    )}`
+  }
+
   const pcbUrl = useMemo(() => {
-    const basePcbUrl = createSvgUrl(fsMapOrCode, "pcb")
+    const basePcbUrl = addMainComponentPath(createSvgUrl(fsMapOrCode, "pcb"))
 
     if (!showCourtyards) return basePcbUrl
 
     const separator = basePcbUrl.includes("?") ? "&" : "?"
     return `${basePcbUrl}${separator}show_courtyards=true`
-  }, [fsMapOrCode, showCourtyards])
+  }, [fsMapOrCode, mainComponentPath, showCourtyards])
   const schUrl = useMemo(
     () =>
-      createSvgUrl(fsMapOrCode, showSimulationGraph ? "schsim" : "schematic", {
-        simulationExperimentId: "simulation_experiment_0",
-      }),
-    [fsMapOrCode, showSimulationGraph],
+      addMainComponentPath(
+        createSvgUrl(
+          fsMapOrCode,
+          showSimulationGraph ? "schsim" : "schematic",
+          {
+            simulationExperimentId: "simulation_experiment_0",
+          },
+        ),
+      ),
+    [fsMapOrCode, mainComponentPath, showSimulationGraph],
   )
   const pinoutUrl = useMemo(
-    () => createSvgUrl(fsMapOrCode, "pinout"),
-    [fsMapOrCode],
+    () => addMainComponentPath(createSvgUrl(fsMapOrCode, "pinout")),
+    [fsMapOrCode, mainComponentPath],
   )
   const threeDUrl = useMemo(() => {
     if (browser3dView && typeof fsMapOrCode === "string") {

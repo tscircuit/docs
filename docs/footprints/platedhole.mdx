@@ -35,25 +35,42 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Plated Hole Shapes
 
-There are 3 types of plated holes:
+`<platedhole />` supports these shapes:
 
 - `circle` - A circular plated hole
 - `oval` - An oval plated hole
 - `pill` - A pill-shaped plated hole (rounded rectangle)
+- `circular_hole_with_rect_pad` - A circular drill with a rectangular copper pad
+- `pill_hole_with_rect_pad` - A pill-shaped drill with a rectangular copper pad
+- `hole_with_polygon_pad` - A hole with a custom polygon copper pad
 
-Each shape has different properties
+Each shape has different properties.
 
 ## Properties
 
-| Property      | Shape      | Description                                    |
-| ------------- | ---------- | ---------------------------------------------- |
-| holeDiameter  | circle     | The diameter of the inner hole                 |
-| outerDiameter | circle     | The diameter of the outer copper pad           |
-| innerWidth    | oval, pill | The width of the inner hole                    |
-| innerHeight   | oval, pill | The height of the inner hole                   |
-| outerWidth    | oval, pill | The width of the outer copper pad              |
-| outerHeight   | oval, pill | The height of the outer copper pad             |
-| portHints     | all        | Array of port names that this hole connects to |
-| pcbX          | all        | X position of the hole center on the PCB       |
-| pcbY          | all        | Y position of the hole center on the PCB       |
-| name          | all        | Optional name identifier for the plated hole   |
+| Property | Shape | Description |
+| -------- | ----- | ----------- |
+| holeDiameter | `circle`, `circular_hole_with_rect_pad`, `hole_with_polygon_pad` | Diameter of the drill hole when the hole is circular |
+| outerDiameter | `circle` | Diameter of the copper pad |
+| holeWidth | `oval`, `pill`, `pill_hole_with_rect_pad`, `hole_with_polygon_pad` | Width of the drill hole |
+| holeHeight | `oval`, `pill`, `pill_hole_with_rect_pad`, `hole_with_polygon_pad` | Height of the drill hole |
+| innerWidth | `oval`, `pill` | Deprecated alias for `holeWidth` |
+| innerHeight | `oval`, `pill` | Deprecated alias for `holeHeight` |
+| outerWidth | `oval`, `pill` | Width of the copper pad |
+| outerHeight | `oval`, `pill` | Height of the copper pad |
+| rectPadWidth | `circular_hole_with_rect_pad`, `pill_hole_with_rect_pad` | Width of the rectangular copper pad |
+| rectPadHeight | `circular_hole_with_rect_pad`, `pill_hole_with_rect_pad` | Height of the rectangular copper pad |
+| rectBorderRadius | `circular_hole_with_rect_pad`, `pill_hole_with_rect_pad` | Corner radius for the rectangular copper pad |
+| padOutline | `hole_with_polygon_pad` | Polygon points for the copper pad outline |
+| holeShape | `hole_with_polygon_pad` | Hole shape inside the polygon pad: `circle`, `oval`, `pill`, or `rotated_pill` |
+| holeOffsetX | `pill`, `circular_hole_with_rect_pad`, `pill_hole_with_rect_pad`, `hole_with_polygon_pad` | X offset of the drill hole relative to the pad center |
+| holeOffsetY | `pill`, `circular_hole_with_rect_pad`, `pill_hole_with_rect_pad`, `hole_with_polygon_pad` | Y offset of the drill hole relative to the pad center |
+| rectPad | `pill` | When `true`, shape inference prefers `pill` instead of `oval` |
+| portHints | all | Array of port names that this hole connects to |
+| connectsTo | all | Net or nets that this plated hole should connect to |
+| solderMaskMargin | all | Solder mask opening margin around the plated hole |
+| coveredWithSolderMask | all | Whether the plated hole should be covered by solder mask |
+| pcbX | all | X position of the hole center on the PCB |
+| pcbY | all | Y position of the hole center on the PCB |
+| pcbRotation | `oval`, `pill`, `circular_hole_with_rect_pad`, `pill_hole_with_rect_pad` | Rotation of the plated hole and pad geometry |
+| name | all | Optional name identifier for the plated hole |
