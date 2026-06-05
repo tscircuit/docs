@@ -1,0 +1,230 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: >-
+  This tutorial will walk you through building a Raspberry Pi HAT with a PAM8403 
+  Class D audio amplifier using tscircuit, providing 3W per channel stereo output.
+---
+
+## Overview
+
+This tutorial will guide you through designing a Raspberry Pi Audio HAT featuring the **PAM8403**, a highly efficient Class D audio amplifier. It provides 3W per channel stereo output, making it perfect for driving small speakers in arcade cabinets, media centers, or voice assistants. 
+
+Our HAT will feature:
+- A PAM8403 Class D amplifier chip
+- A dual potentiometer for hardware volume control
+- Speaker terminal blocks for easy connection
+- RC low-pass filters to convert the Raspberry Pi's PWM audio into a smooth analog signal
+- High-quality decoupling capacitors to minimize audio noise
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* PAM8403 Class D Amplifier */}
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["OUTL+"], pin2: ["PGNDL"], pin3: ["OUTL-"], pin4: ["PVDDL"],
+        pin5: ["MUTE"], pin6: ["VDD"], pin7: ["INL"], pin8: ["VREF"],
+        pin9: ["NC"], pin10: ["INR"], pin11: ["GND"], pin12: ["SHDN"],
+        pin13: ["PVDDR"], pin14: ["OUTR-"], pin15: ["PGNDR"], pin16: ["OUTR+"]
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    {/* Dual Potentiometer for Volume Control (represented as two SIP3 headers for simplicity) */}
+    <chip name="RV1" footprint="sip3" pcbX={-15} pcbY={-10} />
+    <chip name="RV2" footprint="sip3" pcbX={-15} pcbY={-15} />
+
+    {/* Input Coupling Capacitors (1uF) */}
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={-10} pcbY={-5} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-10} pcbY={5} />
+
+    {/* PWM Low-Pass Filter (Resistors & Capacitors) */}
+    <resistor name="R1" resistance="270" footprint="0603" pcbX={-20} pcbY={-5} />
+    <capacitor name="C3" capacitance="33nF" footprint="0603" pcbX={-25} pcbY={-5} />
+    
+    <resistor name="R2" resistance="270" footprint="0603" pcbX={-20} pcbY={5} />
+    <capacitor name="C4" capacitance="33nF" footprint="0603" pcbX={-25} pcbY={5} />
+
+    {/* Decoupling Capacitors for Noise Reduction */}
+    <capacitor name="C5" capacitance="10uF" footprint="0805" pcbX={5} pcbY={10} />
+    <capacitor name="C6" capacitance="0.1uF" footprint="0603" pcbX={5} pcbY={5} />
+
+    {/* Speaker Terminals (Left and Right) */}
+    <chip name="J_SPK_L" footprint="sip2" pcbX={15} pcbY={-10} />
+    <chip name="J_SPK_R" footprint="sip2" pcbX={15} pcbY={10} />
+
+    {/* Power and GND Traces */}
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .PVDDL" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .PVDDR" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .PGNDL" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .PGNDR" />
+
+    {/* Decoupling capacitor connections */}
+    <trace from=".C5 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".C5 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".C6 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".C6 > .pin2" to=".HAT1_chip .GND_1" />
+
+    {/* Pull MUTE and SHDN High for Normal Operation */}
+    <trace from=".HAT1_chip .V5_1" to=".U1 .MUTE" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .SHDN" />
+
+    {/* Left Channel Filter & Volume */}
+    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".RV1 > .pin1" />
+    <trace from=".C3 > .pin1" to=".R1 > .pin2" />
+    <trace from=".C3 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".RV1 > .pin2" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".U1 .INL" />
+    <trace from=".RV1 > .pin3" to=".HAT1_chip .GND_1" />
+    
+    {/* Right Channel Filter & Volume */}
+    <trace from=".HAT1_chip .GPIO_19" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".RV2 > .pin1" />
+    <trace from=".C4 > .pin1" to=".R2 > .pin2" />
+    <trace from=".C4 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".RV2 > .pin2" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".U1 .INR" />
+    <trace from=".RV2 > .pin3" to=".HAT1_chip .GND_1" />
+
+    {/* Amplifier to Speaker Terminals */}
+    <trace from=".U1 .OUTL+" to=".J_SPK_L > .pin1" />
+    <trace from=".U1 .OUTL-" to=".J_SPK_L > .pin2" />
+    
+    <trace from=".U1 .OUTR+" to=".J_SPK_R > .pin1" />
+    <trace from=".U1 .OUTR-" to=".J_SPK_R > .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Understanding Class D Amplifiers
+
+Unlike traditional Class AB amplifiers that waste excess energy as heat, **Class D amplifiers** act like high-speed electronic switches. They convert the incoming analog audio into a high-frequency PWM (Pulse Width Modulation) signal. 
+
+Because the internal transistors are either fully "ON" or fully "OFF", they dissipate very little heat, allowing the PAM8403 to achieve up to **90% efficiency**. This is why a chip smaller than a fingernail can output a massive 3W per channel without needing a heatsink!
+
+## Circuit Requirements
+
+To build this audio HAT, we need:
+- **PAM8403 Chip:** The core amplifier.
+- **RC Low-Pass Filter:** The Raspberry Pi outputs audio as a digital PWM signal on GPIO 18/19. We use resistors (270Ω) and capacitors (33nF) to smooth this high-frequency PWM into a clean analog sine wave.
+- **Input Coupling Capacitors:** 1µF capacitors are placed before the PAM8403 inputs to block any DC voltage bias from entering the amplifier, preventing speaker popping.
+- **Potentiometer:** A dual-gang 10k potentiometer acts as a physical volume knob, dividing the voltage before it reaches the amplifier.
+- **Decoupling Capacitors:** 10µF and 0.1µF capacitors are connected close to the PAM8403's supply pins to filter out voltage noise from the Pi's power rails.
+
+## Building the Circuit Step by Step
+
+### Step 1: Add the Raspberry Pi Board and Amplifier
+
+First, we set up the board and drop in the PAM8403 IC using a standard SOIC-16 footprint.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["OUTL+"], pin2: ["PGNDL"], pin3: ["OUTL-"], pin4: ["PVDDL"],
+        pin5: ["MUTE"], pin6: ["VDD"], pin7: ["INL"], pin8: ["VREF"],
+        pin9: ["NC"], pin10: ["INR"], pin11: ["GND"], pin12: ["SHDN"],
+        pin13: ["PVDDR"], pin14: ["OUTR-"], pin15: ["PGNDR"], pin16: ["OUTR+"]
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+  </RaspberryPiHatBoard>
+)
+```
+
+### Step 2: Input Filtering and Volume Control
+
+We must filter the Pi's digital PWM output into an analog signal. We'll add our RC filter, the volume potentiometers (represented here as SIP3 chips), and the DC-blocking capacitors.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip name="U1" footprint="soic16" pcbX={0} pcbY={0} pinLabels={{pin7: ["INL"], pin10: ["INR"]}} />
+    
+    {/* Left Channel Filter + Vol */}
+    <resistor name="R1" resistance="270" footprint="0603" pcbX={-20} pcbY={-5} />
+    <capacitor name="C3" capacitance="33nF" footprint="0603" pcbX={-25} pcbY={-5} />
+    <chip name="RV1" footprint="sip3" pcbX={-15} pcbY={-10} />
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={-10} pcbY={-5} />
+
+    {/* Right Channel Filter + Vol */}
+    <resistor name="R2" resistance="270" footprint="0603" pcbX={-20} pcbY={5} />
+    <capacitor name="C4" capacitance="33nF" footprint="0603" pcbX={-25} pcbY={5} />
+    <chip name="RV2" footprint="sip3" pcbX={-15} pcbY={-15} />
+    <capacitor name="C2" capacitance="1uF" footprint="0603" pcbX={-10} pcbY={5} />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Add Speaker Terminals and Trace Routing
+
+Finally, we connect the power lines (using the Pi's 5V rail since the PAM8403 runs perfectly on 5V) and route the high-power outputs to screw terminals (SIP-2) for easy speaker wire connection.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip name="U1" footprint="soic16" pinLabels={{pin1: ["OUTL+"], pin3: ["OUTL-"], pin14: ["OUTR-"], pin16: ["OUTR+"]}} pcbX={0} pcbY={0} />
+    
+    <chip name="J_SPK_L" footprint="sip2" pcbX={15} pcbY={-10} />
+    <chip name="J_SPK_R" footprint="sip2" pcbX={15} pcbY={10} />
+
+    <trace from=".U1 .OUTL+" to=".J_SPK_L > .pin1" />
+    <trace from=".U1 .OUTL-" to=".J_SPK_L > .pin2" />
+    <trace from=".U1 .OUTR+" to=".J_SPK_R > .pin1" />
+    <trace from=".U1 .OUTR-" to=".J_SPK_R > .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Raspberry Pi Audio Configuration
+
+By default, modern Raspberry Pi operating systems try to route audio through HDMI. To route audio through the GPIO pins (PWM audio), you need to configure your Pi's device tree.
+
+1. Open a terminal on your Pi and edit the boot config file:
+   ```bash
+   sudo nano /boot/firmware/config.txt
+   # On older OS versions: sudo nano /boot/config.txt
+   ```
+
+2. Add or uncomment the following line to enable PWM audio on GPIO 18 (Left) and GPIO 19 (Right):
+   ```text
+   dtoverlay=audremap,pins_18_19
+   ```
+
+3. Save the file (Ctrl+O, Enter, Ctrl+X) and reboot:
+   ```bash
+   sudo reboot
+   ```
+
+4. Test your speakers using the terminal!
+   ```bash
+   speaker-test -c2 -t wav
+   ```
+
+## Next Steps
+- Add an I2S DAC (like the PCM5102A) instead of using PWM audio for audiophile-grade high-fidelity sound.
+- Add an LED to indicate when the amplifier is powered on.
+- Experiment with the `MUTE` and `SHDN` pins of the PAM8403 to disable audio programmatically via a separate GPIO pin.
