@@ -1,0 +1,366 @@
+---
+title: ESP32 Module Circuit Example
+description: >-
+  Build a schematic-only ESP32-WROOM style module circuit with USB-UART,
+  enable/reset, boot strapping, crystal, decoupling, and expansion headers.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial walks through a schematic-only ESP32 module circuit similar to
+what you would see in a hardware academy reference design. The goal is not a
+finished PCB layout. The goal is a readable schematic that shows the supporting
+parts an ESP32-WROOM style module needs before you start routing:
+
+- 3.3 V power input and local decoupling
+- EN reset pull-up and reset button
+- BOOT strap button on GPIO0
+- USB-UART TX/RX wiring
+- 40 MHz crystal load capacitors for bare-module variants
+- GPIO expansion header labels for the signals you will use later
+
+The examples use only built-in tscircuit primitives so you can paste each block
+into a new project without installing a package.
+
+## Final schematic
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="module_esp32_wroom_32"
+      pinLabels={{
+        pin1: "V3_3",
+        pin2: "EN",
+        pin3: "GPIO36",
+        pin4: "GPIO39",
+        pin5: "GPIO34",
+        pin6: "GPIO35",
+        pin7: "GPIO32",
+        pin8: "GPIO33",
+        pin9: "GPIO25",
+        pin10: "GPIO26",
+        pin11: "GPIO27",
+        pin12: "GPIO14",
+        pin13: "GPIO12",
+        pin14: "GND",
+        pin15: "GPIO13",
+        pin16: "GPIO9",
+        pin17: "GPIO10",
+        pin18: "GPIO11",
+        pin19: "GPIO6",
+        pin20: "GPIO7",
+        pin21: "GPIO8",
+        pin22: "GPIO15",
+        pin23: "GPIO2",
+        pin24: "GPIO0",
+        pin25: "GPIO4",
+        pin26: "GPIO16",
+        pin27: "GPIO17",
+        pin28: "GPIO5",
+        pin29: "GPIO18",
+        pin30: "GPIO19",
+        pin31: "GND2",
+        pin32: "GPIO21",
+        pin33: "RXD0",
+        pin34: "TXD0",
+        pin35: "GPIO22",
+        pin36: "GPIO23",
+        pin37: "GND3",
+        pin38: "ANT"
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "V3_3",
+            "EN",
+            "GPIO36",
+            "GPIO39",
+            "GPIO34",
+            "GPIO35",
+            "GPIO32",
+            "GPIO33",
+            "GPIO25",
+            "GPIO26",
+            "GPIO27",
+            "GPIO14",
+            "GPIO12"
+          ],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "TXD0",
+            "RXD0",
+            "GPIO23",
+            "GPIO22",
+            "GPIO21",
+            "GPIO19",
+            "GPIO18",
+            "GPIO17",
+            "GPIO16",
+            "GPIO5",
+            "GPIO4",
+            "GPIO0",
+            "GPIO2",
+            "GPIO15",
+            "GND"
+          ],
+        },
+      }}
+    />
+
+    <pinheader
+      name="J1"
+      pinCount={6}
+      pinLabels={["GND", "V3_3", "TXD0", "RXD0", "EN", "GPIO0"]}
+    />
+    <pinheader
+      name="J2"
+      pinCount={8}
+      pinLabels={["GPIO23", "GPIO22", "GPIO21", "GPIO19", "GPIO18", "GPIO17", "GPIO16", "GPIO5"]}
+    />
+
+    <chip
+      name="U2"
+      manufacturerPartNumber="USB-UART Bridge"
+      footprint="qfn16"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+        pin3: "TXD",
+        pin4: "RXD",
+        pin5: "DTR",
+        pin6: "RTS",
+      }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["VCC", "GND"] },
+        rightSide: { direction: "top-to-bottom", pins: ["TXD", "RXD", "DTR", "RTS"] },
+      }}
+    />
+
+    <resistor name="R1" resistance="10k" footprint="0402" />
+    <resistor name="R2" resistance="10k" footprint="0402" />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" />
+    <pushbutton name="SW1" />
+    <pushbutton name="SW2" />
+    <crystal name="Y1" frequency="40MHz" footprint="crystal_4pin" />
+    <capacitor name="C4" capacitance="18pF" footprint="0402" />
+    <capacitor name="C5" capacitance="18pF" footprint="0402" />
+
+    <trace from=".J1 .V3_3" to=".U1 .V3_3" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .V3_3" to=".C1 > .pin1" />
+    <trace from=".J1 .V3_3" to=".C2 > .pin1" />
+    <trace from=".J1 .V3_3" to=".C3 > .pin1" />
+    <trace from=".C1 > .pin2" to=".J1 .GND" />
+    <trace from=".C2 > .pin2" to=".J1 .GND" />
+    <trace from=".C3 > .pin2" to=".J1 .GND" />
+
+    <trace from=".J1 .V3_3" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 .EN" />
+    <trace from=".U1 .EN" to=".SW1 > .pin1" />
+    <trace from=".SW1 > .pin2" to=".J1 .GND" />
+
+    <trace from=".J1 .V3_3" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".U1 .GPIO0" />
+    <trace from=".U1 .GPIO0" to=".SW2 > .pin1" />
+    <trace from=".SW2 > .pin2" to=".J1 .GND" />
+
+    <trace from=".U2 .TXD" to=".U1 .RXD0" />
+    <trace from=".U2 .RXD" to=".U1 .TXD0" />
+    <trace from=".U2 .VCC" to=".J1 .V3_3" />
+    <trace from=".U2 .GND" to=".J1 .GND" />
+
+    <trace from=".Y1 > .pin1" to=".U1 .GPIO32" />
+    <trace from=".Y1 > .pin3" to=".U1 .GPIO33" />
+    <trace from=".Y1 > .pin1" to=".C4 > .pin1" />
+    <trace from=".Y1 > .pin3" to=".C5 > .pin1" />
+    <trace from=".C4 > .pin2" to=".J1 .GND" />
+    <trace from=".C5 > .pin2" to=".J1 .GND" />
+
+    <trace from=".J2 .GPIO23" to=".U1 .GPIO23" />
+    <trace from=".J2 .GPIO22" to=".U1 .GPIO22" />
+    <trace from=".J2 .GPIO21" to=".U1 .GPIO21" />
+    <trace from=".J2 .GPIO19" to=".U1 .GPIO19" />
+    <trace from=".J2 .GPIO18" to=".U1 .GPIO18" />
+    <trace from=".J2 .GPIO17" to=".U1 .GPIO17" />
+    <trace from=".J2 .GPIO16" to=".U1 .GPIO16" />
+    <trace from=".J2 .GPIO5" to=".U1 .GPIO5" />
+  </board>
+)
+`} />
+
+## Step 1: Represent the ESP32 module
+
+Start with the module symbol. The pin labels matter more than the placeholder
+footprint for this schematic-only exercise because the labels become stable
+selectors for traces and documentation.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="module_esp32_wroom_32"
+      pinLabels={{
+        pin1: "V3_3",
+        pin2: "EN",
+        pin24: "GPIO0",
+        pin29: "GPIO18",
+        pin30: "GPIO19",
+        pin32: "GPIO21",
+        pin33: "RXD0",
+        pin34: "TXD0",
+        pin35: "GPIO22",
+        pin36: "GPIO23",
+        pin37: "GND"
+      }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["V3_3", "EN", "GPIO0"] },
+        rightSide: { direction: "top-to-bottom", pins: ["TXD0", "RXD0", "GPIO23", "GPIO22", "GPIO21", "GPIO19", "GPIO18", "GND"] },
+      }}
+    />
+  </board>
+)
+`} />
+
+## Step 2: Add power and decoupling
+
+ESP32 modules draw short Wi-Fi current bursts, so place bulk and high-frequency
+decoupling on the 3.3 V rail. In a real layout, these capacitors should be close
+to the module power pins and should return to the same ground reference.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="module_esp32_wroom_32"
+      pinLabels={{ pin1: "V3_3", pin37: "GND" }}
+      schPinArrangement={{ leftSide: { direction: "top-to-bottom", pins: ["V3_3", "GND"] } }}
+    />
+    <pinheader name="J1" pinCount={2} pinLabels={["V3_3", "GND"]} />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" />
+
+    <trace from=".J1 .V3_3" to=".U1 .V3_3" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .V3_3" to=".C1 > .pin1" />
+    <trace from=".J1 .V3_3" to=".C2 > .pin1" />
+    <trace from=".J1 .V3_3" to=".C3 > .pin1" />
+    <trace from=".C1 > .pin2" to=".J1 .GND" />
+    <trace from=".C2 > .pin2" to=".J1 .GND" />
+    <trace from=".C3 > .pin2" to=".J1 .GND" />
+  </board>
+)
+`} />
+
+## Step 3: Add reset and boot strapping
+
+The EN pin needs a pull-up and a reset button to ground. GPIO0 needs a pull-up
+and a BOOT button to ground so you can enter the serial bootloader while
+flashing firmware.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="module_esp32_wroom_32"
+      pinLabels={{ pin1: "V3_3", pin2: "EN", pin24: "GPIO0", pin37: "GND" }}
+      schPinArrangement={{ leftSide: { direction: "top-to-bottom", pins: ["V3_3", "EN", "GPIO0", "GND"] } }}
+    />
+    <resistor name="R1" resistance="10k" footprint="0402" />
+    <resistor name="R2" resistance="10k" footprint="0402" />
+    <pushbutton name="SW1" />
+    <pushbutton name="SW2" />
+
+    <trace from=".U1 .V3_3" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 .EN" />
+    <trace from=".U1 .EN" to=".SW1 > .pin1" />
+    <trace from=".SW1 > .pin2" to=".U1 .GND" />
+
+    <trace from=".U1 .V3_3" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".U1 .GPIO0" />
+    <trace from=".U1 .GPIO0" to=".SW2 > .pin1" />
+    <trace from=".SW2 > .pin2" to=".U1 .GND" />
+  </board>
+)
+`} />
+
+## Step 4: Wire USB-UART programming
+
+Cross the UART bridge signals: bridge TXD goes to ESP32 RXD0, and bridge RXD
+goes to ESP32 TXD0. The optional DTR and RTS outputs can be added later for
+auto-reset, but a manual EN and BOOT pair is enough for a clear first schematic.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      footprint="module_esp32_wroom_32"
+      pinLabels={{ pin33: "RXD0", pin34: "TXD0", pin37: "GND", pin1: "V3_3" }}
+      schPinArrangement={{ rightSide: { direction: "top-to-bottom", pins: ["TXD0", "RXD0", "V3_3", "GND"] } }}
+    />
+    <chip
+      name="U2"
+      manufacturerPartNumber="USB-UART Bridge"
+      footprint="qfn16"
+      pinLabels={{ pin1: "VCC", pin2: "GND", pin3: "TXD", pin4: "RXD" }}
+      schPinArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["VCC", "GND"] },
+        rightSide: { direction: "top-to-bottom", pins: ["TXD", "RXD"] },
+      }}
+    />
+
+    <trace from=".U2 .TXD" to=".U1 .RXD0" />
+    <trace from=".U2 .RXD" to=".U1 .TXD0" />
+    <trace from=".U2 .VCC" to=".U1 .V3_3" />
+    <trace from=".U2 .GND" to=".U1 .GND" />
+  </board>
+)
+`} />
+
+## Step 5: Add expansion headers
+
+Break out the signals you actually plan to use. The header below keeps the
+common SPI-capable pins together, then leaves the UART and reset pins on the
+programming header.
+
+| Header pin | ESP32 signal | Typical use |
+| ---------- | ------------ | ----------- |
+| GPIO23 | MOSI | SPI data out |
+| GPIO22 | SCL | I2C clock |
+| GPIO21 | SDA | I2C data |
+| GPIO19 | MISO | SPI data in |
+| GPIO18 | SCK | SPI clock |
+| GPIO17 | TX2 | Secondary UART |
+| GPIO16 | RX2 | Secondary UART |
+| GPIO5 | CS | SPI chip select |
+
+## Schematic review checklist
+
+Before turning this into a PCB, check the schematic against this list:
+
+- Every 3.3 V pin has a nearby 100 nF decoupling capacitor.
+- EN is pulled up and can be pulled low by the reset button.
+- GPIO0 is pulled up and can be pulled low by the BOOT button.
+- USB-UART TXD/RXD are crossed into ESP32 RXD0/TXD0.
+- GPIO12, GPIO0, GPIO2, GPIO15, and EN are not accidentally forced into a bad
+  boot strap state by external circuitry.
+- The antenna side of the module is kept free of copper and tall components
+  when you move from schematic to PCB.
