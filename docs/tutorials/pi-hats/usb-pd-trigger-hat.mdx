@@ -1,0 +1,460 @@
+---
+title: Building a USB Power Delivery Trigger HAT
+description: >-
+  This tutorial will walk you through building a Raspberry Pi HAT that negotiates
+  USB Power Delivery voltages (5V–20V) using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building a Raspberry Pi HAT (Hardware Attached on Top) that negotiates USB Power Delivery (PD) voltages from a USB-C power supply. The board uses a CH224K PD controller to request specific voltages (5V, 9V, 12V, 15V, or 20V) and routes the negotiated power through terminal blocks — perfect for powering motors, LED strips, or other high-power projects from a standard USB-C charger.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* CH224K USB PD Controller */}
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["CC1"],
+        pin2: ["CC2"],
+        pin3: ["CFG1"],
+        pin4: ["GND"],
+        pin5: ["CFG2"],
+        pin6: ["CFG3"],
+        pin7: ["VBUS"],
+        pin8: ["VOUT"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["CC1", "CC2", "CFG1", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG2", "CFG3", "VBUS", "VOUT"], direction: "top-to-bottom" },
+      }}
+      pcbX={5}
+      pcbY={-8}
+    />
+
+    {/* USB-C Connector (represented as chip) */}
+    <chip
+      name="J1"
+      footprint="soic8"
+      manufacturerPartNumber="USB-C Connector"
+      pcbX={-15}
+      pcbY={-8}
+    />
+
+    {/* Input filtering capacitor (10uF) */}
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-5} pcbY={-5} />
+
+    {/* Output filtering capacitor (22uF) */}
+    <capacitor name="C2" capacitance="22uF" footprint="0805" pcbX={15} pcbY={-5} />
+
+    {/* Decoupling capacitor (100nF) */}
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={5} pcbY={-3} />
+
+    {/* Status LED */}
+    <chip
+      name="LED1"
+      footprint="0603"
+      manufacturerPartNumber="Green LED"
+      pcbX={15}
+      pcbY={-12}
+    />
+
+    {/* LED current-limiting resistor */}
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={10} pcbY={-12} />
+
+    {/* Voltage selection resistor (CFG1 to GND = 20V) */}
+    <resistor name="R2" resistance="0" footprint="0402" pcbX={0} pcbY={-12} />
+
+    {/* Terminal block output (represented as chip) */}
+    <chip
+      name="TB1"
+      footprint="soic8"
+      manufacturerPartNumber="Terminal Block"
+      pcbX={20}
+      pcbY={-8}
+    />
+
+    {/* VBUS from USB-C to CH224K */}
+    <trace from=".J1 > .pin1" to=".U1 .VBUS" />
+
+    {/* CC lines from USB-C to CH224K */}
+    <trace from=".J1 > .pin3" to=".U1 .CC1" />
+    <trace from=".J1 > .pin4" to=".U1 .CC2" />
+
+    {/* Input cap across VBUS */}
+    <trace from=".J1 > .pin1" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+
+    {/* Decoupling cap near CH224K */}
+    <trace from=".U1 .VBUS" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin2" to=".HAT1_chip .GND_2" />
+
+    {/* CH224K GND */}
+    <trace from=".U1 .GND" to=".HAT1_chip .GND_3" />
+
+    {/* CFG1 to GND via R2 (selects 20V) */}
+    <trace from=".U1 .CFG1" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".HAT1_chip .GND_4" />
+
+    {/* Output path: VOUT to terminal block */}
+    <trace from=".U1 .VOUT" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_5" />
+    <trace from=".U1 .VOUT" to=".TB1 > .pin1" />
+    <trace from=".HAT1_chip .GND_6" to=".TB1 > .pin2" />
+
+    {/* Status LED: VOUT -> R1 -> LED -> GND */}
+    <trace from=".U1 .VOUT" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".LED1 > .pin1" />
+    <trace from=".LED1 > .pin2" to=".HAT1_chip .GND_7" />
+
+    {/* GPIO readback: VOUT to Pi GPIO for voltage monitoring */}
+    <trace from=".U1 .VOUT" to=".HAT1_chip .GPIO_17" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is USB Power Delivery?
+
+USB Power Delivery (USB PD) is a specification that allows USB-C devices to negotiate higher voltages and currents beyond the standard 5V. With USB PD, a device can request:
+
+| Profile | Voltage | Max Current | Max Power |
+|---------|---------|-------------|-----------|
+| PDO 1 | 5V | 3A | 15W |
+| PDO 2 | 9V | 3A | 27W |
+| PDO 3 | 12V | 3A | 36W |
+| PDO 4 | 15V | 3A | 45W |
+| PDO 5 | 20V | 5A | 100W |
+
+A PD trigger chip like the CH224K handles the negotiation automatically — you just configure which voltage you want via resistor strapping.
+
+## Understanding the Components
+
+### CH224K USB PD Controller
+
+The CH224K is a low-cost USB PD sink controller that:
+- Supports PD 2.0 and PD 3.0 protocols
+- Negotiates voltages from 5V to 20V
+- Configures requested voltage via 3 CFG pins (resistor strapping)
+- Requires no firmware or programming
+- Available in ESSOP-10 or SOP-8 packages
+
+### Voltage Selection
+
+The CH224K uses three configuration pins (CFG1, CFG2, CFG3) to select the output voltage:
+
+| Requested Voltage | CFG1 | CFG2 | CFG3 |
+|-------------------|------|------|------|
+| 5V | Float | Float | Float |
+| 9V | Float | Float | GND |
+| 12V | Float | GND | Float |
+| 15V | GND | GND | Float |
+| 20V | GND | Float | Float |
+
+### Filtering Capacitors
+
+- **C1 (10µF)**: Input filter on VBUS — absorbs voltage spikes from the USB-C cable
+- **C2 (22µF)**: Output filter — smooths the negotiated voltage for the load
+- **C3 (100nF)**: Decoupling cap near the CH224K — filters high-frequency noise on the power rail
+
+### Status LED
+
+A green LED with a 1kΩ current-limiting resistor provides visual confirmation that the negotiated voltage is present at the output.
+
+## Building the Circuit Step by Step
+
+### Step 1: Import the RaspberryPiHatBoard
+
+First, we import the `RaspberryPiHatBoard` component from `@tscircuit/common`. This gives us a board with the correct HAT dimensions and 40-pin GPIO header.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Components go here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+### Step 2: Add the CH224K PD Controller
+
+The CH224K is the heart of the circuit. It communicates with the USB-C charger over the CC (Configuration Channel) lines and negotiates the requested voltage.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["CC1"],
+        pin2: ["CC2"],
+        pin3: ["CFG1"],
+        pin4: ["GND"],
+        pin5: ["CFG2"],
+        pin6: ["CFG3"],
+        pin7: ["VBUS"],
+        pin8: ["VOUT"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["CC1", "CC2", "CFG1", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG2", "CFG3", "VBUS", "VOUT"], direction: "top-to-bottom" },
+      }}
+      pcbX={5}
+      pcbY={-8}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Add Input Filtering
+
+USB-C cables can carry switching noise and voltage transients. We add a 10µF capacitor on the VBUS input and a 100nF decoupling cap close to the CH224K.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["CC1"],
+        pin2: ["CC2"],
+        pin3: ["CFG1"],
+        pin4: ["GND"],
+        pin5: ["CFG2"],
+        pin6: ["CFG3"],
+        pin7: ["VBUS"],
+        pin8: ["VOUT"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["CC1", "CC2", "CFG1", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG2", "CFG3", "VBUS", "VOUT"], direction: "top-to-bottom" },
+      }}
+      pcbX={5}
+      pcbY={-8}
+    />
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-5} pcbY={-5} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={5} pcbY={-3} />
+
+    <trace from=".U1 .VBUS" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".U1 .VBUS" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin2" to=".HAT1_chip .GND_2" />
+    <trace from=".U1 .GND" to=".HAT1_chip .GND_3" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 4: Configure Voltage Selection
+
+To select 20V, we connect CFG1 to GND through a 0Ω resistor (jumper). Leaving CFG2 and CFG3 floating. You can change the voltage by modifying which CFG pins are connected to GND — see the voltage selection table above.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["CC1"],
+        pin2: ["CC2"],
+        pin3: ["CFG1"],
+        pin4: ["GND"],
+        pin5: ["CFG2"],
+        pin6: ["CFG3"],
+        pin7: ["VBUS"],
+        pin8: ["VOUT"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["CC1", "CC2", "CFG1", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG2", "CFG3", "VBUS", "VOUT"], direction: "top-to-bottom" },
+      }}
+      pcbX={5}
+      pcbY={-8}
+    />
+    <resistor name="R2" resistance="0" footprint="0402" pcbX={0} pcbY={-12} />
+
+    <trace from=".U1 .CFG1" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".HAT1_chip .GND_4" />
+    <trace from=".U1 .GND" to=".HAT1_chip .GND_3" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 5: Add Output Stage with Status LED
+
+The output stage includes a 22µF filtering capacitor, terminal blocks for the load, and a green LED to indicate when power is negotiated and present.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["CC1"],
+        pin2: ["CC2"],
+        pin3: ["CFG1"],
+        pin4: ["GND"],
+        pin5: ["CFG2"],
+        pin6: ["CFG3"],
+        pin7: ["VBUS"],
+        pin8: ["VOUT"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["CC1", "CC2", "CFG1", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG2", "CFG3", "VBUS", "VOUT"], direction: "top-to-bottom" },
+      }}
+      pcbX={5}
+      pcbY={-8}
+    />
+    <capacitor name="C2" capacitance="22uF" footprint="0805" pcbX={15} pcbY={-5} />
+    <chip name="LED1" footprint="0603" manufacturerPartNumber="Green LED" pcbX={15} pcbY={-12} />
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={10} pcbY={-12} />
+
+    <trace from=".U1 .VOUT" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_5" />
+    <trace from=".U1 .VOUT" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".LED1 > .pin1" />
+    <trace from=".LED1 > .pin2" to=".HAT1_chip .GND_6" />
+    <trace from=".U1 .GND" to=".HAT1_chip .GND_3" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## PCB Layout
+
+The PCB layout positions the USB-C connector on the edge for easy cable access, the CH224K centrally, and the terminal block outputs on the opposite edge. Filtering capacitors are placed close to their respective ICs for optimal noise performance.
+
+<CircuitPreview hide3DTab defaultView="pcb" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["CC1"],
+        pin2: ["CC2"],
+        pin3: ["CFG1"],
+        pin4: ["GND"],
+        pin5: ["CFG2"],
+        pin6: ["CFG3"],
+        pin7: ["VBUS"],
+        pin8: ["VOUT"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["CC1", "CC2", "CFG1", "GND"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG2", "CFG3", "VBUS", "VOUT"], direction: "top-to-bottom" },
+      }}
+      pcbX={5}
+      pcbY={-8}
+    />
+    <chip name="J1" footprint="soic8" manufacturerPartNumber="USB-C Connector" pcbX={-15} pcbY={-8} />
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-5} pcbY={-5} />
+    <capacitor name="C2" capacitance="22uF" footprint="0805" pcbX={15} pcbY={-5} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={5} pcbY={-3} />
+    <chip name="LED1" footprint="0603" manufacturerPartNumber="Green LED" pcbX={15} pcbY={-12} />
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={10} pcbY={-12} />
+    <resistor name="R2" resistance="0" footprint="0402" pcbX={0} pcbY={-12} />
+    <chip name="TB1" footprint="soic8" manufacturerPartNumber="Terminal Block" pcbX={20} pcbY={-8} />
+
+    <trace from=".J1 > .pin1" to=".U1 .VBUS" />
+    <trace from=".J1 > .pin3" to=".U1 .CC1" />
+    <trace from=".J1 > .pin4" to=".U1 .CC2" />
+    <trace from=".J1 > .pin1" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".U1 .VBUS" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin2" to=".HAT1_chip .GND_2" />
+    <trace from=".U1 .GND" to=".HAT1_chip .GND_3" />
+    <trace from=".U1 .CFG1" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".HAT1_chip .GND_4" />
+    <trace from=".U1 .VOUT" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_5" />
+    <trace from=".U1 .VOUT" to=".TB1 > .pin1" />
+    <trace from=".HAT1_chip .GND_6" to=".TB1 > .pin2" />
+    <trace from=".U1 .VOUT" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".LED1 > .pin1" />
+    <trace from=".LED1 > .pin2" to=".HAT1_chip .GND_7" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Bill of Materials
+
+| Ref | Component | Package | Value | Notes |
+|-----|-----------|---------|-------|-------|
+| U1 | CH224K | SOIC-8 | — | USB PD sink controller |
+| J1 | USB-C Receptacle | — | — | 16-pin or 6-pin USB-C |
+| C1 | Ceramic Capacitor | 0805 | 10µF | VBUS input filter |
+| C2 | Ceramic Capacitor | 0805 | 22µF | Output filter |
+| C3 | Ceramic Capacitor | 0402 | 100nF | IC decoupling |
+| R1 | Resistor | 0402 | 1kΩ | LED current limiter |
+| R2 | Resistor (Jumper) | 0402 | 0Ω | Voltage select (CFG1→GND) |
+| LED1 | LED | 0603 | Green | Power indicator |
+| TB1 | Terminal Block | 5.08mm | 2-pos | Output connector |
+
+## Monitoring Voltage with Python
+
+Once the HAT is assembled and attached to your Raspberry Pi, you can read the negotiated voltage using GPIO17 and an ADC, or simply monitor the status LED. Here's a simple script to detect whether power is present:
+
+```python
+import RPi.GPIO as GPIO
+import time
+
+POWER_GOOD_PIN = 17
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(POWER_GOOD_PIN, GPIO.IN)
+
+try:
+    while True:
+        if GPIO.input(POWER_GOOD_PIN):
+            print("✅ USB PD voltage negotiated — power is available")
+        else:
+            print("❌ No USB PD power detected")
+        time.sleep(1)
+except KeyboardInterrupt:
+    GPIO.cleanup()
+```
+
+For precise voltage measurement, you can add an I2C ADC (like the ADS1115) to measure the actual output voltage through a resistor divider.
+
+## Safety Considerations
+
+:::warning
+USB PD can deliver up to 100W (20V × 5A). Always ensure:
+- Capacitors are rated for the maximum negotiated voltage (25V+ rating recommended)
+- PCB traces are wide enough for the expected current (use 1oz+ copper, minimum 0.5mm trace width for power)
+- Add reverse polarity protection if connecting to sensitive loads
+- Test with a current-limited supply before connecting expensive equipment
+:::
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading them to JLCPCB or another PCB manufacturer. Follow the instructions from [Ordering Prototypes](/building-electronics/ordering-prototypes).
+
+## Next Steps
+
+- Add an I2C EEPROM for automatic HAT configuration
+- Include a voltage divider + ADC for precise voltage readback
+- Add a MOSFET switch for programmable output enable/disable
+- Design a multi-voltage selector with DIP switches on the CFG pins
+- Add overcurrent protection with a resettable fuse (PTC)
