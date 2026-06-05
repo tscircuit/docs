@@ -1,0 +1,531 @@
+---
+title: Building an I2C Environmental Sensor Module
+description: >-
+  This tutorial will walk you through building an I2C environmental sensor module
+  with a BME280, pull-up resistors, and an optional OLED display using tscircuit.
+---
+
+## Overview
+
+This tutorial will walk you through building an I2C environmental sensor module featuring a BME280 sensor that measures temperature, humidity, and barometric pressure. The module connects to any microcontroller via I2C and optionally displays readings on an SSD1306 OLED screen — perfect for weather stations, indoor air quality monitors, or IoT sensor nodes.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => (
+  <board width="50mm" height="40mm" name="EnvSensor">
+    {/* BME280 Environmental Sensor */}
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+        pin7: ["NC1"],
+        pin8: ["NC2"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VCC", "GND", "CSB", "SDO"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "NC1", "NC2"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    {/* SSD1306 OLED Display */}
+    <chip
+      name="U2"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VCC"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["NC1"],
+        pin6: ["NC2"],
+        pin7: ["NC3"],
+        pin8: ["NC4"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["GND", "VCC", "NC1", "NC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "NC3", "NC4"], direction: "top-to-bottom" },
+      }}
+      pcbX={15}
+      pcbY={0}
+    />
+
+    {/* Pin Header for external I2C connection */}
+    <chip
+      name="J1"
+      footprint="pinrow4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VCC", "GND", "SCL", "SDA"], direction: "top-to-bottom" },
+      }}
+      pcbX={-15}
+      pcbY={0}
+    />
+
+    {/* I2C Pull-up Resistors */}
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-5} pcbY={-8} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={5} pcbY={-8} />
+
+    {/* Decoupling Capacitor for BME280 */}
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={0} pcbY={6} />
+
+    {/* Decoupling Capacitor for OLED */}
+    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={15} pcbY={6} />
+
+    {/* Bulk capacitor */}
+    <capacitor name="C3" capacitance="10uF" footprint="0805" pcbX={-15} pcbY={6} />
+
+    {/* Power connections from header */}
+    <trace from=".J1 .VCC" to=".U1 .VCC" />
+    <trace from=".J1 .VCC" to=".U2 .VCC" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .GND" to=".U2 .GND" />
+
+    {/* I2C bus from header */}
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".J1 .SCL" to=".U2 .SCL" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+    <trace from=".J1 .SDA" to=".U2 .SDA" />
+
+    {/* Pull-up resistors on I2C lines */}
+    <trace from=".J1 .SCL" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".J1 .VCC" />
+    <trace from=".J1 .SDA" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".J1 .VCC" />
+
+    {/* BME280 CSB to VCC (I2C mode, address 0x77) */}
+    <trace from=".U1 .CSB" to=".J1 .VCC" />
+
+    {/* BME280 SDO to GND (address 0x76) */}
+    <trace from=".U1 .SDO" to=".J1 .GND" />
+
+    {/* Decoupling caps */}
+    <trace from=".U1 .VCC" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".J1 .GND" />
+    <trace from=".U2 .VCC" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".J1 .GND" />
+
+    {/* Bulk cap at input */}
+    <trace from=".J1 .VCC" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin2" to=".J1 .GND" />
+  </board>
+)
+`} />
+
+## What is I2C?
+
+I2C (Inter-Integrated Circuit) is a two-wire serial communication protocol widely used for connecting sensors, displays, and other peripherals to microcontrollers. It uses just two signal lines:
+
+| Signal | Purpose | Notes |
+|--------|---------|-------|
+| SCL | Serial Clock | Master provides the clock |
+| SDA | Serial Data | Bidirectional data line |
+
+Multiple devices share the same bus, each identified by a unique 7-bit address. The BME280 uses address `0x76` or `0x77`, while the SSD1306 OLED uses `0x3C` or `0x3D`.
+
+## Understanding the Components
+
+### BME280 Environmental Sensor
+
+The BME280 is a combined digital sensor from Bosch that measures:
+
+| Parameter | Range | Accuracy |
+|-----------|-------|----------|
+| Temperature | −40°C to +85°C | ±1.0°C |
+| Humidity | 0% to 100% RH | ±3% RH |
+| Pressure | 300 hPa to 1100 hPa | ±1.0 hPa |
+
+Key features:
+- Low power consumption (3.6µA at 1Hz sampling)
+- Operates at 1.71V to 3.6V
+- I2C and SPI interfaces
+- Small LGA package (2.5mm × 2.5mm)
+
+### I2C Pull-up Resistors
+
+I2C is an open-drain protocol — devices can only pull lines LOW. Pull-up resistors are required to pull the lines HIGH when no device is driving them. We use 4.7kΩ resistors, which is the standard value for 3.3V I2C buses running at up to 400kHz.
+
+### SSD1306 OLED Display (Optional)
+
+A 0.96" 128×64 pixel OLED display that shows sensor readings directly on the module. It shares the same I2C bus as the BME280 but uses a different address.
+
+### Decoupling Capacitors
+
+- **C1, C2 (100nF)**: High-frequency decoupling placed close to each IC
+- **C3 (10µF)**: Bulk capacitor at the power input for stability
+
+## Building the Circuit Step by Step
+
+### Step 1: Create the Board
+
+We start with a custom board sized for our sensor module.
+
+```tsx
+export default () => (
+  <board width="50mm" height="40mm" name="EnvSensor">
+    {/* Components go here */}
+  </board>
+)
+```
+
+### Step 2: Add the BME280 Sensor
+
+The BME280 has 8 pins. We connect CSB to VCC (selects I2C mode) and SDO to GND (sets address to 0x76).
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="40mm" name="EnvSensor">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+        pin7: ["NC1"],
+        pin8: ["NC2"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VCC", "GND", "CSB", "SDO"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "NC1", "NC2"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+  </board>
+)
+`} />
+
+### Step 3: Add I2C Pull-up Resistors
+
+These are essential for any I2C bus. Without them, communication will not work. The 4.7kΩ value is suitable for most 3.3V applications.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="40mm" name="EnvSensor">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+        pin7: ["NC1"],
+        pin8: ["NC2"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VCC", "GND", "CSB", "SDO"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "NC1", "NC2"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-5} pcbY={-8} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={5} pcbY={-8} />
+
+    <trace from=".U1 .SCL" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 .VCC" />
+    <trace from=".U1 .SDA" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".U1 .VCC" />
+    <trace from=".U1 .GND" to=".U1 .GND" />
+  </board>
+)
+`} />
+
+### Step 4: Add the Pin Header and OLED Display
+
+The 4-pin header provides the external I2C connection (VCC, GND, SCL, SDA). The SSD1306 OLED shares the same I2C bus.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board width="50mm" height="40mm" name="EnvSensor">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+        pin7: ["NC1"],
+        pin8: ["NC2"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VCC", "GND", "CSB", "SDO"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "NC1", "NC2"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <chip
+      name="U2"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VCC"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["NC1"],
+        pin6: ["NC2"],
+        pin7: ["NC3"],
+        pin8: ["NC4"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["GND", "VCC", "NC1", "NC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "NC3", "NC4"], direction: "top-to-bottom" },
+      }}
+      pcbX={15}
+      pcbY={0}
+    />
+    <chip
+      name="J1"
+      footprint="pinrow4"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VCC", "GND", "SCL", "SDA"], direction: "top-to-bottom" },
+      }}
+      pcbX={-15}
+      pcbY={0}
+    />
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-5} pcbY={-8} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={5} pcbY={-8} />
+
+    <trace from=".J1 .VCC" to=".U1 .VCC" />
+    <trace from=".J1 .VCC" to=".U2 .VCC" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .GND" to=".U2 .GND" />
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".J1 .SCL" to=".U2 .SCL" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+    <trace from=".J1 .SDA" to=".U2 .SDA" />
+    <trace from=".J1 .SCL" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".J1 .VCC" />
+    <trace from=".J1 .SDA" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".J1 .VCC" />
+    <trace from=".U1 .CSB" to=".J1 .VCC" />
+    <trace from=".U1 .SDO" to=".J1 .GND" />
+  </board>
+)
+`} />
+
+## I2C Address Configuration
+
+The BME280 I2C address is set by the SDO pin:
+
+| SDO Pin | I2C Address |
+|---------|-------------|
+| GND | 0x76 (default in this tutorial) |
+| VCC | 0x77 |
+
+The SSD1306 OLED typically uses:
+
+| Configuration | I2C Address |
+|---------------|-------------|
+| Default | 0x3C |
+| Alternate | 0x3D |
+
+Since both devices use different addresses, they coexist on the same I2C bus without conflict.
+
+## PCB Layout
+
+The PCB places the sensor centrally, the OLED connector on the right, and the I2C header on the left edge. Decoupling capacitors are placed as close as possible to each IC.
+
+<CircuitPreview hide3DTab defaultView="pcb" code={`
+export default () => (
+  <board width="50mm" height="40mm" name="EnvSensor">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VCC"],
+        pin2: ["GND"],
+        pin3: ["SCL"],
+        pin4: ["SDA"],
+        pin5: ["CSB"],
+        pin6: ["SDO"],
+        pin7: ["NC1"],
+        pin8: ["NC2"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VCC", "GND", "CSB", "SDO"], direction: "top-to-bottom" },
+        rightSide: { pins: ["SCL", "SDA", "NC1", "NC2"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+    <chip name="U2" footprint="soic8" pinLabels={{ pin1: ["GND"], pin2: ["VCC"], pin3: ["SCL"], pin4: ["SDA"], pin5: ["NC1"], pin6: ["NC2"], pin7: ["NC3"], pin8: ["NC4"] }} schPortArrangement={{ leftSide: { pins: ["GND", "VCC", "NC1", "NC2"], direction: "top-to-bottom" }, rightSide: { pins: ["SCL", "SDA", "NC3", "NC4"], direction: "top-to-bottom" } }} pcbX={15} pcbY={0} />
+    <chip name="J1" footprint="pinrow4" pinLabels={{ pin1: ["VCC"], pin2: ["GND"], pin3: ["SCL"], pin4: ["SDA"] }} schPortArrangement={{ leftSide: { pins: ["VCC", "GND", "SCL", "SDA"], direction: "top-to-bottom" } }} pcbX={-15} pcbY={0} />
+    <resistor name="R1" resistance="4.7k" footprint="0402" pcbX={-5} pcbY={-8} />
+    <resistor name="R2" resistance="4.7k" footprint="0402" pcbX={5} pcbY={-8} />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={0} pcbY={6} />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={15} pcbY={6} />
+    <capacitor name="C3" capacitance="10uF" footprint="0805" pcbX={-15} pcbY={6} />
+
+    <trace from=".J1 .VCC" to=".U1 .VCC" />
+    <trace from=".J1 .VCC" to=".U2 .VCC" />
+    <trace from=".J1 .GND" to=".U1 .GND" />
+    <trace from=".J1 .GND" to=".U2 .GND" />
+    <trace from=".J1 .SCL" to=".U1 .SCL" />
+    <trace from=".J1 .SCL" to=".U2 .SCL" />
+    <trace from=".J1 .SDA" to=".U1 .SDA" />
+    <trace from=".J1 .SDA" to=".U2 .SDA" />
+    <trace from=".J1 .SCL" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".J1 .VCC" />
+    <trace from=".J1 .SDA" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".J1 .VCC" />
+    <trace from=".U1 .CSB" to=".J1 .VCC" />
+    <trace from=".U1 .SDO" to=".J1 .GND" />
+    <trace from=".U1 .VCC" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".J1 .GND" />
+    <trace from=".U2 .VCC" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".J1 .GND" />
+    <trace from=".J1 .VCC" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin2" to=".J1 .GND" />
+  </board>
+)
+`} />
+
+## Bill of Materials
+
+| Ref | Component | Package | Value | Notes |
+|-----|-----------|---------|-------|-------|
+| U1 | BME280 | LGA-8 (2.5×2.5mm) | — | Temperature/humidity/pressure sensor |
+| U2 | SSD1306 OLED | — | 0.96" 128×64 | Optional I2C display module |
+| J1 | Pin Header | 4-pin 2.54mm | — | VCC, GND, SCL, SDA |
+| R1 | Resistor | 0402 | 4.7kΩ | SCL pull-up |
+| R2 | Resistor | 0402 | 4.7kΩ | SDA pull-up |
+| C1 | Ceramic Capacitor | 0402 | 100nF | BME280 decoupling |
+| C2 | Ceramic Capacitor | 0402 | 100nF | OLED decoupling |
+| C3 | Ceramic Capacitor | 0805 | 10µF | Bulk input filter |
+
+## Reading Sensor Data with Python
+
+Connect the module to a Raspberry Pi or any microcontroller with I2C support. Here's a Python example using the `smbus2` and `bme280` libraries:
+
+```python
+import smbus2
+import bme280
+import time
+
+# I2C bus 1 (default on Raspberry Pi)
+port = 1
+address = 0x76  # BME280 address (SDO to GND)
+
+bus = smbus2.SMBus(port)
+
+# Load calibration parameters
+calibration_params = bme280.load_calibration_params(bus, address)
+
+try:
+    while True:
+        # Read sensor data
+        data = bme280.sample(bus, address, calibration_params)
+
+        print(f"🌡️  Temperature: {data.temperature:.1f} °C")
+        print(f"💧 Humidity:    {data.humidity:.1f} %")
+        print(f"🌪️  Pressure:    {data.pressure:.1f} hPa")
+        print(f"📏 Altitude:    {44330 * (1 - (data.pressure / 1013.25) ** 0.1903):.1f} m")
+        print("---")
+        time.sleep(2)
+
+except KeyboardInterrupt:
+    bus.close()
+```
+
+### Arduino Example
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found!");
+    while (1);
+  }
+}
+
+void loop() {
+  Serial.print("Temperature: ");
+  Serial.print(bme.readTemperature());
+  Serial.println(" °C");
+
+  Serial.print("Humidity: ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
+
+  Serial.print("Pressure: ");
+  Serial.print(bme.readPressure() / 100.0);
+  Serial.println(" hPa");
+
+  Serial.println("---");
+  delay(2000);
+}
+```
+
+## Design Considerations
+
+### Pull-up Resistor Sizing
+
+The I2C specification recommends pull-up values based on bus capacitance and supply voltage:
+
+| Bus Speed | VCC = 3.3V | VCC = 5V |
+|-----------|------------|----------|
+| Standard (100kHz) | 4.7kΩ – 10kΩ | 4.7kΩ – 10kΩ |
+| Fast (400kHz) | 2.2kΩ – 4.7kΩ | 2.2kΩ – 4.7kΩ |
+| Fast+ (1MHz) | 1kΩ – 2.2kΩ | 1kΩ – 2.2kΩ |
+
+:::warning
+Only one set of pull-up resistors should be present on the I2C bus. If your microcontroller board already has pull-ups (many Arduino and Raspberry Pi boards do), you may need to omit R1 and R2 to avoid signal distortion.
+:::
+
+### Sensor Placement
+
+The BME280 is sensitive to heat from nearby components. For accurate temperature readings:
+- Place the sensor away from voltage regulators and power traces
+- Consider adding thermal isolation slots in the PCB
+- Avoid placing the sensor directly above the OLED (which generates heat)
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading them to JLCPCB or another PCB manufacturer. Follow the instructions from [Ordering Prototypes](/building-electronics/ordering-prototypes).
+
+## Next Steps
+
+- Add a voltage regulator (3.3V LDO) for 5V input compatibility
+- Include a light sensor (BH1750) on the same I2C bus
+- Add an air quality sensor (CCS811) for VOC/CO2 monitoring
+- Implement data logging to an SD card
+- Design a weatherproof enclosure for outdoor deployment
