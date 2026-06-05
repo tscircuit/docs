@@ -1,0 +1,122 @@
+---
+title: Built-in Elements
+sidebar_label: Overview
+sidebar_position: 0
+description: A practical map of tscircuit built-in elements, grouped by how they are used in a circuit.
+---
+
+The built-in elements are the JSX primitives used to describe a tscircuit
+design. Start with a `<board />`, add real parts such as `<chip />`,
+`<resistor />`, and `<connector />`, then connect them with nets and traces.
+
+:::tip Migrating older examples
+Older snippets may mention a `<bug />` element. Use [`<chip />`](./chip.mdx)
+instead. It is the supported general-purpose element for ICs, modules, sensors,
+and other single-package parts with named pins or custom footprints.
+:::
+
+## First Elements To Learn
+
+| Element | Use it for |
+| --- | --- |
+| [`<board />`](./board.mdx) | The root circuit and PCB area. It owns board size, layer count, routing settings, and global board constraints. |
+| [`<chip />`](./chip.mdx) | ICs, modules, sensors, and other single-package parts with custom pins, symbols, or footprints. |
+| [`<trace />`](./trace.mdx) | Electrical connections between component pins, ports, and named nets. |
+| [`<net />`](./net.mdx) | Shared named connections such as `GND`, `VCC`, `SDA`, or `RESET`. |
+| [`<resistor />`](./resistor.mdx) | Pull-ups, pull-downs, dividers, current limiting, and generic fixed resistance. |
+| [`<capacitor />`](./capacitor.mdx) | Decoupling, filtering, timing, and bulk capacitance. |
+| [`<connector />`](./connector.mdx) | Cable, board-to-board, USB, M.2, and custom connectors. |
+
+## Circuit Structure
+
+| Element | Use it for |
+| --- | --- |
+| [`<board />`](./board.mdx) | Root board size, PCB outline, stackup, routing, and global constraints. |
+| [`<group />`](./group.mdx) | Grouping components so they can move or be referenced together. |
+| [`<subcircuit />`](./subcircuit.mdx) | Reusable circuit sections with local layout and routing context. |
+| [`<port />`](./port.mdx) | Named connection points inside custom components, footprints, and reusable groups. |
+| [`<net />`](./net.mdx) | Named electrical nets shared across multiple components. |
+| [`<netlabel />`](./netlabel.mdx) | Schematic labels for named nets. |
+| [`<trace />`](./trace.mdx) | Explicit electrical connections and optional manual PCB paths. |
+
+## Components
+
+| Element | Use it for |
+| --- | --- |
+| [`<chip />`](./chip.mdx) | General-purpose chips, modules, sensors, and custom single-package parts. |
+| [`<resistor />`](./resistor.mdx) | Fixed resistors, pull-ups, pull-downs, and current limiting. |
+| [`<capacitor />`](./capacitor.mdx) | Decoupling, filtering, timing, and bulk capacitors. |
+| [`<inductor />`](./inductor.mdx) | Power filtering, LC filters, and switching regulator magnetics. |
+| [`<diode />`](./diode.mdx) | Directional current flow, clamps, flyback paths, and rectification. |
+| [`<led />`](./led.mdx) | Indicator LEDs and light-emitting diode symbols. |
+| [`<fuse />`](./fuse.mdx) | Resettable or one-time overcurrent protection. |
+| [`<crystal />`](./crystal.mdx) | Quartz timing references. |
+| [`<resonator />`](./resonator.mdx) | Ceramic timing references. |
+| [`<switch />`](./switch.mdx) | Generic switch behavior. |
+| [`<pushbutton />`](./pushbutton.mdx) | Momentary user inputs. |
+| [`<potentiometer />`](./potentiometer.mdx) | Adjustable resistance and voltage divider controls. |
+| [`<transistor />`](./transistor.mdx) | Generic transistor symbols and packages. |
+| [`<mosfet />`](./mosfet.mdx) | MOSFET power and signal switches. |
+| [`<opamp />`](./opamp.mdx) | Operational amplifier circuits. |
+| [`<battery />`](./battery.mdx) | Battery sources and battery-holder style components. |
+| [`<voltagesource />`](./voltagesource.mdx) | Ideal voltage sources for schematic and simulation contexts. |
+| [`<voltageprobe />`](./voltageprobe.mdx) | Simulation probes for reading voltages. |
+
+## Connectors And Access Points
+
+| Element | Use it for |
+| --- | --- |
+| [`<connector />`](./connector.mdx) | USB, M.2, cable, board-to-board, and custom connectors. |
+| [`<pinheader />`](./pinheader.mdx) | Through-hole or surface-mount pin headers. |
+| [`<jumper />`](./jumper.mdx) | Removable jumper links. |
+| [`<solderjumper />`](./solderjumper.mdx) | PCB solder jumpers and configurable copper bridges. |
+| [`<testpoint />`](./testpoint.mdx) | Probe pads for test, programming, and debug. |
+| [`<breakout />`](./breakout.mdx) | Fan-out areas for dense components. |
+| [`<breakoutpoint />`](./breakoutpoint.mdx) | Individual breakout targets inside a `<breakout />`. |
+
+## PCB And Footprint Detail
+
+| Element | Use it for |
+| --- | --- |
+| [`<footprint />`](./footprint.mdx) | Custom footprints built from pads, holes, and geometry. |
+| [`<cadmodel />`](./cadmodel.mdx) | 3D models attached to packages. |
+| [`<cadassembly />`](./cadassembly.mdx) | Grouped CAD models for a component or assembly. |
+| [`<hole />`](./hole.mdx) | Mechanical, mounting, and through-hole footprint holes. |
+| [`<via />`](./via.mdx) | Copper layer transitions for routed traces. |
+| [`<copperpour />`](./copperpour.mdx) | Copper fill regions tied to a net. |
+| [`<coppertext />`](./coppertext.mdx) | Text rendered as copper. |
+| [`<cutout />`](./cutout.mdx) | Board slots, routed openings, and material removal. |
+| [`<fiducial />`](./fiducial.mdx) | Pick-and-place optical reference marks. |
+| [`<courtyardrect />`](./courtyardrect.mdx) | Rectangular component courtyard boundaries. |
+| [`<courtyardcircle />`](./courtyardcircle.mdx) | Circular courtyard boundaries. |
+| [`<courtyardoutline />`](./courtyardoutline.mdx) | Custom courtyard outlines. |
+
+## Schematic Drawing And Notes
+
+| Element | Use it for |
+| --- | --- |
+| [`<symbol />`](./symbol.mdx) | Custom schematic symbols composed from drawing primitives. |
+| [`<schematicline />`](./schematicline.mdx) | Straight schematic drawing lines. |
+| [`<schematicpath />`](./schematicpath.mdx) | Multi-segment schematic paths. |
+| [`<schematicarc />`](./schematicarc.mdx) | Arc segments in custom symbols and drawings. |
+| [`<schematiccircle />`](./schematiccircle.mdx) | Circular schematic drawing primitives. |
+| [`<schematicrect />`](./schematicrect.mdx) | Rectangular schematic drawing primitives. |
+| [`<schematictext />`](./schematictext.mdx) | Text labels inside schematics and custom symbols. |
+| [`<schematicsection />`](./schematicsection.mdx) | Visual schematic grouping. |
+| [`<schematictable />`](./schematictable.mdx) | Tabular schematic annotations. |
+| [`<pcbnotedimension />`](./pcbnotedimension.mdx) | PCB dimension callouts. |
+| [`<pcbnoteline />`](./pcbnoteline.mdx) | PCB line annotations. |
+| [`<pcbnotepath />`](./pcbnotepath.mdx) | PCB path annotations. |
+| [`<pcbnoterect />`](./pcbnoterect.mdx) | PCB rectangular annotations and keepout notes. |
+| [`<pcbnotetext />`](./pcbnotetext.mdx) | PCB text annotations. |
+
+## Analysis And Routing
+
+| Element | Use it for |
+| --- | --- |
+| [`<analogsimulation />`](./analogsimulation.mdx) | Analog simulation setup and outputs. |
+| [`<autoroutingphase />`](./autoroutingphase.mdx) | Inspecting or controlling stages of autorouting. |
+
+When you are unsure where to start, use `<board />`, `<chip />`, `<net />`, and
+`<trace />` first. Those four elements cover the structure, component, named
+connection, and wiring concepts that most examples build on.

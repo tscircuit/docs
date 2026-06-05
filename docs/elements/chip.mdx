@@ -11,6 +11,12 @@ The `<chip />` is the most common and most powerful built-in tscircuit element.
 You can represent virtually any "single-part" electronic component with `<chip />`,
 it is extremely flexible.
 
+:::tip Migrating from `<bug />`
+Older tscircuit examples may mention a `<bug />` element. Use `<chip />` for
+that role in current projects; it is the supported element for ICs, modules,
+sensors, and other single-package parts with named pins or custom footprints.
+:::
+
 ## Simple Chips
 
 Here's an example of typical `<chip />` usage. We specify a footprint string and
