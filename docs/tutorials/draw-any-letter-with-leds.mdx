@@ -1,0 +1,273 @@
+---
+title: Draw Any Letter with LEDs
+description: >-
+  Build a schematic-first LED letter display by converting a bitmap letter into
+  individual LEDs, resistors, and power rails in tscircuit.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial shows how to draw a letter with ordinary LEDs. We will use a
+small 5 by 7 bitmap font, turn each `1` into an LED, and give every LED its own
+current-limiting resistor. The final circuit is intentionally simple: one rail
+drives the lit pixels through resistors, and every LED returns to ground.
+
+You can change the letter by replacing the bitmap rows. The same pattern works
+for initials, labels, badge art, or a front-panel indicator where the schematic
+should clearly show which LEDs are installed.
+
+## Final circuit
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+const letterA = [
+  "01110",
+  "10001",
+  "10001",
+  "11111",
+  "10001",
+  "10001",
+  "10001",
+]
+
+function getLitPixels(pattern) {
+  return pattern.flatMap((row, rowIndex) =>
+    row.split("").flatMap((cell, colIndex) =>
+      cell === "1" ? [{ row: rowIndex, col: colIndex }] : []
+    )
+  )
+}
+
+export default () => {
+  const pixels = getLitPixels(letterA)
+
+  return (
+    <board routingDisabled>
+      <pinheader name="J1" pinCount={2} pinLabels={["V5", "GND"]} />
+
+      {pixels.map(({ row, col }) => {
+        const suffix = row + "" + col
+        return (
+          <group key={suffix}>
+            <resistor
+              name={"R" + suffix}
+              resistance="330"
+              footprint="0603"
+              schX={col * 2}
+              schY={-row * 1.5}
+            />
+            <led
+              name={"D" + suffix}
+              color="red"
+              footprint="led0603"
+              schX={col * 2 + 1}
+              schY={-row * 1.5}
+            />
+            <trace from={"net.V5"} to={".R" + suffix + " > .pin1"} />
+            <trace from={".R" + suffix + " > .pin2"} to={".D" + suffix + " > .anode"} />
+            <trace from={".D" + suffix + " > .cathode"} to={"net.GND"} />
+          </group>
+        )
+      })}
+    </board>
+  )
+}
+`} />
+
+## Step 1: Define the letter
+
+Use strings to make the shape readable. Each row must have the same number of
+characters. A `1` means "place an LED here" and a `0` means "leave this spot
+empty."
+
+```tsx
+const letterA = [
+  "01110",
+  "10001",
+  "10001",
+  "11111",
+  "10001",
+  "10001",
+  "10001",
+]
+```
+
+Here are three more 5 by 7 letters you can swap in:
+
+```tsx
+const letterT = [
+  "11111",
+  "00100",
+  "00100",
+  "00100",
+  "00100",
+  "00100",
+  "00100",
+]
+
+const letterS = [
+  "01111",
+  "10000",
+  "10000",
+  "01110",
+  "00001",
+  "00001",
+  "11110",
+]
+
+const letterC = [
+  "01111",
+  "10000",
+  "10000",
+  "10000",
+  "10000",
+  "10000",
+  "01111",
+]
+```
+
+## Step 2: Convert the bitmap into pixels
+
+The helper below returns only the cells that should be populated. Keeping the
+empty cells out of the schematic makes the circuit smaller and easier to review.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+const letterT = [
+  "11111",
+  "00100",
+  "00100",
+  "00100",
+  "00100",
+  "00100",
+  "00100",
+]
+
+function getLitPixels(pattern) {
+  return pattern.flatMap((row, rowIndex) =>
+    row.split("").flatMap((cell, colIndex) =>
+      cell === "1" ? [{ row: rowIndex, col: colIndex }] : []
+    )
+  )
+}
+
+export default () => {
+  const pixels = getLitPixels(letterT)
+
+  return (
+    <board routingDisabled>
+      {pixels.map(({ row, col }) => (
+        <led
+          key={row + "-" + col}
+          name={"D" + row + col}
+          color="red"
+          footprint="led0603"
+          schX={col * 2}
+          schY={-row * 1.5}
+        />
+      ))}
+    </board>
+  )
+}
+`} />
+
+## Step 3: Add one resistor per LED
+
+Do not share a single resistor across a whole letter unless you have a driver
+that controls current per segment. Separate resistors keep brightness more even
+when the letter has rows with different LED counts.
+
+For a 5 V rail, a red LED around 2 V, and a target current near 9 mA:
+
+```text
+R = (5 V - 2 V) / 0.009 A = 333 ohms
+```
+
+A standard `330` ohm resistor is a practical starting value.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    <pinheader name="J1" pinCount={2} pinLabels={["V5", "GND"]} />
+    <resistor name="R1" resistance="330" footprint="0603" />
+    <led name="D1" color="red" footprint="led0603" />
+
+    <trace from="net.V5" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".D1 > .anode" />
+    <trace from=".D1 > .cathode" to="net.GND" />
+  </board>
+)
+`} />
+
+## Step 4: Generate the letter circuit
+
+Now combine the bitmap, LED, resistor, and traces. The generated component names
+include row and column numbers, so `D34` means row 3, column 4.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+const letterC = [
+  "01111",
+  "10000",
+  "10000",
+  "10000",
+  "10000",
+  "10000",
+  "01111",
+]
+
+function getLitPixels(pattern) {
+  return pattern.flatMap((row, rowIndex) =>
+    row.split("").flatMap((cell, colIndex) =>
+      cell === "1" ? [{ row: rowIndex, col: colIndex }] : []
+    )
+  )
+}
+
+export default () => {
+  const pixels = getLitPixels(letterC)
+
+  return (
+    <board routingDisabled>
+      <pinheader name="J1" pinCount={2} pinLabels={["V5", "GND"]} />
+
+      {pixels.map(({ row, col }) => {
+        const suffix = row + "" + col
+        return (
+          <group key={suffix}>
+            <resistor
+              name={"R" + suffix}
+              resistance="330"
+              footprint="0603"
+              schX={col * 2}
+              schY={-row * 1.5}
+            />
+            <led
+              name={"D" + suffix}
+              color="red"
+              footprint="led0603"
+              schX={col * 2 + 1}
+              schY={-row * 1.5}
+            />
+            <trace from="net.V5" to={".R" + suffix + " > .pin1"} />
+            <trace from={".R" + suffix + " > .pin2"} to={".D" + suffix + " > .anode"} />
+            <trace from={".D" + suffix + " > .cathode"} to="net.GND" />
+          </group>
+        )
+      })}
+    </board>
+  )
+}
+`} />
+
+## Review checklist
+
+Before turning the schematic into a PCB or panel graphic, check the letter
+against this list:
+
+- Every lit pixel has exactly one LED and one resistor.
+- All LED anodes are fed through resistors, not directly from the rail.
+- All LED cathodes return to ground.
+- The row strings all have the same width.
+- Component names remain stable after you change letters.
+- If the display will be battery powered, increase the resistor value or scan
+  the LEDs with a driver instead of leaving every LED on continuously.
