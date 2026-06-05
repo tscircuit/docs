@@ -851,9 +851,17 @@ article h4 {
   display: none !important;
 }
 
-/* Force center all documentation content */
-.col:not(.col--3) {
-  max-width: 1000px !important;
+/* Center ordinary doc pages after hiding the right table of contents. */
+[class*="docItemCol"] {
+  float: none !important;
+  max-width: 860px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+[class*="docItemContainer"] article,
+[class*="docItemContainer"] .markdown {
+  max-width: 860px !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
