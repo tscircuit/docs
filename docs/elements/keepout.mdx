@@ -28,16 +28,13 @@ chip, keeping routing, copper, pads, vias, and footprints out of that area.
   hideSchematicTab
   browser3dView={false}
   code={`export default () => (
-    <board width="24mm" height="14mm">
-      <chip name="U1" footprint="qfn16" pcbX={-4} pcbY={0} />
-      <keepout
-        shape="rect"
-        pcbX={7}
-        pcbY={0}
-        width="6mm"
-        height="8mm"
-      />
-    </board>
+    <board width="10mm" height="10mm">
+    <resistor name="R1" footprint="0402" resistance="1k" pcbX={-4} />
+    <keepout shape="rect" pcbX={0} pcbY={0} width="2.4mm" height="5mm" />
+    <resistor name="R2" footprint="0402" resistance="1k" pcbX={4} />
+
+    <trace from=".R1 > .pin1" to=".R2 > .pin1" />
+  </board>
   )`}
 />
 
