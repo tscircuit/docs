@@ -1,0 +1,151 @@
+---
+title: Building an I2C Environmental Sensor Module
+description: Learn how to design a custom I2C Environmental Sensor Module with a BME280 sensor, optional OLED display, and a pin header using tscircuit.
+---
+
+## Overview
+
+In this tutorial, we will build a custom I2C environmental sensor module. This board will include:
+- A **BME280** sensor for measuring temperature, humidity, and pressure.
+- **I2C pull-up resistors** for proper communication.
+- An **Optional OLED display** connection to visualize the sensor readings.
+- A **Pin header** to expose the I2C pins (VCC, GND, SDA, SCL) for an external microcontroller.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Step 1: Complete Circuit Design
+
+We will begin by capturing the schematic and layout in a single component. Our circuit needs the BME280 sensor, I2C pull-up resistors, a 4-pin header for external connections, and optionally, a generic 4-pin I2C OLED display footprint.
+
+<TscircuitIframe defaultView="3d" code={`
+export default () => {
+  return (
+    <board width="30mm" height="30mm">
+      {/* 4-Pin Header for external connection */}
+      <pinheader
+        name="J1"
+        pinCount={4}
+        pitch="2.54mm"
+        schX={-5}
+        schY={0}
+        pcbX={-12}
+        pcbY={0}
+      />
+      {/* VCC, GND, SDA, SCL from Pin Header */}
+      <trace from=".J1 .pin1" to="net.VCC" />
+      <trace from=".J1 .pin2" to="net.GND" />
+      <trace from=".J1 .pin3" to="net.SDA" />
+      <trace from=".J1 .pin4" to="net.SCL" />
+
+      {/* BME280 Sensor Integration */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="BME280"
+        footprint="lga8"
+        schX={2}
+        schY={0}
+        pcbX={0}
+        pcbY={5}
+        connections={{
+          VDD: "net.VCC",
+          VDDIO: "net.VCC",
+          GND: "net.GND",
+          CSB: "net.VCC",  // High for I2C
+          SDI: "net.SDA",
+          SCK: "net.SCL",
+          SDO: "net.GND"   // Address 0x76
+        }}
+      />
+
+      {/* I2C Pull-up Resistors */}
+      <resistor name="R1" resistance="4.7k" footprint="0603" schX={0} schY={2} pcbX={-4} pcbY={10} />
+      <resistor name="R2" resistance="4.7k" footprint="0603" schX={0} schY={3} pcbX={-4} pcbY={7} />
+      
+      <trace from=".R1 .pin1" to="net.VCC" />
+      <trace from=".R1 .pin2" to="net.SDA" />
+      
+      <trace from=".R2 .pin1" to="net.VCC" />
+      <trace from=".R2 .pin2" to="net.SCL" />
+
+      {/* Optional OLED Display Header */}
+      <pinheader
+        name="J2"
+        pinCount={4}
+        pitch="2.54mm"
+        schX={5}
+        schY={0}
+        pcbX={5}
+        pcbY={-10}
+        connections={{
+          pin1: "net.GND",
+          pin2: "net.VCC",
+          pin3: "net.SCL",
+          pin4: "net.SDA"
+        }}
+      />
+    </board>
+  )
+}
+`} />
+
+## Step 2: BME280 Integration
+
+The BME280 is a popular 8-pin LGA environmental sensor. In our schematic:
+- **VDD** and **VDDIO** are connected to \`net.VCC\`.
+- **GND** is connected to \`net.GND\`.
+- **CSB** is tied HIGH (\`net.VCC\`) to select the I2C interface.
+- **SDO** is tied LOW (\`net.GND\`) to set the I2C address to \`0x76\` (tying it to VCC sets it to \`0x77\`).
+- **SDI** and **SCK** are connected to the \`SDA\` and \`SCL\` lines respectively.
+
+## Step 3: PCB Layout Guidance
+
+For the layout:
+- Keep the I2C traces (\`SDA\` and \`SCL\`) parallel and as short as possible.
+- The \`4.7k\` pull-up resistors (\`R1\` and \`R2\`) should be placed relatively close to the sensor.
+- The 4-pin header \`J1\` serves as our external interface, make sure it is easily accessible at the edge of the board.
+- If you're using the optional OLED display, \`J2\` gives you a convenient header to plug a 0.96" SSD1306 OLED display directly into the board.
+
+## Step 4: Microcontroller Code Examples
+
+To test your sensor module, you can use any I2C-capable microcontroller, such as an Arduino. Wire your module to your Arduino (VCC to 3.3V, GND to GND, SDA to A4, SCL to A5) and use the [Adafruit BME280 Library](https://github.com/adafruit/Adafruit_BME280_Library).
+
+\`\`\`cpp
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+
+// BME280 I2C address is 0x76 based on our wiring (SDO to GND)
+#define BME280_ADDRESS 0x76
+
+Adafruit_BME280 bme; // I2C
+
+void setup() {
+  Serial.begin(9600);
+  while(!Serial); // wait for serial monitor
+  
+  unsigned status = bme.begin(BME280_ADDRESS);  
+  if (!status) {
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    while (1);
+  }
+}
+
+void loop() {
+  Serial.print("Temperature = ");
+  Serial.print(bme.readTemperature());
+  Serial.println(" *C");
+
+  Serial.print("Pressure = ");
+  Serial.print(bme.readPressure() / 100.0F);
+  Serial.println(" hPa");
+
+  Serial.print("Humidity = ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
+
+  Serial.println();
+  delay(2000);
+}
+\`\`\`
+
+This code snippet initializes the I2C interface and prints out temperature, pressure, and humidity readings to the Serial Monitor every 2 seconds.
