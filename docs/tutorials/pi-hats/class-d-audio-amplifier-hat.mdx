@@ -1,0 +1,388 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: >-
+  Learn how to build a Raspberry Pi HAT with a PAM8403 Class D audio amplifier,
+  delivering 3W per channel stereo sound with hardware volume control.
+---
+
+## Overview
+
+This tutorial will walk you through building a Raspberry Pi HAT (Hardware Attached on Top) featuring a **PAM8403** Class D audio amplifier. This setup is perfect for adding compact, efficient, and high-quality stereo sound to your Raspberry Pi projects, capable of driving 3W per channel into 4-ohm speakers.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* PAM8403 Class D Audio Amplifier Chip */}
+    <chip
+      name="U1"
+      footprint="sop16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["OUT_L_MINUS"],
+        pin2: ["PGND_L"],
+        pin3: ["OUT_L_PLUS"],
+        pin4: ["PVDD_L"],
+        pin5: ["MUTE"],
+        pin6: ["VDD"],
+        pin7: ["IN_L"],
+        pin8: ["VREF"],
+        pin9: ["NC"],
+        pin10: ["IN_R"],
+        pin11: ["GND"],
+        pin12: ["SHDN"],
+        pin13: ["PVDD_R"],
+        pin14: ["OUT_R_PLUS"],
+        pin15: ["PGND_R"],
+        pin16: ["OUT_R_MINUS"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["IN_L", "IN_R", "MUTE", "SHDN", "VDD", "VREF", "GND", "NC"], direction: "top-to-bottom" },
+        rightSide: { pins: ["OUT_L_PLUS", "OUT_L_MINUS", "OUT_R_PLUS", "OUT_R_MINUS", "PVDD_L", "PVDD_R", "PGND_L", "PGND_R"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={5}
+    />
+
+    {/* Input AC Coupling Capacitors */}
+    <capacitor name="C_IN_L" capacitance="0.47uF" footprint="0603" pcbX={-5} pcbY={0} />
+    <capacitor name="C_IN_R" capacitance="0.47uF" footprint="0603" pcbX={-5} pcbY={10} />
+
+    {/* Volume Control Potentiometer (Dual-gang 10k or 50k) */}
+    <chip
+      name="RV_VOL"
+      footprint="dip6"
+      manufacturerPartNumber="Dual Potentiometer"
+      pinLabels={{
+        pin1: ["IN_L"],
+        pin2: ["WIPER_L"],
+        pin3: ["GND_L"],
+        pin4: ["GND_R"],
+        pin5: ["WIPER_R"],
+        pin6: ["IN_R"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["IN_L", "IN_R", "GND_L", "GND_R"], direction: "top-to-bottom" },
+        rightSide: { pins: ["WIPER_L", "WIPER_R"], direction: "top-to-bottom" },
+      }}
+      pcbX={-15}
+      pcbY={5}
+    />
+
+    {/* PWM filtering (RC) for RPi audio */}
+    <resistor name="R_F_L" resistance="1k" footprint="0603" pcbX={-25} pcbY={0} />
+    <resistor name="R_F_R" resistance="1k" footprint="0603" pcbX={-25} pcbY={10} />
+    <capacitor name="C_F_L" capacitance="10nF" footprint="0603" pcbX={-20} pcbY={0} />
+    <capacitor name="C_F_R" capacitance="10nF" footprint="0603" pcbX={-20} pcbY={10} />
+
+    {/* Decoupling Capacitors */}
+    <capacitor name="C_VDD" capacitance="1uF" footprint="0603" pcbX={0} pcbY={-5} />
+    <capacitor name="C_PVDD" capacitance="10uF" footprint="0805" pcbX={0} pcbY={15} />
+
+    {/* VREF Filter Capacitor */}
+    <capacitor name="C_VREF" capacitance="1uF" footprint="0603" pcbX={-5} pcbY={15} />
+
+    {/* Speaker Terminals */}
+    <chip name="J_SPK_L" footprint="pin_header_2" pcbX={15} pcbY={0} />
+    <chip name="J_SPK_R" footprint="pin_header_2" pcbX={15} pcbY={10} />
+
+    {/* --- Connections --- */}
+
+    {/* Power and Ground */}
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .PVDD_L" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .PVDD_R" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .SHDN" /> {/* Active low, tie high to enable */}
+    <trace from=".HAT1_chip .V5_1" to=".U1 .MUTE" /> {/* Active low, tie high to play */}
+    
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .PGND_L" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .PGND_R" />
+
+    {/* VREF Capacitor */}
+    <trace from=".U1 .VREF" to=".C_VREF > .pin1" />
+    <trace from=".C_VREF > .pin2" to=".U1 .GND" />
+
+    {/* Decoupling */}
+    <trace from=".C_VDD > .pin1" to=".U1 .VDD" />
+    <trace from=".C_VDD > .pin2" to=".U1 .GND" />
+    <trace from=".C_PVDD > .pin1" to=".U1 .PVDD_L" />
+    <trace from=".C_PVDD > .pin2" to=".U1 .PGND_L" />
+
+    {/* Potentiometer Grounds */}
+    <trace from=".RV_VOL .GND_L" to=".HAT1_chip .GND_1" />
+    <trace from=".RV_VOL .GND_R" to=".HAT1_chip .GND_1" />
+
+    {/* Left Channel Input Filtering, Volume, and Coupling */}
+    {/* RPi GPIO 12 (PWM0) -> R_F_L -> C_F_L (GND) -> RV_VOL.IN_L */}
+    <trace from=".HAT1_chip .GPIO_12" to=".R_F_L > .pin1" />
+    <trace from=".R_F_L > .pin2" to=".C_F_L > .pin1" />
+    <trace from=".C_F_L > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".R_F_L > .pin2" to=".RV_VOL .IN_L" />
+    
+    {/* RV_VOL.WIPER_L -> C_IN_L -> U1.IN_L */}
+    <trace from=".RV_VOL .WIPER_L" to=".C_IN_L > .pin1" />
+    <trace from=".C_IN_L > .pin2" to=".U1 .IN_L" />
+
+    {/* Right Channel Input Filtering, Volume, and Coupling */}
+    {/* RPi GPIO 13 (PWM1) -> R_F_R -> C_F_R (GND) -> RV_VOL.IN_R */}
+    <trace from=".HAT1_chip .GPIO_13" to=".R_F_R > .pin1" />
+    <trace from=".R_F_R > .pin2" to=".C_F_R > .pin1" />
+    <trace from=".C_F_R > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".R_F_R > .pin2" to=".RV_VOL .IN_R" />
+
+    {/* RV_VOL.WIPER_R -> C_IN_R -> U1.IN_R */}
+    <trace from=".RV_VOL .WIPER_R" to=".C_IN_R > .pin1" />
+    <trace from=".C_IN_R > .pin2" to=".U1 .IN_R" />
+
+    {/* Speaker Outputs */}
+    <trace from=".U1 .OUT_L_PLUS" to=".J_SPK_L > .pin1" />
+    <trace from=".U1 .OUT_L_MINUS" to=".J_SPK_L > .pin2" />
+    <trace from=".U1 .OUT_R_PLUS" to=".J_SPK_R > .pin1" />
+    <trace from=".U1 .OUT_R_MINUS" to=".J_SPK_R > .pin2" />
+
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is a Class D Amplifier?
+
+A **Class D amplifier** operates by rapidly switching output transistors fully on and fully off, rather than operating in a linear mode like traditional Class AB amplifiers. 
+
+This switching process creates a Pulse Width Modulation (PWM) signal that represents the audio wave. The high-frequency switching noise is then filtered out (often by the speaker coil itself in filterless designs like the PAM8403) to recreate the analog audio. 
+
+**Advantages of Class D:**
+- **High Efficiency:** Can reach over 90% efficiency.
+- **Low Heat:** Doesn't require massive heatsinks, making it perfect for tiny HATs.
+- **Compact:** Allows for smaller, surface-mount components.
+
+## Circuit Requirements
+
+To build a high-quality PAM8403 audio HAT, we need:
+- **PAM8403 Chip:** A 3W, filterless, stereo Class D audio amplifier.
+- **Volume Control (Dual Potentiometer):** To attenuate the input signal manually, giving hardware volume control.
+- **Audio Inputs:** Using Raspberry Pi GPIO pins 12 and 13 (capable of PWM audio output).
+- **RC Low-Pass Filters:** To convert the Raspberry Pi's PWM signals into smooth analog waves.
+- **AC Coupling Capacitors:** To remove DC bias from the incoming audio signals.
+- **Speaker Terminals:** Two pairs of terminal blocks (or headers) for Left and Right speakers.
+
+## Building the Circuit Step by Step
+
+### Step 1: Initialize the Raspberry Pi HAT
+
+We use the \`RaspberryPiHatBoard\` to start our layout on a standard HAT footprint.
+
+\`\`\`tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Components go here */}
+  </RaspberryPiHatBoard>
+)
+\`\`\`
+
+### Step 2: Add the PAM8403 Amplifier
+
+The PAM8403 is a 16-pin surface mount device (SOP-16). We'll define its pin labels and ports clearly to make routing easier.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="sop16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["OUT_L_MINUS"], pin2: ["PGND_L"], pin3: ["OUT_L_PLUS"], pin4: ["PVDD_L"],
+        pin5: ["MUTE"], pin6: ["VDD"], pin7: ["IN_L"], pin8: ["VREF"],
+        pin9: ["NC"], pin10: ["IN_R"], pin11: ["GND"], pin12: ["SHDN"],
+        pin13: ["PVDD_R"], pin14: ["OUT_R_PLUS"], pin15: ["PGND_R"], pin16: ["OUT_R_MINUS"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["IN_L", "IN_R", "MUTE", "SHDN", "VDD", "VREF", "GND", "NC"], direction: "top-to-bottom" },
+        rightSide: { pins: ["OUT_L_PLUS", "OUT_L_MINUS", "OUT_R_PLUS", "OUT_R_MINUS", "PVDD_L", "PVDD_R", "PGND_L", "PGND_R"], direction: "top-to-bottom" },
+      }}
+      pcbX={0}
+      pcbY={5}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Add Volume Control and Filters
+
+The Raspberry Pi generates audio using high-frequency PWM on GPIO 12 and 13. We need a simple RC low-pass filter (1kΩ resistor and 10nF capacitor) to smooth this into an analog signal. 
+
+We then route this signal through a dual-gang potentiometer for hardware volume control, followed by a 0.47µF AC coupling capacitor to block DC voltage from entering the PAM8403.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* ... (PAM8403 Chip) ... */}
+    <chip
+      name="RV_VOL"
+      footprint="dip6"
+      manufacturerPartNumber="Dual Potentiometer"
+      pinLabels={{
+        pin1: ["IN_L"], pin2: ["WIPER_L"], pin3: ["GND_L"],
+        pin4: ["GND_R"], pin5: ["WIPER_R"], pin6: ["IN_R"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["IN_L", "IN_R", "GND_L", "GND_R"], direction: "top-to-bottom" },
+        rightSide: { pins: ["WIPER_L", "WIPER_R"], direction: "top-to-bottom" },
+      }}
+    />
+    <resistor name="R_F_L" resistance="1k" footprint="0603" />
+    <capacitor name="C_F_L" capacitance="10nF" footprint="0603" />
+    <capacitor name="C_IN_L" capacitance="0.47uF" footprint="0603" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 4: Add Speaker Terminals
+
+We need output terminals to connect our speakers. The PAM8403 provides direct differential outputs (`OUT_L+`, `OUT_L-`, `OUT_R+`, `OUT_R-`) so no output capacitors are needed.
+
+\`\`\`tsx
+    <chip name="J_SPK_L" footprint="pin_header_2" pcbX={15} pcbY={0} />
+    <chip name="J_SPK_R" footprint="pin_header_2" pcbX={15} pcbY={10} />
+\`\`\`
+
+### Step 5: Wire the Complete Circuit
+
+Finally, we connect the power (5V), ground, filters, volume pot, inputs, and outputs together.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="sop16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["OUT_L_MINUS"], pin2: ["PGND_L"], pin3: ["OUT_L_PLUS"], pin4: ["PVDD_L"],
+        pin5: ["MUTE"], pin6: ["VDD"], pin7: ["IN_L"], pin8: ["VREF"],
+        pin9: ["NC"], pin10: ["IN_R"], pin11: ["GND"], pin12: ["SHDN"],
+        pin13: ["PVDD_R"], pin14: ["OUT_R_PLUS"], pin15: ["PGND_R"], pin16: ["OUT_R_MINUS"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["IN_L", "IN_R", "MUTE", "SHDN", "VDD", "VREF", "GND", "NC"], direction: "top-to-bottom" },
+        rightSide: { pins: ["OUT_L_PLUS", "OUT_L_MINUS", "OUT_R_PLUS", "OUT_R_MINUS", "PVDD_L", "PVDD_R", "PGND_L", "PGND_R"], direction: "top-to-bottom" },
+      }}
+    />
+
+    <capacitor name="C_IN_L" capacitance="0.47uF" footprint="0603" />
+    <capacitor name="C_IN_R" capacitance="0.47uF" footprint="0603" />
+    
+    <chip
+      name="RV_VOL"
+      footprint="dip6"
+      manufacturerPartNumber="Dual Potentiometer"
+      pinLabels={{
+        pin1: ["IN_L"], pin2: ["WIPER_L"], pin3: ["GND_L"],
+        pin4: ["GND_R"], pin5: ["WIPER_R"], pin6: ["IN_R"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["IN_L", "IN_R", "GND_L", "GND_R"], direction: "top-to-bottom" },
+        rightSide: { pins: ["WIPER_L", "WIPER_R"], direction: "top-to-bottom" },
+      }}
+    />
+
+    <resistor name="R_F_L" resistance="1k" footprint="0603" />
+    <resistor name="R_F_R" resistance="1k" footprint="0603" />
+    <capacitor name="C_F_L" capacitance="10nF" footprint="0603" />
+    <capacitor name="C_F_R" capacitance="10nF" footprint="0603" />
+    <capacitor name="C_VDD" capacitance="1uF" footprint="0603" />
+    <capacitor name="C_PVDD" capacitance="10uF" footprint="0805" />
+    <capacitor name="C_VREF" capacitance="1uF" footprint="0603" />
+    <chip name="J_SPK_L" footprint="pin_header_2" />
+    <chip name="J_SPK_R" footprint="pin_header_2" />
+
+    {/* Power / Ground */}
+    <trace from=".HAT1_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .PVDD_L" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .PVDD_R" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .SHDN" />
+    <trace from=".HAT1_chip .V5_1" to=".U1 .MUTE" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .GND" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .PGND_L" />
+    <trace from=".HAT1_chip .GND_1" to=".U1 .PGND_R" />
+
+    {/* VREF and Decoupling */}
+    <trace from=".U1 .VREF" to=".C_VREF > .pin1" />
+    <trace from=".C_VREF > .pin2" to=".U1 .GND" />
+    <trace from=".C_VDD > .pin1" to=".U1 .VDD" />
+    <trace from=".C_VDD > .pin2" to=".U1 .GND" />
+    <trace from=".C_PVDD > .pin1" to=".U1 .PVDD_L" />
+    <trace from=".C_PVDD > .pin2" to=".U1 .PGND_L" />
+
+    {/* Potentiometer Grounds */}
+    <trace from=".RV_VOL .GND_L" to=".HAT1_chip .GND_1" />
+    <trace from=".RV_VOL .GND_R" to=".HAT1_chip .GND_1" />
+
+    {/* Audio Inputs */}
+    <trace from=".HAT1_chip .GPIO_12" to=".R_F_L > .pin1" />
+    <trace from=".R_F_L > .pin2" to=".C_F_L > .pin1" />
+    <trace from=".C_F_L > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".R_F_L > .pin2" to=".RV_VOL .IN_L" />
+    
+    <trace from=".RV_VOL .WIPER_L" to=".C_IN_L > .pin1" />
+    <trace from=".C_IN_L > .pin2" to=".U1 .IN_L" />
+
+    <trace from=".HAT1_chip .GPIO_13" to=".R_F_R > .pin1" />
+    <trace from=".R_F_R > .pin2" to=".C_F_R > .pin1" />
+    <trace from=".C_F_R > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".R_F_R > .pin2" to=".RV_VOL .IN_R" />
+
+    <trace from=".RV_VOL .WIPER_R" to=".C_IN_R > .pin1" />
+    <trace from=".C_IN_R > .pin2" to=".U1 .IN_R" />
+
+    {/* Speaker Outputs */}
+    <trace from=".U1 .OUT_L_PLUS" to=".J_SPK_L > .pin1" />
+    <trace from=".U1 .OUT_L_MINUS" to=".J_SPK_L > .pin2" />
+    <trace from=".U1 .OUT_R_PLUS" to=".J_SPK_R > .pin1" />
+    <trace from=".U1 .OUT_R_MINUS" to=".J_SPK_R > .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Raspberry Pi Integration and Audio Configuration
+
+To output high-quality audio through the GPIO PWM pins (GPIO 12 for Right, GPIO 13 for Left), you will need to modify your Raspberry Pi's `config.txt` file.
+
+1. Open your terminal and edit `/boot/config.txt` (or `/boot/firmware/config.txt` on newer OS versions):
+   ```bash
+   sudo nano /boot/config.txt
+   ```
+
+2. Add or modify the following line to enable PWM audio:
+   ```text
+   dtoverlay=audremap,pins_12_13
+   ```
+
+3. Save the file and reboot your Raspberry Pi:
+   ```bash
+   sudo reboot
+   ```
+
+4. Once rebooted, the analog audio should be routed to your HAT! You can control the hardware volume using the onboard dual potentiometer, or adjust software levels using `alsamixer` from the terminal.
+   ```bash
+   alsamixer
+   ```
+
+## Next Steps
+
+- **Add an LED Indicator:** Include a small power LED to know when the amplifier is active.
+- **I2S Upgrade:** For audiophile-grade quality, consider upgrading from PWM to a digital I2S DAC (like the PCM5102a) feeding into your PAM8403 instead of the RC filters!
+- **Mute Circuitry:** Add a tactile switch to manually pull the MUTE pin low to instantly mute the speakers.
