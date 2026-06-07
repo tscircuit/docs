@@ -1,0 +1,69 @@
+---
+title: <keepout />
+description: >-
+  Reserve PCB areas where routing, pads, vias, copper pours, and footprints should not be placed.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+Use `<keepout />` to reserve a physical area on one or more PCB layers. Keepouts
+are useful anywhere the board needs clear space: antenna clearance regions,
+mounting hardware, connector sweeps, high-voltage spacing, mechanical brackets,
+test fixtures, or other areas where components and routing should stay away.
+
+
+Keepouts do not have a schematic representation. They are PCB-only layout
+constraints.
+
+## Basic Usage
+
+Add a keepout to any board by choosing a shape and placing it on the PCB. The
+example below shows a top-layer rectangular keepout reserving clearance near a
+chip, keeping routing, copper, pads, vias, and footprints out of that area.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  browser3dView={false}
+  code={`export default () => (
+    <board width="10mm" height="10mm">
+    <resistor name="R1" footprint="0402" resistance="1k" pcbX={-4} />
+    <keepout shape="rect" pcbX={0} pcbY={0} width="2.4mm" height="5mm" />
+    <resistor name="R2" footprint="0402" resistance="1k" pcbX={4} />
+
+    <trace from=".R1 > .pin1" to=".R2 > .pin1" />
+  </board>
+  )`}
+/>
+
+## Layer Selection
+
+Use `layers` to choose where the keepout applies. If `layers` is omitted,
+tscircuit emits the keepout on the top layer.
+
+```tsx
+<keepout
+  shape="rect"
+  pcbX={0}
+  pcbY={0}
+  width="5mm"
+  height="3mm"
+  layers={["top", "bottom"]}
+/>
+```
+
+Layer names use the same layer refs as other PCB elements, such as `"top"`,
+`"bottom"`, and inner-layer names like `"inner1"` when the board has those
+layers.
+
+## Keepout Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `shape` | Shape of the keepout area. Use `"rect"` for a rectangle or `"circle"` for a circle. | `"rect"` |
+| `width` | Width of a rectangular keepout. Required when `shape` is `"rect"`. | `"6mm"` |
+| `height` | Height of a rectangular keepout. Required when `shape` is `"rect"`. | `"8mm"` |
+| `radius` | Radius of a circular keepout. Required when `shape` is `"circle"`. | `"4mm"` |
+| `layers` | PCB layers where the keepout applies. Defaults to `["top"]`. | `["top", "bottom"]` |
