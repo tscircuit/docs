@@ -1,0 +1,293 @@
+---
+title: Building a USB PD Trigger HAT
+description: >-
+  This tutorial will walk you through building a Raspberry Pi HAT with a USB Power Delivery (PD) Trigger to negotiate 5V-20V from a USB-C charger.
+---
+
+## Overview
+
+This tutorial will walk you through building a USB Power Delivery (PD) Trigger HAT using tscircuit. This board uses a USB PD Controller (like the CH224K or IP2721) to negotiate higher voltages (up to 20V) from a standard USB-C Power Delivery charger. It features terminal block outputs, a status LED, and filtering capacitors.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* USB-C Connector */}
+    <SmdUsbC
+      name="J1"
+      connections={{ 
+        GND1: "net.GND", 
+        GND2: "net.GND", 
+        VBUS1: "net.VBUS", 
+        VBUS2: "net.VBUS" 
+      }}
+      pcbX={-25}
+      pcbY={0}
+      schX={-8}
+      schY={0}
+    />
+
+    {/* CH224K PD Controller */}
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["CC1"],
+        pin4: ["CC2"],
+        pin5: ["CFG1"],
+        pin6: ["CFG2"],
+        pin7: ["CFG3"],
+        pin8: ["VBUS"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS", "VDD", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG1", "CFG2", "CFG3", "GND"], direction: "top-to-bottom" }
+      }}
+      pcbX={-10}
+      pcbY={0}
+      schX={0}
+      schY={0}
+    />
+
+    {/* Voltage negotiation resistor (sets 20V) */}
+    <resistor name="R_CFG" resistance="10k" footprint="0402" pcbX={-5} pcbY={5} schX={4} schY={2} />
+
+    {/* Filtering Capacitors */}
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-15} pcbY={5} schX={-4} schY={4} />
+    <capacitor name="C2" capacitance="0.1uF" footprint="0402" pcbX={-15} pcbY={8} schX={-2} schY={4} />
+
+    {/* Status LED & Resistor */}
+    <led name="LED1" color="green" footprint="0603" pcbX={10} pcbY={10} schX={8} schY={-4} />
+    <resistor name="R_LED" resistance="2.2k" footprint="0603" pcbX={15} pcbY={10} schX={8} schY={-2} />
+
+    {/* Terminal Block */}
+    <chip
+      name="J2"
+      manufacturerPartNumber="2-Pin Terminal Block"
+      footprint="pinrow2"
+      pinLabels={{
+        pin1: ["VOUT"],
+        pin2: ["GND"]
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VOUT", "GND"], direction: "top-to-bottom" }
+      }}
+      pcbX={20}
+      pcbY={0}
+      schX={8}
+      schY={0}
+    />
+
+    {/* PD Controller Power */}
+    <trace from=".U1 .VBUS" to="net.VBUS" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U1 .VDD" to="net.VBUS" />
+    
+    {/* CC Lines */}
+    <trace from=".J1 .CC1" to=".U1 .CC1" />
+    <trace from=".J1 .CC2" to=".U1 .CC2" />
+
+    {/* Configuration for 20V: CFG1 tied to VDD via resistor, others GND */}
+    <trace from=".R_CFG .pin1" to=".U1 .VDD" />
+    <trace from=".R_CFG .pin2" to=".U1 .CFG1" />
+    <trace from=".U1 .CFG2" to="net.GND" />
+    <trace from=".U1 .CFG3" to="net.GND" />
+
+    {/* Filtering Caps */}
+    <trace from=".C1 .pin1" to="net.VBUS" />
+    <trace from=".C1 .pin2" to="net.GND" />
+    <trace from=".C2 .pin1" to="net.VBUS" />
+    <trace from=".C2 .pin2" to="net.GND" />
+
+    {/* Status LED */}
+    <trace from="net.VBUS" to=".R_LED .pin1" />
+    <trace from=".R_LED .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+
+    {/* Terminal Block Output */}
+    <trace from="net.VBUS" to=".J2 .VOUT" />
+    <trace from="net.GND" to=".J2 .GND" />
+
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is a USB PD Trigger?
+
+A USB Power Delivery (PD) Trigger is a circuit that acts as a "sink" device to a USB PD host (like a laptop charger). Instead of receiving the default 5V, the trigger chip communicates with the charger to request a higher voltage (such as 9V, 12V, 15V, or 20V) depending on the configuration.
+
+This is extremely useful when you need to power higher-voltage components (like motors or large LED arrays) from a standard USB-C charger.
+
+## Circuit Requirements
+
+Our USB PD Trigger HAT needs to:
+- Accept a USB-C input from a PD-capable power supply
+- Use a PD controller (CH224K or similar) to negotiate the desired voltage
+- Filter the output using decoupling capacitors
+- Display the power status using an LED
+- Provide the negotiated voltage through a terminal block for external use
+
+## Building the Circuit Step by Step
+
+### Step 1: Add the USB-C Connector
+
+We use the \`SmdUsbC\` component to provide the USB-C port. The \`connections\` property automatically wires the \`VBUS\` and \`GND\` nets.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <SmdUsbC
+      name="J1"
+      connections={{ 
+        GND1: "net.GND", 
+        GND2: "net.GND", 
+        VBUS1: "net.VBUS", 
+        VBUS2: "net.VBUS" 
+      }}
+      pcbX={-25}
+      pcbY={0}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 2: Add the PD Controller
+
+Next, we define our CH224K PD Controller chip. We specify its pins and schematic port arrangement.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <SmdUsbC
+      name="J1"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbX={-25} pcbY={0}
+    />
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"], pin2: ["GND"], pin3: ["CC1"], pin4: ["CC2"],
+        pin5: ["CFG1"], pin6: ["CFG2"], pin7: ["CFG3"], pin8: ["VBUS"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS", "VDD", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG1", "CFG2", "CFG3", "GND"], direction: "top-to-bottom" }
+      }}
+      pcbX={-10} pcbY={0}
+    />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Voltage Negotiation and Capacitors
+
+We use the \`CFG\` pins to request a specific voltage. By connecting \`CFG1\` to \`VDD\` via a resistor, and grounding \`CFG2\` and \`CFG3\`, we tell the CH224K to request 20V.
+
+We also add a 10uF and a 0.1uF capacitor to filter the VBUS power line.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <SmdUsbC
+      name="J1"
+      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
+      pcbX={-25} pcbY={0}
+    />
+    <chip
+      name="U1"
+      manufacturerPartNumber="CH224K"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"], pin2: ["GND"], pin3: ["CC1"], pin4: ["CC2"],
+        pin5: ["CFG1"], pin6: ["CFG2"], pin7: ["CFG3"], pin8: ["VBUS"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS", "VDD", "CC1", "CC2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["CFG1", "CFG2", "CFG3", "GND"], direction: "top-to-bottom" }
+      }}
+      pcbX={-10} pcbY={0}
+    />
+    <resistor name="R_CFG" resistance="10k" footprint="0402" pcbX={-5} pcbY={5} />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-15} pcbY={5} />
+    <capacitor name="C2" capacitance="0.1uF" footprint="0402" pcbX={-15} pcbY={8} />
+
+    <trace from=".R_CFG .pin1" to=".U1 .VDD" />
+    <trace from=".R_CFG .pin2" to=".U1 .CFG1" />
+    <trace from=".U1 .CFG2" to="net.GND" />
+    <trace from=".U1 .CFG3" to="net.GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 4: Status LED and Terminal Block
+
+To monitor if the board has power, we add an LED with a 2.2k current-limiting resistor. The \`Terminal Block\` is represented by a 2-pin header to easily connect our external load.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <led name="LED1" color="green" footprint="0603" pcbX={10} pcbY={10} />
+    <resistor name="R_LED" resistance="2.2k" footprint="0603" pcbX={15} pcbY={10} />
+    <chip
+      name="J2"
+      manufacturerPartNumber="2-Pin Terminal Block"
+      footprint="pinrow2"
+      pinLabels={{ pin1: ["VOUT"], pin2: ["GND"] }}
+      schPortArrangement={{ leftSide: { pins: ["VOUT", "GND"], direction: "top-to-bottom" } }}
+      pcbX={20}
+      pcbY={0}
+    />
+
+    <trace from="net.VBUS" to=".R_LED .pin1" />
+    <trace from=".R_LED .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+
+    <trace from="net.VBUS" to=".J2 .VOUT" />
+    <trace from="net.GND" to=".J2 .GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Bill of Materials
+
+- **1x** USB-C SMD Connector
+- **1x** CH224K (or similar) PD Controller
+- **1x** 10uF Capacitor (0603)
+- **1x** 0.1uF Capacitor (0402)
+- **1x** Green LED (0603)
+- **1x** 2.2kΩ Resistor (0603)
+- **1x** 10kΩ Resistor (0402)
+- **1x** 2-Pin Terminal Block (2.54mm or 5.08mm pitch)
+
+## Testing Procedures
+
+1. **Continuity Check**: Before plugging in the USB cable, use a multimeter to verify there is no short circuit between \`VBUS\` and \`GND\`.
+2. **First Power Up**: Plug in a USB PD power bank or charger. Verify the Status LED lights up.
+3. **Voltage Measurement**: Measure the voltage at the terminal block outputs. It should read approximately 20V (if configured for 20V) or whatever voltage you set via the \`CFG\` pins.
+4. **Load Testing**: Connect a small load (e.g., a power resistor or a DC motor) to the terminal blocks and ensure the voltage does not drop significantly.
+
+## Conclusion
+
+You've built a USB Power Delivery Trigger HAT capable of pulling up to 20V from a modern USB-C charger! You can expand this project by adding DIP switches to the \`CFG\` pins, allowing you to select different output voltages dynamically.
