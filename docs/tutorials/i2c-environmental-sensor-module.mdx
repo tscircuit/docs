@@ -91,25 +91,25 @@ export default () => {
 ## Step 2: BME280 Integration
 
 The BME280 is a popular 8-pin LGA environmental sensor. In our schematic:
-- **VDD** and **VDDIO** are connected to \`net.VCC\`.
-- **GND** is connected to \`net.GND\`.
-- **CSB** is tied HIGH (\`net.VCC\`) to select the I2C interface.
-- **SDO** is tied LOW (\`net.GND\`) to set the I2C address to \`0x76\` (tying it to VCC sets it to \`0x77\`).
-- **SDI** and **SCK** are connected to the \`SDA\` and \`SCL\` lines respectively.
+- **VDD** and **VDDIO** are connected to `net.VCC`.
+- **GND** is connected to `net.GND`.
+- **CSB** is tied HIGH (`net.VCC`) to select the I2C interface.
+- **SDO** is tied LOW (`net.GND`) to set the I2C address to `0x76` (tying it to VCC sets it to `0x77`).
+- **SDI** and **SCK** are connected to the `SDA` and `SCL` lines respectively.
 
 ## Step 3: PCB Layout Guidance
 
 For the layout:
-- Keep the I2C traces (\`SDA\` and \`SCL\`) parallel and as short as possible.
-- The \`4.7k\` pull-up resistors (\`R1\` and \`R2\`) should be placed relatively close to the sensor.
-- The 4-pin header \`J1\` serves as our external interface, make sure it is easily accessible at the edge of the board.
-- If you're using the optional OLED display, \`J2\` gives you a convenient header to plug a 0.96" SSD1306 OLED display directly into the board.
+- Keep the I2C traces (`SDA` and `SCL`) parallel and as short as possible.
+- The `4.7k` pull-up resistors (`R1` and `R2`) should be placed relatively close to the sensor.
+- The 4-pin header `J1` serves as our external interface, make sure it is easily accessible at the edge of the board.
+- If you're using the optional OLED display, `J2` gives you a convenient header to plug a 0.96" SSD1306 OLED display directly into the board.
 
 ## Step 4: Microcontroller Code Examples
 
 To test your sensor module, you can use any I2C-capable microcontroller, such as an Arduino. Wire your module to your Arduino (VCC to 3.3V, GND to GND, SDA to A4, SCL to A5) and use the [Adafruit BME280 Library](https://github.com/adafruit/Adafruit_BME280_Library).
 
-\`\`\`cpp
+```cpp
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -146,6 +146,7 @@ void loop() {
   Serial.println();
   delay(2000);
 }
-\`\`\`
+```
 
 This code snippet initializes the I2C interface and prints out temperature, pressure, and humidity readings to the Serial Monitor every 2 seconds.
+
