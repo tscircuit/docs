@@ -174,9 +174,9 @@ To build a high-quality PAM8403 audio HAT, we need:
 
 ### Step 1: Initialize the Raspberry Pi HAT
 
-We use the \`RaspberryPiHatBoard\` to start our layout on a standard HAT footprint.
+We use the `RaspberryPiHatBoard` to start our layout on a standard HAT footprint.
 
-\`\`\`tsx
+```tsx
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
@@ -184,7 +184,7 @@ export default () => (
     {/* Components go here */}
   </RaspberryPiHatBoard>
 )
-\`\`\`
+```
 
 ### Step 2: Add the PAM8403 Amplifier
 
@@ -252,10 +252,10 @@ export default () => (
 
 We need output terminals to connect our speakers. The PAM8403 provides direct differential outputs (`OUT_L+`, `OUT_L-`, `OUT_R+`, `OUT_R-`) so no output capacitors are needed.
 
-\`\`\`tsx
+```tsx
     <chip name="J_SPK_L" footprint="pin_header_2" pcbX={15} pcbY={0} />
     <chip name="J_SPK_R" footprint="pin_header_2" pcbX={15} pcbY={10} />
-\`\`\`
+```
 
 ### Step 5: Wire the Complete Circuit
 
@@ -386,3 +386,4 @@ To output high-quality audio through the GPIO PWM pins (GPIO 12 for Right, GPIO 
 - **Add an LED Indicator:** Include a small power LED to know when the amplifier is active.
 - **I2S Upgrade:** For audiophile-grade quality, consider upgrading from PWM to a digital I2S DAC (like the PCM5102a) feeding into your PAM8403 instead of the RC filters!
 - **Mute Circuitry:** Add a tactile switch to manually pull the MUTE pin low to instantly mute the speakers.
+
