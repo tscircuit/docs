@@ -1,0 +1,152 @@
+---
+title: Restyling Schematics with CSS Classes
+description: >-
+  Learn which schematic SVG classes are supported for CSS overrides when
+  restyling generated tscircuit schematics.
+---
+
+Generated schematic SVGs expose a small set of stable CSS classes for restyling.
+Use these classes when you want to override schematic colors, stroke widths,
+labels, traces, ports, or annotation shapes.
+
+Avoid styling older generic classes such as `component`, `chip`, `pin-number`,
+or `trace` directly. They can appear in the SVG for compatibility, but the
+supported override surface is the `tscircuit-schematic` root class and the
+`sch-*` classes listed below.
+
+## Adding CSS in RunFrame
+
+Pass `schematicSvgOptions` to `<RunFrame />` to provide the `className` and
+`css` options used when RunFrame renders the schematic SVG.
+
+```tsx
+import { RunFrame } from "@tscircuit/runframe"
+
+export default () => (
+  <RunFrame
+    fsMap={{
+      "main.tsx": `
+circuit.add(
+  <board width="10mm" height="10mm">
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <capacitor name="C1" capacitance="1uF" footprint="0603" pcbX={4} />
+    <trace from=".R1 .pin1" to=".C1 .pin1" />
+  </board>
+)
+`,
+    }}
+    entrypoint="main.tsx"
+    schematicSvgOptions={{
+      className: "datasheet-theme",
+      css: `
+        .tscircuit-schematic.datasheet-theme .sch-component-body {
+          fill: #eef2ff;
+          stroke: #4338ca;
+        }
+
+        .tscircuit-schematic.datasheet-theme .sch-trace-path,
+        .tscircuit-schematic.datasheet-theme .sch-port-line {
+          stroke: #0f766e;
+          stroke-width: 2px;
+        }
+
+        .tscircuit-schematic.datasheet-theme .sch-component-name,
+        .tscircuit-schematic.datasheet-theme .sch-pin-label,
+        .tscircuit-schematic.datasheet-theme .sch-pin-number {
+          fill: #111827;
+          font-weight: 600;
+        }
+      `,
+    }}
+  />
+)
+```
+
+Scope your rules with a custom root class when possible. This keeps schematic
+styling from leaking into other SVGs on the page.
+
+## Supported Classes
+
+### Root
+
+| Class | Element |
+| --- | --- |
+| `tscircuit-schematic` | Root schematic `<svg>` |
+| Custom `className` | Extra root class supplied through render options |
+
+### Components
+
+| Class | Element |
+| --- | --- |
+| `sch-component` | Component group |
+| `sch-component-body` | Box-style component body |
+| `sch-component-overlay` | Transparent component hover or selection overlay |
+| `sch-component-name` | Reference designator text |
+| `sch-component-text` | Text inside a symbol-style component |
+| `sch-component-symbol-path` | Symbol path segment |
+| `sch-component-symbol-box` | Symbol box segment |
+| `sch-component-symbol-circle` | Symbol circle segment |
+
+### Ports and Pins
+
+| Class | Element |
+| --- | --- |
+| `sch-port` | Port group |
+| `sch-port-hover` | Port hover target group |
+| `sch-component-pin` | Generic pin geometry |
+| `sch-port-line` | Line from component body to port terminal |
+| `sch-port-terminal` | Port terminal marker |
+| `sch-port-indicator` | Standalone port indicator marker |
+| `sch-port-label` | Standalone port indicator label |
+| `sch-inversion-bubble` | Inversion bubble on a port |
+| `sch-pin-label` | Pin label text |
+| `sch-pin-number` | Pin number text |
+
+### Traces
+
+| Class | Element |
+| --- | --- |
+| `sch-trace` | Trace group |
+| `sch-trace-overlays` | Trace overlay group |
+| `sch-trace-path` | Visible trace path |
+| `sch-trace-hitbox` | Invisible hover outline around a trace |
+| `sch-trace-junction` | Junction dot |
+| `sch-trace-crossing-outline` | Background outline used at a crossing |
+| `sch-trace-crossing-path` | Visible crossing arc |
+
+### Net Labels
+
+| Class | Element |
+| --- | --- |
+| `sch-net-label` | Net label shape |
+| `sch-net-label-text` | Net label text |
+| `sch-net-label-overlay` | Net label overlay rectangle |
+| `sch-net-label-symbol-path` | Symbol-style net label path |
+| `sch-net-label-symbol-text` | Symbol-style net label text |
+| `sch-net-label-symbol-box` | Symbol-style net label box |
+| `sch-net-label-symbol-circle` | Symbol-style net label circle |
+
+### Schematic Shapes and Text
+
+| Class | Element |
+| --- | --- |
+| `sch-line` | Schematic line |
+| `sch-path` | Schematic path |
+| `sch-rect` | Schematic rectangle |
+| `sch-box` | Schematic box |
+| `sch-circle` | Schematic circle |
+| `sch-arc` | Schematic arc |
+| `sch-text` | Schematic text |
+
+### Tables, Probes, and Helpers
+
+| Class | Element |
+| --- | --- |
+| `sch-table` | Schematic table group |
+| `sch-table-border` | Table border |
+| `sch-table-grid-line` | Table grid line |
+| `sch-table-text` | Table cell text |
+| `sch-voltage-probe` | Voltage probe arrow |
+| `sch-voltage-probe-label` | Voltage probe label |
+| `sch-grid` | Optional schematic grid group |
+| `sch-labeled-points` | Optional labeled points group |
