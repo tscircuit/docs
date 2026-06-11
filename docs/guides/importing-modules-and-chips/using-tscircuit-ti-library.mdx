@@ -1,0 +1,85 @@
+---
+title: Using the tscircuit TI Library
+sidebar_position: 5
+description: Import Texas Instruments parts from the tscircuit TI library and connect to pins inside the imported subcircuit.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `@tsci/tscircuit.ti` package provides ready-to-use Texas Instruments
+subcircuits. Import the part you need, place it on a board, then connect other
+components to pins inside that subcircuit with selector strings.
+
+Install the library in a local tscircuit project:
+
+```bash
+bun add @tsci/tscircuit.ti
+```
+
+Then import a component from the package:
+
+```tsx
+import { INA237 } from "@tsci/tscircuit.ti"
+```
+
+## Preview a TI Part
+
+This example places an `INA237` current, voltage, and power monitor on a small
+board.
+
+<CircuitPreview
+  defaultView="schematic"
+  hide3DTab
+  code={`
+    import { INA237 } from "@tsci/tscircuit.ti"
+
+    export default () => (
+      <board width="18mm" height="14mm">
+        <INA237 name="INA237" />
+      </board>
+    )
+  `}
+/>
+
+## Connect to a Pin Inside the Subcircuit
+
+Imported TI parts are subcircuits. To connect an external component to a pin
+inside the subcircuit, use the component name followed by the internal part and
+pin selector.
+
+In this example, `R11.pin1` connects to the `SCL` pin on the internal `J1` pinheader
+inside the `INA237` subcircuit:
+
+<CircuitPreview
+  defaultView="schematic"
+  hide3DTab
+  code={`
+    import { INA237 } from "@tsci/tscircuit.ti"
+
+    export default () => (
+      <board width="22mm" height="16mm">
+        <INA237 name="INA237" />
+        <resistor
+          name="R11"
+          resistance="1k"
+          footprint="0402"
+          pcbX={7}
+          pcbY={-3}
+          connections={{
+            pin1: ".INA237 .J1 .SCL",
+          }}
+        />
+      </board>
+    )
+  `}
+/>
+
+The selector `".INA237 .U1 .VS"` means:
+
+- `.INA237` selects the placed `INA237` subcircuit
+- `.J1` selects the internal pinheader inside that subcircuit
+- `.SCL` selects the `SCL` pin on that pinheader
+
+Use the same pattern for other exported TI parts and their internal pins.
