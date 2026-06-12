@@ -1,0 +1,144 @@
+---
+title: Using ViaGrid / Prefabricated Vias with the Autorouter
+description: Use autorouter="laser_prefab" with a generated grid of assignable prefabricated vias.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# Using ViaGrid / Prefabricated Vias with the Autorouter
+
+Use `autorouter="laser_prefab"` when your board process gives you a fixed set of
+prefabricated vias and you want the autorouter to claim those vias instead of
+placing arbitrary new ones.
+
+The key is to add vias with `netIsAssignable={true}`. These vias start without a
+net, then the `laser_prefab` autorouter can assign each via to a signal when it
+needs a layer change.
+
+## A small ViaGrid example
+
+This example connects a top-layer SMD IC on the left to a bottom-layer SMD IC on
+the right. Because both endpoints are surface-mount pads, the route needs a
+layer change; there are no plated through-hole pads that would already connect
+the layers.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  entrypoint="index.circuit.tsx"
+  mainComponentPath="index.circuit.tsx"
+  fsMap={{
+    "index.circuit.tsx": `import {
+  controllerPins,
+  peripheralPins,
+  PrefabViaField,
+} from "./via-grid-helpers"
+
+export default () => (
+  <board
+    width="60mm"
+    height="30mm"
+    layers={2}
+    autorouter="laser_prefab"
+    autorouterEffortLevel="10x"
+    defaultTraceWidth="0.1mm"
+    minTraceWidth="0.08mm"
+  >
+    <chip
+      name="U_CTRL"
+      footprint="soic8"
+      pinLabels={controllerPins}
+      pcbX={-18}
+      pcbY={0}
+    />
+    <chip
+      name="U_RIGHT"
+      footprint="soic8"
+      pinLabels={peripheralPins}
+      layer="bottom"
+      pcbX={18}
+      pcbY={0}
+      pcbRotation={180}
+    />
+
+    <PrefabViaField />
+
+    <trace from=".U_CTRL .VCC" to=".U_RIGHT .VCC" />
+    <trace from=".U_CTRL .GND" to=".U_RIGHT .GND" />
+    <trace from=".U_CTRL .CS" to=".U_RIGHT .CS" />
+    <trace from=".U_CTRL .SCK" to=".U_RIGHT .SCK" />
+  </board>
+)`,
+    "via-grid-helpers.tsx": `export const controllerPins = {
+  pin3: "CS",
+  pin5: "VCC",
+  pin7: "SCK",
+  pin8: "GND",
+}
+
+export const peripheralPins = {
+  pin2: "CS",
+  pin4: "GND",
+  pin6: "SCK",
+  pin8: "VCC",
+}
+
+const prefabViaLocations = [-12, -6, 0, 6, 12].flatMap((x) =>
+  [-4, 0, 4].map((y) => ({ x, y })),
+)
+
+export const PrefabViaField = () => (
+  <>
+    {prefabViaLocations.map(({ x, y }, index) => (
+      <via
+        key={\`PV\${index}\`}
+        name={\`PV\${index + 1}\`}
+        fromLayer="top"
+        toLayer="bottom"
+        outerDiameter="0.42mm"
+        holeDiameter="0.18mm"
+        netIsAssignable={true}
+        pcbX={x}
+        pcbY={y}
+      />
+    ))}
+  </>
+)
+`,
+  }}
+/>
+
+## What makes the vias prefabricated
+
+The important part is the `netIsAssignable` via field:
+
+```tsx
+<via
+  fromLayer="top"
+  toLayer="bottom"
+  outerDiameter="0.42mm"
+  holeDiameter="0.18mm"
+  netIsAssignable={true}
+  pcbX={x}
+  pcbY={y}
+/>
+```
+
+Do not connect these vias to `net.GND` or another fixed net unless you want them
+to be stitching vias. For prefab routing, leave them assignable so the router can
+reserve each via for whichever trace needs it.
+
+## Tuning the grid
+
+- Keep the grid pitch matched to your fabrication process.
+- Leave keepout space around dense footprints so the generated vias do not sit
+  under pads.
+- Arrange SMD pins and component rotations so the example demonstrates prefab
+  via use without unnecessary crossings.
+- Use `autorouterEffortLevel="5x"` or higher when the grid is dense or many
+  traces are competing for the same vias.
+- Verify the snippet in an isolated playground before publishing it:
+
+```bash
+bunx tsci build your-file.circuit.tsx
+```
