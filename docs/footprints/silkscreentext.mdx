@@ -32,6 +32,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | `anchorAlignment` | enum   | Alignment of the text. One of "center", "top_left", "top_right", "bottom_left", "bottom_right". Defaults to "center". |
 | `font`            | enum   | Optional. The font type, e.g. `"tscircuit2024"`.                                                                |
 | `fontSize`        | length | Optional. The size of the font. If not specified, inherits from the board's `pcbStyle.silkscreenFontSize` if set. |
+| `pcbRotation`     | angle  | Optional. Rotation of the text on the PCB. Defaults to `0`.                                                     |
 | `isKnockout`      | boolean| Optional. If true, the text will "knock out" the silkscreen background around it.                              |
 | `knockoutPadding` | length | Optional. Padding around the text when `isKnockout` is true. Can be a single value or individual sides (e.g., `knockoutPaddingLeft`). |
 
