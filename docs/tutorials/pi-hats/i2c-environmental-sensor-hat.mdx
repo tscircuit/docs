@@ -1,0 +1,312 @@
+---
+title: Building an I2C Environmental Sensor HAT
+description: >-
+  This tutorial walks through an I2C environmental sensor HAT built around a
+  BME280 breakout, with pull-up resistors, an optional OLED header, and layout
+  guidance for a clean Raspberry Pi accessory board.
+---
+
+## Overview
+
+This tutorial shows how to build a compact Raspberry Pi HAT for monitoring
+temperature, humidity, and pressure. The board keeps the wiring simple:
+
+- A BME280 sensor breakout on the I2C bus
+- 4.7k pull-up resistors on SDA and SCL
+- Decoupling for a quiet 3.3V rail
+- An optional OLED header that shares the same bus
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <pinheader
+      name="J_SENSOR"
+      pinCount={4}
+      gender="female"
+      footprint="pinrow4"
+      pinLabels={["GND", "3V3", "SDA", "SCL"]}
+      showSilkscreenPinLabels
+      pcbX={-18}
+      pcbY={-8}
+    />
+
+    <pinheader
+      name="J_OLED"
+      pinCount={4}
+      gender="female"
+      footprint="pinrow4"
+      pinLabels={["GND", "3V3", "SDA", "SCL"]}
+      showSilkscreenPinLabels
+      pcbX={18}
+      pcbY={8}
+    />
+
+    <resistor name="R1" resistance="4.7k" footprint="0603" pcbX={-2} pcbY={-10} />
+    <resistor name="R2" resistance="4.7k" footprint="0603" pcbX={-2} pcbY={-4} />
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={2} pcbY={4} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={8} pcbY={4} />
+
+    <trace from=".J_SENSOR > .pin1" to=".HAT1_chip .GND_1" />
+    <trace from=".J_SENSOR > .pin2" to=".HAT1_chip .V3_3_1" />
+    <trace from=".J_SENSOR > .pin3" to=".HAT1_chip .GPIO_2" />
+    <trace from=".J_SENSOR > .pin4" to=".HAT1_chip .GPIO_3" />
+    <trace from=".J_SENSOR > .pin3" to=".R1 > .pin2" />
+    <trace from=".J_SENSOR > .pin4" to=".R2 > .pin2" />
+
+    <trace from=".J_OLED > .pin1" to=".HAT1_chip .GND_2" />
+    <trace from=".J_OLED > .pin2" to=".HAT1_chip .V3_3_2" />
+    <trace from=".J_OLED > .pin3" to=".HAT1_chip .GPIO_2" />
+    <trace from=".J_OLED > .pin4" to=".HAT1_chip .GPIO_3" />
+    <trace from=".J_OLED > .pin3" to=".R1 > .pin2" />
+    <trace from=".J_OLED > .pin4" to=".R2 > .pin2" />
+
+    <trace from=".R1 > .pin1" to=".HAT1_chip .V3_3_1" />
+    <trace from=".R2 > .pin1" to=".HAT1_chip .V3_3_2" />
+    <trace from=".C1 > .pin1" to=".HAT1_chip .V3_3_1" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".C2 > .pin1" to=".HAT1_chip .V3_3_2" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Requirements
+
+For this bounty, the board needs to cover:
+
+- A BME280-based I2C sensor
+- Pull-ups on SDA and SCL
+- An optional OLED display connection
+- A pin header for external access
+- Schematic, code, and layout guidance
+
+## Why this circuit works
+
+The BME280 is a good fit for environmental monitoring because it gives you
+temperature, humidity, and pressure over I2C. On a Raspberry Pi HAT, the bus
+should stay tidy:
+
+- Use 3.3V logic
+- Add pull-ups if the bus does not already provide them
+- Keep decoupling close to the sensor power pins
+- Route SDA and SCL as short, matched traces where practical
+
+By default, many BME280 breakouts use I2C address `0x77`. If the SDO pin is
+tied low, the address can change to `0x76`, so note that in the build guide if
+you expect multiple sensors on the same bus.
+
+## BME280 integration
+
+The BME280 should sit directly on the I2C bus with a clean 3.3V supply and a
+short return path. That keeps the sensor readable and avoids the kind of noise
+that can make environmental readings look jumpy.
+
+For the build note, call out these details:
+
+- wire VCC to 3.3V unless the breakout explicitly supports something else
+- wire SDA and SCL to the Pi-compatible I2C pins
+- keep pull-ups on the same board if the upstream bus does not already provide them
+- add local decoupling near the sensor power pins
+- note the address selection pin if the breakout exposes one
+
+That gives readers a simple path from the schematic to the first sensor read.
+
+## Microcontroller code examples
+
+If the reader wants to test the sensor outside the Pi first, include a small
+microcontroller sketch they can adapt. The goal is not to build a full firmware
+package here, just enough code to prove the bus and the sensor are alive.
+
+```cpp
+#include <Wire.h>
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+}
+
+void loop() {
+  Serial.println("Read BME280 data here");
+  delay(1000);
+}
+```
+
+For a Python-based board, a tiny MicroPython example works just as well:
+
+```python
+from machine import I2C, Pin
+import time
+
+i2c = I2C(0, sda=Pin(0), scl=Pin(1))
+
+while True:
+    print("scan:", i2c.scan())
+    time.sleep(1)
+```
+
+These snippets keep the tutorial grounded in a real bring-up path: connect the
+bus, confirm the device responds, then move on to the full build.
+
+## Step 1: Place the sensor module
+
+Start with the sensor module and expose the bus through a simple 4-pin header.
+That makes the board easy to test on a bench before any enclosure work.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <pinheader
+      name="J_SENSOR"
+      pinCount={4}
+      gender="female"
+      footprint="pinrow4"
+      pinLabels={["GND", "3V3", "SDA", "SCL"]}
+      showSilkscreenPinLabels
+      pcbX={-12}
+      pcbY={0}
+    />
+
+    <trace from=".J_SENSOR > .pin1" to=".HAT1_chip .GND_1" />
+    <trace from=".J_SENSOR > .pin2" to=".HAT1_chip .V3_3_1" />
+    <trace from=".J_SENSOR > .pin3" to=".HAT1_chip .GPIO_2" />
+    <trace from=".J_SENSOR > .pin4" to=".HAT1_chip .GPIO_3" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 2: Add pull-ups and decoupling
+
+I2C behaves best when the pull-ups live on the same board as the bus owner.
+For this layout, 4.7k is a safe default for the short traces on a HAT.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <pinheader
+      name="J_SENSOR"
+      pinCount={4}
+      gender="female"
+      footprint="pinrow4"
+      pinLabels={["GND", "3V3", "SDA", "SCL"]}
+      showSilkscreenPinLabels
+      pcbX={-12}
+      pcbY={0}
+    />
+    <resistor name="R1" resistance="4.7k" footprint="0603" pcbX={-2} pcbY={-8} />
+    <resistor name="R2" resistance="4.7k" footprint="0603" pcbX={-2} pcbY={-2} />
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={4} pcbY={3} />
+
+    <trace from=".J_SENSOR > .pin1" to=".HAT1_chip .GND_1" />
+    <trace from=".J_SENSOR > .pin2" to=".HAT1_chip .V3_3_1" />
+    <trace from=".J_SENSOR > .pin3" to=".HAT1_chip .GPIO_2" />
+    <trace from=".J_SENSOR > .pin4" to=".HAT1_chip .GPIO_3" />
+    <trace from=".J_SENSOR > .pin3" to=".R1 > .pin2" />
+    <trace from=".J_SENSOR > .pin4" to=".R2 > .pin2" />
+    <trace from=".R1 > .pin1" to=".HAT1_chip .V3_3_1" />
+    <trace from=".R2 > .pin1" to=".HAT1_chip .V3_3_2" />
+    <trace from=".C1 > .pin1" to=".HAT1_chip .V3_3_1" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 3: Add the optional OLED header
+
+The OLED is easiest to support as a second I2C header so the same firmware can
+drive both parts of the board.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <pinheader
+      name="J_SENSOR"
+      pinCount={4}
+      gender="female"
+      footprint="pinrow4"
+      pinLabels={["GND", "3V3", "SDA", "SCL"]}
+      showSilkscreenPinLabels
+      pcbX={-18}
+      pcbY={-6}
+    />
+    <pinheader
+      name="J_OLED"
+      pinCount={4}
+      gender="female"
+      footprint="pinrow4"
+      pinLabels={["GND", "3V3", "SDA", "SCL"]}
+      showSilkscreenPinLabels
+      pcbX={18}
+      pcbY={6}
+    />
+    <resistor name="R1" resistance="4.7k" footprint="0603" pcbX={0} pcbY={-12} />
+    <resistor name="R2" resistance="4.7k" footprint="0603" pcbX={0} pcbY={-6} />
+
+    <trace from=".J_SENSOR > .pin1" to=".HAT1_chip .GND_1" />
+    <trace from=".J_SENSOR > .pin2" to=".HAT1_chip .V3_3_1" />
+    <trace from=".J_SENSOR > .pin3" to=".HAT1_chip .GPIO_2" />
+    <trace from=".J_SENSOR > .pin4" to=".HAT1_chip .GPIO_3" />
+    <trace from=".J_SENSOR > .pin3" to=".R1 > .pin2" />
+    <trace from=".J_SENSOR > .pin4" to=".R2 > .pin2" />
+    <trace from=".J_OLED > .pin1" to=".HAT1_chip .GND_2" />
+    <trace from=".J_OLED > .pin2" to=".HAT1_chip .V3_3_2" />
+    <trace from=".J_OLED > .pin3" to=".HAT1_chip .GPIO_2" />
+    <trace from=".J_OLED > .pin4" to=".HAT1_chip .GPIO_3" />
+    <trace from=".J_OLED > .pin3" to=".R1 > .pin2" />
+    <trace from=".J_OLED > .pin4" to=".R2 > .pin2" />
+    <trace from=".R1 > .pin1" to=".HAT1_chip .V3_3_1" />
+    <trace from=".R2 > .pin1" to=".HAT1_chip .V3_3_2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Firmware example
+
+The firmware side can stay small. A typical CircuitPython loop looks like this:
+
+```python
+import board
+import busio
+import time
+import adafruit_bme280.basic as adafruit_bme280
+
+i2c = busio.I2C(board.SCL, board.SDA)
+sensor = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x77)
+
+while True:
+    print(
+        f"T={sensor.temperature:.1f} C",
+        f"H={sensor.humidity:.1f} %",
+        f"P={sensor.pressure:.1f} hPa",
+    )
+    time.sleep(2)
+```
+
+If you wire SDO low and use address `0x76`, update the constructor to match.
+
+## PCB layout guidance
+
+Keep these parts close together when you move from schematic to board:
+
+- Put the sensor near an edge or vent opening if you want better airflow
+- Keep the decoupling capacitor right next to the sensor power pins
+- Run SDA and SCL together and avoid long stubs
+- Place pull-ups near the bus owner, not out at the edge connector
+- Leave space around the sensor so a later enclosure does not trap heat
+
+## What to check before publishing
+
+- The sensor, pull-ups, and OLED header all share the same I2C bus
+- The board stays on 3.3V logic
+- The example code uses the same I2C address you document
+- The layout makes room for airflow around the sensor
