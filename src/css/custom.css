@@ -534,70 +534,70 @@ figure img {
 .theme-doc-sidebar-item-category-level-1:nth-child(1)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/book-open.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Tutorials section */
 .theme-doc-sidebar-item-category-level-1:nth-child(2)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/graduation-cap.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Building Electronics section */
 .theme-doc-sidebar-item-category-level-1:nth-child(3)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/cpu.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Guides section */
 .theme-doc-sidebar-item-category-level-1:nth-child(4)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/compass.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Built-in Elements section */
 .theme-doc-sidebar-item-category-level-1:nth-child(5)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/puzzle.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Command Line Interface section */
 .theme-doc-sidebar-item-category-level-1:nth-child(6)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/terminal.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Footprints section */
 .theme-doc-sidebar-item-category-level-1:nth-child(7)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/footprints.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Contributing section */
 .theme-doc-sidebar-item-category-level-1:nth-child(8)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/heart-handshake.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Web APIs section */
 .theme-doc-sidebar-item-category-level-1:nth-child(9)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/globe.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Icon for Advanced section */
 .theme-doc-sidebar-item-category-level-1:nth-child(10)
   > .menu__list-item-collapsible
   > .menu__link::before {
-  background-image: url(~lucide-static/icons/flask-conical.svg);
+  background-image: url("/logo/ts.svg");
 }
 
 /* Dark mode adjustments for top-level icons only */
