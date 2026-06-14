@@ -1,0 +1,303 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: >-
+  Build a Raspberry Pi HAT with a PAM8403 Class D stereo amplifier for high-efficiency audio output using tscircuit.
+---
+
+## Overview
+
+This tutorial walks you through building a Raspberry Pi HAT with a PAM8403 Class D audio amplifier. The finished board delivers 3W per channel stereo audio from the Pi's PWM outputs, with volume control and speaker terminal connections.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="AMP_HAT">
+    {/* PAM8403 Class D Amplifier */}
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["INL+"],
+        pin2: ["INL-"],
+        pin3: ["PVDD1"],
+        pin4: ["OUTL+"],
+        pin5: ["OUTL-"],
+        pin6: ["PGND1"],
+        pin7: ["PGND2"],
+        pin8: ["OUTR-"],
+        pin9: ["OUTR+"],
+        pin10: ["PVDD2"],
+        pin11: ["INR-"],
+        pin12: ["INR+"],
+        pin13: ["VDD"],
+        pin14: ["MUTE"],
+        pin15: ["NC"],
+        pin16: ["SHUTDOWN"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["INL+", "INL-", "INR+", "INR-", "VDD", "MUTE", "SHUTDOWN"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["OUTL+", "OUTL-", "OUTR+", "OUTR-", "PVDD1", "PVDD2", "PGND1", "PGND2"],
+          direction: "top-to-bottom",
+        },
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    {/* Input coupling capacitors - Left channel */}
+    <capacitor name="C1" capacitance="1uF" footprint="0402" pcbX={-15} pcbY={-5} />
+    {/* Input coupling capacitors - Right channel */}
+    <capacitor name="C2" capacitance="1uF" footprint="0402" pcbX={-15} pcbY={5} />
+
+    {/* Power supply decoupling */}
+    <capacitor name="C3" capacitance="10uF" footprint="0805" pcbX={10} pcbY={-15} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={15} pcbY={-15} />
+
+    {/* Output filter capacitors */}
+    <capacitor name="C5" capacitance="1uF" footprint="0402" pcbX={15} pcbY={-5} />
+    <capacitor name="C6" capacitance="1uF" footprint="0402" pcbX={15} pcbY={5} />
+
+    {/* Volume control potentiometer */}
+    <chip
+      name="RV1"
+      footprint="0805"
+      manufacturerPartNumber="10k Potentiometer"
+      pcbX={-25}
+      pcbY={0}
+    />
+
+    {/* Pull-up resistor for SHUTDOWN pin (active low) */}
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-10} pcbY={-15} />
+
+    {/* Left speaker terminal */}
+    <chip
+      name="J1"
+      footprint="pinrow2"
+      manufacturerPartNumber="Speaker Terminal L"
+      pcbX={25}
+      pcbY={-5}
+    />
+
+    {/* Right speaker terminal */}
+    <chip
+      name="J2"
+      footprint="pinrow2"
+      manufacturerPartNumber="Speaker Terminal R"
+      pcbX={25}
+      pcbY={5}
+    />
+
+    {/* Audio input from Pi PWM (GPIO18=Left, GPIO13=Right) */}
+    <trace from=".AMP_HAT_chip .GPIO_18" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".U1 .INL+" />
+
+    <trace from=".AMP_HAT_chip .GPIO_13" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".U1 .INR+" />
+
+    {/* Ground references for inputs */}
+    <trace from=".U1 .INL-" to=".AMP_HAT_chip .GND_1" />
+    <trace from=".U1 .INR-" to=".AMP_HAT_chip .GND_1" />
+
+    {/* Power supply - 5V from Pi */}
+    <trace from=".AMP_HAT_chip .V5_1" to=".U1 .VDD" />
+    <trace from=".AMP_HAT_chip .V5_1" to=".U1 .PVDD1" />
+    <trace from=".AMP_HAT_chip .V5_1" to=".U1 .PVDD2" />
+
+    {/* Decoupling caps */}
+    <trace from=".AMP_HAT_chip .V5_1" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin2" to=".AMP_HAT_chip .GND_1" />
+    <trace from=".AMP_HAT_chip .V5_1" to=".C4 > .pin1" />
+    <trace from=".C4 > .pin2" to=".AMP_HAT_chip .GND_1" />
+
+    {/* Ground connections */}
+    <trace from=".U1 .PGND1" to=".AMP_HAT_chip .GND_1" />
+    <trace from=".U1 .PGND2" to=".AMP_HAT_chip .GND_1" />
+
+    {/* Speaker outputs - Left */}
+    <trace from=".U1 .OUTL+" to=".J1 > .pin1" />
+    <trace from=".U1 .OUTL-" to=".J1 > .pin2" />
+
+    {/* Speaker outputs - Right */}
+    <trace from=".U1 .OUTR+" to=".J2 > .pin1" />
+    <trace from=".U1 .OUTR-" to=".J2 > .pin2" />
+
+    {/* Output filter caps */}
+    <trace from=".U1 .OUTL+" to=".C5 > .pin1" />
+    <trace from=".C5 > .pin2" to=".AMP_HAT_chip .GND_1" />
+    <trace from=".U1 .OUTR+" to=".C6 > .pin1" />
+    <trace from=".C6 > .pin2" to=".AMP_HAT_chip .GND_1" />
+
+    {/* SHUTDOWN pin - pull high to enable (active low shutdown) */}
+    <trace from=".U1 .SHUTDOWN" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".AMP_HAT_chip .V5_1" />
+
+    {/* MUTE pin - connect to GPIO for software mute control */}
+    <trace from=".U1 .MUTE" to=".AMP_HAT_chip .GPIO_17" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## What is a Class D Amplifier?
+
+Class D amplifiers use pulse-width modulation (PWM) to switch output transistors fully on or off, achieving efficiencies above 90%. Unlike Class A/B amplifiers that dissipate significant power as heat, Class D amplifiers are ideal for battery-powered and compact designs like Raspberry Pi HATs.
+
+**Key advantages:**
+- **High efficiency** (>90%) — minimal heat generation
+- **Compact size** — no large heatsinks needed
+- **Low power consumption** — runs directly from the Pi's 5V supply
+- **Good audio quality** — modern Class D chips achieve THD+N below 0.1%
+
+## Circuit Design
+
+### PAM8403 Overview
+
+The PAM8403 is a filterless Class D stereo amplifier IC that delivers 3W per channel into 4Ω speakers from a 5V supply. Key specifications:
+
+| Parameter | Value |
+|-----------|-------|
+| Supply voltage | 2.5V – 5.5V |
+| Output power | 3W × 2 (4Ω, 5V, THD=10%) |
+| Efficiency | Up to 90% |
+| THD+N | 0.1% (1W, 4Ω) |
+| SNR | 80dB |
+| Package | SOP-16 |
+
+### Audio Signal Path
+
+```
+Pi GPIO18 (PWM) → C1 (1µF coupling) → PAM8403 INL+ → OUTL+/OUTL- → Left Speaker
+Pi GPIO13 (PWM) → C2 (1µF coupling) → PAM8403 INR+ → OUTR+/OUTR- → Right Speaker
+```
+
+The coupling capacitors (C1, C2) block DC offset from the Pi's PWM output, passing only the AC audio signal to the amplifier inputs.
+
+### Power Supply Filtering
+
+The PAM8403 requires clean power for low-noise operation:
+
+- **C3 (10µF)**: Bulk decoupling for current transients during loud passages
+- **C4 (100nF)**: High-frequency noise filtering
+
+Place these capacitors as close to the VDD and PVDD pins as possible.
+
+### Output Configuration
+
+The PAM8403 uses a bridge-tied load (BTL) output topology. Each speaker connects between the positive and negative output pins — **do not connect either speaker terminal to ground**.
+
+Output filter capacitors (C5, C6) suppress high-frequency switching noise that could cause EMI issues.
+
+## Bill of Materials
+
+| Ref | Component | Value | Package | Qty |
+|-----|-----------|-------|---------|-----|
+| U1 | PAM8403 Class D Amplifier | — | SOP-16 | 1 |
+| C1, C2 | Input coupling capacitor | 1µF | 0402 | 2 |
+| C3 | Bulk decoupling capacitor | 10µF | 0805 | 1 |
+| C4 | HF decoupling capacitor | 100nF | 0402 | 1 |
+| C5, C6 | Output filter capacitor | 1µF | 0402 | 2 |
+| R1 | Shutdown pull-up resistor | 10kΩ | 0402 | 1 |
+| RV1 | Volume potentiometer | 10kΩ | — | 1 |
+| J1, J2 | Speaker screw terminals | 2-pin | 5.08mm | 2 |
+
+## Raspberry Pi Audio Configuration
+
+### Enable PWM Audio Output
+
+Add to `/boot/config.txt`:
+
+```ini
+# Enable PWM audio on GPIO18 and GPIO13
+dtoverlay=pwm-2chan,pin=18,func=2,pin2=13,func2=4
+```
+
+### ALSA Configuration
+
+Create `/etc/asound.conf`:
+
+```conf
+pcm.!default {
+  type hw
+  card 0
+}
+
+ctl.!default {
+  type hw
+  card 0
+}
+```
+
+### Test Audio Output
+
+```bash
+# Play a test tone
+speaker-test -t sine -f 440 -c 2
+
+# Play an audio file
+aplay /usr/share/sounds/alsa/Front_Center.wav
+```
+
+## Software Mute Control
+
+The MUTE pin (connected to GPIO17) allows software-controlled muting:
+
+```python
+import RPi.GPIO as GPIO
+
+MUTE_PIN = 17
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(MUTE_PIN, GPIO.OUT)
+
+def mute():
+    """Pull MUTE low to mute output"""
+    GPIO.output(MUTE_PIN, GPIO.LOW)
+
+def unmute():
+    """Pull MUTE high to enable output"""
+    GPIO.output(MUTE_PIN, GPIO.HIGH)
+
+# Start unmuted
+unmute()
+```
+
+## PCB Layout Guidelines
+
+1. **Ground plane**: Use a solid ground plane on the bottom layer for low-impedance return paths
+2. **Decoupling placement**: C3 and C4 must be within 3mm of VDD/PVDD pins
+3. **Output traces**: Use wide traces (≥0.5mm) for speaker outputs to handle 1A+ peak currents
+4. **Input routing**: Keep audio input traces short and away from power traces to minimize noise coupling
+5. **Thermal relief**: Connect PGND pads to the ground plane with thermal relief for soldering
+
+## Testing Procedure
+
+1. **Visual inspection**: Check for solder bridges, especially on the SOP-16 pads
+2. **Power test**: Apply 5V, verify current draw <10mA with no input signal
+3. **Signal test**: Apply a 1kHz sine wave to one input, verify output on oscilloscope
+4. **Speaker test**: Connect 4Ω or 8Ω speakers, play audio from the Pi
+5. **Thermal test**: Run at full volume for 5 minutes, verify IC temperature stays below 60°C
+
+## Troubleshooting
+
+| Symptom | Possible Cause | Fix |
+|---------|---------------|-----|
+| No output | SHUTDOWN pin low | Check R1 pull-up connection |
+| Distorted audio | Clipping | Reduce input level or use 8Ω speakers |
+| Buzzing/hum | Ground loop | Ensure single-point ground connection |
+| One channel dead | Solder bridge | Inspect SOP-16 pins under magnification |
+| Overheating | Speaker impedance too low | Use 4Ω minimum speakers |
+
+## Next Steps
+
+- Add a hardware volume knob with a rotary encoder and I2C digital potentiometer
+- Integrate with PulseAudio for system-wide audio routing
+- Add a headphone jack with automatic speaker disconnect
+- Design a 3D-printed enclosure for the complete assembly
