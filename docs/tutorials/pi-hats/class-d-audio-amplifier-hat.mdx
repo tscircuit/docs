@@ -1,0 +1,438 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: >-
+  This tutorial walks through a Raspberry Pi HAT built around a PAM8403 class D
+  amplifier, with stereo input, a master volume control, and speaker terminals.
+---
+
+## Overview
+
+This tutorial shows how to build a compact Raspberry Pi HAT for driving a pair
+of small speakers. The board keeps the signal path simple:
+
+- A PAM8403 class D stereo amplifier
+- Stereo audio input from the Pi side
+- A master volume control
+- Separate left and right speaker terminals
+- Decoupling close to the amplifier power pins
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <connector
+      name="J_AUDIO_IN"
+      pinLabels={["L_IN", "R_IN", "GND", "5V"]}
+      schDirection="left"
+      schWidth="18mm"
+      schHeight="10mm"
+      footprint="pinrow4"
+      pcbX={-18}
+      pcbY={-8}
+    />
+
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["L_OUT+"],
+        pin2: ["L_OUT-"],
+        pin3: ["R_OUT-"],
+        pin4: ["R_OUT+"],
+        pin5: ["GND"],
+        pin6: ["VCC"],
+        pin7: ["R_IN"],
+        pin8: ["L_IN"],
+      }}
+      schPinSpacing="8mm"
+      schWidth="28mm"
+      schHeight="16mm"
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <potentiometer
+      name="P1"
+      maxResistance="10k"
+      pinVariant="three_pin"
+      footprint="pinrow3"
+      pcbX={-2}
+      pcbY={-14}
+    />
+
+    <connector
+      name="J_SPK_L"
+      pinLabels={["L+", "L-"]}
+      schDirection="right"
+      schWidth="14mm"
+      schHeight="8mm"
+      footprint="pinrow2"
+      pcbX={18}
+      pcbY={-8}
+    />
+
+    <connector
+      name="J_SPK_R"
+      pinLabels={["R+", "R-"]}
+      schDirection="right"
+      schWidth="14mm"
+      schHeight="8mm"
+      footprint="pinrow2"
+      pcbX={18}
+      pcbY={8}
+    />
+
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={-6} pcbY={4} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={6} pcbY={4} />
+
+    <trace from=".J_AUDIO_IN > .pin1" to=".P1 > .pin1" />
+    <trace from=".J_AUDIO_IN > .pin2" to=".P1 > .pin3" />
+    <trace from=".J_AUDIO_IN > .pin3" to=".HAT1_chip .GND_1" />
+    <trace from=".J_AUDIO_IN > .pin4" to=".U1 .VCC" />
+
+    <trace from=".P1 > .pin2" to=".U1 .L_IN" />
+    <trace from=".P1 > .pin2" to=".U1 .R_IN" />
+    <trace from=".P1 > .pin3" to=".HAT1_chip .GND_2" />
+
+    <trace from=".U1 .L_OUT+" to=".J_SPK_L > .pin1" />
+    <trace from=".U1 .L_OUT-" to=".J_SPK_L > .pin2" />
+    <trace from=".U1 .R_OUT+" to=".J_SPK_R > .pin1" />
+    <trace from=".U1 .R_OUT-" to=".J_SPK_R > .pin2" />
+
+    <trace from=".C1 > .pin1" to=".U1 .VCC" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".C2 > .pin1" to=".U1 .VCC" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Requirements
+
+For this bounty, the board needs to cover:
+
+- A PAM8403 class D amplifier
+- Stereo output at 3W per channel
+- Master volume control
+- Speaker terminals for left and right channels
+- A Raspberry Pi-friendly layout and power path
+
+## Why this circuit works
+
+The PAM8403 is a good fit for a small HAT because it is compact, efficient, and
+does not need the kind of bulky output filtering older amplifier classes need.
+That keeps the board simple:
+
+- Keep the amplifier on 5V power
+- Use short, direct speaker traces
+- Add decoupling close to the amplifier supply pins
+- Route the input and output sections so they do not crowd each other
+
+In a real build, the Pi can feed this HAT from a line-level source or an audio
+interface that exposes stereo left and right channels.
+
+## Class D operation explanation
+
+Class D amplifiers switch their output devices instead of running them in a
+purely linear mode. That matters for a small Raspberry Pi accessory board
+because it keeps heat and power loss down while still driving small speakers
+cleanly.
+
+For this HAT, that means:
+
+- the PAM8403 runs efficiently from 5V
+- the speaker outputs can stay direct and compact
+- the board does not need a large analog power stage
+- short traces and local decoupling help keep the audio path stable
+
+The practical tradeoff is that layout matters. Switching edges and noisy power
+return paths can leak into the audio path if the board is crowded, so the
+placement and routing in the circuit are part of the design, not just the parts
+list.
+
+## Raspberry Pi integration
+
+The HAT should plug into the Pi as a simple audio accessory and keep the
+control story easy for someone following the guide. A good build flow is:
+
+1. Mount the HAT on the Raspberry Pi header.
+2. Feed audio from the Pi or another line-level source.
+3. Power the amplifier from the Pi-friendly 5V rail.
+4. Keep speaker wiring separate from the input side so the channels stay easy to trace.
+
+For the build note, call out that the Pi should provide a stable power path and
+that the amplifier needs enough current headroom for the target speakers.
+If the project uses another audio source, mention the expected line-level input
+so readers know what to connect before they power anything on.
+
+## Audio configuration guide
+
+For a practical Raspberry Pi setup, the important part is making sure the Pi
+audio output is routed to the header the tutorial uses and that the system is
+set to a reasonable default volume before first power-up.
+
+Use this checklist in the guide:
+
+- confirm the Pi is using the intended audio output path
+- start at a low system volume
+- verify left and right channels before connecting speakers
+- test with a quiet audio file first
+- increase volume gradually until the amplifier output is clearly audible
+
+If the repo supports config snippets, add them next to the tutorial so a reader
+can match the board wiring with the software output path. The key outcome is a
+straightforward end-to-end setup from Pi audio to speaker terminals without
+guesswork.
+
+## Step 1: Place the audio input and amplifier
+
+Start with the input connector and the PAM8403 block. That gives you the core
+signal path before you add control and speaker wiring.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <connector
+      name="J_AUDIO_IN"
+      pinLabels={["L_IN", "R_IN", "GND", "5V"]}
+      schDirection="left"
+      schWidth="18mm"
+      schHeight="10mm"
+      footprint="pinrow4"
+      pcbX={-18}
+      pcbY={0}
+    />
+
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["L_OUT+"],
+        pin2: ["L_OUT-"],
+        pin3: ["R_OUT-"],
+        pin4: ["R_OUT+"],
+        pin5: ["GND"],
+        pin6: ["VCC"],
+        pin7: ["R_IN"],
+        pin8: ["L_IN"],
+      }}
+      schPinSpacing="8mm"
+      schWidth="28mm"
+      schHeight="16mm"
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <trace from=".J_AUDIO_IN > .pin1" to=".U1 .L_IN" />
+    <trace from=".J_AUDIO_IN > .pin2" to=".U1 .R_IN" />
+    <trace from=".J_AUDIO_IN > .pin3" to=".HAT1_chip .GND_1" />
+    <trace from=".J_AUDIO_IN > .pin4" to=".U1 .VCC" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 2: Add the master volume control
+
+The simplest way to show volume control is a potentiometer on the input path.
+On a finished board, you would usually use a dual-gang part so both channels
+move together.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <connector
+      name="J_AUDIO_IN"
+      pinLabels={["L_IN", "R_IN", "GND", "5V"]}
+      schDirection="left"
+      schWidth="18mm"
+      schHeight="10mm"
+      footprint="pinrow4"
+      pcbX={-18}
+      pcbY={0}
+    />
+
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["L_OUT+"],
+        pin2: ["L_OUT-"],
+        pin3: ["R_OUT-"],
+        pin4: ["R_OUT+"],
+        pin5: ["GND"],
+        pin6: ["VCC"],
+        pin7: ["R_IN"],
+        pin8: ["L_IN"],
+      }}
+      schPinSpacing="8mm"
+      schWidth="28mm"
+      schHeight="16mm"
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <potentiometer
+      name="P1"
+      maxResistance="10k"
+      pinVariant="three_pin"
+      footprint="pinrow3"
+      pcbX={-2}
+      pcbY={-14}
+    />
+
+    <trace from=".J_AUDIO_IN > .pin1" to=".P1 > .pin1" />
+    <trace from=".J_AUDIO_IN > .pin2" to=".P1 > .pin3" />
+    <trace from=".P1 > .pin2" to=".U1 .L_IN" />
+    <trace from=".P1 > .pin2" to=".U1 .R_IN" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 3: Add the speaker terminals
+
+The output side should be easy to wire and easy to read on the silkscreen. Two
+separate connectors keep the left and right channels obvious.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["L_OUT+"],
+        pin2: ["L_OUT-"],
+        pin3: ["R_OUT-"],
+        pin4: ["R_OUT+"],
+        pin5: ["GND"],
+        pin6: ["VCC"],
+        pin7: ["R_IN"],
+        pin8: ["L_IN"],
+      }}
+      schPinSpacing="8mm"
+      schWidth="28mm"
+      schHeight="16mm"
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <connector
+      name="J_SPK_L"
+      pinLabels={["L+", "L-"]}
+      schDirection="right"
+      schWidth="14mm"
+      schHeight="8mm"
+      footprint="pinrow2"
+      pcbX={18}
+      pcbY={-8}
+    />
+
+    <connector
+      name="J_SPK_R"
+      pinLabels={["R+", "R-"]}
+      schDirection="right"
+      schWidth="14mm"
+      schHeight="8mm"
+      footprint="pinrow2"
+      pcbX={18}
+      pcbY={8}
+    />
+
+    <trace from=".U1 .L_OUT+" to=".J_SPK_L > .pin1" />
+    <trace from=".U1 .L_OUT-" to=".J_SPK_L > .pin2" />
+    <trace from=".U1 .R_OUT+" to=".J_SPK_R > .pin1" />
+    <trace from=".U1 .R_OUT-" to=".J_SPK_R > .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Step 4: Add decoupling
+
+Class D amplifiers are happiest when the supply stays steady. A small ceramic
+capacitor and a larger bulk capacitor help keep the 5V rail calm during audio
+transients.
+
+<CircuitPreview splitView={false} hidePCBTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      manufacturerPartNumber="PAM8403"
+      footprint="sop16"
+      pinLabels={{
+        pin1: ["L_OUT+"],
+        pin2: ["L_OUT-"],
+        pin3: ["R_OUT-"],
+        pin4: ["R_OUT+"],
+        pin5: ["GND"],
+        pin6: ["VCC"],
+        pin7: ["R_IN"],
+        pin8: ["L_IN"],
+      }}
+      schPinSpacing="8mm"
+      schWidth="28mm"
+      schHeight="16mm"
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={-6} pcbY={4} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={6} pcbY={4} />
+
+    <trace from=".C1 > .pin1" to=".U1 .VCC" />
+    <trace from=".C1 > .pin2" to=".HAT1_chip .GND_1" />
+    <trace from=".C2 > .pin1" to=".U1 .VCC" />
+    <trace from=".C2 > .pin2" to=".HAT1_chip .GND_2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Firmware example
+
+The firmware side depends on the audio source you choose. If your Pi is feeding
+the board from a line-level output, the software side can stay very small:
+
+```python
+import time
+
+print("Audio HAT ready")
+while True:
+    time.sleep(1)
+```
+
+If you use a DAC or a USB audio interface upstream, keep the same stereo
+channel naming in your build notes so the wiring stays obvious later.
+
+## PCB layout guidance
+
+Keep these parts close together when you move from schematic to board:
+
+- Put the amplifier near the speaker outputs
+- Keep the input section away from the speaker traces
+- Place the decoupling capacitors right next to the amplifier power pins
+- Give the potentiometer a clear front-panel position if it is user-facing
+- Leave enough space around the speaker terminals for easy wiring
+
+## What to check before publishing
+
+- The input, amplifier, and speaker terminals are clearly labeled
+- The board runs from 5V, not 3.3V
+- The master volume control is documented in the schematic and build notes
+- The decoupling capacitors sit close to the amplifier
+- Left and right speaker outputs are not crossed
