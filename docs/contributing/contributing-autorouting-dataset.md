@@ -3,19 +3,18 @@ title: Contributing Autorouting Datasets
 description: Guidelines for naming, structuring, visualizing, and contributing autorouting datasets.
 ---
 
-Autorouting datasets help contributors compare routers, reproduce failures, and
-keep routing behavior from regressing. This page is a checklist for creating a
-dataset and wiring it into the autorouter; use the linked repositories as the
-source of truth for implementation details.
+Autorouting datasets help develop new features for specific cases. If you are
+running into an autorouter issue, you may be able to generate a dataset: start
+with a `tsci init` project, create samples that replicate the issue, and put the
+dataset into a repo that can be tested directly with our autorouter.
 
 ## Start from an existing dataset
 
 Before creating a new repository, inspect the latest dataset in the same family
 and copy its structure. These repos are good bootstrapping references:
 
-- [`tscircuit/dataset-srj16-bga-breakouts`](https://github.com/tscircuit/dataset-srj16-bga-breakouts)
-  for a generated BGA breakout Simple Route JSON dataset with a Cosmos sample
-  viewer.
+- [`tscircuit/dataset-srj19`](https://github.com/tscircuit/dataset-srj19)
+  for a generated Simple Route JSON dataset with a Cosmos sample viewer.
 - [`tscircuit/dataset-srj18`](https://github.com/tscircuit/dataset-srj18)
   for a dataset generated from KiCad boards.
 - [`tscircuit/tscircuit-autorouter`](https://github.com/tscircuit/tscircuit-autorouter)
@@ -27,82 +26,51 @@ and traces.
 
 ## Name the dataset
 
-Increase the number from the latest known dataset in the same prefix. Use two
-digits for dataset numbers, such as `01`, `02`, or `19`.
-
-| Prefix | Dataset type |
-| --- | --- |
-| `Z` | Zero-obstacle dataset |
-| `SRJ` | Simple Route JSON dataset |
-| `HG` | HyperGraph dataset |
-| `HD` | High-density node dataset, solved |
-| `TS` | tscircuit code dataset |
-
-For example, if the latest Simple Route JSON dataset is `dataset-srj18`, the
-next one should be `dataset-srj19`.
+Use the
+[Dataset Naming Guidelines](https://github.com/tscircuit/handbook/blob/main/guides/dataset-guidelines.md#dataset-naming-guidelines)
+for dataset naming conventions. In brief, increase the number from the latest
+known dataset in the same prefix and use two digits, such as `01`, `02`, or
+`19`.
 
 ## Keep the package GitHub-installable
 
-Dataset packages should install directly from GitHub, because the autorouter
-pins dataset dependencies to repository commits:
+Dataset packages should install directly from GitHub because the autorouter pins
+dataset dependencies to repository commits. Follow the
+[Dataset Library Structure](https://github.com/tscircuit/handbook/blob/main/guides/dataset-guidelines.md#dataset-library-structure)
+guidance, then compare your package structure against the reference dataset
+repos above.
 
-```bash
-bun add https://github.com/tscircuit/dataset-srj19
-```
-
-Follow the structure used by the reference repos instead of inventing a new
-package layout. In general:
-
-- Keep checked-in sample data in `samples/`, `circuits/`, or another predictable
-  dataset directory.
-- Export samples from `index.js` and describe those exports in `index.d.ts`.
-- Point `package.json` `main` at `index.js` and `types` at `index.d.ts`.
-- Do not transpile the dataset package or publish it to npm.
-- Do not add an `index.ts`; it can interfere with type resolution after GitHub
-  installation.
-
-If the dataset starts from Circuit JSON, generate Simple Route JSON with
-`getSimpleRouteJsonFromCircuitJson` from `@tscircuit/core`. The
-[`dataset-srj18` README](https://github.com/tscircuit/dataset-srj18)
-shows that flow for KiCad-derived samples.
+If the dataset starts from Circuit JSON, follow
+[Creating Simple Route JSON from Circuit JSON](https://github.com/tscircuit/handbook/blob/main/guides/dataset-guidelines.md#creating-simple-route-json-from-circuit-json).
+The [`dataset-srj18` README](https://github.com/tscircuit/dataset-srj18) shows
+that flow for KiCad-derived samples.
 
 ## Add a visualization
 
 Every dataset should have a way to inspect samples before running a benchmark.
-Prefer one of these patterns:
-
-- Add a Cosmos sample viewer, like the dataset viewer in
-  [`dataset-srj16-bga-breakouts`](https://github.com/tscircuit/dataset-srj16-bga-breakouts),
-  that lets contributors browse samples and inspect obstacles, connections, and
-  layers with [`graphics-debug`](https://github.com/tscircuit/graphics-debug).
-- Add generated SVGs or SVG snapshot tests with
-  [`circuit-to-svg`](https://github.com/tscircuit/circuit-to-svg) when the
-  dataset starts from Circuit JSON.
-
-The visualization should make the reason for the dataset obvious: a dense node
-layout, a hard obstacle pattern, a known router failure, a solved high-density
-route, or a minimal regression case.
+Use the
+[React Visualizers/Debuggers](https://github.com/tscircuit/handbook/blob/main/guides/bootstrapping-repos.md#react-visualizersdebuggers)
+guide for the Cosmos sample viewer pattern. The
+[`dataset-srj19`](https://github.com/tscircuit/dataset-srj19)
+repo is a good public example of a dataset with a viewer.
 
 ## Add snapshot tests
 
-Include a small test suite that renders representative samples and checks them
-against snapshots. Keep the snapshots easy to inspect when they fail.
-
-Good coverage usually includes:
-
-- A small sample that is easy to reason about.
-- A representative medium sample.
-- The hardest or most failure-prone samples in the dataset.
-- One sample from each generated category, when the generator has categories.
-
-Use Graphic Debug snapshots for routing-focused datasets and `circuit-to-svg`
-snapshots for datasets that need PCB or schematic renderings.
+Use the
+[Dataset Guidelines](https://github.com/tscircuit/handbook/blob/main/guides/dataset-guidelines.md)
+for the dataset structure, then include at least one representative test so
+changes to generated Simple Route JSON or visualization output are easy to
+review.
 
 ## Add the dataset to autorouter benchmarks
 
 After the dataset repository is usable on its own, add a follow-up change to
 [`tscircuit/tscircuit-autorouter`](https://github.com/tscircuit/tscircuit-autorouter)
 so router contributors can run the dataset locally.
+
+After integration, the dataset should appear in the autorouter benchmark list.
+
+![Autorouter benchmark sidebar showing dataset-srj19 selected](/img/autorouter-dataset-srj19-benchmarks.png)
 
 Add the benchmark integration in this order:
 
@@ -112,10 +80,13 @@ Add the benchmark integration in this order:
 3. Add the dataset to `scripts/benchmark/scenarios.ts`: include its short name
    in `DATASET_NAMES`, add aliases, add a loader, add the scenario key pattern,
    and update `DATASET_OPTIONS_LABEL`.
-4. Update `benchmark.sh` help text and dataset parsing so contributors can run
-   the dataset with `./benchmark.sh --dataset srj19`.
-5. Add or update benchmark coverage so `--dataset srj19` works consistently in
-   `benchmark.sh`, `scripts/benchmark/scenarios.ts`, and `run-sample.sh`.
+4. Follow the
+   [`benchmark.sh` guide](https://github.com/tscircuit/handbook/blob/main/guides/benchmark-sh.md)
+   while updating `benchmark.sh` help text and dataset parsing so contributors
+   can run the dataset with `./benchmark.sh --dataset <dataset-name>`.
+5. Add or update benchmark coverage so `--dataset <dataset-name>` works
+   consistently in `benchmark.sh`, `scripts/benchmark/scenarios.ts`, and
+   `run-sample.sh`.
 6. Run one targeted sample and a small benchmark with the dataset name you added
    before opening the PR.
 
