@@ -75,3 +75,233 @@ export default () => (
 )
 `}
 />
+
+## Anchor Alignment
+
+The `anchorAlignment` prop controls how the courtyard outline is positioned relative to its anchor point. This is useful when you need to align the courtyard with a specific corner or edge of the component.
+
+### Center (default)
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={-2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            anchorAlignment="center"
+            outline={[
+              { x: -4, y: -4 },
+              { x: 4, y: -4 },
+              { x: 4, y: 4 },
+              { x: -4, y: 4 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Top Left
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={-2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            anchorAlignment="top_left"
+            outline={[
+              { x: -4, y: -4 },
+              { x: 4, y: -4 },
+              { x: 4, y: 4 },
+              { x: -4, y: 4 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Top Right
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={-2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            anchorAlignment="top_right"
+            outline={[
+              { x: -4, y: -4 },
+              { x: 4, y: -4 },
+              { x: 4, y: 4 },
+              { x: -4, y: 4 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Bottom Left
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={-2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            anchorAlignment="bottom_left"
+            outline={[
+              { x: -4, y: -4 },
+              { x: 4, y: -4 },
+              { x: 4, y: 4 },
+              { x: -4, y: 4 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+### Bottom Right
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="20mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={-2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={2} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            anchorAlignment="bottom_right"
+            outline={[
+              { x: -4, y: -4 },
+              { x: 4, y: -4 },
+              { x: 4, y: 4 },
+              { x: -4, y: 4 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+## Irregular Polygon Courtyard
+
+For components with non-rectangular outlines (e.g., L-shaped packages), use a multi-point outline to follow the package contour:
+
+<CircuitPreview
+  showCourtyards
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+export default () => (
+  <board width="30mm" height="24mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <platedhole shape="circle" pcbX={-3} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={1} pcbY={-2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={-3} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <platedhole shape="circle" pcbX={1} pcbY={2} outerDiameter={1.6} holeDiameter={0.8} />
+          <courtyardoutline
+            outline={[
+              { x: -5, y: -4 },
+              { x: 3, y: -4 },
+              { x: 3, y: 0 },
+              { x: 5, y: 0 },
+              { x: 5, y: 4 },
+              { x: -5, y: 4 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `outline` | `{ x: number, y: number }[]` | Array of points defining the courtyard polygon. Coordinates are relative to the component origin. |
+| `anchorAlignment` | `"center" \| "top_left" \| "top_right" \| "bottom_left" \| "bottom_right"` | Controls how the courtyard is positioned relative to its anchor point. Defaults to `"center"`. |
+
+## Tips
+
+- Use `anchorAlignment` to offset the courtyard toward a specific corner when placing components near board edges
+- For irregular packages (e.g., L-shaped), add more outline points to follow the contour closely
+- Courtyard outlines are shown in the PCB view and exported to Gerber files for assembly reference
