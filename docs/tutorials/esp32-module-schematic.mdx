@@ -1,0 +1,404 @@
+---
+title: ESP32 WiFi Module Reference Schematic
+description: >-
+  Build a complete ESP32-WROOM-32 reference schematic using tscircuit. Covers
+  the module, USB-UART bridge, power regulation, and programming interface.
+---
+
+## Overview
+
+In this tutorial, we will design a **schematic-only** reference circuit for an
+**ESP32-WROOM-32** based WiFi development board. This is the same class of
+circuit found on popular ESP32 devkits like the NodeMCU-ESP32 and ESP-WROVER-KIT.
+
+The schematic includes:
+- **ESP32-WROOM-32 module** (the core WiFi/BT SoC + antenna)
+- **CH340C USB-UART bridge** for programming over USB
+- **USB Type-C connector** for power and serial communication
+- **AMS1117-3.3 LDO regulator** to drop USB 5V to 3.3V
+- **Reset (EN) and Boot (IO0) buttons** for the standard Espressif programming sequence
+- **Decoupling capacitors** on all power rails
+
+All JLCPCB part numbers are chosen to use components readily available from their
+Basic/Extended parts library.
+
+We use `routingDisabled` throughout so this tutorial stays focused on the
+schematic logic — no PCB layout is required.
+
+---
+
+## Bill of Materials
+
+| Ref | Part | Description | JLCPCB# |
+|-----|------|-------------|---------|
+| U1 | ESP32-WROOM-32 | WiFi+BT module, 38-pin | C95209 |
+| U2 | CH340C | USB-UART bridge, SOP-16 | C84681 |
+| U3 | AMS1117-3.3 | 3.3V LDO, SOT-223 | C6186 |
+| J1 | USB-C 2.0 | Power + data connector | C165948 |
+| SW1 | 3x4x2mm tactile | EN (reset) button | C318884 |
+| SW2 | 3x4x2mm tactile | IO0 (boot) button | C318884 |
+| C1–C4 | 100nF 0402 | Decoupling caps | C307331 |
+| C5 | 10µF 0805 | Bulk cap, USB input | C15850 |
+| C6 | 10µF 0805 | Bulk cap, 3.3V rail | C15850 |
+| R1 | 10kΩ 0402 | EN pull-up | C25744 |
+| R2 | 10kΩ 0402 | IO0 pull-up | C25744 |
+
+---
+
+## Schematic Design
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="60mm" height="40mm" routingDisabled>
+
+      {/* ── ESP32-WROOM-32 module ─────────────────────────────────── */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-WROOM-32"
+        supplierPartNumbers={{ jlcpcb: ["C95209"] }}
+        schPortArrangement={{
+          leftSide: {
+            pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8","pin9","pin10",
+                   "pin11","pin12","pin13","pin14","pin15","pin16","pin17","pin18","pin19"],
+            direction: "top-to-bottom",
+          },
+          rightSide: {
+            pins: ["pin38","pin37","pin36","pin35","pin34","pin33","pin32","pin31","pin30",
+                   "pin29","pin28","pin27","pin26","pin25","pin24","pin23","pin22","pin21","pin20"],
+            direction: "top-to-bottom",
+          },
+          bottomSide: {
+            pins: ["pin39"],
+            direction: "left-to-right",
+          },
+        }}
+        pinLabels={{
+          pin1:  "GND",
+          pin2:  "3V3",
+          pin3:  "EN",
+          pin4:  "SENSOR_VP (IO36)",
+          pin5:  "SENSOR_VN (IO39)",
+          pin6:  "IO34",
+          pin7:  "IO35",
+          pin8:  "IO32",
+          pin9:  "IO33",
+          pin10: "IO25",
+          pin11: "IO26",
+          pin12: "IO27",
+          pin13: "IO14",
+          pin14: "IO12",
+          pin15: "GND",
+          pin16: "IO13",
+          pin17: "SD2 (IO9)",
+          pin18: "SD3 (IO10)",
+          pin19: "CMD (IO11)",
+          pin20: "5V (VIN)",
+          pin21: "CLK (IO6)",
+          pin22: "SD0 (IO7)",
+          pin23: "SD1 (IO8)",
+          pin24: "IO15",
+          pin25: "IO2",
+          pin26: "IO0",
+          pin27: "IO4",
+          pin28: "IO16",
+          pin29: "IO17",
+          pin30: "IO5",
+          pin31: "IO18",
+          pin32: "IO19",
+          pin33: "GND",
+          pin34: "IO21",
+          pin35: "RXD0 (IO3)",
+          pin36: "TXD0 (IO1)",
+          pin37: "IO22",
+          pin38: "IO23",
+          pin39: "GND (shield)",
+        }}
+        schWidth={4}
+        schHeight={11}
+        schX={0}
+        schY={0}
+      />
+
+      {/* ── CH340C USB-UART Bridge ────────────────────────────────── */}
+      <chip
+        name="U2"
+        manufacturerPartNumber="CH340C"
+        supplierPartNumbers={{ jlcpcb: ["C84681"] }}
+        schPortArrangement={{
+          leftSide: {
+            pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8"],
+            direction: "top-to-bottom",
+          },
+          rightSide: {
+            pins: ["pin16","pin15","pin14","pin13","pin12","pin11","pin10","pin9"],
+            direction: "top-to-bottom",
+          },
+        }}
+        pinLabels={{
+          pin1:  "GND",
+          pin2:  "TXD",
+          pin3:  "RXD",
+          pin4:  "V3",
+          pin5:  "UD+",
+          pin6:  "UD-",
+          pin7:  "XI",
+          pin8:  "XO",
+          pin9:  "CTS#",
+          pin10: "DSR#",
+          pin11: "RI#",
+          pin12: "DCD#",
+          pin13: "DTR#",
+          pin14: "RTS#",
+          pin15: "R232",
+          pin16: "VCC",
+        }}
+        schWidth={3}
+        schHeight={5}
+        schX={-12}
+        schY={2}
+      />
+
+      {/* ── AMS1117-3.3 LDO Regulator ────────────────────────────── */}
+      <chip
+        name="U3"
+        manufacturerPartNumber="AMS1117-3.3"
+        supplierPartNumbers={{ jlcpcb: ["C6186"] }}
+        schPortArrangement={{
+          leftSide: {
+            pins: ["pin1"],
+            direction: "top-to-bottom",
+          },
+          rightSide: {
+            pins: ["pin3"],
+            direction: "top-to-bottom",
+          },
+          bottomSide: {
+            pins: ["pin2"],
+            direction: "left-to-right",
+          },
+        }}
+        pinLabels={{
+          pin1: "GND (ADJ)",
+          pin2: "OUT (3V3)",
+          pin3: "IN (5V)",
+        }}
+        schWidth={1.5}
+        schHeight={1.5}
+        schX={-12}
+        schY={-4}
+      />
+
+      {/* ── USB-C Connector ───────────────────────────────────────── */}
+      <chip
+        name="J1"
+        manufacturerPartNumber="USB-C 2.0"
+        supplierPartNumbers={{ jlcpcb: ["C165948"] }}
+        schPortArrangement={{
+          leftSide: {
+            pins: ["pin1","pin2","pin3","pin4","pin5","pin6"],
+            direction: "top-to-bottom",
+          },
+        }}
+        pinLabels={{
+          pin1: "VBUS",
+          pin2: "D-",
+          pin3: "D+",
+          pin4: "CC1",
+          pin5: "CC2",
+          pin6: "GND",
+        }}
+        schWidth={1.5}
+        schHeight={2.5}
+        schX={-20}
+        schY={-4}
+      />
+
+      {/* ── EN (Reset) Button ─────────────────────────────────────── */}
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        schX={6}
+        schY={2}
+        schRotation="90deg"
+        connections={{ pin1: "net.GND", pin2: ".U1 .EN" }}
+      />
+
+      {/* ── IO0 (Boot) Button ─────────────────────────────────────── */}
+      <pushbutton
+        name="SW2"
+        footprint="pushbutton"
+        schX={6}
+        schY={0}
+        schRotation="90deg"
+        connections={{ pin1: "net.GND", pin2: ".U1 .IO0" }}
+      />
+
+      {/* ── EN pull-up (R1: 10k) ──────────────────────────────────── */}
+      <resistor
+        name="R1"
+        resistance="10k"
+        footprint="0402"
+        schX={6}
+        schY={4}
+        schRotation="90deg"
+        connections={{ pin1: "net.V33", pin2: ".U1 .EN" }}
+      />
+
+      {/* ── IO0 pull-up (R2: 10k) ─────────────────────────────────── */}
+      <resistor
+        name="R2"
+        resistance="10k"
+        footprint="0402"
+        schX={6}
+        schY={-2}
+        schRotation="90deg"
+        connections={{ pin1: "net.V33", pin2: ".U1 .IO0" }}
+      />
+
+      {/* ── Decoupling caps on 3V3 rail ───────────────────────────── */}
+      <capacitor name="C1" capacitance="100nF" footprint="0402"
+        schX={3} schY={-3} schRotation="90deg"
+        connections={{ pos: "net.V33", neg: "net.GND" }} />
+      <capacitor name="C2" capacitance="100nF" footprint="0402"
+        schX={3} schY={-5} schRotation="90deg"
+        connections={{ pos: "net.V33", neg: "net.GND" }} />
+
+      {/* ── Bulk cap on 3V3 output ────────────────────────────────── */}
+      <capacitor name="C6" capacitance="10uF" footprint="0805"
+        schX={-9} schY={-4} schRotation="90deg"
+        connections={{ pos: "net.V33", neg: "net.GND" }} />
+
+      {/* ── Decoupling caps on CH340C ─────────────────────────────── */}
+      <capacitor name="C3" capacitance="100nF" footprint="0402"
+        schX={-16} schY={4} schRotation="90deg"
+        connections={{ pos: "net.V33", neg: "net.GND" }} />
+      <capacitor name="C4" capacitance="100nF" footprint="0402"
+        schX={-16} schY={2} schRotation="90deg"
+        connections={{ pos: ".U2 .V3", neg: "net.GND" }} />
+
+      {/* ── Bulk cap on USB 5V input ──────────────────────────────── */}
+      <capacitor name="C5" capacitance="10uF" footprint="0805"
+        schX={-16} schY={-6} schRotation="90deg"
+        connections={{ pos: "net.V5", neg: "net.GND" }} />
+
+      {/* ── Power net connections ─────────────────────────────────── */}
+      {/* USB-C power in */}
+      <trace from=".J1 .VBUS" to="net.V5" />
+      <trace from=".J1 .GND" to="net.GND" />
+
+      {/* LDO: 5V in, 3.3V out */}
+      <trace from=".U3 .IN" to="net.V5" />
+      <trace from=".U3 .GND" to="net.GND" />
+      <trace from=".U3 .OUT" to="net.V33" />
+
+      {/* ESP32 power */}
+      <trace from=".U1 .3V3" to="net.V33" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND_2" to="net.GND" />
+      <trace from=".U1 .GND_3" to="net.GND" />
+
+      {/* CH340C power */}
+      <trace from=".U2 .VCC" to="net.V33" />
+      <trace from=".U2 .GND" to="net.GND" />
+
+      {/* USB data lines: USB-C → CH340C */}
+      <trace from=".J1 .D-"  to=".U2 .UD-" />
+      <trace from=".J1 .D+"  to=".U2 .UD+" />
+
+      {/* Serial crossover: CH340C TX → ESP32 RX, CH340C RX → ESP32 TX */}
+      <trace from=".U2 .TXD" to=".U1 .RXD0" />
+      <trace from=".U2 .RXD" to=".U1 .TXD0" />
+
+      {/* Auto-reset wiring: DTR/RTS → EN/IO0 via transistors (simplified) */}
+      <trace from=".U2 .DTR#" to="net.DTR" />
+      <trace from=".U2 .RTS#" to="net.RTS" />
+
+    </board>
+  )
+}
+`} />
+
+---
+
+## How It Works
+
+### Power Supply Chain
+
+```
+USB-C (5V) ──► AMS1117-3.3 (LDO) ──► 3.3V rail ──► ESP32 + CH340C
+```
+
+The USB-C connector provides 5V from the host computer. The AMS1117-3.3 LDO
+regulator drops this to the 3.3V required by the ESP32 module and CH340C chip.
+Bulk capacitors (C5 on 5V, C6 on 3.3V) stabilize each rail; small 100nF
+decoupling caps (C1–C4) sit close to each IC power pin to suppress high-frequency noise.
+
+### USB-to-Serial Programming
+
+The **CH340C** (U2) acts as a bridge between the USB 2.0 full-speed data lines
+and the ESP32's UART0 (`TXD0`/`RXD0`). The cross-wired connection is intentional:
+the CH340C's `TXD` (transmit) goes to the ESP32's `RXD0` (receive), and vice versa.
+
+### Reset and Boot Sequence
+
+Espressif modules enter **bootloader mode** by:
+1. Pulling `IO0` (GPIO0) LOW before reset
+2. Releasing the `EN` (chip-enable / reset) line HIGH
+
+This is normally automated via the CH340C's `DTR#` and `RTS#` signals and a pair
+of NPN transistors (omitted here for schematic clarity — see
+[Espressif's auto-download circuit](https://docs.espressif.com/projects/esptool/en/latest/esp8266/reference/reset-sequence.html)
+for the full circuit).
+
+The manual buttons `SW1` (EN) and `SW2` (IO0) let you trigger this sequence by
+hand:
+1. Hold SW2 (IO0) to pull GPIO0 low
+2. Press and release SW1 (EN) to reset the chip
+3. Release SW2 — ESP32 starts in download mode
+
+Pull-up resistors R1 and R2 (10kΩ each) ensure both lines default HIGH when
+the buttons are released.
+
+### ESP32-WROOM-32 Module
+
+The WROOM-32 is a **complete module** — it integrates the bare ESP32 SoC, 4MB
+of SPI flash, a PCB antenna, RF matching network, and shielding can. You connect
+only the functional I/O pins you need; the module handles the RF side internally.
+
+Key pins to be aware of:
+
+| Pin | Function |
+|-----|----------|
+| `EN` | Active-high chip enable / reset (pull HIGH, button to GND) |
+| `IO0 (GPIO0)` | Boot mode select; LOW during reset enters bootloader |
+| `TXD0 / RXD0` | UART0 — primary serial console and firmware download port |
+| `3V3` | 3.3V power input |
+| `GND` | Ground (multiple pins, all must be connected) |
+
+---
+
+## Extending the Design
+
+Once the basic schematic is working you can add:
+
+- **Status LED** — a 3.3V-tolerant LED + series resistor on any GPIO (e.g. GPIO2, which is the
+  onboard LED on most NodeMCU boards)
+- **Battery charger** — a TP4056-based LiPo charger feeding the 3.7V battery into the 5V rail
+  through a boost converter
+- **Sensor headers** — I²C (GPIO21/22) or SPI (GPIO18/19/23) pin headers for adding external
+  sensors without reflowing the board
+- **Auto-reset circuit** — NPN transistors (BC817/MMBT3904) on `DTR#` and `RTS#` to
+  automate bootloader entry from `esptool`
+
+---
+
+## Resources
+
+- [ESP32-WROOM-32 Datasheet](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+- [CH340C Datasheet](https://www.wch-ic.com/downloads/CH340DS1_PDF.html)
+- [AMS1117 Datasheet](http://www.advanced-monolithic.com/pdf/ds1117.pdf)
+- [Espressif Programming Guide — Boot Mode](https://docs.espressif.com/projects/esptool/en/latest/esp8266/reference/reset-sequence.html)
+- [JLCPCB Part: C95209 (ESP32-WROOM-32)](https://jlcpcb.com/parts/componentSearch?searchTxt=C95209)
