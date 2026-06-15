@@ -120,9 +120,9 @@ export const LedLetter = ({
               schY={gy * 3 + 1.2}
             />
             {/* Connections */}
-            <trace from={`${power}`} to={`.${resName} > pin1`} />
-            <trace from={`.${resName} > pin2`} to={`.${ledName} > anode`} />
-            <trace from={`.${ledName} > cathode`} to={`${gnd}`} />
+            <trace from={`${power}`} to={`.${resName} > .pin1`} />
+            <trace from={`.${resName} > .pin2`} to={`.${ledName} > .anode`} />
+            <trace from={`.${ledName} > .cathode`} to={`${gnd}`} />
           </group>
         )
       })}

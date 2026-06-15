@@ -31,7 +31,7 @@ import { useESP32_D0WD } from "@tsci/AnasSarkiz.ESP32_D0WD"
 import { useResistor, useCapacitor } from "@tscircuit/core"
 
 export const ESP32PcbLayout = () => {
-  const ESP32 = useESP32("U2")
+  const ESP32 = useESP32_D0WD("U2")
 
   // Capacitors with footprints and PCB placement
   const C1 = useCapacitor("C1", { capacitance: "10pF", footprint: "0402", pcbX: -6, pcbY: 12 })
