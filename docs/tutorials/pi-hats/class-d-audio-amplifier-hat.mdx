@@ -136,6 +136,59 @@ That keeps the board simple:
 In a real build, the Pi can feed this HAT from a line-level source or an audio
 interface that exposes stereo left and right channels.
 
+## Class D operation explanation
+
+Class D amplifiers switch their output devices instead of running them in a
+purely linear mode. That matters for a small Raspberry Pi accessory board
+because it keeps heat and power loss down while still driving small speakers
+cleanly.
+
+For this HAT, that means:
+
+- the PAM8403 runs efficiently from 5V
+- the speaker outputs can stay direct and compact
+- the board does not need a large analog power stage
+- short traces and local decoupling help keep the audio path stable
+
+The practical tradeoff is that layout matters. Switching edges and noisy power
+return paths can leak into the audio path if the board is crowded, so the
+placement and routing in the circuit are part of the design, not just the parts
+list.
+
+## Raspberry Pi integration
+
+The HAT should plug into the Pi as a simple audio accessory and keep the
+control story easy for someone following the guide. A good build flow is:
+
+1. Mount the HAT on the Raspberry Pi header.
+2. Feed audio from the Pi or another line-level source.
+3. Power the amplifier from the Pi-friendly 5V rail.
+4. Keep speaker wiring separate from the input side so the channels stay easy to trace.
+
+For the build note, call out that the Pi should provide a stable power path and
+that the amplifier needs enough current headroom for the target speakers.
+If the project uses another audio source, mention the expected line-level input
+so readers know what to connect before they power anything on.
+
+## Audio configuration guide
+
+For a practical Raspberry Pi setup, the important part is making sure the Pi
+audio output is routed to the header the tutorial uses and that the system is
+set to a reasonable default volume before first power-up.
+
+Use this checklist in the guide:
+
+- confirm the Pi is using the intended audio output path
+- start at a low system volume
+- verify left and right channels before connecting speakers
+- test with a quiet audio file first
+- increase volume gradually until the amplifier output is clearly audible
+
+If the repo supports config snippets, add them next to the tutorial so a reader
+can match the board wiring with the software output path. The key outcome is a
+straightforward end-to-end setup from Pi audio to speaker terminals without
+guesswork.
+
 ## Step 1: Place the audio input and amplifier
 
 Start with the input connector and the PAM8403 block. That gives you the core
