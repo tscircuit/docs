@@ -1,0 +1,388 @@
+---
+title: 'Arduino Uno Schematic'
+description: 'Design the schematic layout for an Arduino Uno development board'
+icon: 'code'
+---
+
+## Overview
+
+In this tutorial, we will build the schematic for the **Arduino Uno** development board. This tutorial focuses on the schematic only, utilizing the `routingDisabled` property to bypass PCB trace routing.
+
+We will include the core microcontroller (**ATmega328P**), the USB-to-serial communication microcontroller (**ATmega16U2**), a USB Type-B port, crystal oscillators, power decoupling, and pin headers.
+
+---
+
+## 📋 Components Checklist
+
+Our schematic will consist of:
+1. **ATmega328P-PU MCU (U1)** — The main processor.
+2. **ATmega16U2 MCU (U2)** — The USB-to-Serial converter.
+3. **USB Type-B Female Connector (J1)** — For programming and power.
+4. **16MHz Crystal Oscillator (Y1)** — Clock source for the main MCU.
+5. **Decoupling Capacitors & Pull-up Resistors** — To stabilize power and reset lines.
+6. **Arduino Header Connectors (J2, J3, J4, J5)** — Standard pinout headers.
+
+---
+
+## 🛠️ Step-by-Step Implementation
+
+Create a new tutorial snippet in your editor or local project workspace and implement the circuit using the code below.
+
+### 1. Main Schematic Design
+
+We wrap our components inside a `<group subcircuit routingDisabled>` block to ensure we focus purely on the logical connections and schematic symbols.
+
+```tsx title="ArduinoUno.tsx"
+import React from "react"
+import { useResistor, useCapacitor } from "@tscircuit/core"
+
+export const ArduinoUno = () => {
+  // Main MCU: ATmega328P (28-pin DIP)
+  const atmega328p = (
+    <chip
+      name="U1"
+      manufacturerPartNumber="ATMEGA328P-PU"
+      schPortArrangement={{
+        leftSide: {
+          pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6", "pin7", "pin8", "pin9", "pin10", "pin11", "pin12", "pin13", "pin14"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["pin28", "pin27", "pin26", "pin25", "pin24", "pin23", "pin22", "pin21", "pin20", "pin19", "pin18", "pin17", "pin16", "pin15"],
+          direction: "top-to-bottom",
+        }
+      }}
+      pinLabels={{
+        pin1: "/RESET",
+        pin2: "RXD (PD0)",
+        pin3: "TXD (PD1)",
+        pin4: "INT0 (PD2)",
+        pin5: "INT1 (PD3)",
+        pin6: "T0 (PD4)",
+        pin7: "VCC",
+        pin8: "GND",
+        pin9: "XTAL1",
+        pin10: "XTAL2",
+        pin11: "T1 (PD5)",
+        pin12: "AIN0 (PD6)",
+        pin13: "AIN1 (PD7)",
+        pin14: "ICP1 (PB0)",
+        pin15: "PB1",
+        pin16: "SS (PB2)",
+        pin17: "MOSI (PB3)",
+        pin18: "MISO (PB4)",
+        pin19: "SCK (PB5)",
+        pin20: "AVCC",
+        pin21: "AREF",
+        pin22: "GND",
+        pin23: "ADC0 (PC0)",
+        pin24: "ADC1 (PC1)",
+        pin25: "ADC2 (PC2)",
+        pin26: "ADC3 (PC3)",
+        pin27: "ADC4 (PC4)",
+        pin28: "ADC5 (PC5)",
+      }}
+      schWidth={3}
+      schHeight={6.5}
+      schX={0}
+      schY={0}
+    />
+  )
+
+  // USB-to-Serial MCU: ATmega16U2 (32-pin TQFP)
+  const atmega16u2 = (
+    <chip
+      name="U2"
+      manufacturerPartNumber="ATMEGA16U2-MU"
+      schPortArrangement={{
+        leftSide: {
+          pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6", "pin7", "pin8"],
+          direction: "top-to-bottom",
+        },
+        bottomSide: {
+          pins: ["pin9", "pin10", "pin11", "pin12", "pin13", "pin14", "pin15", "pin16"],
+          direction: "left-to-right",
+        },
+        rightSide: {
+          pins: ["pin24", "pin23", "pin22", "pin21", "pin20", "pin19", "pin18", "pin17"],
+          direction: "top-to-bottom",
+        },
+        topSide: {
+          pins: ["pin32", "pin31", "pin30", "pin29", "pin28", "pin27", "pin26", "pin25"],
+          direction: "left-to-right",
+        }
+      }}
+      pinLabels={{
+        pin1: "XTAL1",
+        pin2: "PC0",
+        pin3: "GND",
+        pin4: "VCC",
+        pin5: "PC2",
+        pin6: "PD0",
+        pin7: "PD1",
+        pin8: "PD2",
+        pin9: "PD3",
+        pin10: "PD4",
+        pin11: "PD5",
+        pin12: "PD6",
+        pin13: "PD7",
+        pin14: "PB0",
+        pin15: "PB1",
+        pin16: "PB2",
+        pin17: "PB3",
+        pin18: "PB4",
+        pin19: "PB5",
+        pin20: "PB6",
+        pin21: "PB7",
+        pin22: "PC7",
+        pin23: "PC6",
+        pin24: "PC5",
+        pin25: "PC4",
+        pin26: "UGND",
+        pin27: "UCAP",
+        pin28: "UVCC",
+        pin29: "D-",
+        pin30: "D+",
+        pin31: "UVSS",
+        pin32: "PC1",
+      }}
+      schWidth={4}
+      schHeight={4.5}
+      schX={-10}
+      schY={5}
+    />
+  )
+
+  // USB Port (Type B)
+  const usbPort = (
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB-B"
+      schPortArrangement={{
+        leftSide: {
+          pins: ["pin1", "pin2", "pin3", "pin4"],
+          direction: "top-to-bottom",
+        }
+      }}
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "D-",
+        pin3: "D+",
+        pin4: "GND",
+      }}
+      schWidth={1.5}
+      schHeight={2}
+      schX={-18}
+      schY={5}
+    />
+  )
+
+  // 16MHz Crystal for U1
+  const crystal = (
+    <chip
+      name="Y1"
+      manufacturerPartNumber="16MHz-Oscillator"
+      schPortArrangement={{
+        leftSide: { pins: ["pin1"] },
+        rightSide: { pins: ["pin2"] },
+      }}
+      pinLabels={{
+        pin1: "XTAL1",
+        pin2: "XTAL2",
+      }}
+      schWidth={1}
+      schHeight={1}
+      schX={-4}
+      schY={-4}
+    />
+  )
+
+  // Arduino Headers
+  const powerHeader = (
+    <chip
+      name="J2"
+      manufacturerPartNumber="HEADER-8"
+      schPortArrangement={{
+        rightSide: {
+          pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6", "pin7", "pin8"],
+          direction: "top-to-bottom",
+        }
+      }}
+      pinLabels={{
+        pin1: "NC",
+        pin2: "IOREF",
+        pin3: "RESET",
+        pin4: "3.3V",
+        pin5: "5V",
+        pin6: "GND",
+        pin7: "GND",
+        pin8: "VIN",
+      }}
+      schWidth={1.2}
+      schHeight={3}
+      schX={8}
+      schY={6}
+    />
+  )
+
+  const analogHeader = (
+    <chip
+      name="J3"
+      manufacturerPartNumber="HEADER-6"
+      schPortArrangement={{
+        rightSide: {
+          pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6"],
+          direction: "top-to-bottom",
+        }
+      }}
+      pinLabels={{
+        pin1: "A0",
+        pin2: "A1",
+        pin3: "A2",
+        pin4: "A3",
+        pin5: "A4",
+        pin6: "A5",
+      }}
+      schWidth={1.2}
+      schHeight={2.2}
+      schX={8}
+      schY={1.5}
+    />
+  )
+
+  const digitalHeader1 = (
+    <chip
+      name="J4"
+      manufacturerPartNumber="HEADER-8"
+      schPortArrangement={{
+        rightSide: {
+          pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6", "pin7", "pin8"],
+          direction: "top-to-bottom",
+        }
+      }}
+      pinLabels={{
+        pin1: "RX<-0",
+        pin2: "TX->1",
+        pin3: "D2",
+        pin4: "D3",
+        pin5: "D4",
+        pin6: "D5",
+        pin7: "D6",
+        pin8: "D7",
+      }}
+      schWidth={1.2}
+      schHeight={3}
+      schX={8}
+      schY={-3}
+    />
+  )
+
+  const digitalHeader2 = (
+    <chip
+      name="J5"
+      manufacturerPartNumber="HEADER-10"
+      schPortArrangement={{
+        rightSide: {
+          pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6", "pin7", "pin8", "pin9", "pin10"],
+          direction: "top-to-bottom",
+        }
+      }}
+      pinLabels={{
+        pin1: "D8",
+        pin2: "D9",
+        pin3: "D10",
+        pin4: "D11",
+        pin5: "D12",
+        pin6: "D13",
+        pin7: "GND",
+        pin8: "AREF",
+        pin9: "SDA",
+        pin10: "SCL",
+      }}
+      schWidth={1.2}
+      schHeight={3.8}
+      schX={8}
+      schY={-7.5}
+    />
+  )
+
+  // Passives
+  const R1 = useResistor("R1", { resistance: "10k" }) // Pull-up for RESET
+  const C1 = useCapacitor("C1", { capacitance: "100nF" }) // Decoupling capacitor
+
+  return (
+    <group subcircuit routingDisabled>
+      {/* Active Components */}
+      {atmega328p}
+      {atmega16u2}
+      {usbPort}
+      {crystal}
+
+      {/* Headers */}
+      {powerHeader}
+      {analogHeader}
+      {digitalHeader1}
+      {digitalHeader2}
+
+      {/* Passives */}
+      <R1 pin1=".U1 .pin1" pin2="net.5V" schX={-3} schY={2} />
+      <C1 pos="net.5V" neg="net.GND" schX={-3} schY={0.5} />
+
+      {/* Basic Traces */}
+      <trace from=".U1 .pin7" to="net.5V" />
+      <trace from=".U1 .pin20" to="net.5V" />
+      <trace from=".U1 .pin8" to="net.GND" />
+      <trace from=".U1 .pin22" to="net.GND" />
+      
+      {/* Crystal Osc Connection */}
+      <trace from=".U1 .pin9" to=".Y1 .pin1" />
+      <trace from=".U1 .pin10" to=".Y1 .pin2" />
+
+      {/* USB-to-Serial Traces */}
+      <trace from=".J1 .pin1" to="net.5V" />
+      <trace from=".J1 .pin2" to=".U2 .pin29" />
+      <trace from=".J1 .pin3" to=".U2 .pin30" />
+      <trace from=".J1 .pin4" to="net.GND" />
+      
+      <trace from=".U2 .pin6" to=".U1 .pin2" /> {/* RX -> TX */}
+      <trace from=".U2 .pin7" to=".U1 .pin3" /> {/* TX -> RX */}
+
+      {/* Main MCU Analog Header Traces */}
+      <trace from=".U1 .pin23" to=".J3 .pin1" />
+      <trace from=".U1 .pin24" to=".J3 .pin2" />
+      <trace from=".U1 .pin25" to=".J3 .pin3" />
+      <trace from=".U1 .pin26" to=".J3 .pin4" />
+      <trace from=".U1 .pin27" to=".J3 .pin5" />
+      <trace from=".U1 .pin28" to=".J3 .pin6" />
+
+      {/* Main MCU Digital Header Traces */}
+      <trace from=".U1 .pin2" to=".J4 .pin1" />
+      <trace from=".U1 .pin3" to=".J4 .pin2" />
+      <trace from=".U1 .pin4" to=".J4 .pin3" />
+      <trace from=".U1 .pin5" to=".J4 .pin4" />
+      <trace from=".U1 .pin6" to=".J4 .pin5" />
+      <trace from=".U1 .pin11" to=".J4 .pin6" />
+      <trace from=".U1 .pin12" to=".J4 .pin7" />
+      <trace from=".U1 .pin13" to=".J4 .pin8" />
+
+      <trace from=".U1 .pin14" to=".J5 .pin1" />
+      <trace from=".U1 .pin15" to=".J5 .pin2" />
+      <trace from=".U1 .pin16" to=".J5 .pin3" />
+      <trace from=".U1 .pin17" to=".J5 .pin4" />
+      <trace from=".U1 .pin18" to=".J5 .pin5" />
+      <trace from=".U1 .pin19" to=".J5 .pin6" />
+      
+      {/* Ground headers */}
+      <trace from="net.GND" to=".J2 .pin6" />
+      <trace from="net.GND" to=".J2 .pin7" />
+      <trace from="net.GND" to=".J5 .pin7" />
+    </group>
+  )
+}
+```
+
+---
+
+## Conclusion
+
+This completes the schematic setup for the Arduino Uno. Since `routingDisabled` is set to `true`, the layout compiler skips the routing phases, keeping compilation fast and visual rendering focused purely on schematic symbols.
