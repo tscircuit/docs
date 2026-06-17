@@ -1,0 +1,197 @@
+---
+title: Building a MicroMod Carrier Board
+description: Learn how to model a SparkFun MicroMod carrier board in tscircuit using an M.2-style connector, power regulation, and simple breakout headers.
+---
+
+## Overview
+
+MicroMod uses an M.2-style connector to let you swap processor boards while
+keeping the carrier board fixed. SparkFun's own docs describe the processor
+board as approximately 22x22 mm and the carrier board as the place where the
+M.2 connector and the rest of the application circuitry live.
+
+This tutorial shows the basic carrier-board pattern in tscircuit:
+
+1. Place the MicroMod socket with `standard="m2"`
+2. Add the power input and 3.3V rail
+3. Break out the interfaces you need
+4. Keep the layout compact and leave edge clearance for the connector
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## 1. Start with the carrier layout
+
+The important part of a MicroMod design is the connector socket. In tscircuit,
+the `connector` element supports an `m2` standard hint, which is a good fit for
+the MicroMod interface on the carrier side.
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+  <board width="62mm" height="42mm">
+    <connector
+      name="J1"
+      standard="m2"
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <connector
+      name="J2"
+      standard="usb_c"
+      pcbX={-22}
+      pcbY={0}
+    />
+
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="AP2112K-3.3"
+      pinLabels={{
+        pin1: "VIN",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "VOUT",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VIN", "GND"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["EN", "VOUT"],
+        },
+      }}
+      schX={22}
+      schY={0}
+      pcbX={22}
+      pcbY={0}
+    />
+
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0603"
+      schX={22}
+      schY={12}
+      pcbX={22}
+      pcbY={10}
+    />
+
+    <capacitor
+      name="C2"
+      capacitance="100nF"
+      footprint="0402"
+      schX={22}
+      schY={18}
+      pcbX={22}
+      pcbY={14}
+    />
+
+    <pinheader
+      name="J3"
+      pinCount={4}
+      footprint="pinrow4"
+      pinLabels={["3V3", "GND", "SDA", "SCL"]}
+      showSilkscreenPinLabels
+      pcbX={-10}
+      pcbY={12}
+    />
+
+    <led
+      name="D1"
+      color="green"
+      footprint="0603"
+      pcbX={-10}
+      pcbY={-12}
+    />
+
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0402"
+      pcbX={-4}
+      pcbY={-12}
+    />
+  </board>
+)
+`} />
+
+## 2. Why the M.2 connector matters
+
+SparkFun's MicroMod ecosystem uses the M.2 connector as the mechanical and
+electrical interface between a processor board and a carrier board. In practical
+terms, that means your tscircuit model should start with the socket, not with
+the processor module itself.
+
+That model lets you treat the processor board as a swappable part while the
+carrier board owns the user-facing features: power, sensor headers, LEDs, and
+any other peripherals.
+
+## 3. Add power regulation first
+
+Carrier boards usually need to turn an incoming supply into a stable 3.3V rail
+for the module and for any low-voltage peripherals.
+
+The example above uses a small LDO regulator footprint and two decoupling
+capacitors. That is enough to show the pattern:
+
+- keep the regulator close to the socket
+- place the larger bulk capacitor near the input
+- place the smaller bypass capacitor near the output
+
+## 4. Break out only the signals you need
+
+MicroMod exposes a lot of functionality through the connector, but most carrier
+boards only need a few buses.
+
+Common breakouts include:
+
+- I2C for sensors and displays
+- UART for debug output
+- SPI for high-speed peripherals
+- GPIO for simple control signals
+
+Use headers, test pads, or dedicated connectors to make those signals easy to
+access. In the example, the four-pin header is a simple stand-in for the kind of
+small expansion block you would normally add to a carrier board.
+
+## 5. Keep the physical layout gentle
+
+SparkFun's design notes for MicroMod call out the M.2 connector keepout and
+placement behavior. That means the socket should be the layout anchor of the
+carrier board, with the rest of the circuit arranged around it.
+
+Good habits:
+
+- leave room at the connector edge for insertion
+- keep high-current power parts close to the regulator
+- keep fast or noisy signals away from the antenna side of the module
+- label breakout headers clearly on silkscreen
+
+## 6. Example wiring strategy
+
+The exact MicroMod pinout is defined by SparkFun's pinout PDFs, so the carrier
+board should be wired according to the bus plan you need rather than by copying
+random signals across the page.
+
+For a simple carrier board, a safe starting plan is:
+
+1. Route the module's 3.3V and ground rails first
+2. Add one I2C bus for a sensor or display
+3. Add one UART or SPI bus if you need debugging or storage
+4. Leave the rest of the socket unused until you have a real use for it
+
+## 7. Where MicroMod fits in the docs
+
+This tutorial is a good starting point when you want to:
+
+- design a carrier board around a MicroMod processor module
+- add a few peripherals without hard-wiring the whole board
+- document a reusable carrier layout in tscircuit
+
+## References
+
+- [SparkFun - Designing with MicroMod](https://learn.sparkfun.com/tutorials/designing-with-micromod/all)
+- [SparkFun - Getting Started with MicroMod](https://learn.sparkfun.com/tutorials/getting-started-with-micromod/all)
+- [SparkFun - MicroMod Interface Pinout PDF](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
