@@ -1,0 +1,318 @@
+---
+title: Building an I2C Environmental Sensor Module
+description: Build a compact I2C environmental sensor board with a BME280, pull-up resistors, an optional OLED display, and an external pin header.
+---
+
+## Overview
+
+This tutorial walks through building a small environmental sensor module that
+exposes temperature, humidity, and pressure over I2C.
+
+We will:
+
+1. Place a BME280 sensor on the board
+2. Add the I2C pull-up resistors
+3. Add an optional OLED display on the same bus
+4. Break the signals out to a pin header
+5. Finish with PCB placement guidance and a simple firmware example
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## 1. Build the schematic
+
+The core of the board is the BME280. It shares the I2C bus with the optional
+OLED display, so both parts sit on the same `SDA` and `SCL` nets.
+
+The module also needs pull-up resistors on the I2C lines. A typical starting
+point is `4.7k` on both `SDA` and `SCL`.
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="70mm" height="42mm">
+    <pinheader
+      name="J1"
+      pinCount={4}
+      footprint="pinrow4"
+      gender="male"
+      pitch="2.54mm"
+      showSilkscreenPinLabels
+      pinLabels={["V3V3", "GND", "SDA", "SCL"]}
+      connections={{
+        pin1: "net.V3V3",
+        pin2: "net.GND",
+        pin3: "net.SDA",
+        pin4: "net.SCL",
+      }}
+      schX={-18}
+      schY={0}
+    />
+
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="BME280"
+      pinLabels={{
+        pin1: "VDD",
+        pin2: "VDDIO",
+        pin3: "GND",
+        pin4: "SCL",
+        pin5: "SDA",
+        pin6: "CS",
+        pin7: "SDO",
+        pin8: "INT",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["GND", "SDA", "SDO", "INT"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["VDD", "VDDIO", "SCL", "CS"],
+        },
+      }}
+      connections={{
+        pin1: "net.V3V3",
+        pin2: "net.V3V3",
+        pin3: "net.GND",
+        pin4: "net.SCL",
+        pin5: "net.SDA",
+        pin6: "net.V3V3",
+        pin7: "net.GND",
+      }}
+      noConnect={["pin8"]}
+      schX={0}
+      schY={0}
+    />
+
+    <resistor
+      name="R1"
+      footprint="0402"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3V3", pin2: "net.SDA" }}
+      schX={18}
+      schY={6}
+    />
+
+    <resistor
+      name="R2"
+      footprint="0402"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3V3", pin2: "net.SCL" }}
+      schX={18}
+      schY={-6}
+    />
+
+    <capacitor
+      name="C1"
+      footprint="0402"
+      capacitance="100nF"
+      connections={{ pos: "net.V3V3", neg: "net.GND" }}
+      schX={0}
+      schY={15}
+    />
+
+    <chip
+      name="U2"
+      footprint="soic8"
+      manufacturerPartNumber="SSD1306"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+        pin3: "SCL",
+        pin4: "SDA",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["GND", "SDA"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["VCC", "SCL"],
+        },
+      }}
+      connections={{
+        pin1: "net.V3V3",
+        pin2: "net.GND",
+        pin3: "net.SCL",
+        pin4: "net.SDA",
+      }}
+      schX={36}
+      schY={0}
+    />
+  </board>
+)
+`} />
+
+## 2. Why the pull-ups matter
+
+I2C lines are open-drain, so they need pull-ups to return to logic high.
+Without them, the sensor and display may look wired correctly but still fail to
+respond.
+
+If you are designing for a 3.3V host, keep the pull-ups on the same rail the
+host uses. That keeps the bus voltage safe for the microcontroller.
+
+## 3. Add the optional OLED display
+
+The OLED shares the same `SDA` and `SCL` nets. In the preview below, the display
+is treated as an optional second I2C device on the same board.
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+  <board width="72mm" height="38mm">
+    <pinheader
+      name="J1"
+      pinCount={4}
+      footprint="pinrow4"
+      gender="male"
+      pitch="2.54mm"
+      showSilkscreenPinLabels
+      pinLabels={["V3V3", "GND", "SDA", "SCL"]}
+      connections={{
+        pin1: "net.V3V3",
+        pin2: "net.GND",
+        pin3: "net.SDA",
+        pin4: "net.SCL",
+      }}
+      pcbX={-24}
+      pcbY={0}
+      pcbRotation={90}
+    />
+
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="BME280"
+      pinLabels={{
+        pin1: "VDD",
+        pin2: "VDDIO",
+        pin3: "GND",
+        pin4: "SCL",
+        pin5: "SDA",
+        pin6: "CS",
+        pin7: "SDO",
+        pin8: "INT",
+      }}
+      connections={{
+        pin1: "net.V3V3",
+        pin2: "net.V3V3",
+        pin3: "net.GND",
+        pin4: "net.SCL",
+        pin5: "net.SDA",
+        pin6: "net.V3V3",
+        pin7: "net.GND",
+      }}
+      noConnect={["pin8"]}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <resistor
+      name="R1"
+      footprint="0402"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3V3", pin2: "net.SDA" }}
+      pcbX={8}
+      pcbY={-10}
+    />
+
+    <resistor
+      name="R2"
+      footprint="0402"
+      resistance="4.7k"
+      connections={{ pin1: "net.V3V3", pin2: "net.SCL" }}
+      pcbX={8}
+      pcbY={-6}
+    />
+
+    <capacitor
+      name="C1"
+      footprint="0402"
+      capacitance="100nF"
+      connections={{ pos: "net.V3V3", neg: "net.GND" }}
+      pcbX={8}
+      pcbY={6}
+    />
+
+    <chip
+      name="U2"
+      footprint="soic8"
+      manufacturerPartNumber="SSD1306"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+        pin3: "SCL",
+        pin4: "SDA",
+      }}
+      connections={{
+        pin1: "net.V3V3",
+        pin2: "net.GND",
+        pin3: "net.SCL",
+        pin4: "net.SDA",
+      }}
+      pcbX={26}
+      pcbY={0}
+    />
+  </board>
+)
+`} />
+
+## 4. Firmware example
+
+Once the board is built, the host MCU only needs to bring up I2C and read the
+sensor.
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BME280.h>
+
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+
+  if (!bme.begin(0x76)) {
+    Serial.println("BME280 not found");
+    while (true) {}
+  }
+}
+
+void loop() {
+  Serial.print("Temperature: ");
+  Serial.print(bme.readTemperature());
+  Serial.println(" C");
+
+  Serial.print("Humidity: ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
+
+  Serial.print("Pressure: ");
+  Serial.print(bme.readPressure() / 100.0F);
+  Serial.println(" hPa");
+
+  delay(1000);
+}
+```
+
+If your display is populated, you can print the same readings there too.
+
+## 5. PCB layout guidance
+
+Place the BME280 near the edge of the board where airflow is good, but keep it
+away from regulators and other warm parts. Put the pull-up resistors close to
+the I2C connector or the sensor. Keep the traces short and avoid running the
+bus through noisy power areas.
+
+The optional OLED can sit on the opposite side of the board so the layout stays
+compact and the sensor still has room to breathe.
+
+## Next steps
+
+- Export the board and check that the BOM only contains the parts you actually
+  want to assemble
+- Swap the `0x76` address to `0x77` if you strap `SDO` high instead of low
+- Add a real enclosure if you want the sensor to behave more like a finished
+  product
