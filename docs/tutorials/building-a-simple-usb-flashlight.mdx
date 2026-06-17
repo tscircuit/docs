@@ -1,42 +1,285 @@
 ---
 title: Building a Simple USB Flashlight
-description: Learn how to build a simple USB-powered flashlight circuit using tscircuit with a push button, LED, and USB-C connector.
+description: Build a tiny USB-powered flashlight with a USB-C connector, pushbutton, LED, and current-limiting resistor.
 ---
 
 ## Overview
 
-This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+This tutorial walks through a tiny flashlight circuit that turns on when you
+press a momentary pushbutton.
 
-import TscircuitIframe from "@site/src/components/TscircuitIframe"
+The design is intentionally small:
 
-<TscircuitIframe defaultView="3d" code={`
+1. USB-C provides 5V power
+2. A pushbutton acts as the on/off control
+3. An LED provides the light source
+4. A resistor limits LED current
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## 1. Start with the full circuit
+
+The complete circuit is shown below so you can see the end result first.
+
+<CircuitPreview defaultView="3d" code={`
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
   return (
-   <board width="12mm" height="30mm">
+    <board width="18mm" height="32mm">
       <SmdUsbC
-      name="J1"
-      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
-      pcbY={-10}
-      schX={-4}
-    />
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        pcbY={-11}
+        schX={-7}
+      />
+
       <pushbutton
         name="SW1"
         footprint="pushbutton"
         layer="top"
-        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
+        connections={{
+          pin1: ".R1 > .pos",
+          pin2: "net.VBUS",
+        }}
         pcbX={0}
         pcbY={-1}
       />
-      <led name="LED" color="red" footprint="0603" pcbY={12} />
-     
-      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
-      <trace from=".R1 .neg" to=".LED .pos" />
-      <trace from=".LED .neg" to="net.GND" />
+
+      <resistor
+        name="R1"
+        footprint="0603"
+        resistance="1k"
+        schX={4}
+        schY={0}
+        pcbX={4}
+        pcbY={7}
+      />
+
+      <led
+        name="LED1"
+        color="red"
+        footprint="0603"
+        schX={8}
+        schY={0}
+        pcbX={0}
+        pcbY={12}
+      />
+
+      <trace from=".R1 .neg" to=".LED1 .pos" />
+      <trace from=".LED1 .neg" to="net.GND" />
     </board>
   )
 }
 `} />
+
+## 2. Add the power input
+
+USB-C gives us a simple 5V source. In this board, we only use `VBUS` and `GND`.
+That keeps the example focused on the flashlight path instead of USB data.
+
+If you want the flashlight to be more robust, keep the USB-C connector close to
+the edge of the board and give it enough mechanical support in the final layout.
+
+<CircuitPreview defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="18mm" height="18mm">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      schX={0}
+      schY={0}
+    />
+  </board>
+)
+`} />
+
+## 3. Add the pushbutton
+
+The button connects `VBUS` to the resistor path only while it is pressed. That
+means the LED stays off until you actively hold the switch.
+
+<CircuitPreview defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="26mm" height="18mm">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      schX={-8}
+      schY={0}
+    />
+
+    <pushbutton
+      name="SW1"
+      footprint="pushbutton"
+      connections={{
+        pin1: ".R1 > .pos",
+        pin2: "net.VBUS",
+      }}
+      schX={7}
+      schY={0}
+    />
+  </board>
+)
+`} />
+
+## 4. Limit the LED current
+
+The resistor keeps the LED from drawing too much current. A `1k` resistor is a
+safe, beginner-friendly value that produces a visible but gentle light output.
+
+The exact value is not sacred here. If you want a brighter light, you can lower
+the resistor, but you should keep an eye on LED current and heat.
+
+## 5. Add the LED
+
+The LED sits after the resistor so current flows through it only when the button
+is pressed.
+
+<CircuitPreview defaultView="schematic" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="36mm" height="22mm">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      schX={-13}
+      schY={0}
+    />
+
+    <pushbutton
+      name="SW1"
+      footprint="pushbutton"
+      connections={{
+        pin1: ".R1 > .pos",
+        pin2: "net.VBUS",
+      }}
+      schX={-2}
+      schY={0}
+    />
+
+    <resistor
+      name="R1"
+      footprint="0603"
+      resistance="1k"
+      schX={8}
+      schY={0}
+    />
+
+    <led
+      name="LED1"
+      color="red"
+      footprint="0603"
+      schX={18}
+      schY={0}
+    />
+
+    <trace from=".R1 .neg" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## 6. Place the parts on the PCB
+
+This layout keeps the USB-C connector at the bottom, the button near the top
+center, and the LED near the top edge so the light is easy to see.
+
+<CircuitPreview defaultView="pcb" code={`
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => (
+  <board width="18mm" height="32mm">
+    <SmdUsbC
+      name="J1"
+      connections={{
+        GND1: "net.GND",
+        GND2: "net.GND",
+        VBUS1: "net.VBUS",
+        VBUS2: "net.VBUS",
+      }}
+      pcbY={-11}
+      schX={-7}
+    />
+
+    <pushbutton
+      name="SW1"
+      footprint="pushbutton"
+      layer="top"
+      connections={{
+        pin1: ".R1 > .pos",
+        pin2: "net.VBUS",
+      }}
+      pcbX={0}
+      pcbY={-1}
+    />
+
+    <resistor
+      name="R1"
+      footprint="0603"
+      resistance="1k"
+      pcbX={4}
+      pcbY={7}
+    />
+
+    <led
+      name="LED1"
+      color="red"
+      footprint="0603"
+      pcbX={0}
+      pcbY={12}
+    />
+
+    <trace from=".R1 .neg" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## 7. Bill of materials
+
+| Reference | Part | Notes |
+| --- | --- | --- |
+| J1 | USB-C connector | Brings in 5V power |
+| SW1 | Pushbutton | Momentary on/off control |
+| R1 | 1k resistor, 0603 | Limits LED current |
+| LED1 | Red LED, 0603 | Light source |
+
+## 8. How it works
+
+When the button is not pressed, the LED path stays open and no current flows.
+When you press the button, `VBUS` reaches the resistor, then the LED, then
+ground. The resistor keeps the current in a safe range so the LED does not get
+overdriven.
+
+## 9. Next steps
+
+- Change `LED1` to green or blue if you want a different look
+- Try a different resistor value if you want more or less brightness
+- Add a tiny enclosure or mounting holes if you want it to feel like a real
+  product
