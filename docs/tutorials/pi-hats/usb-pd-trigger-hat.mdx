@@ -1,0 +1,481 @@
+---
+title: Building a USB Power Delivery Trigger HAT
+description: Build a Raspberry Pi HAT that negotiates USB Power Delivery, exposes the selected voltage on terminal outputs, and includes status and filtering components.
+---
+
+## Overview
+
+This tutorial walks through a compact USB Power Delivery trigger HAT.
+
+The board is designed to:
+
+1. Accept power over USB-C
+2. Negotiate a selectable PD voltage, from 5V up to 20V
+3. Expose the output on terminal block connectors
+4. Include a status LED
+5. Add filtering capacitors for cleaner power delivery
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## 1. Full circuit
+
+Here is the complete HAT layout at a glance.
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <connector
+      name="J1"
+      standard="usb_c"
+      schX={-24}
+      schY={0}
+      pcbX={-22}
+      pcbY={0}
+    />
+
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="CH224K"
+      pinLabels={{
+        pin1: "CC1",
+        pin2: "CC2",
+        pin3: "SEL1",
+        pin4: "SEL0",
+        pin5: "GND",
+        pin6: "VBUS_IN",
+        pin7: "VBUS_OUT",
+        pin8: "LED",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["CC1", "CC2", "GND", "VBUS_OUT"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["SEL1", "SEL0", "VBUS_IN", "LED"],
+        },
+      }}
+      schX={0}
+      schY={0}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <connector
+      name="J2"
+      pinLabels={{
+        pin1: ["VOUT+"],
+        pin2: ["GND"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VOUT+"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["GND"],
+        },
+      }}
+      footprint={
+        <footprint>
+          <platedhole
+            name="pad1"
+            portHints={["pin1"]}
+            pcbX="-2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1.2mm"
+            outerDiameter="2.2mm"
+          />
+          <platedhole
+            name="pad2"
+            portHints={["pin2"]}
+            pcbX="2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1.2mm"
+            outerDiameter="2.2mm"
+          />
+          <silkscreenrect x="0mm" y="0mm" width="8mm" height="5mm" />
+        </footprint>
+      }
+      schX={22}
+      schY={0}
+      pcbX={22}
+      pcbY={0}
+    />
+
+    <connector
+      name="J3"
+      pinLabels={{
+        pin1: ["VSET0"],
+        pin2: ["VSET1"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VSET0"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["VSET1"],
+        },
+      }}
+      footprint={
+        <footprint>
+          <platedhole
+            name="pad1"
+            portHints={["pin1"]}
+            pcbX="-2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1mm"
+            outerDiameter="2mm"
+          />
+          <platedhole
+            name="pad2"
+            portHints={["pin2"]}
+            pcbX="2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1mm"
+            outerDiameter="2mm"
+          />
+        </footprint>
+      }
+      schX={22}
+      schY={12}
+      pcbX={22}
+      pcbY={12}
+    />
+
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+      connections={{ pin1: "U1.LED", pin2: "net.GND" }}
+      schX={0}
+      schY={14}
+      pcbX={2}
+      pcbY={12}
+    />
+
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0603"
+      connections={{ pos: "net.VBUS_OUT", neg: "net.GND" }}
+      schX={-10}
+      schY={14}
+      pcbX={-10}
+      pcbY={10}
+    />
+
+    <capacitor
+      name="C2"
+      capacitance="100nF"
+      footprint="0402"
+      connections={{ pos: "net.VBUS_OUT", neg: "net.GND" }}
+      schX={-16}
+      schY={14}
+      pcbX={-14}
+      pcbY={10}
+    />
+
+    <led
+      name="D1"
+      color="green"
+      footprint="0603"
+      schX={6}
+      schY={14}
+      pcbX={8}
+      pcbY={12}
+    />
+
+    <trace from="J1.VBUS" to="U1.VBUS_IN" />
+    <trace from="J1.GND" to="net.GND" />
+    <trace from="U1.VBUS_OUT" to="J2.VOUT+" />
+    <trace from="J2.GND" to="net.GND" />
+    <trace from="U1.VBUS_OUT" to=".HAT1_chip .V5_1" />
+    <trace from="U1.GND" to=".HAT1_chip .GND_1" />
+    <trace from="U1.LED" to=".D1.pos" />
+    <trace from=".D1.neg" to="net.GND" />
+    <trace from="U1.SEL0" to="J3.VSET0" />
+    <trace from="U1.SEL1" to="J3.VSET1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## 2. Power input and PD negotiation
+
+The USB-C connector brings power into the board. A dedicated PD trigger
+controller then asks the source for the voltage you want.
+
+For this tutorial, the controller is represented as a compact 8-pin device with:
+
+- `CC1` and `CC2` for the USB-C negotiation pins
+- `SEL0` and `SEL1` for output voltage selection
+- `VBUS_IN` and `VBUS_OUT` for the power path
+- `LED` for the status indicator
+
+The exact PD controller part can vary. `CH224K`, `FP28XX`, and `PD2001`
+families are all common examples that fit this style of board.
+
+## 3. Add the output terminals
+
+The output should be easy to cable into other gear, so this HAT uses a
+two-position terminal-style connector for the negotiated supply.
+
+That gives you a clear `VOUT+` and `GND` output pair without crowding the rest
+of the board.
+
+## 4. Add filtering and status parts
+
+The large bulk capacitor smooths load transients. The smaller bypass capacitor
+keeps the rail cleaner right at the controller output.
+
+The status LED gives you a quick visual check that the controller is alive and
+the rail is active.
+
+<CircuitPreview defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <connector name="J1" standard="usb_c" />
+
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="CH224K"
+      pinLabels={{
+        pin1: "CC1",
+        pin2: "CC2",
+        pin3: "SEL1",
+        pin4: "SEL0",
+        pin5: "GND",
+        pin6: "VBUS_IN",
+        pin7: "VBUS_OUT",
+        pin8: "LED",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["CC1", "CC2", "GND", "VBUS_OUT"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["SEL1", "SEL0", "VBUS_IN", "LED"],
+        },
+      }}
+    />
+
+    <connector
+      name="J2"
+      pinLabels={{
+        pin1: ["VOUT+"],
+        pin2: ["GND"],
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VOUT+"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["GND"],
+        },
+      }}
+    />
+
+    <resistor name="R1" resistance="10k" footprint="0402" />
+    <capacitor name="C1" capacitance="10uF" footprint="0603" />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" />
+    <led name="D1" color="green" footprint="0603" />
+
+    <trace from="J1.VBUS" to="U1.VBUS_IN" />
+    <trace from="J1.GND" to="net.GND" />
+    <trace from="U1.VBUS_OUT" to="J2.VOUT+" />
+    <trace from="J2.GND" to="net.GND" />
+    <trace from="U1.VBUS_OUT" to=".HAT1_chip .V5_1" />
+    <trace from="U1.GND" to=".HAT1_chip .GND_1" />
+    <trace from="U1.LED" to=".D1.pos" />
+    <trace from=".D1.neg" to="net.GND" />
+    <trace from="U1.SEL0" to="net.VSET0" />
+    <trace from="U1.SEL1" to="net.VSET1" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## 5. PCB placement
+
+For the PCB, keep the USB-C port near the board edge and place the output
+connector on the opposite side so cable routing stays clean.
+
+The controller should sit between them, with the filtering capacitors close to
+the output rail.
+
+<CircuitPreview defaultView="pcb" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <connector name="J1" standard="usb_c" pcbX={-24} pcbY={0} />
+
+    <chip
+      name="U1"
+      footprint="soic8"
+      manufacturerPartNumber="CH224K"
+      pinLabels={{
+        pin1: "CC1",
+        pin2: "CC2",
+        pin3: "SEL1",
+        pin4: "SEL0",
+        pin5: "GND",
+        pin6: "VBUS_IN",
+        pin7: "VBUS_OUT",
+        pin8: "LED",
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <connector
+      name="J2"
+      pinLabels={{
+        pin1: ["VOUT+"],
+        pin2: ["GND"],
+      }}
+      footprint={
+        <footprint>
+          <platedhole
+            name="pad1"
+            portHints={["pin1"]}
+            pcbX="-2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1.2mm"
+            outerDiameter="2.2mm"
+          />
+          <platedhole
+            name="pad2"
+            portHints={["pin2"]}
+            pcbX="2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1.2mm"
+            outerDiameter="2.2mm"
+          />
+        </footprint>
+      }
+      pcbX={22}
+      pcbY={0}
+    />
+
+    <connector
+      name="J3"
+      pinLabels={{
+        pin1: ["VSET0"],
+        pin2: ["VSET1"],
+      }}
+      footprint={
+        <footprint>
+          <platedhole
+            name="pad1"
+            portHints={["pin1"]}
+            pcbX="-2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1mm"
+            outerDiameter="2mm"
+          />
+          <platedhole
+            name="pad2"
+            portHints={["pin2"]}
+            pcbX="2.54mm"
+            pcbY="0mm"
+            shape="circle"
+            holeDiameter="1mm"
+            outerDiameter="2mm"
+          />
+        </footprint>
+      }
+      pcbX={20}
+      pcbY={12}
+    />
+
+    <trace from="U1.VBUS_OUT" to=".HAT1_chip .V5_1" />
+    <trace from="U1.GND" to=".HAT1_chip .GND_1" />
+
+    <capacitor name="C1" capacitance="10uF" footprint="0603" pcbX={-10} pcbY={10} />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={-14} pcbY={10} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={2} pcbY={12} />
+    <led name="D1" color="green" footprint="0603" pcbX={8} pcbY={12} />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## 6. Bill of materials
+
+| Reference | Part | Notes |
+| --- | --- | --- |
+| J1 | USB-C connector | Input power and PD negotiation |
+| U1 | PD trigger controller | Selects the output voltage |
+| J2 | Two-position terminal connector | Output rail |
+| J3 | Two-position selector header | Voltage selection straps or control pins |
+| C1 | 10uF capacitor | Bulk output filtering |
+| C2 | 100nF capacitor | High-frequency decoupling |
+| R1 | 10k resistor | LED current limiting |
+| D1 | Green LED | Power or status indicator |
+
+## 7. Example control code
+
+If your controller exposes selection pins or if you add a tiny MCU helper, this
+kind of code can set the desired output mode.
+
+```cpp
+const int SEL0 = 2;
+const int SEL1 = 3;
+
+void setVoltageMode(int mode) {
+  // 0 -> 5V, 1 -> 9V, 2 -> 12V, 3 -> 15V, 4 -> 20V
+  digitalWrite(SEL0, mode & 0x01);
+  digitalWrite(SEL1, (mode >> 1) & 0x01);
+}
+
+void setup() {
+  pinMode(SEL0, OUTPUT);
+  pinMode(SEL1, OUTPUT);
+
+  // Default to 12V for bench testing
+  setVoltageMode(2);
+}
+
+void loop() {
+  // Keep the selection stable
+}
+```
+
+## 8. Testing procedure
+
+Before attaching a load, verify the output with a multimeter:
+
+1. Plug in a USB-C PD source
+2. Select a voltage mode
+3. Measure `VOUT+` against `GND`
+4. Confirm the voltage matches the selected profile
+5. Check that the status LED turns on
+6. Attach a small resistive load and confirm the rail stays stable
+
+## 9. Next steps
+
+- Swap the controller part number for the exact PD trigger chip you prefer
+- Add an EEPROM if you want the HAT to advertise itself automatically
+- Expand the output section with fusing or current sensing if you want a more
+  complete bench supply
