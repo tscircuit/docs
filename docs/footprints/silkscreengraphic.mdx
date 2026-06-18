@@ -1,0 +1,67 @@
+---
+title: <silkscreengraphic />
+description: >-
+  The `<silkscreengraphic />` element places an SVG or PNG graphic on the PCB
+  silkscreen layer.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<silkscreengraphic />` element places an image on the PCB silkscreen
+layer. Use it for logos, icons, orientation marks, or other custom artwork that
+should be drawn as silkscreen instead of copper.
+
+SVG images are converted into silkscreen geometry, so simple single-color SVGs
+usually produce the cleanest PCB output. PNG images are also accepted.
+
+## Basic Example
+
+This example uses a thumbs-up SVG as an inline data URL and places it on the top
+silkscreen layer.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`
+const thumbsUpSvgUrl =
+  "data:image/svg+xml,%3Csvg%20width%3D%22800px%22%20height%3D%22800px%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%200L5%205V14H14L16%208V5H10V2C10%200.895431%209.10457%200%208%200H7Z%22%20fill%3D%22%23000000%22%2F%3E%3Cpath%20d%3D%22M3%205H0V14H3V5Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E"
+
+export default () => (
+  <board width="14mm" height="12mm">
+    <silkscreengraphic
+      imageUrl={thumbsUpSvgUrl}
+      pcbX={0}
+      pcbY={0}
+      width="6mm"
+      height="6mm"
+      layer="top"
+    />
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `imageUrl` | `string` | Yes | - | URL, static-file import, or data URL for an SVG or PNG image. |
+| `width` | `distance` | Yes | - | Rendered width of the graphic on the PCB. |
+| `height` | `distance` | Yes | - | Rendered height of the graphic on the PCB. |
+| `layer` | `"top" \| "bottom"` | No | `"top"` | PCB silkscreen layer to place the graphic on. |
+| `pcbX` | `distance` | No | - | X position of the graphic center on the PCB. |
+| `pcbY` | `distance` | No | - | Y position of the graphic center on the PCB. |
+| `pcbRotation` | `angle` | No | `0` | Rotation of the graphic on the PCB. |
+| `pcbPositionAnchor` | `nine-point anchor` | No | `"center"` | Anchor point used when positioning the graphic. |
+| `pcbRelative` | `boolean` | No | `false` | Interpret `pcbX`/`pcbY` relative to the parent group instead of the board origin. |
+
+## Notes
+
+- Use SVG for artwork that should be converted into precise silkscreen paths.
+- Keep source artwork simple and high contrast. Solid, single-color icons work
+  best for PCB silkscreen.
+- For remote assets, make sure the image URL is available when the circuit is
+  built. Inline data URLs or static-file imports make examples easier to share.
