@@ -1,0 +1,168 @@
+---
+title: USB Power Delivery Trigger HAT
+description: Design and build a USB Power Delivery Trigger HAT using tscircuit to negotiate voltages from 5V to 20V from a USB-PD power source.
+---
+
+## Overview
+
+In this tutorial, we will build a **USB Power Delivery (PD) Trigger HAT**. This board negotiates voltages (5V, 9V, 12V, 15V, or 20V) from any standard USB PD charger or battery pack and routes that power to a high-current terminal block.
+
+This board is extremely useful for powering hobbyist projects, single-board computers, or DC motors directly from a USB-PD wall adapter.
+
+We will use the **CH224K** USB PD sink controller, which handles the CC (Configuration Channel) negotiation protocol automatically without requiring a microcontroller.
+
+---
+
+## 📋 Components Checklist
+
+Our circuit will consist of:
+1. **CH224K PD Controller (U1)** — Low-cost USB PD sink chip in an ESSOP-10 package.
+2. **USB Type-C Female Port (J1)** — Input receptacle for USB-PD source.
+3. **DIP Switch (SW1)** — 3-position switch to select the requested voltage.
+4. **2-pin Screw Terminal (J2)** — High-current output terminal for external devices.
+5. **Decoupling Capacitors (C1, C2)** — Filtering capacitors to stabilize VBUS and internal VDD.
+6. **LED Indicator (D1) & Current Limiting Resistor (R1)** — Visual feedback for power output.
+
+---
+
+## 🛠️ Step-by-Step Implementation
+
+Create a new file in your project or editor and paste the following tscircuit design code.
+
+### Complete Circuit Code
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="50mm" height="35mm">
+      {/* USB-C Input Port */}
+      <chip
+        name="J1"
+        manufacturerPartNumber="USB-C-16PIN"
+        schX={-15}
+        schY={0}
+        pinLabels={{
+          pin1: "GND",
+          pin2: "VBUS",
+          pin3: "CC1",
+          pin4: "CC2",
+          pin5: "D+",
+          pin6: "D-",
+          pin7: "SBU1",
+          pin8: "SBU2",
+        }}
+      />
+
+      {/* CH224K USB-PD Controller */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="CH224K"
+        schX={0}
+        schY={0}
+        pinLabels={{
+          pin1: "CFG1",
+          pin2: "CFG2",
+          pin3: "CFG3",
+          pin4: "GND",
+          pin5: "VBUS",
+          pin6: "VDD",
+          pin7: "CC2",
+          pin8: "CC1",
+          pin9: "D+",
+          pin10: "D-",
+        }}
+      />
+
+      {/* DIP Switch for Configuration */}
+      <chip
+        name="SW1"
+        manufacturerPartNumber="DIP-SWITCH-3POS"
+        schX={0}
+        schY={12}
+        pinLabels={{
+          pin1: "CFG1_SW",
+          pin2: "CFG2_SW",
+          pin3: "CFG3_SW",
+          pin4: "GND1",
+          pin5: "GND2",
+          pin6: "GND3",
+        }}
+      />
+
+      {/* Output Terminal Block */}
+      <chip
+        name="J2"
+        manufacturerPartNumber="SCREW-TERMINAL-2PIN"
+        schX={15}
+        schY={0}
+        pinLabels={{
+          pin1: "VOUT",
+          pin2: "GND",
+        }}
+      />
+
+      {/* Status LED & Resistor */}
+      <led name="D1" color="green" schX={10} schY={-8} />
+      <resistor name="R1" resistance="1k" schX={5} schY={-8} />
+
+      {/* Decoupling Capacitors */}
+      <capacitor name="C1" capacitance="10uF" schX={-8} schY={-8} />
+      <capacitor name="C2" capacitance="0.1uF" schX={-5} schY={-8} />
+
+      {/* Connections */}
+      {/* Power Rails */}
+      <trace from=".J1 .pin1" to=".U1 .pin4" />
+      <trace from=".U1 .pin4" to="net.GND" />
+      
+      <trace from=".J1 .pin2" to=".U1 .pin5" />
+      <trace from=".U1 .pin5" to="net.VBUS" />
+
+      {/* CC Line Negotiation */}
+      <trace from=".J1 .pin3" to=".U1 .pin8" />
+      <trace from=".J1 .pin4" to=".U1 .pin7" />
+
+      {/* VDD Internal LDO Capacitor */}
+      <trace from=".U1 .pin6" to=".C2 .pin1" />
+      <trace from=".C2 .pin2" to="net.GND" />
+
+      {/* Input Filtering */}
+      <trace from="net.VBUS" to=".C1 .pin1" />
+      <trace from=".C1 .pin2" to="net.GND" />
+
+      {/* Output Connections */}
+      <trace from="net.VBUS" to=".J2 .pin1" />
+      <trace from=".J2 .pin2" to="net.GND" />
+
+      {/* DIP Switch CC Configuration */}
+      <trace from=".U1 .pin1" to=".SW1 .pin1" />
+      <trace from=".U1 .pin2" to=".SW1 .pin2" />
+      <trace from=".U1 .pin3" to=".SW1 .pin3" />
+      
+      <trace from=".SW1 .pin4" to="net.GND" />
+      <trace from=".SW1 .pin5" to="net.GND" />
+      <trace from=".SW1 .pin6" to="net.GND" />
+
+      {/* LED Indicator Connection */}
+      <trace from="net.VBUS" to=".R1 .pin1" />
+      <trace from=".R1 .pin2" to=".D1 .pin1" />
+      <trace from=".D1 .pin2" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+---
+
+## ⚡ How the Voltage Negotiation Works
+
+The CH224K chip negotiates voltages based on the state of the configuration pins (**CFG1**, **CFG2**, and **CFG3**). By toggling the DIP switch, you pull these pins to GND (LOW) or leave them floating (HIGH).
+
+| CFG1 | CFG2 | CFG3 | Negotiated Voltage |
+| :---: | :---: | :---: | :--- |
+| Floating | GND | Floating | **5V** (Default USB voltage) |
+| GND | GND | Floating | **9V** |
+| Floating | Floating | GND | **12V** |
+| GND | Floating | GND | **15V** |
+| GND | Floating | Floating | **20V** |

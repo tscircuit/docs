@@ -1,0 +1,185 @@
+---
+title: Class D Audio Amplifier HAT
+description: Learn how to build a 3W stereo Class D audio amplifier HAT using the PAM8403 amplifier chip, speaker terminals, and volume control with tscircuit.
+---
+
+## Overview
+
+In this tutorial, we will build a **Class D Audio Amplifier HAT**. This board takes stereo line-level audio input and amplifies it to drive two 3W speakers (Left and Right channels) with excellent efficiency and minimal heat output.
+
+Unlike traditional analog amplifiers (such as Class A or AB) which dissipate excess power as heat, **Class D amplifiers** work by converting the analog input into a high-frequency PWM (Pulse Width Modulation) signal. The output MOSFETs switch fully ON or fully OFF rapidly, leading to efficiencies up to 90%, making them perfect for battery-powered or compact projects like Raspberry Pi audio HATs.
+
+We will use the **PAM8403** Class D amplifier chip, which is a filterless 3W stereo amplifier requiring minimal external components.
+
+---
+
+## 📋 Components Checklist
+
+Our amplifier HAT will consist of:
+1. **PAM8403 Class D Amplifier (U1)** — 3W stereo audio amplifier in an SOP-16 package.
+2. **Dual-Gang 10kΩ Potentiometer (RV1)** — Standard stereo volume control dial.
+3. **2x 2-pin Screw Terminals (J1, J2)** — Speaker output blocks for Left and Right speakers.
+4. **40-pin Raspberry Pi Header (J3)** — Pi HAT connector for power (5V) and audio line signals.
+5. **Bulk Decoupling Capacitor (C1)** — 470µF electrolytic capacitor to buffer high-current speaker transients.
+6. **Filtering Capacitors (C2, C3, C4, C5)** — Small ceramic capacitors (0.1µF to 1µF) to filter power supply noise and input signals.
+
+---
+
+## 🛠️ Step-by-Step Implementation
+
+Create a new file in your project or editor and paste the following tscircuit design code.
+
+### Complete Circuit Code
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="65mm" height="56mm">
+      {/* 40-pin Raspberry Pi Hat Header */}
+      <chip
+        name="J3"
+        manufacturerPartNumber="RPI-HAT-HEADER-40P"
+        schX={-20}
+        schY={0}
+        pinLabels={{
+          pin2: "5V",
+          pin6: "GND",
+          pin12: "AUDIO_L",
+          pin35: "AUDIO_R",
+        }}
+      />
+
+      {/* PAM8403 Class D Amplifier */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="PAM8403"
+        schX={10}
+        schY={0}
+        pinLabels={{
+          pin1: "+OUT_L",
+          pin2: "PGND_L",
+          pin3: "-OUT_L",
+          pin4: "PVDD_L",
+          pin5: "MUTE",
+          pin6: "VDD",
+          pin7: "IN_L",
+          pin8: "SNS",
+          pin9: "BYP",
+          pin10: "IN_R",
+          pin11: "SHDN",
+          pin12: "PVDD_R",
+          pin13: "-OUT_R",
+          pin14: "PGND_R",
+          pin15: "+OUT_R",
+          pin16: "VREF",
+        }}
+      />
+
+      {/* 10k Dual-Gang Potentiometer for volume control */}
+      <chip
+        name="RV1"
+        manufacturerPartNumber="POT-STEREO-10K"
+        schX={-5}
+        schY={-12}
+        pinLabels={{
+          pin1: "L_IN",
+          pin2: "L_WIPER",
+          pin3: "L_GND",
+          pin4: "R_IN",
+          pin5: "R_WIPER",
+          pin6: "R_GND",
+        }}
+      />
+
+      {/* Speaker Output Screw Terminals */}
+      <chip
+        name="J1"
+        manufacturerPartNumber="SCREW-TERMINAL-2PIN"
+        schX={25}
+        schY={10}
+        pinLabels={{
+          pin1: "SPK_L+",
+          pin2: "SPK_L-",
+        }}
+      />
+      <chip
+        name="J2"
+        manufacturerPartNumber="SCREW-TERMINAL-2PIN"
+        schX={25}
+        schY={-10}
+        pinLabels={{
+          pin1: "SPK_R+",
+          pin2: "SPK_R-",
+        }}
+      />
+
+      {/* Input Coupling Capacitors */}
+      <capacitor name="C4" capacitance="1uF" schX={0} schY={0} />
+      <capacitor name="C5" capacitance="1uF" schX={0} schY={-5} />
+
+      {/* Decoupling & Bypass Capacitors */}
+      <capacitor name="C1" capacitance="470uF" schX={5} schY={12} />
+      <capacitor name="C2" capacitance="0.1uF" schX={10} schY={12} />
+      <capacitor name="C3" capacitance="1uF" schX={15} schY={12} />
+
+      {/* Connections */}
+      {/* Power Rails (5V & GND) */}
+      <trace from=".J3 .pin2" to="net.5V" />
+      <trace from=".J3 .pin6" to="net.GND" />
+
+      {/* PAM8403 Power Pin connections */}
+      <trace from="net.5V" to=".U1 .pin4" />  {/* PVDD_L */}
+      <trace from="net.5V" to=".U1 .pin12" /> {/* PVDD_R */}
+      <trace from="net.5V" to=".U1 .pin6" />  {/* VDD */}
+      <trace from="net.5V" to=".U1 .pin5" />  {/* MUTE disabled (pulled high) */}
+      <trace from="net.5V" to=".U1 .pin11" /> {/* SHDN disabled (pulled high) */}
+
+      <trace from="net.GND" to=".U1 .pin2" />  {/* PGND_L */}
+      <trace from="net.GND" to=".U1 .pin14" /> {/* PGND_R */}
+      
+      {/* Power Filtering Caps */}
+      <trace from="net.5V" to=".C1 .pin1" />
+      <trace from=".C1 .pin2" to="net.GND" />
+      <trace from="net.5V" to=".C2 .pin1" />
+      <trace from=".C2 .pin2" to="net.GND" />
+
+      {/* Bypass Reference Capacitor */}
+      <trace from=".U1 .pin9" to=".C3 .pin1" />
+      <trace from=".C3 .pin2" to="net.GND" />
+
+      {/* Audio Input Left Connection */}
+      <trace from=".J3 .pin12" to=".RV1 .pin1" />
+      <trace from=".RV1 .pin3" to="net.GND" />
+      <trace from=".RV1 .pin2" to=".C4 .pin1" />
+      <trace from=".C4 .pin2" to=".U1 .pin7" /> {/* IN_L */}
+
+      {/* Audio Input Right Connection */}
+      <trace from=".J3 .pin35" to=".RV1 .pin4" />
+      <trace from=".RV1 .pin6" to="net.GND" />
+      <trace from=".RV1 .pin5" to=".C5 .pin1" />
+      <trace from=".C5 .pin2" to=".U1 .pin10" /> {/* IN_R */}
+
+      {/* Left Speaker Output */}
+      <trace from=".U1 .pin1" to=".J1 .pin1" />
+      <trace from=".U1 .pin3" to=".J1 .pin2" />
+
+      {/* Right Speaker Output */}
+      <trace from=".U1 .pin15" to=".J2 .pin1" />
+      <trace from=".U1 .pin13" to=".J2 .pin2" />
+    </board>
+  )
+}
+`} />
+
+---
+
+## 🔊 Important Audio Circuit Design Notes
+
+1. **Input Coupling Capacitors (C4, C5)**:
+   - These DC-blocking input capacitors are absolutely critical. They block any DC bias voltage from the host audio source while allowing the AC audio waveform to pass into the PAM8403 input pins.
+2. **Bulk Capacitance (C1)**:
+   - Class D amplifiers switch high currents to drive speakers. A large bulk decoupling capacitor (like the 470µF **C1**) must be placed as close to the power pins as possible to handle sudden current draws and prevent power sag.
+3. **Filterless Design**:
+   - The PAM8403 uses a filterless modulation architecture. The inductance of the speaker coils acts as a low-pass filter to recover the audio signal from the PWM carrier, meaning you do not need bulky LC filters at the speaker outputs for short wire lengths.
