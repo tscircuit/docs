@@ -87,6 +87,27 @@ Sometimes you may want to manually specify the exact path a trace should take on
   )
 `} />
 
+You can also create a manual trace path without a `to` endpoint by using `path`
+with a single selector. This is useful for RF feeds, antenna traces, and other
+open-ended copper paths where the physical PCB geometry is the important part
+of the design.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint="qfn32" />
+      <trace
+        path={[".U1 > .pin1"]}
+        pcbPath={[
+          { x: -3.5, y: 1.75 },
+          { x: -3.5, y: 2.5 },
+          { x: -4, y: 2.5 },
+        ]}
+      />
+    </board>
+  )
+`} />
+
 ## Length Constraints
 
 Sometimes you need traces to be exactly a certain length, like for high-speed signals. You can use `maxLength` and `minLength`:
