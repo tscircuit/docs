@@ -1,0 +1,40 @@
+---
+title: Draw a WiFi Antenna
+description: >-
+  Draw an open-ended PCB antenna shape from a chip pin with a manual trace path.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# Draw a WiFi Antenna
+
+Use a manual trace path when you want to draw open-ended copper from an RF pin,
+such as a simple WiFi antenna or antenna feed. Instead of using `from` and `to`,
+provide a `path` with the RF pin selector and define the copper shape with
+`pcbPath`.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`
+  export default () => (
+    <board width="10mm" height="10mm">
+      <chip name="U1" footprint="qfn32" />
+      <trace
+        path={[".U1 > .pin1"]}
+        pcbPath={[
+          { x: -3.5, y: 1.75 },
+          { x: -3.5, y: 2.5 },
+          { x: -4, y: 2.5 },
+        ]}
+      />
+    </board>
+  )
+`} />
+
+The `pcbPath` points are PCB coordinates in millimeters. Add more points to
+draw a longer antenna shape, a board-edge launch, or a meandered RF trace.
+
+:::caution
+This controls the antenna geometry in tscircuit, but it does not calculate RF
+performance. For a production WiFi antenna, tune the dimensions, trace width,
+clearance, stackup, and ground keepout for your target frequency and PCB
+manufacturer.
+:::
