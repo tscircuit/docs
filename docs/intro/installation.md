@@ -50,7 +50,7 @@ CLI for developing tscircuit packages
 #   export [options] <file>      Export tscircuit code to various formats
 #   build [options] [file]       Run tscircuit eval and output circuit json
 #   transpile [file]             Transpile TypeScript/TSX to JavaScript
-#   add <packageSpec>            Add a tscircuit component package
+#   add <packageSpecs...>        Add tscircuit component packages to your project
 #   remove <component>           Remove a tscircuit component package
 #   snapshot [options] [path]    Generate schematic/PCB snapshots
 #   setup                        Setup utilities like GitHub Actions
@@ -83,7 +83,7 @@ tsci
 #     tsci config - Manage tscircuit CLI configuration
 #     tsci export - Export tscircuit code to various formats
 #     tsci build - Run tscircuit eval and output circuit json
-#     tsci add - Add a tscircuit component package
+#     tsci add - Add tscircuit component packages to your project
 #     tsci snapshot - Generate schematic and PCB snapshots
 #     tsci doctor - Run diagnostic checks
 #     tsci search - Search for footprints, CAD models or packages

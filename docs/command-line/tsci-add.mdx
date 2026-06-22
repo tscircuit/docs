@@ -1,15 +1,28 @@
 ---
 title: tsci add
-description: Install tscircuit registry packages using the tsci add command
+description: Install one or more tscircuit packages using the tsci add command
 ---
 
 `tsci add` is the same as `npm add` or `bun add`, but defaults to the tscircuit
 registry. If your project has the [tsci `.npmrc`](../web-apis/the-registry-api.md#using-the-tscircuit-npm-registry), you can just do `bun add @tsci/<author>.<package>`
 and it has the same effect.
 
+## Usage
+
+```bash
+tsci add <packageSpecs...>
 ```
-> tsci add seveibar/PICO_W
-# Added @tsci/seveibar.PICO_W@0.0.1
+
+You can pass one or more package specifiers in a single command. Supported
+package specifiers include tscircuit registry packages, GitHub repository URLs,
+and versioned package names such as `author/package@version`.
+
+## Examples
+
+```bash
+$ tsci add @tsci/seveibar.PICO @tsci/seveibar.Key
+# Adding @tsci/seveibar.PICO @tsci/seveibar.Key...
+# ✓ Added @tsci/seveibar.PICO @tsci/seveibar.Key successfully
 ```
 
 You can then import the module and use it for your board!
