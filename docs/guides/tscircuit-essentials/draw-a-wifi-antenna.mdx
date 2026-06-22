@@ -10,7 +10,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 Use a manual trace path when you want to draw open-ended copper from an RF pin,
 such as a simple WiFi antenna or antenna feed. Instead of using `from` and `to`,
-provide a `path` with the RF pin selector and define the copper shape with
+provide a `pcbPath` with the RF pin selector and define the copper shape with
 `pcbPath`.
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
@@ -44,9 +44,3 @@ The `pcbPath` points are PCB coordinates in millimeters. This example draws a
 meandered printed antenna near the board edge. Adjust the points to change the
 overall length, spacing between runs, and feed location.
 
-:::caution
-This controls the antenna geometry in tscircuit, but it does not calculate RF
-performance. For a production WiFi antenna, tune the dimensions, trace width,
-clearance, stackup, and ground keepout for your target frequency and PCB
-manufacturer.
-:::
