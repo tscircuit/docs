@@ -15,22 +15,34 @@ provide a `path` with the RF pin selector and define the copper shape with
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
   export default () => (
-    <board width="10mm" height="10mm">
+    <board width="32mm" height="16mm">
       <chip name="U1" footprint="qfn32" />
       <trace
         path={[".U1 > .pin1"]}
+        width="0.3mm"
         pcbPath={[
-          { x: -3.5, y: 1.75 },
-          { x: -3.5, y: 2.5 },
-          { x: -4, y: 2.5 },
+          ".U1 > .pin1",
+          { x: -2.5, y: 4.2 },
+          { x: 4.0, y: 4.2 },
+          { x: 4.0, y: 6.6 },
+          { x: 15.0, y: 6.6 },
+          { x: 15.0, y: 5.2 },
+          { x: 6.0, y: 5.2 },
+          { x: 6.0, y: 3.8 },
+          { x: 15.0, y: 3.8 },
+          { x: 15.0, y: 2.4 },
+          { x: 6.0, y: 2.4 },
+          { x: 6.0, y: 1.0 },
+          { x: 15.0, y: 1.0 },
         ]}
       />
     </board>
   )
 `} />
 
-The `pcbPath` points are PCB coordinates in millimeters. Add more points to
-draw a longer antenna shape, a board-edge launch, or a meandered RF trace.
+The `pcbPath` points are PCB coordinates in millimeters. This example draws a
+meandered printed antenna near the board edge. Adjust the points to change the
+overall length, spacing between runs, and feed location.
 
 :::caution
 This controls the antenna geometry in tscircuit, but it does not calculate RF
