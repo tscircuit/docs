@@ -1,8 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "formatter": {
     "enabled": true,
     "indentStyle": "space"
@@ -13,11 +11,12 @@
     }
   },
   "files": {
-    "ignore": [
-      "cosmos-export",
-      "dist",
-      "package.json",
-      "!./codetestingplayground"
+    "includes": [
+      "**",
+      "!**/cosmos-export",
+      "!**/dist",
+      "!**/package.json",
+      "!**/!./codetestingplayground"
     ]
   },
   "javascript": {
