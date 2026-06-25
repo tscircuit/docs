@@ -16,7 +16,7 @@ import TscircuitIframe from "@site/src/components/TscircuitIframe"
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
-  <RaspberryPiHatBoard name="HAT1">
+  <RaspberryPiHatBoard chipProps={{ name: "HAT1" }}>
     {/* Passive Buzzer */}
     <chip
       name="BZ1"
@@ -35,7 +35,7 @@ export default () => (
         pin2: ["E"],
         pin3: ["C"],
       }}
-      schPortArrangement={{
+      schPinArrangement={{
         leftSide: { pins: ["B"], direction: "top-to-bottom" },
         rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
       }}
@@ -100,7 +100,7 @@ First, we import the `RaspberryPiHatBoard` component from `@tscircuit/common`. T
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
-  <RaspberryPiHatBoard name="HAT1">
+  <RaspberryPiHatBoard chipProps={{ name: "HAT1" }}>
     {/* Components go here */}
   </RaspberryPiHatBoard>
 )
@@ -112,7 +112,7 @@ export default () => (
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
-  <RaspberryPiHatBoard name="HAT1">
+  <RaspberryPiHatBoard chipProps={{ name: "HAT1" }}>
     <chip
       name="BZ1"
       footprint="0603"
@@ -132,7 +132,7 @@ The transistor acts as a switch. When current flows into the base (B), it allows
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
-  <RaspberryPiHatBoard name="HAT1">
+  <RaspberryPiHatBoard chipProps={{ name: "HAT1" }}>
     <chip
       name="BZ1"
       footprint="0603"
@@ -165,7 +165,7 @@ export default () => (
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
-  <RaspberryPiHatBoard name="HAT1">
+  <RaspberryPiHatBoard chipProps={{ name: "HAT1" }}>
     <chip
       name="BZ1"
       footprint="0603"
@@ -201,7 +201,7 @@ Now we wire all the components together:
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
-  <RaspberryPiHatBoard name="HAT1">
+  <RaspberryPiHatBoard chipProps={{ name: "HAT1" }}>
     <chip
       name="BZ1"
       footprint="0603"
@@ -265,7 +265,7 @@ The PCB layout places components on the HAT board. You can adjust the `pcbX` and
 import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
-  <RaspberryPiHatBoard name="HAT1">
+  <RaspberryPiHatBoard chipProps={{ name: "HAT1" }}>
     <chip
       name="BZ1"
       footprint="0603"
