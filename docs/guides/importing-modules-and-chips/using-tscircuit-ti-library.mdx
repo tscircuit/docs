@@ -4,7 +4,7 @@ sidebar_position: 5
 description: Import Texas Instruments subcircuits from @tsci/tscircuit.ti and connect to pins inside them with selectors.
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview"
+import CircuitPreview from "@site/src/components/CircuitPreview";
 
 ## Overview
 
@@ -22,7 +22,7 @@ bun add @tsci/tscircuit.ti
 Then import the TI subcircuit you want to place:
 
 ```tsx
-import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
+import { BQ24074Subcircuit } from "@tsci/tscircuit.ti";
 ```
 
 All current component exports end with `Subcircuit`.
@@ -43,6 +43,7 @@ small board.
         <BQ24074Subcircuit name="BQ24074" />
       </board>
     )
+
 `}
 />
 
@@ -62,7 +63,7 @@ charger chip inside the `BQ24074` subcircuit:
     import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
-      <board width="22mm" height="16mm">
+      <board>
         <BQ24074Subcircuit name="BQ24074" />
         <resistor
           name="R11"
@@ -76,6 +77,7 @@ charger chip inside the `BQ24074` subcircuit:
         />
       </board>
     )
+
 `}
 />
 
