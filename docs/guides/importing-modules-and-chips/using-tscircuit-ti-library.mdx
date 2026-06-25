@@ -21,23 +21,31 @@ bun add @tsci/tscircuit.ti
 Then import a component from the package:
 
 ```tsx
-import { INA237 } from "@tsci/tscircuit.ti"
+import { BQ24074 } from "@tsci/tscircuit.ti"
 ```
 
 ## Preview a TI Part
 
-This example places an `INA237` current, voltage, and power monitor on a small
+This example places an `BQ24074` current, voltage, and power monitor on a small
 board.
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
+<<<<<<< Updated upstream
     import { INA237 } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
         <INA237 name="INA237" />
+=======
+    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
+
+    export default () => (
+      <board width="18mm" height="14mm">
+        <BQ24074Subcircuit name="BQ24074" />
+>>>>>>> Stashed changes
       </board>
     )
   `}
@@ -50,17 +58,25 @@ inside the subcircuit, use the component name followed by the internal part and
 pin selector.
 
 In this example, `R11.pin1` connects to the `SCL` pin on the internal `J1` pinheader
-inside the `INA237` subcircuit:
+inside the `BQ24074` subcircuit:
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
+<<<<<<< Updated upstream
     import { INA237 } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="22mm" height="16mm">
         <INA237 name="INA237" />
+=======
+    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
+
+    export default () => (
+      <board width="22mm" height="16mm">
+        <BQ24074Subcircuit name="BQ24074" />
+>>>>>>> Stashed changes
         <resistor
           name="R11"
           resistance="1k"
@@ -68,7 +84,7 @@ inside the `INA237` subcircuit:
           pcbX={7}
           pcbY={-3}
           connections={{
-            pin1: ".INA237 .J1 .SCL",
+            pin1: ".BQ24074 .J1 .SCL",
           }}
         />
       </board>
@@ -76,9 +92,9 @@ inside the `INA237` subcircuit:
   `}
 />
 
-The selector `".INA237 .U1 .VS"` means:
+The selector `".BQ24074 .U1 .VS"` means:
 
-- `.INA237` selects the placed `INA237` subcircuit
+- `.BQ24074` selects the placed `BQ24074` subcircuit
 - `.J1` selects the internal pinheader inside that subcircuit
 - `.SCL` selects the `SCL` pin on that pinheader
 
