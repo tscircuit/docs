@@ -1,7 +1,7 @@
 ---
 title: Using the tscircuit TI Library
 sidebar_position: 5
-description: Import Texas Instruments parts from the tscircuit TI library and connect to pins inside the imported subcircuit.
+description: Import Texas Instruments subcircuits from @tsci/tscircuit.ti and connect to pins inside them with selectors.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
@@ -9,8 +9,9 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 ## Overview
 
 The `@tsci/tscircuit.ti` package provides ready-to-use Texas Instruments
-subcircuits. Import the part you need, place it on a board, then connect other
-components to pins inside that subcircuit with selector strings.
+reference subcircuits for tscircuit. Each export is a reusable
+[`<subcircuit />`](/elements/subcircuit) that bundles the TI chip together with
+its supporting components, connectors, and nets.
 
 Install the library in a local tscircuit project:
 
@@ -18,26 +19,28 @@ Install the library in a local tscircuit project:
 bun add @tsci/tscircuit.ti
 ```
 
-Then import a component from the package:
+Then import the TI subcircuit you want to place:
 
 ```tsx
-import { INA237 } from "@tsci/tscircuit.ti"
+import { INA237Subcircuit } from "@tsci/tscircuit.ti"
 ```
 
-## Preview a TI Part
+All current component exports end with `Subcircuit`.
 
-This example places an `INA237` current, voltage, and power monitor on a small
-board.
+## Place a TI Subcircuit
+
+This example places the `INA237Subcircuit` current, voltage, and power monitor
+on a small board.
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { INA237 } from "@tsci/tscircuit.ti"
+    import { INA237Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
-        <INA237 name="INA237" />
+        <INA237Subcircuit name="INA237" />
       </board>
     )
   `}
@@ -46,21 +49,21 @@ board.
 ## Connect to a Pin Inside the Subcircuit
 
 Imported TI parts are subcircuits. To connect an external component to a pin
-inside the subcircuit, use the component name followed by the internal part and
-pin selector.
+inside the subcircuit, start the selector with the placed subcircuit name, then
+select the internal component and pin.
 
-In this example, `R11.pin1` connects to the `SCL` pin on the internal `J1` pinheader
-inside the `INA237` subcircuit:
+In this example, `R11.pin1` connects to the `SCL` pin on the internal `J1`
+connector inside the `INA237` subcircuit:
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { INA237 } from "@tsci/tscircuit.ti"
+    import { INA237Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="22mm" height="16mm">
-        <INA237 name="INA237" />
+        <INA237Subcircuit name="INA237" />
         <resistor
           name="R11"
           resistance="1k"
@@ -76,10 +79,44 @@ inside the `INA237` subcircuit:
   `}
 />
 
-The selector `".INA237 .U1 .VS"` means:
+The selector `".INA237 .J1 .SCL"` means:
 
 - `.INA237` selects the placed `INA237` subcircuit
-- `.J1` selects the internal pinheader inside that subcircuit
-- `.SCL` selects the `SCL` pin on that pinheader
+- `.J1` selects the internal connector named `J1`
+- `.SCL` selects the `SCL` pin on that connector
 
-Use the same pattern for other exported TI parts and their internal pins.
+You can use the same pattern for other exported TI subcircuits and their
+internal parts. For example, `".INA237 .U1 .VS"` selects the `VS` pin on the
+internal `U1` chip.
+
+If you want a deeper refresher on selector syntax, see
+[Port and Net Selectors](../tscircuit-essentials/port-and-net-selectors.md).
+
+## Available Exports
+
+The package currently exports these reusable TI subcircuits:
+
+- `BQ24074Subcircuit`
+- `BQ25895Subcircuit`
+- `BQ27441G1Subcircuit`
+- `CC2340R5Subcircuit`
+- `CC3235SFSubcircuit`
+- `DRV8833Subcircuit`
+- `DRV8876Subcircuit`
+- `HDC2080Subcircuit`
+- `HDC3020Subcircuit`
+- `HDC3022Subcircuit`
+- `INA237Subcircuit`
+- `MSPM0G3507Subcircuit`
+- `TMP1075Subcircuit`
+- `TPS22919Subcircuit`
+- `TPS62933Subcircuit`
+- `TPS63802Subcircuit`
+- `TPS7A02Subcircuit`
+- `TPSM82823Subcircuit`
+
+The package also exports:
+
+- `TiSubcircuitComponents` to access the full map of exported TI subcircuits
+- `TiSubcircuitName` as a union of the export names
+- `TiSubcircuitComponent` as a type for any exported TI subcircuit component
