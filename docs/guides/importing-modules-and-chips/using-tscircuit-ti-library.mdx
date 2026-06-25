@@ -33,19 +33,11 @@ board.
   defaultView="schematic"
   hide3DTab
   code={`
-<<<<<<< Updated upstream
-    import { INA237 } from "@tsci/tscircuit.ti"
-
-    export default () => (
-      <board width="18mm" height="14mm">
-        <INA237 name="INA237" />
-=======
     import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
         <BQ24074Subcircuit name="BQ24074" />
->>>>>>> Stashed changes
       </board>
     )
   `}
@@ -64,19 +56,11 @@ inside the `BQ24074` subcircuit:
   defaultView="schematic"
   hide3DTab
   code={`
-<<<<<<< Updated upstream
-    import { INA237 } from "@tsci/tscircuit.ti"
-
-    export default () => (
-      <board width="22mm" height="16mm">
-        <INA237 name="INA237" />
-=======
     import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="22mm" height="16mm">
         <BQ24074Subcircuit name="BQ24074" />
->>>>>>> Stashed changes
         <resistor
           name="R11"
           resistance="1k"
