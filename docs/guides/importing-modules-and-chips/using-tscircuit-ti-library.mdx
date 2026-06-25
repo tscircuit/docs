@@ -4,7 +4,7 @@ sidebar_position: 5
 description: Import Texas Instruments subcircuits from @tsci/tscircuit.ti and connect to pins inside them with selectors.
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview"
+import CircuitPreview from "@site/src/components/CircuitPreview";
 
 ## Overview
 
@@ -22,28 +22,29 @@ bun add @tsci/tscircuit.ti
 Then import the TI subcircuit you want to place:
 
 ```tsx
-import { INA237Subcircuit } from "@tsci/tscircuit.ti"
+import { BQ24074Subcircuit } from "@tsci/tscircuit.ti";
 ```
 
 All current component exports end with `Subcircuit`.
 
 ## Place a TI Subcircuit
 
-This example places the `INA237Subcircuit` current, voltage, and power monitor
-on a small board.
+This example places the `BQ24074Subcircuit` single-cell Li-ion charger on a
+small board.
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { INA237Subcircuit } from "@tsci/tscircuit.ti"
+    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
-        <INA237Subcircuit name="INA237" />
+        <BQ24074Subcircuit name="BQ24074" />
       </board>
     )
-  `}
+
+`}
 />
 
 ## Connect to a Pin Inside the Subcircuit
@@ -52,18 +53,18 @@ Imported TI parts are subcircuits. To connect an external component to a pin
 inside the subcircuit, start the selector with the placed subcircuit name, then
 select the internal component and pin.
 
-In this example, `R11.pin1` connects to the `SCL` pin on the internal `J1`
-connector inside the `INA237` subcircuit:
+In this example, `R11.pin1` connects to the `OUT` pin on the internal `U1`
+charger chip inside the `BQ24074` subcircuit:
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { INA237Subcircuit } from "@tsci/tscircuit.ti"
+    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="22mm" height="16mm">
-        <INA237Subcircuit name="INA237" />
+        <BQ24074Subcircuit name="BQ24074" />
         <resistor
           name="R11"
           resistance="1k"
@@ -71,23 +72,24 @@ connector inside the `INA237` subcircuit:
           pcbX={7}
           pcbY={-3}
           connections={{
-            pin1: ".INA237 .J1 .SCL",
+            pin1: ".BQ24074 .U1 .OUT",
           }}
         />
       </board>
     )
-  `}
+
+`}
 />
 
-The selector `".INA237 .J1 .SCL"` means:
+The selector `".BQ24074 .U1 .OUT"` means:
 
-- `.INA237` selects the placed `INA237` subcircuit
-- `.J1` selects the internal connector named `J1`
-- `.SCL` selects the `SCL` pin on that connector
+- `.BQ24074` selects the placed `BQ24074` subcircuit
+- `.U1` selects the internal charger chip named `U1`
+- `.OUT` selects the `OUT` pin on that chip
 
 You can use the same pattern for other exported TI subcircuits and their
-internal parts. For example, `".INA237 .U1 .VS"` selects the `VS` pin on the
-internal `U1` chip.
+internal parts. For example, `".BQ24074 .J1 .DC_PLUS"` selects the `DC_PLUS`
+pin on the internal `J1` input connector.
 
 If you want a deeper refresher on selector syntax, see
 [Port and Net Selectors](../tscircuit-essentials/port-and-net-selectors.md).
