@@ -33,11 +33,11 @@ board.
   defaultView="schematic"
   hide3DTab
   code={`
-    import { INA237 } from "@tsci/tscircuit.ti"
+    import { INA237Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
-        <INA237 name="INA237" />
+        <INA237Subcircuit name="INA237" />
       </board>
     )
   `}
@@ -56,11 +56,11 @@ inside the `INA237` subcircuit:
   defaultView="schematic"
   hide3DTab
   code={`
-    import { INA237 } from "@tsci/tscircuit.ti"
+    import { INA237Subcircuit } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="22mm" height="16mm">
-        <INA237 name="INA237" />
+        <INA237Subcircuit name="INA237" />
         <resistor
           name="R11"
           resistance="1k"
