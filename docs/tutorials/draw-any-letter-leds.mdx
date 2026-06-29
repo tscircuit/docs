@@ -1,0 +1,160 @@
+---
+title: 'Draw Any Letter with LEDs'
+description: 'Create a math-driven custom component that renders A-Z alphabet letters using LED matrix math'
+icon: 'code'
+---
+
+## Overview
+
+In this tutorial, we will build a custom, reusable `<LedLetter />` component. This component dynamically renders any capital letter from A to Z on both the schematic and PCB using an array of 0603 SMD LEDs and current-limiting resistors.
+
+Rather than hard-coding absolute coordinates, we define a relative coordinate matrix for each letter and use basic math scaling to position the components on both views.
+
+---
+
+## 📐 Math-Driven Layout Strategy
+
+To build the letters, we use a $5 \times 7$ grid system. Each letter is represented by a set of coordinates `[x, y]` where `x` is in range `[0..4]` and `y` is in range `[0..6]`.
+
+When rendering:
+* **PCB Positioning:** We convert grid coordinates `(gx, gy)` to millimeter coordinates:
+  * `pcbX = (gx - 2) * spacing`
+  * `pcbY = (gy - 3) * spacing`
+  This centers the letter around `(0,0)` on the board.
+* **Schematic Positioning:** We scale grid coordinates by a factor of 3 to lay out the symbols cleanly in columns and rows.
+
+---
+
+## 🛠️ Step-by-Step Component Setup
+
+Create a new file `docs/tutorials/draw-any-letter-leds.mdx` or add the component definition directly to your local library.
+
+### 1. Reusable component definition
+
+```tsx title="LedLetter.tsx"
+import React from "react"
+import { useResistor } from "@tscircuit/core"
+
+// Define a 5x7 grid mapping for capital A-Z letters
+const LETTER_GRIDS: Record<string, [number, number][]> = {
+  A: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [1,6], [2,6], [3,6], [4,5], [4,4], [4,3], [4,2], [4,1], [4,0], [1,3], [2,3], [3,3]],
+  B: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,6], [2,6], [3,6], [4,5], [4,4], [1,3], [2,3], [3,3], [4,2], [4,1], [1,0], [2,0], [3,0]],
+  C: [[0,1], [0,2], [0,3], [0,4], [0,5], [1,6], [2,6], [3,6], [4,6], [1,0], [2,0], [3,0], [4,0]],
+  D: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,6], [2,6], [3,5], [4,4], [4,3], [4,2], [3,1], [2,0], [1,0]],
+  E: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,6], [2,6], [3,6], [4,6], [1,3], [2,3], [3,3], [1,0], [2,0], [3,0], [4,0]],
+  F: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,6], [2,6], [3,6], [4,6], [1,3], [2,3], [3,3]],
+  G: [[0,1], [0,2], [0,3], [0,4], [0,5], [1,6], [2,6], [3,6], [4,6], [1,0], [2,0], [3,0], [4,0], [4,1], [4,2], [3,2], [2,2]],
+  H: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [4,0], [4,1], [4,2], [4,3], [4,4], [4,5], [4,6], [1,3], [2,3], [3,3]],
+  I: [[0,6], [1,6], [2,6], [3,6], [4,6], [2,5], [2,4], [2,3], [2,2], [2,1], [0,0], [1,0], [2,0], [3,0], [4,0]],
+  J: [[0,1], [1,0], [2,0], [3,0], [4,1], [4,2], [4,3], [4,4], [4,5], [4,6], [3,6], [2,6], [1,6]],
+  K: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,3], [2,4], [3,5], [4,6], [2,2], [3,1], [4,0]],
+  L: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,0], [2,0], [3,0], [4,0]],
+  M: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,5], [2,4], [3,5], [4,6], [4,5], [4,4], [4,3], [4,2], [4,1], [4,0]],
+  N: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,5], [2,4], [3,3], [4,6], [4,5], [4,4], [4,3], [4,2], [4,1], [4,0]],
+  O: [[0,1], [0,2], [0,3], [0,4], [0,5], [1,6], [2,6], [3,6], [4,5], [4,4], [4,3], [4,2], [4,1], [3,0], [2,0], [1,0]],
+  P: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,6], [2,6], [3,6], [4,5], [4,4], [3,3], [2,3], [1,3]],
+  Q: [[0,1], [0,2], [0,3], [0,4], [0,5], [1,6], [2,6], [3,6], [4,5], [4,4], [4,3], [4,2], [4,1], [3,0], [2,0], [1,0], [2,2], [3,1], [4,0]],
+  R: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,6], [2,6], [3,6], [4,5], [4,4], [3,3], [2,3], [1,3], [2,2], [3,1], [4,0]],
+  S: [[0,1], [1,0], [2,0], [3,0], [4,1], [3,2], [2,3], [1,4], [0,5], [1,6], [2,6], [3,6], [4,5]],
+  T: [[0,6], [1,6], [2,6], [3,6], [4,6], [2,5], [2,4], [2,3], [2,2], [2,1], [2,0]],
+  U: [[0,6], [0,5], [0,4], [0,3], [0,2], [0,1], [1,0], [2,0], [3,0], [4,1], [4,2], [4,3], [4,4], [4,5], [4,6]],
+  V: [[0,6], [0,5], [0,4], [0,3], [1,2], [1,1], [2,0], [3,1], [3,2], [4,3], [4,4], [4,5], [4,6]],
+  W: [[0,6], [0,5], [0,4], [0,3], [0,2], [0,1], [1,0], [2,1], [2,2], [2,3], [3,0], [4,1], [4,2], [4,3], [4,4], [4,5], [4,6]],
+  X: [[0,6], [1,5], [2,4], [3,3], [4,2], [4,6], [3,5], [1,3], [0,2], [0,1], [0,0], [4,0], [4,1], [2,2]],
+  Y: [[0,6], [1,5], [2,4], [3,5], [4,6], [2,3], [2,2], [2,1], [2,0]],
+  Z: [[0,6], [1,6], [2,6], [3,6], [4,6], [3,5], [2,4], [1,3], [0,2], [0,1], [0,0], [1,0], [2,0], [3,0], [4,0]],
+}
+
+interface LedLetterProps {
+  letter: string
+  power: string
+  gnd: string
+  spacing?: number // Distance between LEDs on the PCB (in mm)
+  pcbX?: number
+  pcbY?: number
+}
+
+export const LedLetter = ({
+  letter,
+  power,
+  gnd,
+  spacing = 3.5,
+  pcbX = 0,
+  pcbY = 0,
+}: LedLetterProps) => {
+  const points = LETTER_GRIDS[letter.toUpperCase()] || []
+
+  return (
+    <group name={`letter_${letter}`} pcbX={pcbX} pcbY={pcbY}>
+      {points.map(([gx, gy], index) => {
+        const ledName = `D_${index}`
+        const resName = `R_${index}`
+        
+        // Mathematically project the grid to physical mm units
+        const ledX = (gx - 2) * spacing
+        const ledY = (gy - 3) * spacing
+        
+        // Offset resistor slightly above the LED
+        const resX = ledX
+        const resY = ledY + 1.5
+
+        return (
+          <group name={`cell_${index}`} key={index}>
+            {/* SMD LED */}
+            <led
+              name={ledName}
+              footprint="0603"
+              pcbX={ledX}
+              pcbY={ledY}
+              schX={gx * 3}
+              schY={gy * 3}
+            />
+            {/* Series current limiting resistor */}
+            <resistor
+              name={resName}
+              resistance="220ohm"
+              footprint="0603"
+              pcbX={resX}
+              pcbY={resY}
+              schX={gx * 3}
+              schY={gy * 3 + 1.2}
+            />
+            {/* Connections */}
+            <trace from={`${power}`} to={`.${resName} > .pin1`} />
+            <trace from={`.${resName} > .pin2`} to={`.${ledName} > .anode`} />
+            <trace from={`.${ledName} > .cathode`} to={`${gnd}`} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+```
+
+### 2. Using the component
+
+To render the letter **"A"** on a PCB, import the component and pass the net references:
+
+```tsx title="examples/LetterDisplay.tsx"
+import { LedLetter } from "lib/LedLetter"
+
+export default () => (
+  <board width="50mm" height="50mm">
+    {/* Draw letter A with 3.5mm LED spacing */}
+    <LedLetter
+      letter="A"
+      power="net.5V"
+      gnd="net.GND"
+      spacing={3.5}
+      pcbX={0}
+      pcbY={0}
+    />
+  </board>
+)
+```
+
+---
+
+## Conclusion
+
+This custom component enables rendering any alphabet letter dynamically using standard surface-mount (SMD) LEDs and resistors. By leveraging grid matrix logic, the component scales cleanly, and connections are correctly routed in series for each cell.

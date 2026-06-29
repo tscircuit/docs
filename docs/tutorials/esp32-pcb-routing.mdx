@@ -1,0 +1,132 @@
+---
+title: 'ESP32 PCB Layout and Routing'
+description: 'Laying out and routing a custom ESP32-D0WD board on a 2-layer PCB'
+icon: 'code'
+---
+
+## Overview
+
+In this tutorial, we will take the reference schematic from the ESP32 development circuit and lay out its components on a physical **2-layer PCB**. 
+
+Laying out a high-frequency RF microcontroller like the ESP32 requires careful component placement to ensure signal integrity, low noise, and good wireless performance.
+
+---
+
+## 📐 PCB Layout Best Practices
+
+When laying out the ESP32 board, follow these key hardware design rules:
+1. **Decoupling Capacitors:** Place decoupling capacitors (like `C4`, `C9`, `C19`) as close as physically possible to their respective VDD pins on the ESP32.
+2. **Crystal Oscillator:** Keep the crystal (`U1`) and its load capacitors (`C1`, `C2`) very close to the ESP32 `XTAL_P`/`XTAL_N` pins. Keep trace lengths short and symmetrical.
+3. **Antenna Placement:** Place the antenna (`ANT1`) at the outer edge of the PCB. Ensure there is a keepout area (no copper ground plane) underneath and around the antenna to prevent signal attenuation.
+
+---
+
+## 🛠️ Step-by-Step PCB Layout
+
+We will wrap our circuit in a `<board>` component with a specified size (`50mm` by `40mm`) and position each component using `pcbX`, `pcbY`, and `pcbRotation`.
+
+```tsx title="ESP32PcbLayout.tsx"
+import React from "react"
+import { useESP32_D0WD } from "@tsci/AnasSarkiz.ESP32_D0WD"
+import { useResistor, useCapacitor } from "@tscircuit/core"
+
+export const ESP32PcbLayout = () => {
+  const ESP32 = useESP32_D0WD("U2")
+
+  // Capacitors with footprints and PCB placement
+  const C1 = useCapacitor("C1", { capacitance: "10pF", footprint: "0402", pcbX: -6, pcbY: 12 })
+  const C2 = useCapacitor("C2", { capacitance: "10pF", footprint: "0402", pcbX: -10, pcbY: 12 })
+  const C3 = useCapacitor("C3", { capacitance: "100pF", footprint: "0402", pcbX: -8, pcbY: 8 })
+  const C4 = useCapacitor("C4", { capacitance: "0.1uF", footprint: "0402", pcbX: 5, pcbY: 5 })
+  const C5 = useCapacitor("C5", { capacitance: "10nF", footprint: "0402", pcbX: -2, pcbY: 5 })
+  const C6 = useCapacitor("C6", { capacitance: "3.3nF", footprint: "0402", pcbX: -2, pcbY: 3 })
+  const C9 = useCapacitor("C9", { capacitance: "1nF", footprint: "0402", pcbX: -5, pcbY: -5 })
+  const C10 = useCapacitor("C10", { capacitance: "0.1uF", footprint: "0402", pcbX: -10, pcbY: -5 })
+  const C11 = useCapacitor("C11", { capacitance: "1uF", footprint: "0402", pcbX: -12, pcbY: -5 })
+  const C13 = useCapacitor("C13", { capacitance: "10uF", footprint: "0603", pcbX: -14, pcbY: -5 })
+
+  // Resistors with footprints and PCB placement
+  const R1 = useResistor("R1", { resistance: "20k", footprint: "0402", pcbX: -2, pcbY: 1 })
+  const R2 = useResistor("R2", { resistance: "0Ω", footprint: "0402", pcbX: -4, pcbY: 10 })
+  const R3 = useResistor("R3", { resistance: "499Ω", footprint: "0402", pcbX: 8, pcbY: 8 })
+  const R4 = useResistor("R4", { resistance: "2k", footprint: "0402", pcbX: 8, pcbY: -5 })
+
+  return (
+    <board width="50mm" height="40mm">
+      {/* Main ESP32 Microcontroller positioned at the center */}
+      <ESP32 pcbX={0} pcbY={0} />
+
+      {/* Crystal Oscillator close to XTAL pins */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="40MHz-Crystal"
+        footprint="crystal_smd_3225"
+        pcbX={-8}
+        pcbY={15}
+        schPortArrangement={{
+          topSide: { pins: ["pin1", "pin2"] },
+          bottomSide: { pins: ["pin3", "pin4"] }
+        }}
+      />
+
+      {/* Flash Memory */}
+      <chip
+        name="U3"
+        manufacturerPartNumber="W25Q32"
+        footprint="soic8"
+        pcbX={12}
+        pcbY={6}
+      />
+
+      {/* PSRAM Memory */}
+      <chip
+        name="U4"
+        manufacturerPartNumber="LY68L6400"
+        footprint="sop8"
+        pcbX={12}
+        pcbY={-6}
+      />
+
+      {/* Antenna at the board edge with ground clearance */}
+      <chip
+        name="ANT1"
+        manufacturerPartNumber="ANT-2.4GHz"
+        footprint="antenna_smd_pin"
+        pcbX={-20}
+        pcbY={-12}
+      />
+
+      {/* Schematic placements and connections */}
+      {/* ... (Traces and connections mapped from the schematic tutorial) */}
+      <trace from=".U2 .pin3" to=".U2 .pin4" />
+      <trace from=".U1 .pin1" to=".R2 .pin2" />
+      <trace from=".R2 .pin1" to=".U2 .XTAL_P" />
+      <trace from=".U1 .pin3" to=".U2 .XTAL_N" />
+      
+      {/* Decoupling cap routes */}
+      <trace from=".C4 .pos" to=".U2 .VDD3P3_CPU" />
+      <trace from=".C4 .neg" to="net.GND" />
+      
+      {/* RF Trace from ESP32 to Antenna matching network */}
+      <trace from=".U2 .LNA_IN" to=".ANT1 .pin1" />
+    </board>
+  )
+}
+```
+
+---
+
+## 📡 Routing RF Traces
+
+Traces carrying high-frequency RF signals (like the path from `LNA_IN` to `ANT1`) require specialized design parameters:
+* **Impedance Matching:** The trace width must be designed to have a characteristic impedance of **50 $\Omega$**. In TSCircuit, you can configure targeted width rules:
+  ```tsx
+  <trace from=".U2 .LNA_IN" to=".ANT1 .pin1" width="0.5mm" />
+  ```
+* **Minimize Vias:** Avoid placing vias on the RF trace to prevent impedance mismatches and signal reflections. Keep the path as straight as possible.
+
+---
+
+## Conclusion
+
+With the component placement coordinated and board constraints defined, the TSCircuit autorouter automatically routes the signals using a 2-layer stackup. Make sure to compile the design and verify that the copper clearance around `ANT1` is completely empty.

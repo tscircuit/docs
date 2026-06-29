@@ -1,0 +1,545 @@
+---
+title: 'ESP32 Module Circuit (Schematic Only)'
+description: 'Design a hardware-academy-style ESP32 module circuit schematic with power regulation, USB-serial, crystal oscillator, and chip antenna'
+icon: 'code'
+---
+
+## Overview
+
+In this tutorial, we will design a **schematic-only** ESP32 module circuit using tscircuit. This design follows the style taught in hardware academy courses and covers all the essential supporting circuitry for the bare **ESP32-D0WDQ6** SoC.
+
+We will use JLCPCB-stocked components where possible, and focus purely on the logical schematic — no PCB layout is applied.
+
+---
+
+## 📋 Components Checklist
+
+Our module schematic will consist of:
+1. **ESP32-D0WDQ6 SoC (U1)** — Dual-core 240 MHz Wi-Fi + BT chip
+2. **ME6211C33 LDO (U2)** — 3.3 V/500 mA regulator (JLCPCB basic)
+3. **CH340C USB-Serial (U3)** — USB-to-UART with integrated oscillator
+4. **40 MHz Crystal (Y1)** — External clock for the ESP32
+5. **Decoupling capacitors** — Per-pin power stabilisation
+6. **EN / BOOT buttons** — Manual reset and bootloader entry
+7. **Chip antenna + pi-network** — 2.4 GHz RF front-end
+
+---
+
+## 🛠️ Step-by-Step Implementation
+
+Create a new snippet on [snippets.tscircuit.com](https://snippets.tscircuit.com) or in your local project.
+
+### 1. ESP32-D0WDQ6 Core
+
+The ESP32-D0WDQ6 is a QFN-48 chip. We spread its pins across all four schematic sides for clarity.
+
+```tsx title="Esp32Module.tsx"
+import React from "react"
+import { useCapacitor, useResistor } from "@tscircuit/core"
+
+export const Esp32Module = () => {
+  return (
+    <group subcircuit routingDisabled>
+      {/* ── ESP32-D0WDQ6 ── */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-D0WDQ6"
+        schPortArrangement={{
+          leftSide: {
+            pins: [
+              "pin1",  // GND
+              "pin2",  // GND
+              "pin3",  // EN (CHIP_PU)
+              "pin4",  // IO36 / SENSOR_VP
+              "pin5",  // IO39 / SENSOR_VN
+              "pin6",  // IO34
+              "pin7",  // IO35
+              "pin8",  // IO32
+              "pin9",  // IO33
+              "pin10", // IO25
+              "pin11", // IO26
+              "pin12", // IO27
+            ],
+            direction: "top-to-bottom",
+          },
+          rightSide: {
+            pins: [
+              "pin13", // IO14 / MTMS
+              "pin14", // IO12 / MTDI
+              "pin15", // GND
+              "pin16", // IO13 / MTCK
+              "pin17", // IO15 / MTDO
+              "pin18", // IO2
+              "pin19", // IO0
+              "pin20", // IO4
+              "pin21", // IO16
+              "pin22", // IO17
+              "pin23", // IO5
+              "pin24", // IO18
+            ],
+            direction: "top-to-bottom",
+          },
+          topSide: {
+            pins: [
+              "pin25", // IO19
+              "pin26", // IO21
+              "pin27", // RXD0 / IO3
+              "pin28", // TXD0 / IO1
+              "pin29", // IO22
+              "pin30", // IO23
+            ],
+            direction: "left-to-right",
+          },
+          bottomSide: {
+            pins: [
+              "pin31", // GND
+              "pin32", // VDD3P3_CPU
+              "pin33", // VDD3P3_CPU
+              "pin34", // XTAL_N
+              "pin35", // XTAL_P
+              "pin36", // VDDA
+              "pin37", // VDDA
+              "pin38", // LNA_IN
+              "pin39", // VDD3P3_RTC
+              "pin40", // GND (thermal pad)
+            ],
+            direction: "left-to-right",
+          },
+        }}
+        pinLabels={{
+          pin1:  "GND",      pin2:  "GND",      pin3:  "EN",
+          pin4:  "IO36",     pin5:  "IO39",     pin6:  "IO34",     pin7:  "IO35",
+          pin8:  "IO32",     pin9:  "IO33",     pin10: "IO25",     pin11: "IO26",
+          pin12: "IO27",     pin13: "IO14",     pin14: "IO12",     pin15: "GND",
+          pin16: "IO13",     pin17: "IO15",     pin18: "IO2",      pin19: "IO0",
+          pin20: "IO4",      pin21: "IO16",     pin22: "IO17",     pin23: "IO5",
+          pin24: "IO18",     pin25: "IO19",     pin26: "IO21",     pin27: "RXD0",
+          pin28: "TXD0",     pin29: "IO22",     pin30: "IO23",     pin31: "GND",
+          pin32: "VDD_CPU",  pin33: "VDD_CPU",  pin34: "XTAL_N",  pin35: "XTAL_P",
+          pin36: "VDDA",     pin37: "VDDA",     pin38: "LNA_IN",  pin39: "VDD_RTC",
+          pin40: "GND_PAD",
+        }}
+        schX={0}
+        schY={0}
+        schPinSpacing={0.4}
+      />
+    </group>
+  )
+}
+```
+
+### 2. 3.3 V LDO Regulator
+
+The **ME6211C33** is a compact SOT-23-5 LDO that converts 5 V (USB) to 3.3 V for the ESP32. Add bulk and decoupling capacitors on both input and output rails.
+
+```tsx title="Esp32Module.tsx (power section)"
+      {/* ── ME6211C33 3.3 V LDO ── */}
+      <chip
+        name="U2"
+        manufacturerPartNumber="ME6211C33"
+        schPortArrangement={{
+          topSide:    { pins: ["pin2"], direction: "top-to-bottom" }, // IN
+          leftSide:   { pins: ["pin3"], direction: "top-to-bottom" }, // GND
+          rightSide:  { pins: ["pin4"], direction: "top-to-bottom" }, // EN (tied to IN)
+          bottomSide: { pins: ["pin5"], direction: "top-to-bottom" }, // OUT (3V3)
+        }}
+        pinLabels={{ pin2: "IN", pin3: "GND", pin4: "EN", pin5: "OUT" }}
+        schX={-14}
+        schY={6}
+      />
+
+      {/* Input capacitors (5 V rail) */}
+      <capacitor name="C1" capacitance="10uF"  schX={-16} schY={8} schRotation="90deg" />
+      <capacitor name="C2" capacitance="100nF" schX={-12} schY={8} schRotation="90deg" />
+      {/* Output capacitors (3.3 V rail) */}
+      <capacitor name="C3" capacitance="10uF"  schX={-16} schY={4} schRotation="90deg" />
+      <capacitor name="C4" capacitance="100nF" schX={-12} schY={4} schRotation="90deg" />
+
+      {/* Per-pin ESP32 decoupling */}
+      <capacitor name="C5" capacitance="100nF" schX={4}  schY={-7} schRotation="90deg" />
+      <capacitor name="C6" capacitance="100nF" schX={6}  schY={-7} schRotation="90deg" />
+      <capacitor name="C7" capacitance="1uF"   schX={8}  schY={-7} schRotation="90deg" />
+      <capacitor name="C8" capacitance="10nF"  schX={10} schY={-7} schRotation="90deg" />
+      <capacitor name="C9" capacitance="100nF" schX={12} schY={-7} schRotation="90deg" />
+
+      {/* LDO power traces */}
+      <trace from=".U2 .IN"  to="net.5V" />
+      <trace from=".U2 .EN"  to="net.5V" />
+      <trace from=".U2 .GND" to="net.GND" />
+      <trace from=".U2 .OUT" to="net.3V3" />
+      <trace from=".C1 .pos" to="net.5V" />   <trace from=".C1 .neg" to="net.GND" />
+      <trace from=".C2 .pos" to="net.5V" />   <trace from=".C2 .neg" to="net.GND" />
+      <trace from=".C3 .pos" to="net.3V3" />  <trace from=".C3 .neg" to="net.GND" />
+      <trace from=".C4 .pos" to="net.3V3" />  <trace from=".C4 .neg" to="net.GND" />
+      <trace from=".U1 .VDD_CPU" to="net.3V3" />
+      <trace from=".U1 .VDDA"    to="net.3V3" />
+      <trace from=".U1 .VDD_RTC" to="net.3V3" />
+      <trace from=".U1 .GND"     to="net.GND" />
+      <trace from=".U1 .GND_PAD" to="net.GND" />
+      <trace from=".C5 .pos" to="net.3V3" />  <trace from=".C5 .neg" to="net.GND" />
+      <trace from=".C6 .pos" to="net.3V3" />  <trace from=".C6 .neg" to="net.GND" />
+      <trace from=".C7 .pos" to="net.3V3" />  <trace from=".C7 .neg" to="net.GND" />
+      <trace from=".C8 .pos" to="net.3V3" />  <trace from=".C8 .neg" to="net.GND" />
+      <trace from=".C9 .pos" to="net.3V3" />  <trace from=".C9 .neg" to="net.GND" />
+```
+
+### 3. 40 MHz Crystal Oscillator
+
+The ESP32 needs an external 40 MHz crystal on its XTAL_P and XTAL_N pins. Use two 10 pF load capacitors as specified in the datasheet.
+
+```tsx title="Esp32Module.tsx (crystal section)"
+      {/* ── 40 MHz Crystal ── */}
+      <chip
+        name="Y1"
+        schPortArrangement={{
+          leftSide:  { pins: ["pin1"], direction: "top-to-bottom" },
+          rightSide: { pins: ["pin2"], direction: "top-to-bottom" },
+        }}
+        pinLabels={{ pin1: "XIN", pin2: "XOUT" }}
+        schX={4}
+        schY={-9}
+      />
+      <capacitor name="C10" capacitance="10pF" schX={2} schY={-10} schRotation="90deg" />
+      <capacitor name="C11" capacitance="10pF" schX={6} schY={-10} schRotation="90deg" />
+
+      <trace from=".U1 .XTAL_P" to=".Y1 .XIN" />
+      <trace from=".U1 .XTAL_N" to=".Y1 .XOUT" />
+      <trace from=".Y1 .XIN"    to=".C10 .pos" />
+      <trace from=".Y1 .XOUT"   to=".C11 .pos" />
+      <trace from=".C10 .neg"   to="net.GND" />
+      <trace from=".C11 .neg"   to="net.GND" />
+```
+
+### 4. CH340C USB-to-Serial Bridge
+
+The **CH340C** has a built-in 12 MHz oscillator — no external crystal is needed. Its TXD/RXD cross-connect to the ESP32 UART0 pins. Two 100 nF coupling capacitors on DTR and RTS implement the **auto-reset** circuit used by esptool to enter the bootloader without manually pressing buttons.
+
+```tsx title="Esp32Module.tsx (USB-serial section)"
+      {/* ── CH340C USB-to-UART ── */}
+      <chip
+        name="U3"
+        manufacturerPartNumber="CH340C"
+        schPortArrangement={{
+          leftSide: {
+            pins: ["pin1", "pin2", "pin3", "pin4", "pin7", "pin8"],
+            direction: "top-to-bottom",
+          },
+          rightSide: {
+            pins: ["pin5", "pin6", "pin9", "pin10", "pin11", "pin16"],
+            direction: "top-to-bottom",
+          },
+        }}
+        pinLabels={{
+          pin1:  "GND",  pin2:  "TXD",  pin3: "RXD",
+          pin4:  "V3",   pin5:  "UD+",  pin6: "UD-",
+          pin7:  "XI",   pin8:  "XO",
+          pin9:  "CTS",  pin10: "DSR",  pin11: "RI",
+          pin16: "VCC",
+        }}
+        schX={-6}
+        schY={-6}
+        schPinSpacing={0.4}
+      />
+      {/* VCC decoupling */}
+      <capacitor name="C12" capacitance="100nF" schX={-4}  schY={-9} schRotation="90deg" />
+      {/* Auto-reset: DTR → C13 → EN, RTS → C14 → IO0 */}
+      <capacitor name="C13" capacitance="100nF" schX={-8}  schY={-10} schRotation="0deg" />
+      <capacitor name="C14" capacitance="100nF" schX={-10} schY={-10} schRotation="0deg" />
+
+      <trace from=".U3 .VCC"    to="net.5V" />
+      <trace from=".U3 .GND"    to="net.GND" />
+      <trace from=".U3 .V3"     to="net.3V3" />
+      <trace from=".U3 .TXD"    to="net.ESP_RX" />
+      <trace from=".U3 .RXD"    to="net.ESP_TX" />
+      <trace from=".U1 .RXD0"   to="net.ESP_RX" />
+      <trace from=".U1 .TXD0"   to="net.ESP_TX" />
+      <trace from=".C12 .pos"   to="net.3V3" />
+      <trace from=".C12 .neg"   to="net.GND" />
+      {/* Auto-reset coupling */}
+      <trace from=".C13 .pin1"  to=".U3 .DTR" />
+      <trace from=".C13 .pin2"  to=".U1 .EN" />
+      <trace from=".C14 .pin1"  to=".U3 .RTS" />
+      <trace from=".C14 .pin2"  to=".U1 .IO0" />
+```
+
+### 5. EN / BOOT Buttons and Chip Antenna
+
+```tsx title="Esp32Module.tsx (buttons + antenna)"
+      {/* ── EN pull-up and RESET button ── */}
+      <resistor name="R1" resistance="10k" schX={-4} schY={4} schRotation="90deg" />
+      <chip
+        name="SW1"
+        schPortArrangement={{
+          leftSide:  { pins: ["pin1"], direction: "top-to-bottom" },
+          rightSide: { pins: ["pin2"], direction: "top-to-bottom" },
+        }}
+        pinLabels={{ pin1: "A", pin2: "B" }}
+        schX={-4}
+        schY={6}
+      />
+
+      {/* ── IO0 pull-up and BOOT button ── */}
+      <resistor name="R2" resistance="10k" schX={-6} schY={4} schRotation="90deg" />
+      <chip
+        name="SW2"
+        schPortArrangement={{
+          leftSide:  { pins: ["pin1"], direction: "top-to-bottom" },
+          rightSide: { pins: ["pin2"], direction: "top-to-bottom" },
+        }}
+        pinLabels={{ pin1: "A", pin2: "B" }}
+        schX={-6}
+        schY={6}
+      />
+
+      {/* ── 2.4 GHz Chip Antenna + Pi-Network ── */}
+      <chip
+        name="ANT1"
+        schPortArrangement={{
+          leftSide:  { pins: ["pin1"], direction: "top-to-bottom" },
+          rightSide: { pins: ["pin2"], direction: "top-to-bottom" },
+        }}
+        pinLabels={{ pin1: "RF", pin2: "GND" }}
+        schX={6}
+        schY={6}
+      />
+      <capacitor name="C15" capacitance="1pF"  schX={4} schY={7} schRotation="90deg" />
+      <inductor  name="L1"  inductance="1.5nH" schX={6} schY={8} />
+      <capacitor name="C16" capacitance="0pF"  schX={8} schY={7} schRotation="90deg" />
+
+      {/* EN */}
+      <trace from=".R1 .pin1" to="net.3V3" />
+      <trace from=".R1 .pin2" to=".U1 .EN" />
+      <trace from=".SW1 .A"   to=".U1 .EN" />
+      <trace from=".SW1 .B"   to="net.GND" />
+      {/* IO0 */}
+      <trace from=".R2 .pin1" to="net.3V3" />
+      <trace from=".R2 .pin2" to=".U1 .IO0" />
+      <trace from=".SW2 .A"   to=".U1 .IO0" />
+      <trace from=".SW2 .B"   to="net.GND" />
+      {/* Antenna pi-network */}
+      <trace from=".U1 .LNA_IN" to=".C15 .pos" />
+      <trace from=".C15 .neg"   to="net.GND" />
+      <trace from=".U1 .LNA_IN" to=".L1 .pin1" />
+      <trace from=".L1 .pin2"   to=".ANT1 .RF" />
+      <trace from=".ANT1 .RF"   to=".C16 .pos" />
+      <trace from=".C16 .neg"   to="net.GND" />
+      <trace from=".ANT1 .GND"  to="net.GND" />
+```
+
+---
+
+## 📄 Complete Schematic
+
+Here is the entire module schematic in one file:
+
+```tsx title="Esp32Module.tsx"
+import React from "react"
+import { useCapacitor, useResistor } from "@tscircuit/core"
+
+export const Esp32Module = () => {
+  return (
+    <group subcircuit routingDisabled>
+
+      {/* ── ESP32-D0WDQ6 ── */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-D0WDQ6"
+        schPortArrangement={{
+          leftSide: {
+            pins: ["pin1","pin2","pin3","pin4","pin5","pin6","pin7","pin8","pin9","pin10","pin11","pin12"],
+            direction: "top-to-bottom",
+          },
+          rightSide: {
+            pins: ["pin13","pin14","pin15","pin16","pin17","pin18","pin19","pin20","pin21","pin22","pin23","pin24"],
+            direction: "top-to-bottom",
+          },
+          topSide: {
+            pins: ["pin25","pin26","pin27","pin28","pin29","pin30"],
+            direction: "left-to-right",
+          },
+          bottomSide: {
+            pins: ["pin31","pin32","pin33","pin34","pin35","pin36","pin37","pin38","pin39","pin40"],
+            direction: "left-to-right",
+          },
+        }}
+        pinLabels={{
+          pin1:"GND",   pin2:"GND",      pin3:"EN",      pin4:"IO36",    pin5:"IO39",
+          pin6:"IO34",  pin7:"IO35",     pin8:"IO32",    pin9:"IO33",    pin10:"IO25",
+          pin11:"IO26", pin12:"IO27",    pin13:"IO14",   pin14:"IO12",   pin15:"GND",
+          pin16:"IO13", pin17:"IO15",    pin18:"IO2",    pin19:"IO0",    pin20:"IO4",
+          pin21:"IO16", pin22:"IO17",    pin23:"IO5",    pin24:"IO18",   pin25:"IO19",
+          pin26:"IO21", pin27:"RXD0",    pin28:"TXD0",   pin29:"IO22",   pin30:"IO23",
+          pin31:"GND",  pin32:"VDD_CPU", pin33:"VDD_CPU",pin34:"XTAL_N", pin35:"XTAL_P",
+          pin36:"VDDA", pin37:"VDDA",    pin38:"LNA_IN", pin39:"VDD_RTC",pin40:"GND_PAD",
+        }}
+        schX={0} schY={0} schPinSpacing={0.4}
+      />
+
+      {/* ── ME6211C33 3.3 V LDO ── */}
+      <chip name="U2" manufacturerPartNumber="ME6211C33"
+        schPortArrangement={{
+          topSide:    { pins: ["pin2"], direction: "top-to-bottom" },
+          leftSide:   { pins: ["pin3"], direction: "top-to-bottom" },
+          rightSide:  { pins: ["pin4"], direction: "top-to-bottom" },
+          bottomSide: { pins: ["pin5"], direction: "top-to-bottom" },
+        }}
+        pinLabels={{ pin2:"IN", pin3:"GND", pin4:"EN", pin5:"OUT" }}
+        schX={-14} schY={6}
+      />
+      <capacitor name="C1"  capacitance="10uF"  schX={-16} schY={8}  schRotation="90deg" />
+      <capacitor name="C2"  capacitance="100nF" schX={-12} schY={8}  schRotation="90deg" />
+      <capacitor name="C3"  capacitance="10uF"  schX={-16} schY={4}  schRotation="90deg" />
+      <capacitor name="C4"  capacitance="100nF" schX={-12} schY={4}  schRotation="90deg" />
+      <capacitor name="C5"  capacitance="100nF" schX={4}   schY={-7} schRotation="90deg" />
+      <capacitor name="C6"  capacitance="100nF" schX={6}   schY={-7} schRotation="90deg" />
+      <capacitor name="C7"  capacitance="1uF"   schX={8}   schY={-7} schRotation="90deg" />
+      <capacitor name="C8"  capacitance="10nF"  schX={10}  schY={-7} schRotation="90deg" />
+      <capacitor name="C9"  capacitance="100nF" schX={12}  schY={-7} schRotation="90deg" />
+
+      {/* ── 40 MHz Crystal ── */}
+      <chip name="Y1"
+        schPortArrangement={{
+          leftSide:  { pins: ["pin1"], direction: "top-to-bottom" },
+          rightSide: { pins: ["pin2"], direction: "top-to-bottom" },
+        }}
+        pinLabels={{ pin1:"XIN", pin2:"XOUT" }}
+        schX={4} schY={-9}
+      />
+      <capacitor name="C10" capacitance="10pF" schX={2} schY={-10} schRotation="90deg" />
+      <capacitor name="C11" capacitance="10pF" schX={6} schY={-10} schRotation="90deg" />
+
+      {/* ── CH340C USB-Serial ── */}
+      <chip name="U3" manufacturerPartNumber="CH340C"
+        schPortArrangement={{
+          leftSide:  { pins:["pin1","pin2","pin3","pin4","pin7","pin8"],  direction:"top-to-bottom" },
+          rightSide: { pins:["pin5","pin6","pin9","pin10","pin11","pin16"],direction:"top-to-bottom" },
+        }}
+        pinLabels={{
+          pin1:"GND", pin2:"TXD", pin3:"RXD", pin4:"V3",
+          pin5:"UD+", pin6:"UD-", pin7:"XI",  pin8:"XO",
+          pin9:"CTS", pin10:"DSR",pin11:"RI", pin16:"VCC",
+        }}
+        schX={-6} schY={-6} schPinSpacing={0.4}
+      />
+      <capacitor name="C12" capacitance="100nF" schX={-4}  schY={-9}  schRotation="90deg" />
+      <capacitor name="C13" capacitance="100nF" schX={-8}  schY={-10} schRotation="0deg" />
+      <capacitor name="C14" capacitance="100nF" schX={-10} schY={-10} schRotation="0deg" />
+
+      {/* ── EN / BOOT Buttons ── */}
+      <resistor name="R1" resistance="10k" schX={-4} schY={4} schRotation="90deg" />
+      <chip name="SW1"
+        schPortArrangement={{ leftSide:{pins:["pin1"],direction:"top-to-bottom"}, rightSide:{pins:["pin2"],direction:"top-to-bottom"} }}
+        pinLabels={{ pin1:"A", pin2:"B" }} schX={-4} schY={6}
+      />
+      <resistor name="R2" resistance="10k" schX={-6} schY={4} schRotation="90deg" />
+      <chip name="SW2"
+        schPortArrangement={{ leftSide:{pins:["pin1"],direction:"top-to-bottom"}, rightSide:{pins:["pin2"],direction:"top-to-bottom"} }}
+        pinLabels={{ pin1:"A", pin2:"B" }} schX={-6} schY={6}
+      />
+
+      {/* ── 2.4 GHz Chip Antenna ── */}
+      <chip name="ANT1"
+        schPortArrangement={{
+          leftSide:  { pins:["pin1"], direction:"top-to-bottom" },
+          rightSide: { pins:["pin2"], direction:"top-to-bottom" },
+        }}
+        pinLabels={{ pin1:"RF", pin2:"GND" }} schX={6} schY={6}
+      />
+      <capacitor name="C15" capacitance="1pF"  schX={4} schY={7} schRotation="90deg" />
+      <inductor  name="L1"  inductance="1.5nH" schX={6} schY={8} />
+      <capacitor name="C16" capacitance="0pF"  schX={8} schY={7} schRotation="90deg" />
+
+      {/* ── ALL TRACES ── */}
+      {/* LDO */}
+      <trace from=".U2 .IN"  to="net.5V" />   <trace from=".U2 .EN"  to="net.5V" />
+      <trace from=".U2 .GND" to="net.GND" />  <trace from=".U2 .OUT" to="net.3V3" />
+      <trace from=".C1 .pos" to="net.5V" />   <trace from=".C1 .neg" to="net.GND" />
+      <trace from=".C2 .pos" to="net.5V" />   <trace from=".C2 .neg" to="net.GND" />
+      <trace from=".C3 .pos" to="net.3V3" />  <trace from=".C3 .neg" to="net.GND" />
+      <trace from=".C4 .pos" to="net.3V3" />  <trace from=".C4 .neg" to="net.GND" />
+      <trace from=".U1 .VDD_CPU" to="net.3V3" />
+      <trace from=".U1 .VDDA"    to="net.3V3" />
+      <trace from=".U1 .VDD_RTC" to="net.3V3" />
+      <trace from=".U1 .GND"     to="net.GND" />
+      <trace from=".U1 .GND_PAD" to="net.GND" />
+      <trace from=".C5 .pos" to="net.3V3" />  <trace from=".C5 .neg" to="net.GND" />
+      <trace from=".C6 .pos" to="net.3V3" />  <trace from=".C6 .neg" to="net.GND" />
+      <trace from=".C7 .pos" to="net.3V3" />  <trace from=".C7 .neg" to="net.GND" />
+      <trace from=".C8 .pos" to="net.3V3" />  <trace from=".C8 .neg" to="net.GND" />
+      <trace from=".C9 .pos" to="net.3V3" />  <trace from=".C9 .neg" to="net.GND" />
+      {/* Crystal */}
+      <trace from=".U1 .XTAL_P" to=".Y1 .XIN" />
+      <trace from=".U1 .XTAL_N" to=".Y1 .XOUT" />
+      <trace from=".Y1 .XIN"    to=".C10 .pos" />  <trace from=".C10 .neg" to="net.GND" />
+      <trace from=".Y1 .XOUT"   to=".C11 .pos" />  <trace from=".C11 .neg" to="net.GND" />
+      {/* CH340C */}
+      <trace from=".U3 .VCC"   to="net.5V" />   <trace from=".U3 .GND"   to="net.GND" />
+      <trace from=".U3 .V3"    to="net.3V3" />   <trace from=".C12 .pos"  to="net.3V3" />
+      <trace from=".C12 .neg"  to="net.GND" />
+      <trace from=".U3 .TXD"   to="net.ESP_RX" /> <trace from=".U1 .RXD0"  to="net.ESP_RX" />
+      <trace from=".U3 .RXD"   to="net.ESP_TX" /> <trace from=".U1 .TXD0"  to="net.ESP_TX" />
+      <trace from=".C13 .pin1" to=".U3 .DTR" />   <trace from=".C13 .pin2" to=".U1 .EN" />
+      <trace from=".C14 .pin1" to=".U3 .RTS" />   <trace from=".C14 .pin2" to=".U1 .IO0" />
+      {/* Buttons */}
+      <trace from=".R1 .pin1" to="net.3V3" />  <trace from=".R1 .pin2" to=".U1 .EN" />
+      <trace from=".SW1 .A"   to=".U1 .EN" />  <trace from=".SW1 .B"   to="net.GND" />
+      <trace from=".R2 .pin1" to="net.3V3" />  <trace from=".R2 .pin2" to=".U1 .IO0" />
+      <trace from=".SW2 .A"   to=".U1 .IO0" /> <trace from=".SW2 .B"   to="net.GND" />
+      {/* Antenna */}
+      <trace from=".U1 .LNA_IN" to=".C15 .pos" /> <trace from=".C15 .neg"  to="net.GND" />
+      <trace from=".U1 .LNA_IN" to=".L1 .pin1" /> <trace from=".L1 .pin2"  to=".ANT1 .RF" />
+      <trace from=".ANT1 .RF"   to=".C16 .pos" /> <trace from=".C16 .neg"  to="net.GND" />
+      <trace from=".ANT1 .GND"  to="net.GND" />
+    </group>
+  )
+}
+```
+
+---
+
+## 📋 Bill of Materials
+
+| Reference | Part             | Value / Package                          |
+|-----------|------------------|------------------------------------------|
+| U1        | ESP32-D0WDQ6     | Dual-core SoC, QFN-48                    |
+| U2        | ME6211C33        | 3.3 V/500 mA LDO, SOT-23-5 (JLCPCB basic)|
+| U3        | CH340C           | USB-UART, SOP-16 (built-in oscillator)   |
+| Y1        | 40 MHz crystal   | HC-49S or 3225 SMD package               |
+| C1, C3    | 10 µF            | LDO bulk caps, 0805                      |
+| C2, C4    | 100 nF           | LDO decoupling, 0402                     |
+| C5–C7     | 100 nF / 1 µF    | VDD_CPU decoupling, 0402                 |
+| C8–C9     | 10 nF / 100 nF   | VDDA decoupling, 0402                    |
+| C10, C11  | 10 pF            | Crystal load caps, 0402                  |
+| C12       | 100 nF           | CH340C VCC decoupling, 0402              |
+| C13, C14  | 100 nF           | Auto-reset coupling (DTR/RTS), 0402      |
+| C15       | 1 pF             | Antenna shunt cap                        |
+| C16       | 0 pF (DNP)       | Antenna shunt (mount if needed)          |
+| L1        | 1.5 nH           | Antenna series matching inductor         |
+| R1, R2    | 10 kΩ            | EN / IO0 pull-ups, 0402                  |
+| SW1       | Tactile switch   | RESET                                    |
+| SW2       | Tactile switch   | BOOT (IO0)                               |
+| ANT1      | 2.4 GHz chip ant | Molex 2450AT43A100 or equivalent         |
+
+---
+
+## 💡 Key Design Notes
+
+1. **Crystal load capacitors** — The ESP32 datasheet specifies 10 pF for the 40 MHz oscillator. Wrong values cause Wi-Fi connection instability and failed calibration.
+
+2. **Auto-reset circuit** — C13 and C14 implement the standard DTR/RTS toggle used by `esptool`. Without them, you must hold BOOT and press RESET manually every time you flash firmware.
+
+3. **ME6211C33 vs AMS1117** — The ME6211C33 is a JLCPCB "basic" part (always in stock, no placement fee). The AMS1117-3.3 also works but is a "preferred" part with a small extra cost.
+
+4. **CH340C vs CH340G** — The CH340C has an internal 12 MHz oscillator so it saves the external crystal and two capacitors compared to the CH340G variant.
+
+5. **Antenna keep-out** — On a real PCB, place the chip antenna at a board edge with a copper-free keep-out zone underneath to avoid detuning the antenna.
+
+:::info
+  For a full board with PCB footprints and copper routing see the
+  [ESP32 PCB Layout and Routing](./esp32-pcb-routing) tutorial.
+:::
+
+:::info
+  Reference design: [seveibar/wifi-test-board-1](https://tscircuit.com/seveibar/wifi-test-board-1)
+  and [thehardwareacademy.com ESP32 tutorial](https://thehardwareacademy.com/courses/tutorial-full-length-how-to-design-a-custom-esp32-pcb/)
+:::
