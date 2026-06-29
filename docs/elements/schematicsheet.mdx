@@ -1,0 +1,167 @@
+---
+title: <schematicsheet />
+description: >-
+  Split a schematic into named sheets and assign schematic elements with
+  schSheetName.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<schematicsheet />` creates a named schematic sheet. Use it when a design is too
+large for one schematic view, or when you want to present functional blocks on
+separate pages.
+
+Schematic elements can be assigned to a sheet in three common ways:
+
+- Put the elements inside the `<schematicsheet />`.
+- Set `schSheetName` directly on an element.
+- Set `schSheetName` on a container such as `<subcircuit />` so its children are
+  placed on the sheet.
+
+The `schSheetName` value must match the sheet's `name`.
+
+## Basic Example
+
+Wrap schematic elements in a `<schematicsheet />` to place them on that sheet.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="20mm" height="20mm" routingDisabled>
+    <schematicsheet name="Main Sheet" displayName="Main Sheet" sheetIndex={0}>
+      <resistor
+        name="R1"
+        resistance="1k"
+        footprint="0402"
+        schX={0}
+        schY={0}
+      />
+      <schematictext text="Input divider" schX={1} schY={1} />
+    </schematicsheet>
+  </board>
+)
+`}
+/>
+
+## Assign an Element with `schSheetName`
+
+You can also declare the sheet once and assign individual elements to it with
+`schSheetName`. This is useful when the component is easier to keep with the rest
+of the board code.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="20mm" height="20mm" routingDisabled>
+    <schematicsheet
+      name="Main Sheet"
+      displayName="Main Sheet"
+      sheetIndex={0}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0402"
+      schX={0}
+      schY={0}
+      schSheetName="Main Sheet"
+    />
+  </board>
+)
+`}
+/>
+
+## Assign a Subcircuit to a Sheet
+
+The most common container-level usage is setting `schSheetName` on a
+`<subcircuit />`. Every schematic element inside that subcircuit is assigned to
+the matching sheet.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+const PowerInput = () => (
+  <subcircuit name="powerInput" schSheetName="Power">
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+      schX={-1}
+      schY={0}
+    />
+    <capacitor
+      name="C1"
+      capacitance="100nF"
+      footprint="0402"
+      schX={1}
+      schY={0}
+    />
+    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+  </subcircuit>
+)
+
+export default () => (
+  <board width="25mm" height="20mm" routingDisabled>
+    <schematicsheet name="Power" displayName="Power" sheetIndex={0} />
+    <schematicsheet name="Logic" displayName="Logic" sheetIndex={1} />
+
+    <PowerInput />
+
+    <subcircuit name="logic" schSheetName="Logic">
+      <chip
+        name="U1"
+        footprint="soic8"
+        schX={0}
+        schY={0}
+        pinLabels={{
+          pin1: "VCC",
+          pin2: "IN",
+          pin3: "OUT",
+          pin4: "GND",
+          pin5: "NC",
+          pin6: "NC",
+          pin7: "NC",
+          pin8: "NC",
+        }}
+      />
+    </subcircuit>
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `string` | Yes | Sheet identifier. Match this value from `schSheetName`. |
+| `displayName` | `string` | No | Label shown for the sheet in schematic viewers. |
+| `sheetIndex` | `number` | No | Ordering value for multi-sheet schematics. Lower numbers appear first. |
+
+## `schSheetName`
+
+Any schematic element or schematic container that accepts `schSheetName` can be
+assigned to a sheet by matching the sheet's `name`.
+
+```tsx
+<schematicsheet name="Power" displayName="Power" sheetIndex={0} />
+
+<subcircuit name="powerSupply" schSheetName="Power">
+  <resistor name="R1" resistance="10k" footprint="0402" />
+  <capacitor name="C1" capacitance="100nF" footprint="0402" />
+</subcircuit>
+```
+
+Use direct `schSheetName` for one-off components. Use container-level
+`schSheetName`, usually on `<subcircuit />`, when a complete functional block
+belongs on the same sheet.
