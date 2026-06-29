@@ -1,0 +1,146 @@
+---
+title: I2C Environmental Sensor Module
+description: Learn how to design a compact environmental monitoring module with a BME280 sensor, SSD1306 OLED display, and I2C bus pull-ups using tscircuit.
+---
+
+## Overview
+
+In this tutorial, we will build a compact **I2C Environmental Sensor Module**. This board is designed to measure ambient temperature, relative humidity, and barometric pressure, and display the live readings on a local OLED screen.
+
+We will use **I2C (Inter-Integrated Circuit)**, which is a popular serial communication protocol that allows multiple slave devices (the BME280 sensor and SSD1306 OLED) to communicate with a single master host using only two signal wires:
+- **SDA** (Serial Data)
+- **SCL** (Serial Clock)
+
+---
+
+## 📋 Components Checklist
+
+Our module will consist of:
+1. **BME280 Environmental Sensor (U1)** — Digital sensor for temperature, humidity, and pressure in an LGA-8 package.
+2. **SSD1306 OLED Display (U2)** — Standard 0.96-inch 128x64 I2C display panel.
+3. **I2C Pull-Up Resistors (R1, R2)** — 4.7kΩ resistors to pull the SDA and SCL signal lines high.
+4. **Decoupling Capacitors (C1, C2)** — 0.1µF capacitors to stabilize power supply inputs.
+5. **4-pin Male Header (J1)** — Connecting interface for power (VCC/GND) and communication (SDA/SCL) to a host microcontroller.
+
+---
+
+## 🛠️ Step-by-Step Implementation
+
+Create a new file in your project or editor and paste the following tscircuit design code.
+
+### Complete Circuit Code
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="schematic" code={`
+export default () => {
+  return (
+    <board width="40mm" height="30mm">
+      {/* 4-pin Host Connection Header */}
+      <chip
+        name="J1"
+        manufacturerPartNumber="HDR-1X4"
+        schX={-15}
+        schY={0}
+        pinLabels={{
+          pin1: "VCC",
+          pin2: "GND",
+          pin3: "SCL",
+          pin4: "SDA",
+        }}
+      />
+
+      {/* BME280 Sensor */}
+      <chip
+        name="U1"
+        manufacturerPartNumber="BME280"
+        schX={0}
+        schY={-8}
+        pinLabels={{
+          pin1: "VDD",
+          pin2: "GND",
+          pin3: "VDDIO",
+          pin4: "SDO",
+          pin5: "SDA",
+          pin6: "SCL",
+          pin7: "CSB",
+          pin8: "GND_IO",
+        }}
+      />
+
+      {/* SSD1306 128x64 OLED Display (I2C interface) */}
+      <chip
+        name="U2"
+        manufacturerPartNumber="SSD1306-0.96-OLED"
+        schX={15}
+        schY={0}
+        pinLabels={{
+          pin1: "GND",
+          pin2: "VCC",
+          pin3: "SCL",
+          pin4: "SDA",
+        }}
+      />
+
+      {/* I2C Pull-Up Resistors */}
+      <resistor name="R1" resistance="4.7k" schX={-5} schY={8} />
+      <resistor name="R2" resistance="4.7k" schX={5} schY={8} />
+
+      {/* Decoupling Capacitors */}
+      <capacitor name="C1" capacitance="0.1uF" schX={-8} schY={-15} />
+      <capacitor name="C2" capacitance="0.1uF" schX={10} schY={-15} />
+
+      {/* Connections */}
+      {/* Power Rail (VCC / GND) */}
+      <trace from=".J1 .pin1" to="net.VCC" />
+      <trace from=".J1 .pin2" to="net.GND" />
+
+      {/* BME280 Power */}
+      <trace from="net.VCC" to=".U1 .pin1" />   {/* VDD */}
+      <trace from="net.VCC" to=".U1 .pin3" />   {/* VDDIO */}
+      <trace from="net.VCC" to=".U1 .pin7" />   {/* CSB high enables I2C mode */}
+      <trace from=".U1 .pin4" to="net.GND" />   {/* SDO to GND selects address 0x76 */}
+      <trace from=".U1 .pin2" to="net.GND" />
+      <trace from=".U1 .pin8" to="net.GND" />
+
+      {/* OLED Power */}
+      <trace from="net.VCC" to=".U2 .pin2" />
+      <trace from="net.GND" to=".U2 .pin1" />
+
+      {/* Decoupling Caps */}
+      <trace from="net.VCC" to=".C1 .pin1" />
+      <trace from=".C1 .pin2" to="net.GND" />
+      <trace from="net.VCC" to=".C2 .pin1" />
+      <trace from=".C2 .pin2" to="net.GND" />
+
+      {/* SCL Bus */}
+      <trace from=".J1 .pin3" to="net.SCL" />
+      <trace from="net.SCL" to=".U1 .pin6" />
+      <trace from="net.SCL" to=".U2 .pin3" />
+      
+      {/* SDA Bus */}
+      <trace from=".J1 .pin4" to="net.SDA" />
+      <trace from="net.SDA" to=".U1 .pin5" />
+      <trace from="net.SDA" to=".U2 .pin4" />
+
+      {/* I2C Pull-Up Connections */}
+      <trace from="net.VCC" to=".R1 .pin1" />
+      <trace from=".R1 .pin2" to="net.SCL" />
+      
+      <trace from="net.VCC" to=".R2 .pin1" />
+      <trace from=".R2 .pin2" to="net.SDA" />
+    </board>
+  )
+}
+`} />
+
+---
+
+## 💡 Crucial Hardware Design Notes
+
+1. **CSB & SDO Configuration**:
+   - The BME280 requires the **CSB (Chip Select Bar)** pin to be pulled to **VCC** to enable the **I2C communication interface** (pulling it low selects SPI mode).
+   - **SDO** is the address select pin. Connecting it to GND sets the 7-bit slave address to `0x76`. Connecting it to VCC sets it to `0x77`.
+2. **I2C Bus Pull-Ups**:
+   - The I2C protocol uses open-drain/open-collector outputs. This means the lines can only pull down to GND; they cannot pull high themselves.
+   - External pull-up resistors (like **R1** and **R2**) are mandatory to pull SCL and SDA lines up to VCC. Without these, the signals will stay low and the bus will not function.
