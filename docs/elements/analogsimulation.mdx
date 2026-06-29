@@ -48,5 +48,64 @@ Use `<analogsimulation />` once per `<board />` to define how the simulation
 runs. Combine it with `<voltagesource />` and `<voltageprobe />` elements to
 create and observe waveforms.
 
+## Multi-axis scope display
+
+Simulation graphs can show multiple voltage and current channels on separate
+colored value axes. Set graph display props on each `<voltageprobe />` or
+`<ammeter />` channel:
+
+- `graphDisplayName` sets the channel label.
+- `graphCenter` sets the measured voltage or current value at the channel center.
+- `graphOffsetDivs` moves that center up or down by graph divisions.
+- `graphUnitsPerDiv` sets the channel scale. Voltage probes use volts per
+  division. Ammeters use amps per division.
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" schX={-4} />
+    <ammeter
+      name="IIN"
+      color="#e05a00"
+      graphDisplayName="IIN"
+      graphCenter={0.005}
+      graphOffsetDivs={1}
+      graphUnitsPerDiv={0.001}
+      connections={{
+        pos: ".V1 > .pin1",
+        neg: ".R_LOAD > .pin1",
+      }}
+    />
+    <resistor name="R_LOAD" resistance="1k" schX={2} />
+
+    <trace from=".R_LOAD > .pin2" to=".V1 > .pin2" />
+
+    <voltageprobe
+      name="VIN"
+      color="#315cff"
+      connectsTo=".IIN > .pos"
+      referenceTo=".V1 > .pin2"
+      graphDisplayName="VIN"
+      graphCenter={5}
+      graphOffsetDivs={-1}
+      graphUnitsPerDiv={0.5}
+    />
+
+    <analogsimulation
+      duration="4ms"
+      timePerStep="1ms"
+      spiceEngine="ngspice"
+    />
+  </board>
+)
+`}
+/>
+
 For more end-to-end examples and best practices, we recommend reviewing the
 [SPICE simulation guide](/category/spice-simulation).
