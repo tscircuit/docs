@@ -17,6 +17,8 @@ tsci snapshot [options] [path]
 - `--3d` – also generate 3D preview snapshots.
 - `--pcb-only` – generate only PCB snapshots.
 - `--schematic-only` – generate only schematic snapshots.
+- `--simulation-only` – generate only simulation snapshots.
+- `--layer <layer>` – generate a PCB snapshot for a single layer, either `top` or `bottom`.
 - `--disable-parts-engine` – disable the parts engine while rendering snapshots.
 - `--show-courtyards` – show courtyard outlines in PCB snapshots.
 - `--camera-preset <preset>` – choose the camera angle preset for 3D snapshots. This also implies `--3d`.
@@ -42,6 +44,6 @@ __snapshots__/test.board-pcb.snap.svg
 __snapshots__/test.board-schematic.snap.svg
 ```
 
-If `--3d` is specified, a `-3d.snap.svg` is also produced.
+If `--3d` is specified, a `-3d.snap.png` is also produced.
 
 Running without `--update` verifies that the generated output matches the existing snapshots. Differences cause a non-zero exit code.
