@@ -1,17 +1,23 @@
 ---
 title: Using the tscircuit TI Library
 sidebar_position: 5
-description: Import Texas Instruments subcircuits from @tsci/tscircuit.ti and connect to pins inside them with selectors.
+description: Import TI chip components from @tsci/tscircuit.ti and wire them like any other chip component.
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview";
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `@tsci/tscircuit.ti` package provides ready-to-use Texas Instruments
-reference subcircuits for tscircuit. Each export is a reusable
-[`<subcircuit />`](/elements/subcircuit) that bundles the TI chip together with
-its supporting components, connectors, and nets.
+The `@tsci/tscircuit.ti` package exports Texas Instruments chip components from
+the package root. These are the most direct way to place and wire TI devices in
+your own board designs.
+
+Many chips are available under a family-level name such as `BQ24074` or
+`INA237`. The package also exports exact manufacturer-part-number variants when
+you need them, such as `BQ24074RGTR` or `INA237AQDGSRQ1`.
+
+The package root also includes higher-level reference circuits such as
+`BatteryManagement_BQ24074`, but this guide focuses on chip-level usage.
 
 Install the library in a local tscircuit project:
 
@@ -19,106 +25,197 @@ Install the library in a local tscircuit project:
 bun add @tsci/tscircuit.ti
 ```
 
-Then import the TI subcircuit you want to place:
+## Import a TI Chip
+
+For most cases, import the chip from the package root:
 
 ```tsx
-import { BQ24074Subcircuit } from "@tsci/tscircuit.ti";
+import { BQ24074 } from "@tsci/tscircuit.ti"
 ```
 
-All current component exports end with `Subcircuit`.
+The chip component already includes the manufacturer part number, footprint,
+supplier part numbers, and pin labels from the TI library source.
 
-## Place a TI Subcircuit
+If you need to target an exact package variant, you can also import the
+manufacturer-part-number component directly from the same package root:
 
-This example places the `BQ24074Subcircuit` single-cell Li-ion charger on a
-small board.
+```tsx
+import { BQ24074RGTR } from "@tsci/tscircuit.ti"
+```
+
+## Place a TI Chip
+
+This example imports the `BQ24074` charger IC and places it directly on a
+board.
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
+    import { BQ24074 } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
-        <BQ24074Subcircuit name="BQ24074" />
-      </board>
-    )
-
-`}
-/>
-
-## Connect to a Pin Inside the Subcircuit
-
-Imported TI parts are subcircuits. To connect an external component to a pin
-inside the subcircuit, start the selector with the placed subcircuit name, then
-select the internal component and pin.
-
-In this example, `R11.pin1` connects to the `OUT` pin on the internal `U1`
-charger chip inside the `BQ24074` subcircuit:
-
-<CircuitPreview
-  defaultView="schematic"
-  hide3DTab
-  code={`
-    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
-
-    export default () => (
-      <board>
-        <BQ24074Subcircuit name="BQ24074" />
-        <resistor
-          name="R11"
-          resistance="1k"
-          footprint="0402"
-          pcbX={7}
-          pcbY={-3}
-          connections={{
-            pin1: ".BQ24074 .U1 .OUT",
+        <BQ24074
+          name="U1"
+          schWidth={3.1}
+          schHeight={4.3}
+          schPinArrangement={{
+            leftSide: {
+              direction: "top-to-bottom",
+              pins: ["IN", "VSS", "TS", "BAT"],
+            },
+            topSide: {
+              direction: "left-to-right",
+              pins: ["N_PGOOD", "N_CHG"],
+            },
+            rightSide: {
+              direction: "top-to-bottom",
+              pins: ["OUT", "EN2", "EN1", "TMR", "N_CE"],
+            },
+            bottomSide: {
+              direction: "left-to-right",
+              pins: ["ITERM", "ILIM", "ISET"],
+            },
+          }}
+          schPinStyle={{
+            TS: { topMargin: 1.2 },
+            N_CHG: { leftMargin: 0.7 },
+            EN2: { topMargin: 0.9 },
+            ILIM: { leftMargin: 0.45 },
+            ISET: { leftMargin: 0.45 },
           }}
         />
       </board>
     )
-
-`}
+  `}
 />
 
-The selector `".BQ24074 .U1 .OUT"` means:
+`BQ24074` currently uses the `BQ24074RGTR` package variant by default, so you
+can start with the family-level export and only switch to the exact part-number
+component when you need a specific package.
 
-- `.BQ24074` selects the placed `BQ24074` subcircuit
-- `.U1` selects the internal charger chip named `U1`
-- `.OUT` selects the `OUT` pin on that chip
+Because `BQ24074` is a chip component, it accepts the same props as a
+regular [`<chip />`](/elements/chip), including `name`, `connections`,
+`schPinArrangement`, `schPinStyle`, `pcbX`, and `pcbY`.
 
-You can use the same pattern for other exported TI subcircuits and their
-internal parts. For example, `".BQ24074 .J1 .DC_PLUS"` selects the `DC_PLUS`
-pin on the internal `J1` input connector.
+## Wire the Chip Pins
 
-If you want a deeper refresher on selector syntax, see
+Use the `connections` prop with the chip's labeled pins, just like any other
+custom chip component.
+
+<CircuitPreview
+  defaultView="schematic"
+  hide3DTab
+  code={`
+    import { BQ24074 } from "@tsci/tscircuit.ti"
+
+    export default () => (
+      <board width="26mm" height="20mm">
+        <BQ24074
+          name="U1"
+          schWidth={3.1}
+          schHeight={4.3}
+          schPinArrangement={{
+            leftSide: {
+              direction: "top-to-bottom",
+              pins: ["IN", "VSS", "TS", "BAT"],
+            },
+            topSide: {
+              direction: "left-to-right",
+              pins: ["N_PGOOD", "N_CHG"],
+            },
+            rightSide: {
+              direction: "top-to-bottom",
+              pins: ["OUT", "EN2", "EN1", "TMR", "N_CE"],
+            },
+            bottomSide: {
+              direction: "left-to-right",
+              pins: ["ITERM", "ILIM", "ISET"],
+            },
+          }}
+          noConnect={["TS", "N_PGOOD", "N_CHG"]}
+          connections={{
+            IN: "net.VBUS",
+            VSS: "net.GND",
+            BAT: "net.BAT",
+            BAT2: "net.BAT",
+            OUT: "net.VSYS",
+            OUT2: "net.VSYS",
+            EN2: "net.VSYS",
+            EN1: "net.GND",
+            TMR: "net.GND",
+            N_CE: "net.GND",
+            ITERM: ".R_ITERM > .pin1",
+            ILIM: ".R_ILIM > .pin1",
+            ISET: ".R_ISET > .pin1",
+            EP: "net.GND",
+          }}
+        />
+
+        <resistor
+          name="R_ITERM"
+          resistance="4.12k"
+          footprint="0603"
+          connections={{ pin2: "net.GND" }}
+        />
+        <resistor
+          name="R_ILIM"
+          resistance="1.18k"
+          footprint="0603"
+          connections={{ pin2: "net.GND" }}
+        />
+        <resistor
+          name="R_ISET"
+          resistance="1.13k"
+          footprint="0603"
+          connections={{ pin2: "net.GND" }}
+        />
+
+        <capacitor
+          name="C_IN"
+          capacitance="1uF"
+          footprint="0603"
+          connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
+        />
+        <capacitor
+          name="C_BAT"
+          capacitance="4.7uF"
+          footprint="0603"
+          connections={{ pin1: "net.BAT", pin2: "net.GND" }}
+        />
+        <capacitor
+          name="C_OUT"
+          capacitance="4.7uF"
+          footprint="0603"
+          connections={{ pin1: "net.VSYS", pin2: "net.GND" }}
+        />
+      </board>
+    )
+  `}
+/>
+
+In this example:
+
+- `IN`, `BAT`, and `OUT` connect directly to named nets.
+- `ITERM`, `ILIM`, and `ISET` connect to resistor pins using selectors.
+- `noConnect` marks the pins that are intentionally unused in this simplified
+  example.
+
+For more on chip props, see [Configuring Chips](../tscircuit-essentials/configuring-chips).
+For more on selector syntax, see
 [Port and Net Selectors](../tscircuit-essentials/port-and-net-selectors.md).
 
-## Available Exports
+## Finding More TI Chips
 
-The package currently exports these reusable TI subcircuits:
+The package root exports chip components such as `BQ24074`, `BQ25895`,
+`BQ27441G1`, `CC2340R5`, `INA237`, `TPS22919`, `TPS63802`, and `TMP1075`.
 
-- `BQ24074Subcircuit`
-- `BQ25895Subcircuit`
-- `BQ27441G1Subcircuit`
-- `CC2340R5Subcircuit`
-- `CC3235SFSubcircuit`
-- `DRV8833Subcircuit`
-- `DRV8876Subcircuit`
-- `HDC2080Subcircuit`
-- `HDC3020Subcircuit`
-- `HDC3022Subcircuit`
-- `INA237Subcircuit`
-- `MSPM0G3507Subcircuit`
-- `TMP1075Subcircuit`
-- `TPS22919Subcircuit`
-- `TPS62933Subcircuit`
-- `TPS63802Subcircuit`
-- `TPS7A02Subcircuit`
-- `TPSM82823Subcircuit`
+It also exports exact manufacturer-part-number variants such as `BQ24074RGTR`,
+`BQ25895RTWR`, and `INA237AQDGSRQ1` when you need a specific package option.
 
-The package also exports:
+For dynamic lookup, the package exports `TiChipComponents`, `TiChipName`, and
+`TiChipComponent`.
 
-- `TiSubcircuitComponents` to access the full map of exported TI subcircuits
-- `TiSubcircuitName` as a union of the export names
-- `TiSubcircuitComponent` as a type for any exported TI subcircuit component
+You can browse the [`lib/chips` directory in `tscircuit/ti`](https://github.com/tscircuit/ti/tree/main/lib/chips)
+to see the available chip families and their exact package variants.
