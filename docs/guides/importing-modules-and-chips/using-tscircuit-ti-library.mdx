@@ -56,36 +56,7 @@ board.
 
     export default () => (
       <board width="18mm" height="14mm">
-        <BQ24074
-          name="U1"
-          schWidth={3.1}
-          schHeight={4.3}
-          schPinArrangement={{
-            leftSide: {
-              direction: "top-to-bottom",
-              pins: ["IN", "VSS", "TS", "BAT"],
-            },
-            topSide: {
-              direction: "left-to-right",
-              pins: ["N_PGOOD", "N_CHG"],
-            },
-            rightSide: {
-              direction: "top-to-bottom",
-              pins: ["OUT", "EN2", "EN1", "TMR", "N_CE"],
-            },
-            bottomSide: {
-              direction: "left-to-right",
-              pins: ["ITERM", "ILIM", "ISET"],
-            },
-          }}
-          schPinStyle={{
-            TS: { topMargin: 1.2 },
-            N_CHG: { leftMargin: 0.7 },
-            EN2: { topMargin: 0.9 },
-            ILIM: { leftMargin: 0.45 },
-            ISET: { leftMargin: 0.45 },
-          }}
-        />
+        <BQ24074 name="U1" />
       </board>
     )
   `}
@@ -96,8 +67,8 @@ can start with the family-level export and only switch to the exact part-number
 component when you need a specific package.
 
 Because `BQ24074` is a chip component, it accepts the same props as a
-regular [`<chip />`](/elements/chip), including `name`, `connections`,
-`schPinArrangement`, `schPinStyle`, `pcbX`, and `pcbY`.
+regular [`<chip />`](/elements/chip), including `name`, `connections`, `pcbX`,
+and `pcbY`.
 
 ## Wire the Chip Pins
 
@@ -114,81 +85,27 @@ custom chip component.
       <board width="26mm" height="20mm">
         <BQ24074
           name="U1"
-          schWidth={3.1}
-          schHeight={4.3}
-          schPinArrangement={{
-            leftSide: {
-              direction: "top-to-bottom",
-              pins: ["IN", "VSS", "TS", "BAT"],
-            },
-            topSide: {
-              direction: "left-to-right",
-              pins: ["N_PGOOD", "N_CHG"],
-            },
-            rightSide: {
-              direction: "top-to-bottom",
-              pins: ["OUT", "EN2", "EN1", "TMR", "N_CE"],
-            },
-            bottomSide: {
-              direction: "left-to-right",
-              pins: ["ITERM", "ILIM", "ISET"],
-            },
-          }}
           noConnect={["TS", "N_PGOOD", "N_CHG"]}
           connections={{
             IN: "net.VBUS",
             VSS: "net.GND",
-            BAT: "net.BAT",
-            BAT2: "net.BAT",
-            OUT: "net.VSYS",
-            OUT2: "net.VSYS",
-            EN2: "net.VSYS",
+            BAT: "net.VSYS",
+            BAT2: "net.VSYS",
+            OUT: ".R_LOAD > .pin1",
+            OUT2: ".R_LOAD > .pin1",
+            EN2: ".R_LOAD > .pin1",
             EN1: "net.GND",
             TMR: "net.GND",
             N_CE: "net.GND",
-            ITERM: ".R_ITERM > .pin1",
-            ILIM: ".R_ILIM > .pin1",
-            ISET: ".R_ISET > .pin1",
             EP: "net.GND",
           }}
         />
 
         <resistor
-          name="R_ITERM"
-          resistance="4.12k"
-          footprint="0603"
+          name="R_LOAD"
+          resistance="1k"
+          footprint="0402"
           connections={{ pin2: "net.GND" }}
-        />
-        <resistor
-          name="R_ILIM"
-          resistance="1.18k"
-          footprint="0603"
-          connections={{ pin2: "net.GND" }}
-        />
-        <resistor
-          name="R_ISET"
-          resistance="1.13k"
-          footprint="0603"
-          connections={{ pin2: "net.GND" }}
-        />
-
-        <capacitor
-          name="C_IN"
-          capacitance="1uF"
-          footprint="0603"
-          connections={{ pin1: "net.VBUS", pin2: "net.GND" }}
-        />
-        <capacitor
-          name="C_BAT"
-          capacitance="4.7uF"
-          footprint="0603"
-          connections={{ pin1: "net.BAT", pin2: "net.GND" }}
-        />
-        <capacitor
-          name="C_OUT"
-          capacitance="4.7uF"
-          footprint="0603"
-          connections={{ pin1: "net.VSYS", pin2: "net.GND" }}
         />
       </board>
     )
@@ -197,8 +114,10 @@ custom chip component.
 
 In this example:
 
-- `IN`, `BAT`, and `OUT` connect directly to named nets.
-- `ITERM`, `ILIM`, and `ISET` connect to resistor pins using selectors.
+- `IN`, `VSS`, `BAT`, and the control pins connect directly through the
+  `connections` prop.
+- `OUT` connects to a single external resistor using the selector
+  `.R_LOAD > .pin1`.
 - `noConnect` marks the pins that are intentionally unused in this simplified
   example.
 
