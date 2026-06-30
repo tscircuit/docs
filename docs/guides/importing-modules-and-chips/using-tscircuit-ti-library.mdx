@@ -1,85 +1,132 @@
 ---
 title: Using the tscircuit TI Library
 sidebar_position: 5
-description: Import Texas Instruments parts from the tscircuit TI library and connect to pins inside the imported subcircuit.
+description: Import ready-made Texas Instruments chips and functional modules from the TI library.
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview"
+import CircuitPreview from "@site/src/components/CircuitPreview";
 
 ## Overview
 
-The `@tsci/tscircuit.ti` package provides ready-to-use Texas Instruments
-subcircuits. Import the part you need, place it on a board, then connect other
-components to pins inside that subcircuit with selector strings.
+The `@tsci/tscircuit.ti` package exports:
 
-Install the library in a local tscircuit project:
+- chip components such as `BQ24074`, `INA237`, and `TPS22919`
+- functional modules such as `BatteryManagement_BQ24074`,
+  `LoadSwitch_TPS22919`, and `PowerMonitor_INA237`
+
+Use a chip when you want to wire the part yourself. Use a functional module
+when you want a prebuilt TI reference design.
+
+## Install
 
 ```bash
 bun add @tsci/tscircuit.ti
 ```
 
-Then import a component from the package:
+## Import a Chip
 
 ```tsx
-import { BQ24074 } from "@tsci/tscircuit.ti"
+import { BQ24074 } from "@tsci/tscircuit.ti";
 ```
 
-## Preview a TI Part
+If you want a specific package, import that package name directly:
 
-This example places an `BQ24074` current, voltage, and power monitor on a small
-board.
+```tsx
+import { BQ24074RGTR } from "@tsci/tscircuit.ti";
+```
+
+Some chip families also support `footprintVariant`:
+
+```tsx
+import { BQ24074 } from "@tsci/tscircuit.ti";
+
+export default () => <BQ24074 name="U1" footprintVariant="vqfn_16_ep_3x3" />;
+```
+
+## Place a Chip
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
+    import { TPS22919 } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
-        <BQ24074Subcircuit name="BQ24074" />
+        <TPS22919 name="U1" />
       </board>
     )
-  `}
+
+`}
 />
 
-## Connect to a Pin Inside the Subcircuit
-
-Imported TI parts are subcircuits. To connect an external component to a pin
-inside the subcircuit, use the component name followed by the internal part and
-pin selector.
-
-In this example, `R11.pin1` connects to the `SCL` pin on the internal `J1` pinheader
-inside the `BQ24074` subcircuit:
+## Wire a Chip
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { BQ24074Subcircuit } from "@tsci/tscircuit.ti"
+    import { TPS22919 } from "@tsci/tscircuit.ti"
 
     export default () => (
-      <board>
-        <BQ24074Subcircuit name="BQ24074" />
+      <board width="24mm" height="16mm">
+        <TPS22919
+          name="U1"
+          noConnect={["NC", "QOD"]}
+          connections={{
+            IN: "net.VIN",
+            GND: "net.GND",
+            ON: "net.VIN",
+            OUT: ".R_LOAD > .pin1",
+          }}
+        />
+
         <resistor
-          name="R11"
+          name="R_LOAD"
           resistance="1k"
           footprint="0402"
-          pcbX={7}
-          pcbY={-3}
-          connections={{
-            pin1: ".BQ24074 .J1 .SCL",
-          }}
+          connections={{ pin2: "net.GND" }}
         />
       </board>
     )
-  `}
+
+`}
 />
 
-The selector `".BQ24074 .U1 .VS"` means:
+In this example:
 
-- `.BQ24074` selects the placed `BQ24074` subcircuit
-- `.J1` selects the internal pinheader inside that subcircuit
-- `.SCL` selects the `SCL` pin on that pinheader
+- `IN` and `ON` are tied to `VIN`
+- `OUT` drives the external load resistor
+- `GND` is tied to ground
+- `NC` and `QOD` are intentionally left unconnected
 
-Use the same pattern for other exported TI parts and their internal pins.
+## Use a Functional Module
+
+<CircuitPreview
+  defaultView="schematic"
+  hide3DTab
+  code={`
+    import { LoadSwitch_TPS22919 } from "@tsci/tscircuit.ti"
+
+    export default () => (
+      <board width="24mm" height="16mm">
+        <LoadSwitch_TPS22919 name="POWER_SWITCH" />
+      </board>
+    )
+
+`}
+/>
+
+If you want a more complete reference design, use one of the functional module
+exports instead of wiring the chip from scratch.
+
+## Available Chips
+
+- Battery and power: `BQ24074`, `BQ25895`, `BQ27441G1`, `TPS22919`, `TPS6293`, `TPS63802`, `TPS7A02`, `TPSM82823`
+- Wireless and MCU: `CC2340R5`, `CC3235SF`, `MSPM0G3507`
+- Sensors and monitors: `HDC2080`, `HDC3020`, `HDC3022`, `INA237`, `TMP1075`
+- Motor drivers: `DRV8833`, `DRV8876`
+
+Exact package exports include `BQ24074RGTR`, `BQ25895RTWR`,
+`BQ27441DRZR_G1B`, `INA237AQDGSRQ1`, `TMP1075DSGR`, `TPS63802DLAR`, and
+`TPS7A0230PDBVR`.
