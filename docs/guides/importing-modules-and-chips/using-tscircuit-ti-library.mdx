@@ -96,17 +96,8 @@ custom chip component.
           name="U1"
           noConnect={["TS", "N_PGOOD", "N_CHG"]}
           connections={{
-            IN: "net.VBUS",
             VSS: "net.GND",
-            BAT: "net.VSYS",
-            BAT2: "net.VSYS",
-            OUT: ".R_LOAD > .pin1",
-            OUT2: ".R_LOAD > .pin1",
             EN2: ".R_LOAD > .pin1",
-            EN1: "net.GND",
-            TMR: "net.GND",
-            N_CE: "net.GND",
-            EP: "net.GND",
           }}
         />
 
