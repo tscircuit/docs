@@ -1,0 +1,83 @@
+---
+title: <ammeter />
+description: Measure current through a branch during SPICE simulation.
+---
+
+## Overview
+
+`<ammeter />` measures current through a circuit branch during SPICE simulation.
+Insert it between the two nodes of the branch you want to measure, then connect
+`pos` and `neg` to define the positive current direction.
+
+An ammeter is primarily a schematic and simulation component. It emits a current
+probe for simulation graphs.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="15V" schX={-3} />
+    <ammeter
+      name="AM1"
+      color="#ff0000"
+      connections={{
+        pos: ".V1 > .pin1",
+        neg: ".R1 > .pin1",
+      }}
+    />
+    <resistor name="R1" resistance="10ohm" schX={3} />
+
+    <trace from=".R1 > .pin2" to=".V1 > .pin2" />
+
+    <analogsimulation
+      duration="1ms"
+      timePerStep="100us"
+      spiceEngine="ngspice"
+    />
+  </board>
+)
+`}
+/>
+
+## Pins
+
+| Pin | Aliases | Description |
+| --- | --- | --- |
+| `pin1` | `pos` | Positive side of the current measurement. |
+| `pin2` | `neg` | Negative side of the current measurement. |
+
+Positive current is measured entering `pos` and leaving `neg`. Reverse the
+connections if the plotted current has the opposite sign from the direction you
+want.
+
+## Properties
+
+| Property | Description | Example |
+| --- | --- | --- |
+| `name` | Label for the ammeter and its current trace. | `"AM1"` |
+| `connections` | Connects the ammeter in series. Use either `pos`/`neg` or `pin1`/`pin2`. | `{{ pos: ".V1 > .pin1", neg: ".R1 > .pin1" }}` |
+| `color` | Color used for the current trace in simulation graphs. | `"#ff0000"` |
+| `graphDisplayName` | Optional label for oscilloscope-style graph display. | `"I_LOAD"` |
+| `graphCenter` | Current value shown at the center of the trace display. | `0.01` |
+| `graphVerticalOffset` | Vertical offset from the graph center. Accepts numbers or SI-prefixed strings. | `"1mA"` |
+| `graphCurrentPerDiv` | Current scale per division. Accepts numbers or SI-prefixed strings. | `"2mA"` |
+| `footprint` | Optional footprint. Required if you position the ammeter on the PCB. | `"0402"` |
+
+## Scope-style graph display
+
+Use `graphDisplayName`, `graphCenter`, `graphVerticalOffset`, and
+`graphCurrentPerDiv` to override how an ammeter channel appears when an
+`<analogsimulation />` uses `graphIndependentAxes`. These props are optional:
+without them, tscircuit automatically centers and scales the current trace from
+the simulated data.
+
+`graphVerticalOffset` is expressed in current units, not divisions. For example,
+`graphVerticalOffset="1mA"` with `graphCurrentPerDiv="2mA"` places the trace
+center half a division away from the axis center.

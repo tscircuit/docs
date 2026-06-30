@@ -43,10 +43,67 @@ export default () => (
 | `duration` | Total simulation time. Accepts numbers or time strings. | `"10ms"` |
 | `timePerStep` | Time interval between simulation steps. | `"0.1ms"` |
 | `spiceEngine` | SPICE engine to use. Typically `"ngspice"` or `"spicey"`. | `"ngspice"` |
+| `graphIndependentAxes` | Give each voltage or current graph channel its own automatically scaled axis. | `true` |
 
 Use `<analogsimulation />` once per `<board />` to define how the simulation
 runs. Combine it with `<voltagesource />` and `<voltageprobe />` elements to
 create and observe waveforms.
+
+## Multi-axis scope display
+
+Use `graphIndependentAxes` when a simulation graph contains signals with
+different units or very different ranges. tscircuit creates one colored axis per
+voltage or current channel and automatically chooses the center, offset, and
+scale from the simulated data.
+
+You can optionally override a channel's display on the probe itself:
+
+- `graphDisplayName` sets the channel label.
+- `graphCenter` sets the measured voltage or current value at the channel center.
+- `graphVerticalOffset` moves that center up or down in measured units, such as
+  `"1V"` or `"1mA"`.
+- `graphVoltagePerDiv` sets volts per division for `<voltageprobe />`.
+- `graphCurrentPerDiv` sets amps per division for `<ammeter />`.
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" schX={-4} />
+    <ammeter
+      name="IIN"
+      color="#e05a00"
+      connections={{
+        pos: ".V1 > .pin1",
+        neg: ".R_LOAD > .pin1",
+      }}
+    />
+    <resistor name="R_LOAD" resistance="1k" schX={2} />
+
+    <trace from=".R_LOAD > .pin2" to=".V1 > .pin2" />
+
+    <voltageprobe
+      name="VIN"
+      color="#315cff"
+      connectsTo=".IIN > .pos"
+      referenceTo=".V1 > .pin2"
+    />
+
+    <analogsimulation
+      duration="4ms"
+      timePerStep="1ms"
+      spiceEngine="ngspice"
+      graphIndependentAxes
+    />
+  </board>
+)
+`}
+/>
 
 For more end-to-end examples and best practices, we recommend reviewing the
 [SPICE simulation guide](/category/spice-simulation).

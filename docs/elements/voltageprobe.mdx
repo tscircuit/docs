@@ -47,7 +47,22 @@ export default () => (
 | `name` | Optional label for the probe trace in graphs. | `"VP_OUT"` |
 | `connectsTo` | Port selector that identifies the measurement node. | `".R1 > .pin1"` |
 | `referenceTo` | Optional port selector for differential measurements. | `".R1 > .pin2"` |
+| `color` | Color used for the voltage trace in simulation graphs. | `"#315cff"` |
+| `graphDisplayName` | Optional label for oscilloscope-style graph display. | `"VOUT"` |
+| `graphCenter` | Voltage value shown at the center of the trace display. | `3.3` |
+| `graphVerticalOffset` | Vertical offset from the graph center. Accepts numbers or SI-prefixed strings. | `"1V"` |
+| `graphVoltagePerDiv` | Voltage scale per division. Accepts numbers or SI-prefixed strings. | `"500mV"` |
 
 Add probes for every signal you want plotted in the simulation graph. When you
 provide `referenceTo`, the probe measures the voltage difference between the
 `connectsTo` node and the reference node.
+
+## Scope-style graph display
+
+Use the graph display props to override how a voltage probe channel appears when
+an `<analogsimulation />` uses `graphIndependentAxes`. This is useful when a
+small ripple signal and a larger supply rail share the same simulation graph.
+
+`graphVerticalOffset` is expressed in voltage units, not divisions. For example,
+`graphVerticalOffset="1V"` with `graphVoltagePerDiv="500mV"` places the trace
+center two divisions away from the axis center.
