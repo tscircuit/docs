@@ -43,6 +43,7 @@ export default () => (
 | `duration` | Total simulation time. Accepts numbers or time strings. | `"10ms"` |
 | `timePerStep` | Time interval between simulation steps. | `"0.1ms"` |
 | `spiceEngine` | SPICE engine to use. Typically `"ngspice"` or `"spicey"`. | `"ngspice"` |
+| `graphIndependentAxes` | Give each voltage or current graph channel its own automatically scaled axis. | `true` |
 
 Use `<analogsimulation />` once per `<board />` to define how the simulation
 runs. Combine it with `<voltagesource />` and `<voltageprobe />` elements to
@@ -50,15 +51,19 @@ create and observe waveforms.
 
 ## Multi-axis scope display
 
-Simulation graphs can show multiple voltage and current channels on separate
-colored value axes. Set graph display props on each `<voltageprobe />` or
-`<ammeter />` channel:
+Use `graphIndependentAxes` when a simulation graph contains signals with
+different units or very different ranges. tscircuit creates one colored axis per
+voltage or current channel and automatically chooses the center, offset, and
+scale from the simulated data.
+
+You can optionally override a channel's display on the probe itself:
 
 - `graphDisplayName` sets the channel label.
 - `graphCenter` sets the measured voltage or current value at the channel center.
-- `graphOffsetDivs` moves that center up or down by graph divisions.
-- `graphUnitsPerDiv` sets the channel scale. Voltage probes use volts per
-  division. Ammeters use amps per division.
+- `graphVerticalOffset` moves that center up or down in measured units, such as
+  `"1V"` or `"1mA"`.
+- `graphVoltagePerDiv` sets volts per division for `<voltageprobe />`.
+- `graphCurrentPerDiv` sets amps per division for `<ammeter />`.
 
 <CircuitPreview
   defaultView="schematic"
@@ -73,10 +78,6 @@ export default () => (
     <ammeter
       name="IIN"
       color="#e05a00"
-      graphDisplayName="IIN"
-      graphCenter={0.005}
-      graphOffsetDivs={1}
-      graphUnitsPerDiv={0.001}
       connections={{
         pos: ".V1 > .pin1",
         neg: ".R_LOAD > .pin1",
@@ -91,16 +92,13 @@ export default () => (
       color="#315cff"
       connectsTo=".IIN > .pos"
       referenceTo=".V1 > .pin2"
-      graphDisplayName="VIN"
-      graphCenter={5}
-      graphOffsetDivs={-1}
-      graphUnitsPerDiv={0.5}
     />
 
     <analogsimulation
       duration="4ms"
       timePerStep="1ms"
       spiceEngine="ngspice"
+      graphIndependentAxes
     />
   </board>
 )

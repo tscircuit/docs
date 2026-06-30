@@ -66,28 +66,18 @@ want.
 | `color` | Color used for the current trace in simulation graphs. | `"#ff0000"` |
 | `graphDisplayName` | Optional label for oscilloscope-style graph display. | `"I_LOAD"` |
 | `graphCenter` | Current value shown at the center of the trace display. | `0.01` |
-| `graphOffsetDivs` | Vertical offset, in divisions, applied to the trace center. | `-1` |
-| `graphUnitsPerDiv` | Current scale per division. For ammeters this is amps per division. | `0.005` |
+| `graphVerticalOffset` | Vertical offset from the graph center. Accepts numbers or SI-prefixed strings. | `"1mA"` |
+| `graphCurrentPerDiv` | Current scale per division. Accepts numbers or SI-prefixed strings. | `"2mA"` |
 | `footprint` | Optional footprint. Required if you position the ammeter on the PCB. | `"0402"` |
 
 ## Scope-style graph display
 
-Use `graphCenter`, `graphOffsetDivs`, and `graphUnitsPerDiv` when plotting
-multiple current and voltage signals on the same simulation graph. These props
-scale the ammeter trace independently from voltage probes, so current can be
-shown in amps per division while voltage probes use volts per division.
+Use `graphDisplayName`, `graphCenter`, `graphVerticalOffset`, and
+`graphCurrentPerDiv` to override how an ammeter channel appears when an
+`<analogsimulation />` uses `graphIndependentAxes`. These props are optional:
+without them, tscircuit automatically centers and scales the current trace from
+the simulated data.
 
-```tsx
-<ammeter
-  name="ILOAD"
-  color="#8a35d7"
-  graphDisplayName="ILOAD"
-  graphCenter={0.002}
-  graphOffsetDivs={-2}
-  graphUnitsPerDiv={0.0005}
-  connections={{
-    pos: ".R_LOAD > .pin2",
-    neg: ".V1 > .pin2",
-  }}
-/>
-```
+`graphVerticalOffset` is expressed in current units, not divisions. For example,
+`graphVerticalOffset="1mA"` with `graphCurrentPerDiv="2mA"` places the trace
+center half a division away from the axis center.
