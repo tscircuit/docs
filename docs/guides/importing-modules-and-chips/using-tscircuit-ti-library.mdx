@@ -43,6 +43,15 @@ manufacturer-part-number component directly from the same package root:
 import { BQ24074RGTR } from "@tsci/tscircuit.ti"
 ```
 
+Some family-level chip exports also accept a `footprintVariant` prop. For
+example, `BQ24074` supports:
+
+```tsx
+import { BQ24074 } from "@tsci/tscircuit.ti"
+
+export default () => <BQ24074 name="U1" footprintVariant="vqfn_16_ep_3x3" />
+```
+
 ## Place a TI Chip
 
 This example imports the `BQ24074` charger IC and places it directly on a
@@ -132,9 +141,6 @@ The package root exports chip components such as `BQ24074`, `BQ25895`,
 
 It also exports exact manufacturer-part-number variants such as `BQ24074RGTR`,
 `BQ25895RTWR`, and `INA237AQDGSRQ1` when you need a specific package option.
-
-For dynamic lookup, the package exports `TiChipComponents`, `TiChipName`, and
-`TiChipComponent`.
 
 You can browse the [`lib/chips` directory in `tscircuit/ti`](https://github.com/tscircuit/ti/tree/main/lib/chips)
 to see the available chip families and their exact package variants.
