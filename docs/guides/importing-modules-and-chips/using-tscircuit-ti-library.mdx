@@ -1,103 +1,83 @@
 ---
 title: Using the tscircuit TI Library
 sidebar_position: 5
-description: Import TI chip components from @tsci/tscircuit.ti and wire them like any other chip component.
+description: Import ready-made Texas Instruments chips and functional modules from the TI library.
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview"
+import CircuitPreview from "@site/src/components/CircuitPreview";
 
 ## Overview
 
-The `@tsci/tscircuit.ti` package exports Texas Instruments chip components from
-the package root. These are the most direct way to place and wire TI devices in
-your own board designs.
+The `@tsci/tscircuit.ti` package exports:
 
-Many chips are available under a family-level name such as `BQ24074` or
-`INA237`. The package also exports exact manufacturer-part-number variants when
-you need them, such as `BQ24074RGTR` or `INA237AQDGSRQ1`.
+- chip components such as `BQ24074`, `INA237`, and `TPS22919`
+- functional modules such as `BatteryManagement_BQ24074`,
+  `LoadSwitch_TPS22919`, and `PowerMonitor_INA237`
 
-The package root also includes higher-level reference circuits such as
-`BatteryManagement_BQ24074`, but this guide focuses on chip-level usage.
+Use a chip when you want to wire the part yourself. Use a functional module
+when you want a prebuilt TI reference design.
 
-Install the library in a local tscircuit project:
+## Install
 
 ```bash
 bun add @tsci/tscircuit.ti
 ```
 
-## Import a TI Chip
-
-For most cases, import the chip from the package root:
+## Import a Chip
 
 ```tsx
-import { BQ24074 } from "@tsci/tscircuit.ti"
+import { BQ24074 } from "@tsci/tscircuit.ti";
 ```
 
-The chip component already includes the manufacturer part number, footprint,
-supplier part numbers, and pin labels from the TI library source.
-
-If you need to target an exact package variant, you can also import the
-manufacturer-part-number component directly from the same package root:
+If you want a specific package, import that package name directly:
 
 ```tsx
-import { BQ24074RGTR } from "@tsci/tscircuit.ti"
+import { BQ24074RGTR } from "@tsci/tscircuit.ti";
 ```
 
-Some family-level chip exports also accept a `footprintVariant` prop. For
-example, `BQ24074` supports:
+Some chip families also support `footprintVariant`:
 
 ```tsx
-import { BQ24074 } from "@tsci/tscircuit.ti"
+import { BQ24074 } from "@tsci/tscircuit.ti";
 
-export default () => <BQ24074 name="U1" footprintVariant="vqfn_16_ep_3x3" />
+export default () => <BQ24074 name="U1" footprintVariant="vqfn_16_ep_3x3" />;
 ```
 
-## Place a TI Chip
-
-This example imports the `BQ24074` charger IC and places it directly on a
-board.
+## Place a Chip
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { BQ24074 } from "@tsci/tscircuit.ti"
+    import { TPS22919 } from "@tsci/tscircuit.ti"
 
     export default () => (
       <board width="18mm" height="14mm">
-        <BQ24074 name="U1" />
+        <TPS22919 name="U1" />
       </board>
     )
-  `}
+
+`}
 />
 
-`BQ24074` currently uses the `BQ24074RGTR` package variant by default, so you
-can start with the family-level export and only switch to the exact part-number
-component when you need a specific package.
-
-Because `BQ24074` is a chip component, it accepts the same props as a
-regular [`<chip />`](/elements/chip), including `name`, `connections`, `pcbX`,
-and `pcbY`.
-
-## Wire the Chip Pins
-
-Use the `connections` prop with the chip's labeled pins, just like any other
-custom chip component.
+## Wire a Chip
 
 <CircuitPreview
   defaultView="schematic"
   hide3DTab
   code={`
-    import { BQ24074 } from "@tsci/tscircuit.ti"
+    import { TPS22919 } from "@tsci/tscircuit.ti"
 
     export default () => (
-      <board width="26mm" height="20mm">
-        <BQ24074
+      <board width="24mm" height="16mm">
+        <TPS22919
           name="U1"
-          noConnect={["TS", "N_PGOOD", "N_CHG"]}
+          noConnect={["NC", "QOD"]}
           connections={{
-            VSS: "net.GND",
-            EN2: ".R_LOAD > .pin1",
+            IN: "net.VIN",
+            GND: "net.GND",
+            ON: "net.VIN",
+            OUT: ".R_LOAD > .pin1",
           }}
         />
 
@@ -109,29 +89,44 @@ custom chip component.
         />
       </board>
     )
-  `}
+
+`}
 />
 
 In this example:
 
-- `IN`, `VSS`, `BAT`, and the control pins connect directly through the
-  `connections` prop.
-- `OUT` connects to a single external resistor using the selector
-  `.R_LOAD > .pin1`.
-- `noConnect` marks the pins that are intentionally unused in this simplified
-  example.
+- `IN` and `ON` are tied to `VIN`
+- `OUT` drives the external load resistor
+- `GND` is tied to ground
+- `NC` and `QOD` are intentionally left unconnected
 
-For more on chip props, see [Configuring Chips](../tscircuit-essentials/configuring-chips).
-For more on selector syntax, see
-[Port and Net Selectors](../tscircuit-essentials/port-and-net-selectors.md).
+## Use a Functional Module
 
-## Finding More TI Chips
+<CircuitPreview
+  defaultView="schematic"
+  hide3DTab
+  code={`
+    import { LoadSwitch_TPS22919 } from "@tsci/tscircuit.ti"
 
-The package root exports chip components such as `BQ24074`, `BQ25895`,
-`BQ27441G1`, `CC2340R5`, `INA237`, `TPS22919`, `TPS63802`, and `TMP1075`.
+    export default () => (
+      <board width="24mm" height="16mm">
+        <LoadSwitch_TPS22919 name="POWER_SWITCH" />
+      </board>
+    )
 
-It also exports exact manufacturer-part-number variants such as `BQ24074RGTR`,
-`BQ25895RTWR`, and `INA237AQDGSRQ1` when you need a specific package option.
+`}
+/>
 
-You can browse the [`lib/chips` directory in `tscircuit/ti`](https://github.com/tscircuit/ti/tree/main/lib/chips)
-to see the available chip families and their exact package variants.
+If you want a more complete reference design, use one of the functional module
+exports instead of wiring the chip from scratch.
+
+## Available Chips
+
+- Battery and power: `BQ24074`, `BQ25895`, `BQ27441G1`, `TPS22919`, `TPS6293`, `TPS63802`, `TPS7A02`, `TPSM82823`
+- Wireless and MCU: `CC2340R5`, `CC3235SF`, `MSPM0G3507`
+- Sensors and monitors: `HDC2080`, `HDC3020`, `HDC3022`, `INA237`, `TMP1075`
+- Motor drivers: `DRV8833`, `DRV8876`
+
+Exact package exports include `BQ24074RGTR`, `BQ25895RTWR`,
+`BQ27441DRZR_G1B`, `INA237AQDGSRQ1`, `TMP1075DSGR`, `TPS63802DLAR`, and
+`TPS7A0230PDBVR`.
