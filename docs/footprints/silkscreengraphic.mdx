@@ -44,6 +44,49 @@ export default () => (
 `}
 />
 
+## QR Code Example
+
+You can also use `<silkscreengraphic />` to place a QR code on the PCB
+silkscreen. Keep the QR code as a simple, single-color SVG with solid modules
+and a quiet zone around the outside. The quiet zone should stay empty so a
+camera can separate the QR code from nearby text, traces, pads, and vias.
+
+This example creates a QR code for `https://tscircuit.com`, converts the
+SVG to a data URL, and places it on the top silkscreen layer.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+const docsQrSvg =
+  \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33">\` +
+  \`<path fill="#000000" d="M4 4h7v1H4zM17 4h1v1H17zM22 4h7v1H22zM4 5h1v1H4zM10 5h1v1H10zM15 5h5v1H15zM22 5h1v1H22zM28 5h1v1H28zM4 6h1v1H4zM6 6h3v1H6zM10 6h1v1H10zM12 6h1v1H12zM19 6h2v1H19zM22 6h1v1H22zM24 6h3v1H24zM28 6h1v1H28zM4 7h1v1H4zM6 7h3v1H6zM10 7h1v1H10zM12 7h1v1H12zM15 7h1v1H15zM17 7h4v1H17zM22 7h1v1H22zM24 7h3v1H24zM28 7h1v1H28zM4 8h1v1H4zM6 8h3v1H6zM10 8h1v1H10zM12 8h1v1H12zM20 8h1v1H20zM22 8h1v1H22zM24 8h3v1H24zM28 8h1v1H28zM4 9h1v1H4zM10 9h1v1H10zM12 9h1v1H12zM16 9h2v1H16zM19 9h2v1H19zM22 9h1v1H22zM28 9h1v1H28zM4 10h7v1H4zM12 10h1v1H12zM14 10h1v1H14zM16 10h1v1H16zM18 10h1v1H18zM20 10h1v1H20zM22 10h7v1H22zM12 11h2v1H12zM16 11h1v1H16zM18 11h2v1H18zM4 12h1v1H4zM6 12h5v1H6zM13 12h2v1H13zM17 12h2v1H17zM22 12h5v1H22zM4 13h1v1H4zM7 13h2v1H7zM11 13h4v1H11zM17 13h1v1H17zM20 13h2v1H20zM23 13h1v1H23zM27 13h1v1H27zM4 14h3v1H4zM9 14h2v1H9zM12 14h4v1H12zM17 14h4v1H17zM22 14h1v1H22zM25 14h1v1H25zM27 14h2v1H27zM5 15h1v1H5zM11 15h1v1H11zM14 15h1v1H14zM16 15h1v1H16zM18 15h4v1H18zM23 15h1v1H23zM28 15h1v1H28zM4 16h2v1H4zM8 16h1v1H8zM10 16h1v1H10zM13 16h1v1H13zM16 16h9v1H16zM26 16h3v1H26zM4 17h1v1H4zM8 17h1v1H8zM12 17h1v1H12zM17 17h1v1H17zM20 17h1v1H20zM23 17h1v1H23zM25 17h1v1H25zM27 17h1v1H27zM4 18h1v1H4zM8 18h1v1H8zM10 18h1v1H10zM12 18h1v1H12zM14 18h3v1H14zM18 18h3v1H18zM22 18h4v1H22zM27 18h2v1H27zM4 19h1v1H4zM6 19h4v1H6zM11 19h1v1H11zM15 19h1v1H15zM18 19h1v1H18zM21 19h1v1H21zM23 19h2v1H23zM28 19h1v1H28zM4 20h1v1H4zM6 20h3v1H6zM10 20h4v1H10zM15 20h1v1H15zM19 20h6v1H19zM26 20h1v1H26zM12 21h2v1H12zM16 21h2v1H16zM19 21h2v1H19zM24 21h2v1H24zM4 22h7v1H4zM17 22h2v1H17zM20 22h1v1H20zM22 22h1v1H22zM24 22h1v1H24zM26 22h3v1H26zM4 23h1v1H4zM10 23h1v1H10zM12 23h1v1H12zM16 23h2v1H16zM20 23h1v1H20zM24 23h2v1H24zM27 23h2v1H27zM4 24h1v1H4zM6 24h3v1H6zM10 24h1v1H10zM12 24h1v1H12zM14 24h1v1H14zM16 24h1v1H16zM18 24h7v1H18zM26 24h3v1H26zM4 25h1v1H4zM6 25h3v1H6zM10 25h1v1H10zM12 25h2v1H12zM19 25h4v1H19zM24 25h5v1H24zM4 26h1v1H4zM6 26h3v1H6zM10 26h1v1H10zM12 26h5v1H12zM19 26h1v1H19zM25 26h2v1H25zM28 26h1v1H28zM4 27h1v1H4zM10 27h1v1H10zM13 27h3v1H13zM18 27h1v1H18zM20 27h1v1H20zM23 27h3v1H23zM28 27h1v1H28zM4 28h7v1H4zM12 28h4v1H12zM21 28h8v1H21z" />\` +
+  \`</svg>\`
+
+const docsQrUrl = \`data:image/svg+xml,\${encodeURIComponent(docsQrSvg)}\`
+
+export default () => (
+  <board width="32mm" height="24mm">
+    <silkscreentext
+      text="tscircuit.com"
+      pcbX={0}
+      pcbY={-8}
+      fontSize="1.2mm"
+      layer="top"
+    />
+    <silkscreengraphic
+      imageUrl={docsQrUrl}
+      pcbX={0}
+      pcbY={1}
+      width="14mm"
+      height="14mm"
+      layer="top"
+    />
+  </board>
+)
+`}
+/>
+
 ## Props
 
 | Property | Type | Required | Default | Description |
@@ -65,3 +108,6 @@ export default () => (
   best for PCB silkscreen.
 - For remote assets, make sure the image URL is available when the circuit is
   built. Inline data URLs or static-file imports make examples easier to share.
+- For QR codes, use at least about 12-15 mm of board space for simple URLs, keep
+  the quiet zone clear, and test the generated PCB preview with a phone camera
+  before ordering.
