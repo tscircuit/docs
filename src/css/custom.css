@@ -123,6 +123,38 @@ div {
   opacity: 1 !important;
 }
 
+.circuit-preview-open-editor-button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-global-radius);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
+  color: var(--ifm-color-emphasis-900);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.45rem 0.65rem;
+  text-decoration: none;
+  transition: background-color var(--ifm-transition-fast) ease, border-color
+    var(--ifm-transition-fast) ease, color var(--ifm-transition-fast) ease;
+  white-space: nowrap;
+}
+
+.circuit-preview-open-editor-button:focus-visible,
+.circuit-preview-open-editor-button:hover {
+  background: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+[data-theme="dark"] .circuit-preview-open-editor-button {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: var(--ifm-color-emphasis-300);
+  color: var(--ifm-color-emphasis-900);
+}
+
 figure {
   display: flex;
   flex-direction: column;
