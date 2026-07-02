@@ -5,10 +5,14 @@ import {
 } from "@tscircuit/create-snippet-url"
 import { tw } from "@site/src/tw"
 import { useEffect, useMemo, useState } from "react"
-import { useColorMode } from "../hooks/use-color-mode"
+import { useColorMode } from "../../hooks/use-color-mode"
+import {
+  normalizeCircuitPreviewCode,
+  normalizeCircuitPreviewFsMap,
+} from "./normalize-circuit-preview-code"
 import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
-import TscircuitIframe from "./TscircuitIframe"
+import TscircuitIframe from "../TscircuitIframe"
 
 type CircuitPreviewView =
   | "code"
@@ -156,18 +160,24 @@ export default function CircuitPreview({
     entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
   )
   const [editableCode, setEditableCode] = useState(
-    code ?? Object.values(fsMap ?? {})[0] ?? "",
+    normalizeCircuitPreviewCode(code) ??
+      normalizeCircuitPreviewCode(Object.values(fsMap ?? {})[0]) ??
+      "",
   )
   const [editableFsMap, setEditableFsMap] = useState<
     Record<string, string> | undefined
-  >(() => (fsMap ? { ...fsMap } : undefined))
+  >(() => normalizeCircuitPreviewFsMap(fsMap))
   const [editingFiles, setEditingFiles] = useState<Record<string, boolean>>({})
   const [hasEditedCode, setHasEditedCode] = useState(false)
   const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    setEditableCode(code ?? Object.values(fsMap ?? {})[0] ?? "")
-    setEditableFsMap(fsMap ? { ...fsMap } : undefined)
+    setEditableCode(
+      normalizeCircuitPreviewCode(code) ??
+        normalizeCircuitPreviewCode(Object.values(fsMap ?? {})[0]) ??
+        "",
+    )
+    setEditableFsMap(normalizeCircuitPreviewFsMap(fsMap))
     setEditingFiles({})
     setHasEditedCode(false)
     setLoadingUrls({})
