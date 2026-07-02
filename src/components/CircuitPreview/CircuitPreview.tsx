@@ -1,4 +1,5 @@
 import {
+  createSnippetUrl,
   createSvgUrl,
   createPngUrl,
   getCompressedBase64SnippetString,
@@ -109,6 +110,48 @@ const EditCodeButton = ({ onClick }: { onClick: () => void }) => {
       </svg>
     </button>
   )
+}
+
+const TryInEditorLink = ({ href }: { href: string }) => (
+  <a
+    className="circuit-preview-open-editor-button"
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Open this circuit in the tscircuit editor"
+    title="Open this circuit in the tscircuit editor"
+  >
+    <svg
+      aria-hidden="true"
+      className="circuit-preview-open-editor-button-icon"
+      xmlns="http://www.w3.org/2000/svg"
+      width="1.125rem"
+      height="1.125rem"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </svg>
+  </a>
+)
+
+const getPreferredFsMapSource = (
+  fsMap: Record<string, string> | undefined,
+  preferredFilenames: Array<string | undefined>,
+) => {
+  if (!fsMap) return undefined
+
+  for (const filename of preferredFilenames) {
+    if (filename && fsMap[filename]) return fsMap[filename]
+  }
+
+  return Object.values(fsMap)[0]
 }
 
 export default function CircuitPreview({
@@ -317,12 +360,18 @@ export default function CircuitPreview({
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
 
-  const tabContentHeightCss =
-    _showTabs && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
-
   const currentCode = editableFsMap?.[currentFile] ?? editableCode
   const currentFileKey = currentFile ?? "__code"
   const isEditingCurrentFile = editingFiles[currentFileKey] ?? false
+  const editorSource =
+    getPreferredFsMapSource(editableFsMap, [
+      entrypoint,
+      mainComponentPath,
+      currentFile,
+    ]) ?? editableCode
+  const editorUrl = editorSource.trim()
+    ? createSnippetUrl(editorSource, "board")
+    : undefined
 
   const startEditingCurrentFile = () => {
     setEditingFiles((prev) => ({ ...prev, [currentFileKey]: true }))
@@ -342,6 +391,9 @@ export default function CircuitPreview({
   const markLoaded = (url: string) => {
     setLoadingUrls((prev) => ({ ...prev, [url]: false }))
   }
+
+  const getPreviewContentHeightCss = (hasHeader: boolean) =>
+    hasHeader && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
 
   const renderCodePane = (borderCss = "border-r") => (
     <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
@@ -390,18 +442,22 @@ export default function CircuitPreview({
     alt,
     imageClassName,
     hidden = false,
+    hasHeader = false,
   }: {
     src: string
     alt: string
     imageClassName: string
     hidden?: boolean
+    hasHeader?: boolean
   }) => {
     const isLoading = loadingUrls[src] ?? false
 
     return (
       <div
         className={tw(
-          `relative w-full ${tabContentHeightCss} ${hidden ? "hidden" : ""}`,
+          `relative w-full ${getPreviewContentHeightCss(hasHeader)} ${
+            hidden ? "hidden" : ""
+          }`,
         )}
       >
         <img
@@ -432,56 +488,61 @@ export default function CircuitPreview({
     )
   }
 
-  const tabsElm = (
-    <div className={tw("flex justify-end px-2")}>
-      <div
-        className={tw(
-          `flex-inline justify-end gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-100" : "bg-slate-800"} p-1 gap-2`,
-        )}
-      >
-        {!shouldSplitCode && (
-          <Tab
-            label="Code"
-            active={view === "code"}
-            onClick={() => setView("code")}
-          />
-        )}
-        {!_hidePCBTab && (
-          <Tab
-            label="PCB"
-            active={view === "pcb"}
-            onClick={() => setView("pcb")}
-          />
-        )}
-        {!hideSchematicTab && (
-          <Tab
-            label="Schematic"
-            active={view === "schematic"}
-            onClick={() => setView("schematic")}
-          />
-        )}
-        {showPinoutTab && (
-          <Tab
-            label="Pinout"
-            active={view === "pinout"}
-            onClick={() => setView("pinout")}
-          />
-        )}
-        {!_hide3DTab && (
-          <Tab
-            label="3D"
-            active={view === "3d"}
-            onClick={() => setView("3d")}
-          />
-        )}
-        {showRunFrame && (
-          <Tab
-            label="Run"
-            active={view === "runframe"}
-            onClick={() => setView("runframe")}
-          />
-        )}
+  const previewHeaderElm = (showViewTabs: boolean) => (
+    <div className={tw("flex items-center justify-between gap-2 px-2")}>
+      <div className={tw("flex min-w-0 items-center mt-2 mb-2")}>
+        {editorUrl && <TryInEditorLink href={editorUrl} />}
       </div>
+      {showViewTabs && (
+        <div
+          className={tw(
+            `flex-inline justify-end gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-100" : "bg-slate-800"} p-1 gap-2`,
+          )}
+        >
+          {!shouldSplitCode && (
+            <Tab
+              label="Code"
+              active={view === "code"}
+              onClick={() => setView("code")}
+            />
+          )}
+          {!_hidePCBTab && (
+            <Tab
+              label="PCB"
+              active={view === "pcb"}
+              onClick={() => setView("pcb")}
+            />
+          )}
+          {!hideSchematicTab && (
+            <Tab
+              label="Schematic"
+              active={view === "schematic"}
+              onClick={() => setView("schematic")}
+            />
+          )}
+          {showPinoutTab && (
+            <Tab
+              label="Pinout"
+              active={view === "pinout"}
+              onClick={() => setView("pinout")}
+            />
+          )}
+          {!_hide3DTab && (
+            <Tab
+              label="3D"
+              active={view === "3d"}
+              onClick={() => setView("3d")}
+            />
+          )}
+          {showRunFrame && (
+            <Tab
+              label="Run"
+              active={view === "runframe"}
+              onClick={() => setView("runframe")}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 
@@ -510,6 +571,7 @@ export default function CircuitPreview({
       if (v === "code") {
         return renderCodePane(borderCss)
       }
+      const hasPreviewHeader = Boolean(editorUrl)
 
       const src =
         v === "pcb"
@@ -522,7 +584,7 @@ export default function CircuitPreview({
 
       return (
         <div
-          className={tw(
+          className={`${tw(
             `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
               v === "pcb"
                 ? "bg-black"
@@ -530,11 +592,13 @@ export default function CircuitPreview({
                   ? "bg-[#F5F1ED]"
                   : "bg-white"
             }`,
-          )}
+          )} circuit-preview-pane circuit-preview-pane-${v}`}
         >
+          {hasPreviewHeader && previewHeaderElm(false)}
           {renderPreviewImage({
             src,
             alt: `${v.toUpperCase()} Circuit Preview`,
+            hasHeader: hasPreviewHeader,
             imageClassName: `w-full m-0 object-contain ${
               v === "pcb"
                 ? "bg-black flex items-center justify-center"
@@ -569,13 +633,16 @@ export default function CircuitPreview({
       (!_showTabs && windowSize === "mobile")) &&
     renderCodePane("border-r")
 
+  const imageViewHasHeader =
+    shouldSplitCode && (Boolean(editorUrl) || _showTabs)
+
   const ImageView = (view === "pcb" ||
     view === "schematic" ||
     view === "3d" ||
     view === "runframe" ||
     view === "pinout") && (
     <div
-      className={tw(
+      className={`${tw(
         `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
           view === "pcb"
             ? "bg-black"
@@ -583,13 +650,14 @@ export default function CircuitPreview({
               ? "bg-[#F5F1ED]"
               : "bg-white"
         }`,
-      )}
+      )} circuit-preview-pane circuit-preview-pane-${view}`}
     >
-      {_showTabs && shouldSplitCode && tabsElm}
+      {imageViewHasHeader && previewHeaderElm(_showTabs)}
       {renderPreviewImage({
         src: pcbUrl,
         alt: "PCB Circuit Preview",
         hidden: view !== "pcb",
+        hasHeader: imageViewHasHeader,
         imageClassName:
           "w-full m-0 object-contain bg-black flex items-center justify-center",
       })}
@@ -597,22 +665,31 @@ export default function CircuitPreview({
         src: schUrl,
         alt: "Schematic Circuit Preview",
         hidden: view !== "schematic",
+        hasHeader: imageViewHasHeader,
         imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
       })}
       {renderPreviewImage({
         src: pinoutUrl,
         alt: "Pinout Circuit Preview",
         hidden: view !== "pinout",
+        hasHeader: imageViewHasHeader,
         imageClassName: "w-full m-0 object-contain bg-white",
       })}
       {renderPreviewImage({
         src: threeDUrl,
         alt: "3D Circuit Preview",
         hidden: view !== "3d",
+        hasHeader: imageViewHasHeader,
         imageClassName: "w-full m-0 object-cover bg-white",
       })}
       {showRunFrame && view === "runframe" && (
-        <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
+        <div
+          className={tw(
+            `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
+          )}
+        >
+          <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
+        </div>
       )}
     </div>
   )
@@ -625,7 +702,8 @@ export default function CircuitPreview({
         } rounded-lg mb-8 overflow-hidden`,
       )}
     >
-      {_showTabs && !shouldSplitCode && tabsElm}
+      {((_showTabs && !shouldSplitCode) || (editorUrl && !shouldSplitCode)) &&
+        previewHeaderElm(_showTabs)}
       <div
         className={tw(
           `h-full overflow-hidden flex m-0 p-0 ${
