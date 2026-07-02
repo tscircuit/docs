@@ -147,6 +147,10 @@ div {
   width: 1.125rem;
 }
 
+.circuit-preview-pane-pcb .circuit-preview-open-editor-button {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .circuit-preview-open-editor-button:focus-visible,
 .circuit-preview-open-editor-button:hover {
   background: var(--ifm-color-emphasis-100);
@@ -160,11 +164,34 @@ div {
   color: var(--ifm-color-emphasis-800);
 }
 
+[data-theme="dark"]
+  .circuit-preview-pane:not(.circuit-preview-pane-pcb)
+  .circuit-preview-open-editor-button {
+  color: rgba(15, 23, 42, 0.9);
+}
+
+[data-theme="dark"]
+  .circuit-preview-pane-pcb
+  .circuit-preview-open-editor-button {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 [data-theme="dark"] .circuit-preview-open-editor-button:focus-visible,
 [data-theme="dark"] .circuit-preview-open-editor-button:hover {
   background: var(--ifm-color-emphasis-200);
   border-color: var(--ifm-color-emphasis-300);
   color: var(--ifm-color-emphasis-900);
+}
+
+[data-theme="dark"]
+  .circuit-preview-pane:not(.circuit-preview-pane-pcb)
+  .circuit-preview-open-editor-button:focus-visible,
+[data-theme="dark"]
+  .circuit-preview-pane:not(.circuit-preview-pane-pcb)
+  .circuit-preview-open-editor-button:hover {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: rgb(15, 23, 42);
 }
 
 figure {

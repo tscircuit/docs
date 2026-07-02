@@ -584,7 +584,7 @@ export default function CircuitPreview({
 
       return (
         <div
-          className={tw(
+          className={`${tw(
             `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
               v === "pcb"
                 ? "bg-black"
@@ -592,7 +592,7 @@ export default function CircuitPreview({
                   ? "bg-[#F5F1ED]"
                   : "bg-white"
             }`,
-          )}
+          )} circuit-preview-pane circuit-preview-pane-${v}`}
         >
           {hasPreviewHeader && previewHeaderElm(false)}
           {renderPreviewImage({
@@ -642,7 +642,7 @@ export default function CircuitPreview({
     view === "runframe" ||
     view === "pinout") && (
     <div
-      className={tw(
+      className={`${tw(
         `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
           view === "pcb"
             ? "bg-black"
@@ -650,7 +650,7 @@ export default function CircuitPreview({
               ? "bg-[#F5F1ED]"
               : "bg-white"
         }`,
-      )}
+      )} circuit-preview-pane circuit-preview-pane-${view}`}
     >
       {imageViewHasHeader && previewHeaderElm(_showTabs)}
       {renderPreviewImage({
