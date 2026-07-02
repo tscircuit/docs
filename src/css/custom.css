@@ -125,32 +125,44 @@ div {
 
 .circuit-preview-open-editor-button {
   align-items: center;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--ifm-color-emphasis-300);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--ifm-global-radius);
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
-  color: var(--ifm-color-emphasis-900);
+  color: var(--ifm-color-emphasis-700);
   display: inline-flex;
-  font-size: 0.75rem;
-  font-weight: 600;
+  height: 2rem;
+  justify-content: center;
   line-height: 1;
-  padding: 0.45rem 0.65rem;
+  opacity: 0.5;
+  padding: 0.35rem;
   text-decoration: none;
   transition: background-color var(--ifm-transition-fast) ease, border-color
-    var(--ifm-transition-fast) ease, color var(--ifm-transition-fast) ease;
-  white-space: nowrap;
+    var(--ifm-transition-fast) ease, color var(--ifm-transition-fast) ease,
+    opacity var(--ifm-transition-fast) ease;
+  width: 2rem;
+}
+
+.circuit-preview-open-editor-button-icon {
+  height: 1.125rem;
+  width: 1.125rem;
 }
 
 .circuit-preview-open-editor-button:focus-visible,
 .circuit-preview-open-editor-button:hover {
-  background: var(--ifm-color-primary);
-  border-color: var(--ifm-color-primary);
-  color: #ffffff;
+  background: var(--ifm-color-emphasis-100);
+  border-color: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-emphasis-900);
+  opacity: 1;
   text-decoration: none;
 }
 
 [data-theme="dark"] .circuit-preview-open-editor-button {
-  background: rgba(15, 23, 42, 0.92);
+  color: var(--ifm-color-emphasis-800);
+}
+
+[data-theme="dark"] .circuit-preview-open-editor-button:focus-visible,
+[data-theme="dark"] .circuit-preview-open-editor-button:hover {
+  background: var(--ifm-color-emphasis-200);
   border-color: var(--ifm-color-emphasis-300);
   color: var(--ifm-color-emphasis-900);
 }
