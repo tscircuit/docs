@@ -1,0 +1,378 @@
+---
+title: Building a USB Power Delivery Trigger HAT
+description: >-
+  Build a Raspberry Pi HAT that negotiates fixed USB Power Delivery voltages
+  from 5V to 20V and exposes the selected rail on screw terminals.
+---
+
+## Overview
+
+This tutorial builds a Raspberry Pi HAT that acts as a USB Power Delivery sink.
+It uses a CH224K-style trigger controller to request a fixed PDO from a USB-C
+charger, then routes the negotiated 5V, 9V, 12V, 15V, or 20V rail to an output
+terminal block. The HAT also includes status indication, input and output
+filtering, and an optional GPIO header for enable and power-good monitoring.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="J1"
+      footprint="pinrow4"
+      manufacturerPartNumber="USB-C receptacle"
+      pinLabels={{
+        pin1: ["VBUS"],
+        pin2: ["CC1"],
+        pin3: ["CC2"],
+        pin4: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS", "CC1", "CC2", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={-18}
+      pcbY={8}
+    />
+
+    <chip
+      name="U1"
+      footprint="sop10"
+      manufacturerPartNumber="CH224K"
+      pinLabels={{
+        pin1: ["VBUS"],
+        pin2: ["GND"],
+        pin3: ["CC1"],
+        pin4: ["CC2"],
+        pin5: ["CFG1"],
+        pin6: ["CFG2"],
+        pin7: ["CFG3"],
+        pin8: ["PGOOD"],
+        pin9: ["EN"],
+        pin10: ["VDD"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VBUS", "CC1", "CC2", "EN"], direction: "top-to-bottom" },
+        rightSide: {
+          pins: ["VDD", "PGOOD", "CFG1", "CFG2", "CFG3", "GND"],
+          direction: "top-to-bottom",
+        },
+      }}
+      pcbX={-3}
+      pcbY={8}
+    />
+
+    <chip
+      name="JP1"
+      footprint="pinrow6"
+      manufacturerPartNumber="3-bit voltage select header"
+      pinLabels={{
+        pin1: ["CFG1"],
+        pin2: ["CFG2"],
+        pin3: ["CFG3"],
+        pin4: ["GND"],
+        pin5: ["VDD"],
+        pin6: ["VOUT"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["CFG1", "CFG2", "CFG3"], direction: "top-to-bottom" },
+        rightSide: { pins: ["GND", "VDD", "VOUT"], direction: "top-to-bottom" },
+      }}
+      pcbX={13}
+      pcbY={14}
+    />
+
+    <chip
+      name="J2"
+      footprint="pinrow2"
+      manufacturerPartNumber="2-pin 5.08mm terminal block"
+      pinLabels={{
+        pin1: ["VOUT"],
+        pin2: ["GND"],
+      }}
+      schPortArrangement={{
+        rightSide: { pins: ["VOUT", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={18}
+      pcbY={-7}
+    />
+
+    <chip
+      name="J3"
+      footprint="pinrow3"
+      manufacturerPartNumber="GPIO status header"
+      pinLabels={{
+        pin1: ["EN"],
+        pin2: ["PGOOD"],
+        pin3: ["GND"],
+      }}
+      schPortArrangement={{
+        rightSide: { pins: ["EN", "PGOOD", "GND"], direction: "top-to-bottom" },
+      }}
+      pcbX={13}
+      pcbY={-18}
+    />
+
+    <resistor name="R1" resistance="100k" footprint="0402" pcbX={6} pcbY={18} />
+    <resistor name="R2" resistance="100k" footprint="0402" pcbX={6} pcbY={14} />
+    <resistor name="R3" resistance="100k" footprint="0402" pcbX={6} pcbY={10} />
+    <resistor name="R4" resistance="10k" footprint="0402" pcbX={5} pcbY={-15} />
+    <resistor name="R5" resistance="2.2k" footprint="0402" pcbX={6} pcbY={-6} />
+
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-12} pcbY={-1} />
+    <capacitor name="C2" capacitance="100nF" footprint="0402" pcbX={-6} pcbY={0} />
+    <capacitor name="C3" capacitance="47uF" footprint="1210" pcbX={8} pcbY={-2} />
+    <capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={12} pcbY={-2} />
+    <led name="D1" color="green" footprint="0603" pcbX={12} pcbY={-10} />
+
+    <trace from=".J1 .VBUS" to="net.VBUS" />
+    <trace from=".J1 .GND" to="net.GND" />
+    <trace from=".J1 .CC1" to=".U1 .CC1" />
+    <trace from=".J1 .CC2" to=".U1 .CC2" />
+    <trace from=".U1 .VBUS" to="net.VBUS" />
+    <trace from=".U1 .VDD" to="net.VDD" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U1 .CFG1" to=".JP1 .CFG1" />
+    <trace from=".U1 .CFG2" to=".JP1 .CFG2" />
+    <trace from=".U1 .CFG3" to=".JP1 .CFG3" />
+    <trace from=".U1 .EN" to=".J3 .EN" />
+    <trace from=".U1 .PGOOD" to=".J3 .PGOOD" />
+    <trace from=".JP1 .GND" to="net.GND" />
+    <trace from=".JP1 .VDD" to="net.VDD" />
+    <trace from=".JP1 .VOUT" to="net.VOUT" />
+    <trace from=".R1 > .pin1" to=".U1 .CFG1" />
+    <trace from=".R2 > .pin1" to=".U1 .CFG2" />
+    <trace from=".R3 > .pin1" to=".U1 .CFG3" />
+    <trace from=".R1 > .pin2" to="net.GND" />
+    <trace from=".R2 > .pin2" to="net.GND" />
+    <trace from=".R3 > .pin2" to="net.GND" />
+    <trace from=".C1 > .pin1" to="net.VBUS" />
+    <trace from=".C2 > .pin1" to="net.VDD" />
+    <trace from=".C3 > .pin1" to="net.VOUT" />
+    <trace from=".C4 > .pin1" to="net.VOUT" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from=".C2 > .pin2" to="net.GND" />
+    <trace from=".C3 > .pin2" to="net.GND" />
+    <trace from=".C4 > .pin2" to="net.GND" />
+    <trace from=".R4 > .pin1" to=".U1 .EN" />
+    <trace from=".R4 > .pin2" to="net.VDD" />
+    <trace from=".R5 > .pin1" to=".U1 .PGOOD" />
+    <trace from=".R5 > .pin2" to=".D1 .pos" />
+    <trace from=".D1 .neg" to="net.GND" />
+    <trace from=".J2 .VOUT" to="net.VOUT" />
+    <trace from=".J2 .GND" to="net.GND" />
+    <trace from=".J3 .GND" to="net.GND" />
+    <trace from=".HAT1_chip .GND_1" to="net.GND" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Circuit Requirements
+
+The HAT should provide:
+
+- A USB-C receptacle connected to a PD sink controller
+- Fixed-voltage negotiation for 5V, 9V, 12V, 15V, and 20V charger profiles
+- A terminal block for the negotiated output voltage and ground
+- Input and output capacitors close to the power path
+- A power-good LED so the requested voltage can be checked at a glance
+- Optional Raspberry Pi GPIO access to enable the trigger and read `PGOOD`
+
+## How the Trigger Works
+
+The CH224K is a small USB Power Delivery sink controller. It connects to the
+USB-C connector's CC pins, advertises itself as a sink, and asks the charger for
+one of the fixed Power Data Objects. The selected output voltage appears on the
+same VBUS rail after the PD negotiation succeeds.
+
+The three configuration pins, represented by `CFG1`, `CFG2`, and `CFG3`, are
+pulled down by default and brought to a header. You can populate solder bridges,
+a DIP switch, or jumpers to encode the voltage option used by your controller
+variant. Always confirm the exact truth table in the controller datasheet before
+assembling hardware.
+
+## Building the Circuit Step by Step
+
+### Step 1: Start with the HAT board
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Components go here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+### Step 2: Add the USB-C input and PD controller
+
+The USB-C connector exposes VBUS, GND, CC1, and CC2. The controller monitors the
+CC pins and negotiates the requested output voltage.
+
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="J1"
+      footprint="pinrow4"
+      manufacturerPartNumber="USB-C receptacle"
+      pinLabels={{ pin1: ["VBUS"], pin2: ["CC1"], pin3: ["CC2"], pin4: ["GND"] }}
+      pcbX={-18}
+      pcbY={8}
+    />
+    <chip
+      name="U1"
+      footprint="sop10"
+      manufacturerPartNumber="CH224K"
+      pinLabels={{
+        pin1: ["VBUS"],
+        pin2: ["GND"],
+        pin3: ["CC1"],
+        pin4: ["CC2"],
+        pin5: ["CFG1"],
+        pin6: ["CFG2"],
+        pin7: ["CFG3"],
+        pin8: ["PGOOD"],
+        pin9: ["EN"],
+        pin10: ["VDD"],
+      }}
+      pcbX={-3}
+      pcbY={8}
+    />
+    <trace from=".J1 .VBUS" to="net.VBUS" />
+    <trace from=".J1 .GND" to="net.GND" />
+    <trace from=".J1 .CC1" to=".U1 .CC1" />
+    <trace from=".J1 .CC2" to=".U1 .CC2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+### Step 3: Add the voltage selector
+
+The voltage selector is modeled as a six-pin header. Three pins connect to the
+controller configuration inputs, while the other side exposes rails that can be
+used for jumpers or solder bridges.
+
+```tsx
+<chip
+  name="JP1"
+  footprint="pinrow6"
+  manufacturerPartNumber="3-bit voltage select header"
+  pinLabels={{
+    pin1: ["CFG1"],
+    pin2: ["CFG2"],
+    pin3: ["CFG3"],
+    pin4: ["GND"],
+    pin5: ["VDD"],
+    pin6: ["VOUT"],
+  }}
+/>
+```
+
+### Step 4: Add filtering and output terminals
+
+The input capacitor stabilizes VBUS near the connector and controller. The
+output bulk capacitor sits near the terminal block and helps absorb load steps
+when the downstream device turns on.
+
+```tsx
+<capacitor name="C1" capacitance="10uF" footprint="0805" />
+<capacitor name="C2" capacitance="100nF" footprint="0402" />
+<capacitor name="C3" capacitance="47uF" footprint="1210" />
+<capacitor name="C4" capacitance="100nF" footprint="0402" />
+<chip
+  name="J2"
+  footprint="pinrow2"
+  manufacturerPartNumber="2-pin 5.08mm terminal block"
+  pinLabels={{ pin1: ["VOUT"], pin2: ["GND"] }}
+/>
+```
+
+### Step 5: Add status and Raspberry Pi monitoring
+
+`PGOOD` drives the status LED through `R5`. The optional `J3` header lets the Pi
+pull `EN` low or read whether negotiation completed before enabling a load.
+
+```tsx
+<chip
+  name="J3"
+  footprint="pinrow3"
+  manufacturerPartNumber="GPIO status header"
+  pinLabels={{ pin1: ["EN"], pin2: ["PGOOD"], pin3: ["GND"] }}
+/>
+<resistor name="R5" resistance="2.2k" footprint="0402" />
+<led name="D1" color="green" footprint="0603" />
+```
+
+## Voltage Selection Table
+
+Use the controller datasheet as the source of truth for the final jumper map.
+This table is a practical layout worksheet for the HAT:
+
+| Target output | Typical use | Layout note |
+| --- | --- | --- |
+| 5V | Pi accessories, logic boards | Safest first power-up setting |
+| 9V | Small motors, routers, LED drivers | Check downstream regulator rating |
+| 12V | Fans, relays, light strips | Use wider copper for higher current |
+| 15V | Audio boards, lab modules | Confirm capacitors are rated above 15V |
+| 20V | USB-C laptop adapters, buck inputs | Use 25V or higher rated capacitors |
+
+## Bill of Materials
+
+| Ref | Part | Notes |
+| --- | --- | --- |
+| J1 | USB-C receptacle | Choose a footprint matching your assembly process |
+| U1 | CH224K USB-PD sink controller | FP6601Q/FP28xx or PD2001 can be adapted |
+| JP1 | 3-bit voltage select header | Replace with solder jumpers or a DIP switch if preferred |
+| J2 | 2-pin terminal block | Rated for the maximum current you expect |
+| J3 | 3-pin logic header | Optional Pi-side `EN`, `PGOOD`, and `GND` |
+| C1 | 10uF, 25V or higher | VBUS input bulk capacitor |
+| C2, C4 | 100nF | Local decoupling capacitors |
+| C3 | 47uF, 25V or higher | Output bulk capacitor |
+| R1-R3 | 100k | Default pulldowns for voltage select pins |
+| R4 | 10k | Enable pullup |
+| R5 | 2.2k | LED current limiting resistor |
+| D1 | Green LED | Power-good indicator |
+
+## Example Pi Monitor
+
+The PD trigger works without software, but the Pi can monitor `PGOOD` before it
+turns on a downstream load.
+
+```python
+from gpiozero import DigitalInputDevice, DigitalOutputDevice
+from time import sleep
+
+pd_enable = DigitalOutputDevice(23, active_high=True, initial_value=True)
+pd_good = DigitalInputDevice(24, pull_up=False)
+
+while not pd_good.value:
+    print("Waiting for USB-PD negotiation...")
+    sleep(0.1)
+
+print("Requested USB-PD voltage is ready")
+```
+
+## Bring-Up and Test Procedure
+
+1. Leave the HAT disconnected from the Raspberry Pi and set the selector to 5V.
+2. Connect a current-limited USB-C PD charger and verify that the status LED
+   turns on.
+3. Measure `J2` with a multimeter and confirm the expected voltage and polarity.
+4. Move through the 9V, 12V, 15V, and 20V settings with no load attached.
+5. Add a small dummy load, then re-check voltage droop and component temperature.
+6. Only connect a Raspberry Pi or downstream device after the selected voltage is
+   known to be safe for that load.
+
+## Safety Notes
+
+USB-PD can expose 20V on a connector that physically resembles a 5V USB port.
+Clearly label the terminal block, use capacitors with enough voltage headroom,
+and do not connect the negotiated rail directly to the Raspberry Pi 5V header
+unless the selected profile is 5V and the power path has been reviewed.
