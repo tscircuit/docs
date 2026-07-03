@@ -1,0 +1,350 @@
+---
+title: Building a Class D Audio Amplifier HAT
+description: >-
+  Build a Raspberry Pi HAT with a PAM8403 stereo Class D amplifier, volume
+  controls, speaker terminals, and PWM audio input filtering.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## Overview
+
+This tutorial walks through a Raspberry Pi HAT that turns the Pi's PWM audio
+outputs into a small stereo speaker amplifier. The design uses a PAM8403 Class D
+amplifier, two volume controls, screw-terminal style speaker headers, input
+filtering, and local power decoupling.
+
+The PAM8403 is a filterless Class D amplifier that can drive two small speakers
+from a 5V rail. It is commonly used for compact 3W-per-channel projects. The
+speaker outputs are bridge-tied load outputs, so the `L-` and `R-` terminals
+must not be connected to ground.
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pinLabels={{
+        pin1: ["INL"],
+        pin2: ["INR"],
+        pin3: ["VREF"],
+        pin4: ["GND"],
+        pin5: ["OUTL_P"],
+        pin6: ["PVDD_L"],
+        pin7: ["OUTL_N"],
+        pin8: ["GND_L"],
+        pin9: ["OUTR_N"],
+        pin10: ["PVDD_R"],
+        pin11: ["OUTR_P"],
+        pin12: ["SD"],
+        pin13: ["MUTE"],
+        pin14: ["VDD"],
+        pin15: ["BYPASS"],
+        pin16: ["GND_R"],
+      }}
+      pcbX={0}
+      pcbY={0}
+    />
+
+    <resistor name="R1" resistance="270" footprint="0402" pcbX={-20} pcbY={8} />
+    <resistor name="R2" resistance="270" footprint="0402" pcbX={-20} pcbY={-8} />
+    <capacitor name="C1" capacitance="33nF" footprint="0402" pcbX={-14} pcbY={8} />
+    <capacitor name="C2" capacitance="33nF" footprint="0402" pcbX={-14} pcbY={-8} />
+
+    <potentiometer name="RVL" maxResistance="10k" footprint="pinrow3" pcbX={-8} pcbY={10} />
+    <potentiometer name="RVR" maxResistance="10k" footprint="pinrow3" pcbX={-8} pcbY={-10} />
+
+    <resistor name="R3" resistance="10k" footprint="0402" pcbX={8} pcbY={8} />
+    <resistor name="R4" resistance="10k" footprint="0402" pcbX={8} pcbY={-8} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={12} pcbY={4} />
+    <capacitor name="C4" capacitance="10uF" footprint="0603" pcbX={12} pcbY={-4} />
+    <capacitor name="C5" capacitance="1uF" footprint="0402" pcbX={4} pcbY={10} />
+
+    <pinheader
+      name="J1"
+      pinCount={3}
+      gender="male"
+      pitch="2.54mm"
+      footprint="pinrow3"
+      pinLabels={["PWM_L", "GND", "PWM_R"]}
+      showSilkscreenPinLabels
+      pcbX={-26}
+      pcbY={0}
+    />
+    <pinheader
+      name="J2"
+      pinCount={2}
+      gender="female"
+      pitch="3.5mm"
+      footprint="pinrow2"
+      pinLabels={["L+", "L-"]}
+      showSilkscreenPinLabels
+      pcbX={22}
+      pcbY={8}
+    />
+    <pinheader
+      name="J3"
+      pinCount={2}
+      gender="female"
+      pitch="3.5mm"
+      footprint="pinrow2"
+      pinLabels={["R+", "R-"]}
+      showSilkscreenPinLabels
+      pcbX={22}
+      pcbY={-8}
+    />
+
+    <trace from=".HAT1_chip .V5_1" to="net.V5" />
+    <trace from=".HAT1_chip .GND_1" to="net.GND" />
+    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+    <trace from=".HAT1_chip .GPIO_19" to=".R2 > .pin1" />
+    <trace from=".J1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".J1 > .pin2" to="net.GND" />
+    <trace from=".J1 > .pin3" to=".R2 > .pin1" />
+
+    <trace from=".R1 > .pin2" to=".RVL > .pin1" />
+    <trace from=".R2 > .pin2" to=".RVR > .pin1" />
+    <trace from=".C1 > .pin1" to=".RVL > .pin1" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from=".C2 > .pin1" to=".RVR > .pin1" />
+    <trace from=".C2 > .pin2" to="net.GND" />
+
+    <trace from=".RVL > .pin2" to=".U1 .INL" />
+    <trace from=".RVR > .pin2" to=".U1 .INR" />
+    <trace from=".RVL > .pin3" to="net.GND" />
+    <trace from=".RVR > .pin3" to="net.GND" />
+
+    <trace from=".R3 > .pin1" to="net.V5" />
+    <trace from=".R3 > .pin2" to=".U1 .SD" />
+    <trace from=".R4 > .pin1" to="net.V5" />
+    <trace from=".R4 > .pin2" to=".U1 .MUTE" />
+    <trace from=".U1 .VDD" to="net.V5" />
+    <trace from=".U1 .PVDD_L" to="net.V5" />
+    <trace from=".U1 .PVDD_R" to="net.V5" />
+    <trace from=".U1 .GND" to="net.GND" />
+    <trace from=".U1 .GND_L" to="net.GND" />
+    <trace from=".U1 .GND_R" to="net.GND" />
+    <trace from=".C3 > .pin1" to="net.V5" />
+    <trace from=".C3 > .pin2" to="net.GND" />
+    <trace from=".C4 > .pin1" to="net.V5" />
+    <trace from=".C4 > .pin2" to="net.GND" />
+    <trace from=".C5 > .pin1" to=".U1 .BYPASS" />
+    <trace from=".C5 > .pin2" to="net.GND" />
+
+    <trace from=".U1 .OUTL_P" to=".J2 > .pin1" />
+    <trace from=".U1 .OUTL_N" to=".J2 > .pin2" />
+    <trace from=".U1 .OUTR_P" to=".J3 > .pin1" />
+    <trace from=".U1 .OUTR_N" to=".J3 > .pin2" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Circuit Requirements
+
+The HAT should include:
+
+- PAM8403 stereo Class D amplifier powered from the Pi 5V rail
+- Two low-pass filters for Raspberry Pi PWM audio on GPIO18 and GPIO19
+- Two volume controls, one per channel
+- Pull-ups for shutdown and mute so the amplifier starts enabled
+- Decoupling close to the amplifier power pins
+- Left and right two-pin speaker terminals
+
+## How the Class D Output Works
+
+The PAM8403 switches each speaker output at a high frequency and uses the
+speaker coil as part of the output filtering. Each channel is a bridge-tied load:
+both speaker terminals move, and neither terminal is ground. This doubles the
+available voltage swing compared with a single-ended output, which is how the
+small 5V amplifier can deliver useful speaker power.
+
+Use 4 ohm or 8 ohm speakers rated for the power you expect to use. Keep speaker
+leads short, route the `OUTL` and `OUTR` pairs together, and avoid running the
+speaker traces beside the sensitive input traces.
+
+## Building the Circuit Step by Step
+
+### Step 1: Start with the HAT board
+
+The `RaspberryPiHatBoard` component provides the 40-pin header and the normal HAT
+outline.
+
+```tsx
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    {/* Amplifier circuit goes here */}
+  </RaspberryPiHatBoard>
+)
+```
+
+### Step 2: Add the PAM8403 amplifier
+
+The amplifier is represented as a 16-pin chip. The pin labels make the traces
+read like the datasheet signals instead of raw package pin numbers.
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic16"
+  manufacturerPartNumber="PAM8403"
+  pinLabels={{
+    pin1: ["INL"],
+    pin2: ["INR"],
+    pin5: ["OUTL_P"],
+    pin7: ["OUTL_N"],
+    pin9: ["OUTR_N"],
+    pin11: ["OUTR_P"],
+    pin12: ["SD"],
+    pin13: ["MUTE"],
+    pin14: ["VDD"],
+  }}
+/>
+```
+
+### Step 3: Filter the Raspberry Pi audio pins
+
+Raspberry Pi PWM audio can be output on GPIO18 and GPIO19. A simple RC filter
+turns the PWM waveform into an analog-ish signal before the volume controls.
+The example uses 270 ohm and 33nF, a small starting point that can be adjusted
+for your noise and bandwidth targets.
+
+```tsx
+<resistor name="R1" resistance="270" footprint="0402" />
+<capacitor name="C1" capacitance="33nF" footprint="0402" />
+<trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+<trace from=".R1 > .pin2" to=".C1 > .pin1" />
+<trace from=".C1 > .pin2" to="net.GND" />
+```
+
+### Step 4: Add volume controls
+
+Use one 10k potentiometer for the left channel and one for the right channel.
+For a real product, choose a dual-gang audio-taper potentiometer so both
+channels track together from one knob.
+
+```tsx
+<potentiometer name="RVL" maxResistance="10k" footprint="pinrow3" />
+<potentiometer name="RVR" maxResistance="10k" footprint="pinrow3" />
+<trace from=".RVL > .pin2" to=".U1 .INL" />
+<trace from=".RVR > .pin2" to=".U1 .INR" />
+```
+
+### Step 5: Keep the amplifier enabled
+
+The `SD` and `MUTE` pins are pulled to 5V through 10k resistors. If you want
+software-controlled mute later, route those pins to spare GPIO pins instead.
+
+```tsx
+<resistor name="R3" resistance="10k" footprint="0402" />
+<resistor name="R4" resistance="10k" footprint="0402" />
+<trace from=".R3 > .pin1" to="net.V5" />
+<trace from=".R3 > .pin2" to=".U1 .SD" />
+<trace from=".R4 > .pin1" to="net.V5" />
+<trace from=".R4 > .pin2" to=".U1 .MUTE" />
+```
+
+### Step 6: Add speaker terminals
+
+Each channel uses a two-pin terminal. Keep the polarity labels visible on the
+silkscreen, but remember that `L-` and `R-` are amplifier outputs, not ground.
+
+```tsx
+<pinheader
+  name="J2"
+  pinCount={2}
+  gender="female"
+  pitch="3.5mm"
+  footprint="pinrow2"
+  pinLabels={["L+", "L-"]}
+  showSilkscreenPinLabels
+/>
+<trace from=".U1 .OUTL_P" to=".J2 > .pin1" />
+<trace from=".U1 .OUTL_N" to=".J2 > .pin2" />
+```
+
+## PCB Layout
+
+Place the PAM8403 near the speaker terminals so the high-current speaker traces
+are short. Put the 100nF decoupling capacitor as close as possible to the power
+pins, with the 10uF bulk capacitor nearby. Keep the input filters and
+potentiometer traces on the other side of the amplifier from the speaker output
+pairs.
+
+<CircuitPreview hide3DTab defaultView="pcb" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="HAT1">
+    <chip name="U1" footprint="soic16" manufacturerPartNumber="PAM8403" pcbX={0} pcbY={0} />
+    <resistor name="R1" resistance="270" footprint="0402" pcbX={-20} pcbY={8} />
+    <resistor name="R2" resistance="270" footprint="0402" pcbX={-20} pcbY={-8} />
+    <capacitor name="C1" capacitance="33nF" footprint="0402" pcbX={-14} pcbY={8} />
+    <capacitor name="C2" capacitance="33nF" footprint="0402" pcbX={-14} pcbY={-8} />
+    <potentiometer name="RVL" maxResistance="10k" footprint="pinrow3" pcbX={-8} pcbY={10} />
+    <potentiometer name="RVR" maxResistance="10k" footprint="pinrow3" pcbX={-8} pcbY={-10} />
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={12} pcbY={4} />
+    <capacitor name="C4" capacitance="10uF" footprint="0603" pcbX={12} pcbY={-4} />
+    <pinheader name="J2" pinCount={2} gender="female" pitch="3.5mm" footprint="pinrow2" pcbX={22} pcbY={8} />
+    <pinheader name="J3" pinCount={2} gender="female" pitch="3.5mm" footprint="pinrow2" pcbX={22} pcbY={-8} />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+## Bill of Materials
+
+| Ref | Part | Notes |
+| --- | --- | --- |
+| U1 | PAM8403 stereo Class D amplifier | 5V, filterless BTL output |
+| RVL, RVR | 10k potentiometer | Use a dual-gang audio-taper part for one knob |
+| R1, R2 | 270 ohm resistor | PWM low-pass filter series resistor |
+| C1, C2 | 33nF capacitor | PWM low-pass filter shunt capacitor |
+| R3, R4 | 10k resistor | Pull `SD` and `MUTE` high |
+| C3 | 100nF capacitor | High-frequency decoupling |
+| C4 | 10uF capacitor | Local bulk supply capacitance |
+| C5 | 1uF capacitor | Bypass/reference capacitor |
+| J2, J3 | 2-pin speaker terminal | One terminal block per channel |
+
+## Raspberry Pi Audio Configuration
+
+Enable PWM audio by adding the audio overlay to `/boot/firmware/config.txt` on
+newer Raspberry Pi OS images:
+
+```ini
+dtparam=audio=on
+dtoverlay=audremap,pins_18_19
+```
+
+After rebooting, select the analog/PWM output in your audio settings or with
+`raspi-config`. Start testing at a low volume:
+
+```bash
+speaker-test -t sine -f 440 -c 2
+```
+
+For a quick Python check, play a short WAV file through ALSA or use any normal
+Linux audio player. The HAT does not need a driver when it is fed from the Pi's
+PWM audio pins.
+
+## Testing Procedure
+
+1. With the HAT unpowered, check continuity from each speaker terminal to the
+   expected PAM8403 output pin.
+2. Confirm neither speaker terminal is shorted to ground.
+3. Power the Pi with no speakers connected and confirm 5V is present at the
+   PAM8403 power pins.
+4. Connect one speaker, keep volume low, and play a sine wave.
+5. Repeat with the second speaker and verify left/right channel assignment.
+
+## Next Steps
+
+- Add a GPIO-controlled mute input
+- Replace the two separate potentiometers with a dual-gang audio potentiometer
+- Add an EEPROM for full Raspberry Pi HAT identification
+- Add ferrite beads or extra LC filtering if your speaker wiring is long
