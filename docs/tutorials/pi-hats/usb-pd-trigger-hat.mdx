@@ -15,6 +15,18 @@ The board is designed to:
 4. Include a status LED
 5. Add filtering capacitors for cleaner power delivery
 
+Typical PD trigger boards expose a small selection table like this:
+
+| Selector | Target voltage |
+| --- | --- |
+| `00` | 5V |
+| `01` | 9V |
+| `10` | 12V |
+| `11` | 20V |
+
+The exact codes depend on the controller family, so treat the table as a
+bring-up pattern and map it to the chip you actually choose.
+
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
@@ -226,6 +238,9 @@ For this tutorial, the controller is represented as a compact 8-pin device with:
 
 The exact PD controller part can vary. `CH224K`, `FP28XX`, and `PD2001`
 families are all common examples that fit this style of board.
+
+If your controller uses different selection pins, swap the net names in the
+example so the documentation matches the exact module you are building.
 
 ## 3. Add the output terminals
 
