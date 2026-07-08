@@ -44,6 +44,63 @@ export default () => (
 `}
 />
 
+## QR Code Example
+
+You can use `<silkscreengraphic />` to add a scannable QR code to your PCB
+silkscreen. This is useful for linking a board to a project page, assembly
+guide, datasheet, or support URL.
+
+For best results, generate the QR code as a simple, single-color SVG and leave a
+clear quiet zone around it. Keeping nearby text, traces, pads, and vias away
+from the QR code makes it easier for a camera to scan.
+
+The example below uses `qrcode-svg` to generate a QR code for
+`https://tscircuit.com`, converts it to a data URL, and places it on the top
+silkscreen layer. Install the package before using this pattern in your own
+project: `bun add qrcode-svg`.
+
+Another option is to create the QR SVG with a generator such as
+[QRCode Monkey](https://www.qrcode-monkey.com/). Paste the link you want to
+encode, download the SVG, then pass it to `<silkscreengraphic />` as an imported
+file, static asset URL, or data URL.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+import QRCode from "qrcode-svg"
+
+const qr = new QRCode({
+  content: "https://tscircuit.com",
+  padding: 4,
+  join: true,
+  container: "svg-viewbox",
+})
+
+const qrImageUrl = "data:image/svg+xml;base64," + btoa(qr.svg())
+
+export default () => (
+  <board width="32mm" height="24mm">
+    <silkscreentext
+      text="scan to open tscircuit"
+      pcbX={0}
+      pcbY={-9}
+      fontSize="1.2mm"
+      layer="top"
+    />
+    <silkscreengraphic
+      imageUrl={qrImageUrl}
+      pcbX={0}
+      pcbY={2}
+      width="20mm"
+      height="20mm"
+      layer="top"
+    />
+  </board>
+)
+`}
+/>
+
 ## Props
 
 | Property | Type | Required | Default | Description |
@@ -65,3 +122,6 @@ export default () => (
   best for PCB silkscreen.
 - For remote assets, make sure the image URL is available when the circuit is
   built. Inline data URLs or static-file imports make examples easier to share.
+- For QR codes, use at least about 12-15 mm of board space for simple URLs, keep
+  the quiet zone clear, and test the generated PCB preview with a phone camera
+  before ordering.
