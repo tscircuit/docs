@@ -12,21 +12,75 @@ This tutorial will walk you through building a Raspberry Pi HAT (Hardware Attach
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
-<TscircuitIframe defaultView="3d" code={`
+export const kmtg1203Source = `import type { ChipProps } from "@tscircuit/props"
+
+const pinLabels = {
+  pin1: ["pin1"],
+  pin2: ["pin2"],
+} as const
+
+export const KMTG1203 = (props: ChipProps<typeof pinLabels>) => (
+  <chip
+    pinLabels={pinLabels}
+    supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+    manufacturerPartNumber="KMTG1203"
+    footprint={
+      <footprint>
+        <smtpad
+          portHints={["pin1"]}
+          pcbX="-5.750052mm"
+          pcbY="0mm"
+          width="1.499997mm"
+          height="3.999992mm"
+          shape="rect"
+        />
+        <smtpad
+          portHints={["pin2"]}
+          pcbX="5.750052mm"
+          pcbY="0mm"
+          width="1.499997mm"
+          height="3.999992mm"
+          shape="rect"
+        />
+        <silkscreenrect width="12mm" height="12mm" />
+        <silkscreentext
+          text="{NAME}"
+          pcbX="0mm"
+          pcbY="6.9944mm"
+          anchorAlignment="center"
+          fontSize="1mm"
+        />
+      </footprint>
+    }
+    cadModel={{
+      objUrl:
+        "https://modelcdn.tscircuit.com/easyeda_models/assets/C7421651.obj?uuid=2fd2bce55e664e4a90f7bd6f5ef4d817",
+      stepUrl:
+        "https://modelcdn.tscircuit.com/easyeda_models/assets/C7421651.step?uuid=2fd2bce55e664e4a90f7bd6f5ef4d817",
+      pcbRotationOffset: 0,
+      modelOriginPosition: {
+        x: 0.000012700000070253736,
+        y: -0.004999999999999893,
+        z: -0.02,
+      },
+    }}
+    {...props}
+  />
+)`
+
+export const withKmtg1203 = (indexSource) => ({
+  "index.tsx": indexSource,
+  "KMTG1203.tsx": kmtg1203Source,
+})
+
+<TscircuitIframe defaultView="3d" entrypoint="index.tsx" fsMap={withKmtg1203(`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { KMTG1203 } from "./KMTG1203"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
     {/* 5V passive piezo buzzer from JLCPCB */}
-    <chip
-      name="BZ1"
-      manufacturerPartNumber="KMTG1203"
-      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
-      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
-      footprint="jlcpcb:C7421651"
-      pcbX={18}
-      pcbY={5}
-    />
+    <KMTG1203 name="BZ1" pcbX={18} pcbY={5} />
 
     {/* NPN Transistor (2N2222) */}
     <chip
@@ -58,13 +112,13 @@ export default () => (
     <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
 
     {/* Buzzer positive to 5V */}
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_2" />
 
     {/* Buzzer negative to transistor collector */}
     <trace from=".BZ1 > .pin2" to=".Q1 .C" />
   </RaspberryPiHatBoard>
 )
-`} />
+`)} />
 
 ## What is a Raspberry Pi HAT?
 
@@ -84,7 +138,7 @@ Our buzzer HAT needs to:
 ## Understanding the Components
 
 ### Passive Buzzer
-This guide uses the [KINGSTATE KMTG1203](https://jlcpcb.com/partdetail/KINGSTATE-KMTG1203/C7421651), a 5V, 12mm × 12mm SMD piezo buzzer available from JLCPCB as part `C7421651`. The `jlcpcb:C7421651` footprint loads the part's EasyEDA footprint and available 3D model.
+This guide uses the [KINGSTATE KMTG1203](https://jlcpcb.com/partdetail/KINGSTATE-KMTG1203/C7421651), a 5V, 12mm × 12mm SMD piezo buzzer available from JLCPCB as part `C7421651`. The imported component includes the part's two-pad EasyEDA footprint and 3D model.
 
 A passive buzzer requires an AC signal (PWM) to produce sound, unlike active buzzers which have built-in oscillators. This allows us to control the pitch by varying the PWM frequency.
 
@@ -112,42 +166,28 @@ export default () => (
 
 ### Step 2: Add the Buzzer
 
-<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" entrypoint="index.tsx" fsMap={withKmtg1203(`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { KMTG1203 } from "./KMTG1203"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    <chip
-      name="BZ1"
-      manufacturerPartNumber="KMTG1203"
-      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
-      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
-      footprint="jlcpcb:C7421651"
-      pcbX={18}
-      pcbY={5}
-    />
+    <KMTG1203 name="BZ1" pcbX={18} pcbY={5} />
   </RaspberryPiHatBoard>
 )
-`} />
+`)} />
 
 ### Step 3: Add the Transistor
 
 The transistor acts as a switch. When current flows into the base (B), it allows current to flow from collector (C) to emitter (E).
 
-<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" entrypoint="index.tsx" fsMap={withKmtg1203(`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { KMTG1203 } from "./KMTG1203"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    <chip
-      name="BZ1"
-      manufacturerPartNumber="KMTG1203"
-      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
-      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
-      footprint="jlcpcb:C7421651"
-      pcbX={18}
-      pcbY={5}
-    />
+    <KMTG1203 name="BZ1" pcbX={18} pcbY={5} />
     <chip
       name="Q1"
       footprint="sot23"
@@ -165,24 +205,17 @@ export default () => (
     />
   </RaspberryPiHatBoard>
 )
-`} />
+`)} />
 
 ### Step 4: Add the Base Resistor
 
-<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
+<CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" entrypoint="index.tsx" fsMap={withKmtg1203(`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { KMTG1203 } from "./KMTG1203"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    <chip
-      name="BZ1"
-      manufacturerPartNumber="KMTG1203"
-      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
-      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
-      footprint="jlcpcb:C7421651"
-      pcbX={18}
-      pcbY={5}
-    />
+    <KMTG1203 name="BZ1" pcbX={18} pcbY={5} />
     <chip
       name="Q1"
       footprint="sot23"
@@ -201,26 +234,19 @@ export default () => (
     <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
   </RaspberryPiHatBoard>
 )
-`} />
+`)} />
 
 ### Step 5: Connect Everything
 
 Now we wire all the components together:
 
-<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" entrypoint="index.tsx" fsMap={withKmtg1203(`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { KMTG1203 } from "./KMTG1203"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    <chip
-      name="BZ1"
-      manufacturerPartNumber="KMTG1203"
-      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
-      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
-      footprint="jlcpcb:C7421651"
-      pcbX={18}
-      pcbY={5}
-    />
+    <KMTG1203 name="BZ1" pcbX={18} pcbY={5} />
     <chip
       name="Q1"
       footprint="sot23"
@@ -248,13 +274,13 @@ export default () => (
     <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
 
     {/* Buzzer positive to 5V */}
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_2" />
 
     {/* Buzzer negative to transistor collector */}
     <trace from=".BZ1 > .pin2" to=".Q1 .C" />
   </RaspberryPiHatBoard>
 )
-`} />
+`)} />
 
 ## Available GPIO Pins
 
@@ -273,20 +299,13 @@ The `RaspberryPiHatBoard` component exposes the standard 40-pin Raspberry Pi hea
 
 The PCB layout places components on the HAT board. You can adjust the `pcbX` and `pcbY` properties to position components:
 
-<CircuitPreview hide3DTab defaultView="pcb" code={`
+<CircuitPreview hide3DTab defaultView="pcb" entrypoint="index.tsx" fsMap={withKmtg1203(`
 import { RaspberryPiHatBoard } from "@tscircuit/common"
+import { KMTG1203 } from "./KMTG1203"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    <chip
-      name="BZ1"
-      manufacturerPartNumber="KMTG1203"
-      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
-      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
-      footprint="jlcpcb:C7421651"
-      pcbX={18}
-      pcbY={5}
-    />
+    <KMTG1203 name="BZ1" pcbX={18} pcbY={5} />
     <chip
       name="Q1"
       footprint="sot23"
@@ -307,11 +326,11 @@ export default () => (
     <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
     <trace from=".R1 > .pin2" to=".Q1 .B" />
     <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_2" />
     <trace from=".BZ1 > .pin2" to=".Q1 .C" />
   </RaspberryPiHatBoard>
 )
-`} />
+`)} />
 
 ## Controlling the Buzzer
 
