@@ -5,12 +5,16 @@ export default () => (
     {/* 5V passive piezo buzzer - driven by GPIO18 (PWM capable) */}
     <chip
       name="BZ1"
-      manufacturerPartNumber="KMTG1203"
-      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
-      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
       footprint="jlcpcb:C7421651"
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      manufacturerPartNumber="KMTG1203"
       pcbX={18}
       pcbY={5}
+      cadModel={{
+        objUrl:
+          "https://modelcdn.tscircuit.com/easyeda_models/assets/C7421651.obj?uuid=2fd2bce55e664e4a90f7bd6f5ef4d817",
+      }}
     />
 
     {/* NPN Transistor to drive buzzer (2N2222 or similar) */}
@@ -49,7 +53,7 @@ export default () => (
     <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
 
     {/* Connect buzzer positive to 5V */}
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_2" />
 
     {/* Connect buzzer negative to transistor collector */}
     <trace from=".BZ1 > .pin2" to=".Q1 .C" />
