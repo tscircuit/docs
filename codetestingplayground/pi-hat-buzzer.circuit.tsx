@@ -2,13 +2,15 @@ import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    {/* Passive Buzzer - driven by GPIO18 (PWM capable) */}
+    {/* 5V passive piezo buzzer - driven by GPIO18 (PWM capable) */}
     <chip
       name="BZ1"
-      footprint="0603"
-      manufacturerPartNumber="Passive Buzzer"
-      pcbX={10}
-      pcbY={-10}
+      manufacturerPartNumber="KMTG1203"
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      footprint="jlcpcb:C7421651"
+      pcbX={18}
+      pcbY={5}
     />
 
     {/* NPN Transistor to drive buzzer (2N2222 or similar) */}
