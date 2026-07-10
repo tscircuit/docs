@@ -17,11 +17,13 @@ import { RaspberryPiHatBoard } from "@tscircuit/common"
 
 export default () => (
   <RaspberryPiHatBoard name="HAT1">
-    {/* Passive Buzzer */}
+    {/* 5V passive piezo buzzer from JLCPCB */}
     <chip
       name="BZ1"
-      footprint="0603"
-      manufacturerPartNumber="Passive Buzzer"
+      manufacturerPartNumber="KMTG1203"
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      footprint="jlcpcb:C7421651"
       pcbX={10}
       pcbY={-10}
     />
@@ -76,16 +78,18 @@ A HAT (Hardware Attached on Top) is an add-on board for Raspberry Pi that confor
 
 Our buzzer HAT needs to:
 - Connect to a PWM-capable GPIO pin for tone generation
-- Use a transistor to drive the buzzer (GPIO pins can't source enough current)
+- Use a transistor to switch the 5V buzzer from a 3.3V GPIO signal
 - Include a current-limiting resistor for the transistor base
 
 ## Understanding the Components
 
 ### Passive Buzzer
+This guide uses the [KINGSTATE KMTG1203](https://jlcpcb.com/partdetail/KINGSTATE-KMTG1203/C7421651), a 5V, 12mm × 12mm SMD piezo buzzer available from JLCPCB as part `C7421651`. The `jlcpcb:C7421651` footprint loads the part's EasyEDA footprint and available 3D model.
+
 A passive buzzer requires an AC signal (PWM) to produce sound, unlike active buzzers which have built-in oscillators. This allows us to control the pitch by varying the PWM frequency.
 
 ### NPN Transistor (2N2222)
-Since GPIO pins can only source about 16mA, we use an NPN transistor as a switch to drive the buzzer with more current from the 5V rail.
+The NPN transistor acts as a low-side switch, allowing the 3.3V GPIO signal to control the buzzer from the 5V rail.
 
 ### Base Resistor (1k)
 The 1k resistor limits current into the transistor base, protecting both the GPIO pin and the transistor.
@@ -115,8 +119,10 @@ export default () => (
   <RaspberryPiHatBoard name="HAT1">
     <chip
       name="BZ1"
-      footprint="0603"
-      manufacturerPartNumber="Passive Buzzer"
+      manufacturerPartNumber="KMTG1203"
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      footprint="jlcpcb:C7421651"
       pcbX={10}
       pcbY={-10}
     />
@@ -135,8 +141,10 @@ export default () => (
   <RaspberryPiHatBoard name="HAT1">
     <chip
       name="BZ1"
-      footprint="0603"
-      manufacturerPartNumber="Passive Buzzer"
+      manufacturerPartNumber="KMTG1203"
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      footprint="jlcpcb:C7421651"
       pcbX={10}
       pcbY={-10}
     />
@@ -168,8 +176,10 @@ export default () => (
   <RaspberryPiHatBoard name="HAT1">
     <chip
       name="BZ1"
-      footprint="0603"
-      manufacturerPartNumber="Passive Buzzer"
+      manufacturerPartNumber="KMTG1203"
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      footprint="jlcpcb:C7421651"
       pcbX={10}
       pcbY={-10}
     />
@@ -204,8 +214,10 @@ export default () => (
   <RaspberryPiHatBoard name="HAT1">
     <chip
       name="BZ1"
-      footprint="0603"
-      manufacturerPartNumber="Passive Buzzer"
+      manufacturerPartNumber="KMTG1203"
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      footprint="jlcpcb:C7421651"
       pcbX={10}
       pcbY={-10}
     />
@@ -268,8 +280,10 @@ export default () => (
   <RaspberryPiHatBoard name="HAT1">
     <chip
       name="BZ1"
-      footprint="0603"
-      manufacturerPartNumber="Passive Buzzer"
+      manufacturerPartNumber="KMTG1203"
+      supplierPartNumbers={{ jlcpcb: ["C7421651"] }}
+      pinLabels={{ pin1: ["positive"], pin2: ["negative"] }}
+      footprint="jlcpcb:C7421651"
       pcbX={10}
       pcbY={-10}
     />
