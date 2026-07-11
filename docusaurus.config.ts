@@ -54,6 +54,7 @@ const config: Config = {
 
   plugins: [
     require.resolve("./plugins/markdown-source-plugin"),
+    require.resolve("./plugins/posthog-sourcemap-plugin"),
     [
       "posthog-docusaurus",
       {

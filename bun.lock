@@ -1,6 +1,6 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
+  "configVersion": 1,
   "workspaces": {
     "": {
       "name": "docs",
@@ -23,6 +23,7 @@
         "@docusaurus/module-type-aliases": "3.8.1",
         "@docusaurus/tsconfig": "3.8.1",
         "@docusaurus/types": "3.8.1",
+        "@posthog/cli": "^0.8.1",
         "@tscircuit/create-snippet-url": "^0.0.12",
         "@tscircuit/footprinter": "^0.0.135",
         "@tscircuit/math-utils": "^0.0.18",
@@ -37,6 +38,9 @@
       },
     },
   },
+  "trustedDependencies": [
+    "@posthog/cli",
+  ],
   "packages": {
     "@algolia/abtesting": ["@algolia/abtesting@1.4.0", "", { "dependencies": { "@algolia/client-common": "5.38.0", "@algolia/requester-browser-xhr": "5.38.0", "@algolia/requester-fetch": "5.38.0", "@algolia/requester-node-http": "5.38.0" } }, "sha512-N0blWT/C0KOZ/OJ9GXBX66odJZlrYjMj3M+01y8ob1mjBFnBaBo7gOCyHBDQy60+H4pJXp3pSGlJOqJIueBH+A=="],
 
@@ -567,6 +571,8 @@
     "@pnpm/npm-conf": ["@pnpm/npm-conf@2.3.1", "", { "dependencies": { "@pnpm/config.env-replace": "^1.1.0", "@pnpm/network.ca-file": "^1.0.1", "config-chain": "^1.1.11" } }, "sha512-c83qWb22rNRuB0UaVCI0uRPNRr8Z0FWnEIvT47jiHAmOIUHbBOg5XvV7pM5x+rKn9HRpjxquDbXYSXr3fAKFcw=="],
 
     "@polka/url": ["@polka/url@1.0.0-next.29", "", {}, "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww=="],
+
+    "@posthog/cli": ["@posthog/cli@0.8.1", "", { "dependencies": { "detect-libc": "^2.1.2" }, "bin": { "posthog-cli": "run-posthog-cli.js" } }, "sha512-7gCx2rslQtXSN0RfdxHRXumc5E1CY8ldVDxncUGeQ7qTFHprRbryH17W//fcuNMeNhvr6vc8DStj9gGWSS/Zfw=="],
 
     "@secretlint/core": ["@secretlint/core@9.3.4", "", { "dependencies": { "@secretlint/profiler": "^9.3.4", "@secretlint/types": "^9.3.4", "debug": "^4.4.1", "structured-source": "^4.0.0" } }, "sha512-ErIVHI6CJd191qdNKuMkH3bZQo9mWJsrSg++bQx64o0WFuG5nPvkYrDK0p/lebf+iQuOnzvl5HrZU6GU9a6o+Q=="],
 
@@ -1195,6 +1201,8 @@
     "dequal": ["dequal@2.0.3", "", {}, "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA=="],
 
     "destroy": ["destroy@1.2.0", "", {}, "sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg=="],
+
+    "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
 
     "detect-node": ["detect-node@2.1.0", "", {}, "sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g=="],
 

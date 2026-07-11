@@ -5,8 +5,9 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "docusaurus build && bun run build:repomix",
+    "build": "docusaurus build && bun run build:sourcemaps && bun run build:repomix",
     "format": "biome format . --write",
+    "build:sourcemaps": "bun run scripts/upload-sourcemaps.ts",
     "build:repomix": "repomix --style xml --include '**/*.md,**/*.mdx' --output ./build/ai.txt && bun run scripts/cleanup-ai-txt.ts",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@posthog/cli": "^0.8.1",
     "@types/fs-extra": "^11.0.4",
     "@docusaurus/module-type-aliases": "3.8.1",
     "@docusaurus/tsconfig": "3.8.1",
@@ -62,5 +64,8 @@
   },
   "engines": {
     "node": ">=22.0"
-  }
+  },
+  "trustedDependencies": [
+    "@posthog/cli"
+  ]
 }

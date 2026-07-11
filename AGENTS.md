@@ -39,3 +39,13 @@
   product is in early stages of development, use `tsci build --ignore-errors` to ignore
   non-fatal errors
 - Prefer `bunx` over `npx`
+
+## Error Tracking Source Maps
+
+- `bun run build` generates hidden source maps and, when PostHog credentials
+  are present, uploads them so Error Tracking can symbolicate JavaScript stack
+  traces from docs.tscircuit.com (see `scripts/upload-sourcemaps.ts`).
+- The upload only runs when `POSTHOG_CLI_API_KEY` and `POSTHOG_CLI_PROJECT_ID`
+  are set. Configure these in the Vercel project settings (project id `114805`).
+  Without them the build strips the `.map` files and skips the upload, so local
+  and PR builds are unaffected.
