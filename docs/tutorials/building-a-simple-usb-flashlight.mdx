@@ -5,8 +5,24 @@ description: Learn how to build a simple USB-powered flashlight circuit using ts
 
 ## Overview
 
-This tutorial will walk you through building a simple USB flashlight using
-tscircuit.
+In this tutorial, you'll build a USB-powered flashlight with a USB-C connector,
+a push button, a current-limiting resistor, and an LED. Along the way, you'll
+see how tscircuit turns one TypeScript component into a schematic, PCB layout,
+and 3D preview.
+
+The circuit is intentionally small: pressing the button connects USB power to
+the LED through the resistor, and releasing it opens the circuit.
+
+## Before you start
+
+You can edit the circuit directly in the preview below. To build it in a local
+project instead, install the USB-C connector package first:
+
+```bash
+tsci add seveibar/smd-usb-c
+```
+
+## The complete circuit
 
 import TscircuitIframe from "@site/src/components/TscircuitIframe"
 
@@ -16,27 +32,75 @@ import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
   return (
-   <board width="12mm" height="30mm">
+    <board width="12mm" height="30mm">
       <SmdUsbC
-      name="J1"
-      connections={{ GND1: "net.GND", GND2: "net.GND", VBUS1: "net.VBUS", VBUS2: "net.VBUS" }}
-      pcbY={-10}
-      schX={-4}
-    />
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        pcbY={-10}
+        schX={-4}
+      />
       <pushbutton
         name="SW1"
         footprint="pushbutton"
-        layer="top"
-        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
-        pcbX={0}
+        connections={{ pin1: "R1.pos", pin2: "net.VBUS" }}
         pcbY={-1}
       />
       <led name="LED" color="red" footprint="0603" pcbY={12} />
-     
       <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
-      <trace from=".R1 .neg" to=".LED .pos" />
-      <trace from=".LED .neg" to="net.GND" />
+      <trace from="R1.neg" to="LED.pos" />
+      <trace from="LED.neg" to="net.GND" />
     </board>
   )
 }
 `} />
+
+Use the **Schematic**, **PCB**, and **3D** tabs in the preview to inspect the
+same circuit from each perspective.
+
+## How it works
+
+### USB-C provides power
+
+`SmdUsbC` is a reusable component imported from the tscircuit registry. Its
+`connections` prop joins both USB-C ground pins to `net.GND` and both power pins
+to `net.VBUS`.
+
+Named nets let components share a connection without drawing every trace
+explicitly. Here, `net.VBUS` represents USB power and `net.GND` represents its
+return path.
+
+### The button controls the LED
+
+The push button connects `net.VBUS` to the positive side of `R1` only while it
+is pressed. The remaining traces form a series path:
+
+```text
+USB VBUS → SW1 → R1 → LED → GND
+```
+
+The `1k` resistor limits current through the LED. This protects the LED and
+reduces its brightness to a comfortable indicator level.
+
+### Layout props place parts on the board
+
+Props such as `pcbY` control physical placement. The USB-C connector sits near
+one end of the narrow board, while the resistor and LED sit toward the other.
+The autorouter connects the placed components using the electrical connections
+defined in the code.
+
+## Try a change
+
+Click **Edit circuit source** in the preview and make one of these changes:
+
+- Change `color="red"` to `color="blue"`.
+- Change `resistance="1k"` to `resistance="470"`.
+- Move a component by changing its `pcbY` value.
+
+Run the circuit again, then compare the schematic, PCB, and 3D views. When you
+are ready to make a physical board, continue to [Ordering
+Prototypes](/building-electronics/ordering-prototypes).
