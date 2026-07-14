@@ -1,20 +1,23 @@
 ---
 title: <port />
 description: >-
-  Define connection points within custom schematic symbols.
+  Define named electrical connection points for symbols and groups.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<port />` element defines connection points within a `<symbol />`. Ports specify where traces connect to your component in the schematic view.
+`<port />` defines a named electrical connection point. Its meaning depends on
+its parent:
 
-:::note
-`<port />` can only be used inside a `<symbol />` element.
-:::
+- Inside `<symbol />`, it defines the position and direction of a custom
+  schematic pin.
+- As a direct child of `<group />`, it defines a public port for a module. When
+  the group uses `showAsSchematicBox`, the port appears as a pin on the module's
+  collapsed schematic symbol.
 
-## Basic Usage
+## Custom symbol pins
 
 <CircuitPreview
   hide3DTab
@@ -43,15 +46,72 @@ export default () => (
 )
 `} />
 
+## Group interface ports
+
+Use `connectsTo` to map a group's public port to a selector inside that group:
+
+<CircuitPreview
+  alwaysShowCode
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="20mm" height="12mm">
+    <group
+      name="FILTER"
+      showAsSchematicBox
+      schTitle="RC Filter"
+      pcbX={-4}
+    >
+      <port name="VIN" direction="left" connectsTo="R1.pin1" />
+      <port name="VOUT" direction="right" connectsTo="R1.pin2" />
+      <resistor name="R1" resistance="1k" footprint="0402" />
+    </group>
+
+    <net name="VCC" />
+    <trace from="net.VCC" to="FILTER.VIN" />
+
+    <resistor
+      name="R_LOAD"
+      resistance="20k"
+      footprint="0402"
+      pcbX={4}
+      connections={{ pin1: "FILTER.VOUT", pin2: "net.GND" }}
+    />
+  </board>
+)
+`} />
+
+`FILTER.VIN` and `FILTER.VOUT` are public selectors. `connectsTo` maps them to
+`R1.pin1` and `R1.pin2`, respectively. Outside the group, the trace connects
+`net.VCC` to `FILTER.VIN`, while the load connects to `FILTER.VOUT`.
+
 ## Props
 
-| Property | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| name | string | Yes | - | Port identifier used for connections |
-| schX | number | Yes | - | X position in schematic units |
-| schY | number | Yes | - | Y position in schematic units |
-| direction | "left" \| "right" \| "up" \| "down" | No | - | Direction the port faces |
-| schStemLength | number | No | - | Length of the stem line extending from the port |
+| Prop | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Port name used in selectors. Either `name` or `pinNumber` is required. |
+| `pinNumber` | `number` | Numeric pin identifier. When `name` is omitted, the port name defaults to `pin` followed by the number, such as `pin1`. |
+| `connectsTo` | `string \| string[]` | For a direct group child, the internal port selector or selectors represented by this module port. For example, `"D1.anode"` or `["D1.anode", "D2.anode"]`. |
+| `direction` | `"left" \| "right" \| "up" \| "down"` | Schematic-facing direction. In a schematic-box group, it determines the default side unless `schPinArrangement` overrides it. This prop affects presentation, not connectivity. |
+| `schX`, `schY` | `number` | Schematic coordinates within a custom symbol. They are not required for direct group-child ports. |
+| `aliases` | `string[]` | Alternative names by which the port can be selected. |
+| `schStemLength` | `number` | Length of the stem line extending from a custom-symbol port. |
+
+## Mapping one public port to multiple pins
+
+```tsx
+<port
+  name="ROW1"
+  direction="left"
+  connectsTo={["D1.anode", "D2.anode", "D3.anode"]}
+/>
+```
+
+`connectsTo` accepts a selector or an array of selectors. Use the array form
+when a public module port represents a shared internal net, such as an LED
+matrix row. Each selector identifies an internal component and one of its port
+names or aliases. With default pin labels, `<led />` provides `anode`/`cathode`
+and `pin1`/`pin2` selectors.
 
 ## Custom Stem Length
 
