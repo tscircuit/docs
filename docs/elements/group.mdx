@@ -191,11 +191,12 @@ topology. To use the inverse topology, swap `anode` and `cathode` throughout.
   verticalStack={true}
   code={`
   export default () => (
-    <board width="34mm" height="22mm">
+    <board width="56mm" height="28mm">
       <group
         name="MATRIX"
         showAsSchematicBox
         schTitle="3x3 LED Matrix"
+        pcbX={10}
         pcbGrid
         pcbGridCols={3}
         pcbGridRows={3}
@@ -265,6 +266,63 @@ topology. To use the inverse topology, swap `anode` and `cathode` throughout.
         <trace from=".D3 > .cathode" to=".D6 > .cathode" />
         <trace from=".D6 > .cathode" to=".D9 > .cathode" />
       </group>
+
+      <pinheader
+        name="J_ROWS"
+        pinCount={3}
+        pitch="2.54mm"
+        showSilkscreenPinLabels
+        pinLabels={["ROW1", "ROW2", "ROW3"]}
+        schX={-8}
+        pcbX={-21}
+        pcbRotation={90}
+      />
+
+      <pinheader
+        name="J_COLS"
+        pinCount={3}
+        pitch="2.54mm"
+        showSilkscreenPinLabels
+        pinLabels={["COL1", "COL2", "COL3"]}
+        schFacingDirection="left"
+        schX={4}
+        pcbX={24}
+        pcbRotation={90}
+        connections={{
+          COL1: "MATRIX.COL1",
+          COL2: "MATRIX.COL2",
+          COL3: "MATRIX.COL3",
+        }}
+      />
+
+      <resistor
+        name="R_ROW1"
+        resistance="1k"
+        footprint="0402"
+        schX={-4}
+        schY={1}
+        pcbX={-7}
+        pcbY={4}
+        connections={{ pin1: "J_ROWS.ROW1", pin2: "MATRIX.ROW1" }}
+      />
+      <resistor
+        name="R_ROW2"
+        resistance="1k"
+        footprint="0402"
+        schX={-4}
+        pcbX={-7}
+        connections={{ pin1: "J_ROWS.ROW2", pin2: "MATRIX.ROW2" }}
+      />
+      <resistor
+        name="R_ROW3"
+        resistance="1k"
+        footprint="0402"
+        schX={-4}
+        schY={-1}
+        pcbX={-7}
+        pcbY={-4}
+        connections={{ pin1: "J_ROWS.ROW3", pin2: "MATRIX.ROW3" }}
+      />
     </board>
   )
   `}
@@ -272,7 +330,9 @@ topology. To use the inverse topology, swap `anode` and `cathode` throughout.
 
 `pcbGrid` arranges the LEDs in three rows and three columns. The internal
 `<trace />` elements define six shared nets, which the autorouter connects on
-the PCB.
+the PCB. At the board level, `J_ROWS` connects to the row ports through
+current-limiting resistors, while `J_COLS` connects directly to the column
+ports.
 
 | Public module port | Internal LED pins |
 | --- | --- |
@@ -283,20 +343,11 @@ the PCB.
 | `COL2` | `D2.cathode`, `D5.cathode`, `D8.cathode` |
 | `COL3` | `D3.cathode`, `D6.cathode`, `D9.cathode` |
 
-External components connect to public ports without referencing internal
-component names:
-
-```tsx
-<resistor
-  name="ROW1_DRIVER"
-  resistance="1k"
-  footprint="0402"
-  connections={{ pin1: "net.ROW1_CONTROL", pin2: "MATRIX.ROW1" }}
-/>
-```
-
-Use `GROUP_NAME.PORT_NAME` selectors such as `MATRIX.ROW1`; internal names such
-as `D1` remain encapsulated.
+The `<group />`, connectors, and resistors are siblings within the top-level
+`<board />`. Setting `name="MATRIX"` on the group makes its public ports
+available as `MATRIX.ROW1`, `MATRIX.COL1`, and so on. The external components
+use these `GROUP_NAME.PORT_NAME` selectors, so internal names such as `D1`
+remain encapsulated.
 
 ## Moving multiple components via a `<group />`
 
