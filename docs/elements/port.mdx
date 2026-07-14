@@ -66,15 +66,29 @@ the parent circuit using `SUBCIRCUIT_NAME.PORT_NAME`.
   defaultView="schematic"
   code={`
 export default () => (
-  <board width="24mm" height="14mm" routingDisabled>
+  <board width="24mm" height="14mm">
     <subcircuit
       name="FILTER"
       showAsSchematicBox
       schTitle="RC Filter"
       schX={0}
+      pcbX={0}
+      pcbY={0}
     >
-      <resistor name="R1" resistance="1k" footprint="0402" />
-      <capacitor name="C1" capacitance="100nF" footprint="0402" />
+      <resistor
+        name="R1"
+        resistance="1k"
+        footprint="0402"
+        pcbX={-1}
+        pcbY={0}
+      />
+      <capacitor
+        name="C1"
+        capacitance="100nF"
+        footprint="0402"
+        pcbX={1}
+        pcbY={-2}
+      />
 
       <port name="INPUT" direction="left" connectsTo="R1.pin1" />
       <port name="OUTPUT" direction="right" connectsTo="R1.pin2" />
@@ -88,6 +102,8 @@ export default () => (
       resistance="100"
       footprint="0402"
       schX={-5}
+      pcbX={-8}
+      pcbY={0}
       connections={{ pin1: "net.VCC", pin2: "FILTER.INPUT" }}
     />
     <resistor
@@ -95,6 +111,8 @@ export default () => (
       resistance="10k"
       footprint="0402"
       schX={5}
+      pcbX={8}
+      pcbY={0}
       connections={{ pin1: "FILTER.OUTPUT", pin2: "net.GND" }}
     />
   </board>
