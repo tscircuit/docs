@@ -1,18 +1,17 @@
 ---
 title: <port />
 description: >-
-  Define connection points within custom schematic symbols.
+  Define named connection points on custom symbols and subcircuits.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<port />` element defines connection points within a `<symbol />`. Ports specify where traces connect to your component in the schematic view.
-
-:::note
-`<port />` can only be used inside a `<symbol />` element.
-:::
+The `<port />` element creates a named point where traces can connect. Inside a
+[`<symbol />`](./symbol.mdx), it defines the position of a component pin. As a
+direct child of a [`<subcircuit />`](./subcircuit.mdx), it exposes an internal
+connection so the rest of the circuit can connect to it by name.
 
 ## Basic Usage
 
@@ -47,11 +46,81 @@ export default () => (
 
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
-| name | string | Yes | - | Port identifier used for connections |
-| schX | number | Yes | - | X position in schematic units |
-| schY | number | Yes | - | Y position in schematic units |
+| name | string | No | - | Port identifier used in selectors. Required when `pinNumber` is omitted |
+| pinNumber | number | No | - | Numeric pin identifier. Also creates `pinN` and `N` selector aliases |
+| aliases | string[] | No | `[]` | Additional names that can select the port |
+| connectsTo | string \| string[] | No | - | Internal port selector or selectors connected to a direct subcircuit port |
+| schX | number | No | - | X position in schematic units for a custom symbol port |
+| schY | number | No | - | Y position in schematic units for a custom symbol port |
 | direction | "left" \| "right" \| "up" \| "down" | No | - | Direction the port faces |
 | schStemLength | number | No | - | Length of the stem line extending from the port |
+
+## Exposing a Subcircuit Connection
+
+A direct child `<port />` becomes part of a subcircuit's public interface. Set
+`connectsTo` to a selector for the internal component port, then connect from
+the parent circuit using `SUBCIRCUIT_NAME.PORT_NAME`.
+
+<CircuitPreview
+  alwaysShowCode
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="24mm" height="14mm" routingDisabled>
+    <subcircuit
+      name="FILTER"
+      showAsSchematicBox
+      schTitle="RC Filter"
+      schX={0}
+    >
+      <resistor name="R1" resistance="1k" footprint="0402" />
+      <capacitor name="C1" capacitance="100nF" footprint="0402" />
+
+      <port name="INPUT" direction="left" connectsTo="R1.pin1" />
+      <port name="OUTPUT" direction="right" connectsTo="R1.pin2" />
+
+      <trace from="R1.pin2" to="C1.pin1" />
+      <trace from="C1.pin2" to="net.GND" />
+    </subcircuit>
+
+    <resistor
+      name="R_SOURCE"
+      resistance="100"
+      footprint="0402"
+      schX={-5}
+      connections={{ pin1: "net.VCC", pin2: "FILTER.INPUT" }}
+    />
+    <resistor
+      name="R_LOAD"
+      resistance="10k"
+      footprint="0402"
+      schX={5}
+      connections={{ pin1: "FILTER.OUTPUT", pin2: "net.GND" }}
+    />
+  </board>
+)
+`} />
+
+Use `connectsTo="R1.pin1"` to choose which internal pin the port exposes. From
+outside the subcircuit, reference it as `FILTER.INPUT`, using the subcircuit name
+followed by the port name.
+
+The same connection can be written with an explicit trace selector:
+
+```tsx
+<trace from=".R_SOURCE > .pin2" to=".FILTER > .INPUT" />
+```
+
+Only direct child ports form the subcircuit interface. The `showAsSchematicBox`
+prop is optional, but when enabled, those ports become the pins on the collapsed
+schematic box and the internal schematic is hidden.
+
+`connectsTo` also accepts an array when one exposed port must connect to more
+than one internal port:
+
+```tsx
+<port name="GND" direction="down" connectsTo={["U1.GND", "C1.pin2"]} />
+```
 
 ## Custom Stem Length
 

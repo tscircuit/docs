@@ -35,6 +35,37 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   `}
 />
 
+## Exposing Ports
+
+Subcircuit selectors are isolated by default. To give the parent circuit a
+stable connection point without exposing an internal reference designator, add
+a direct child [`<port />`](./port.mdx) with `connectsTo`:
+
+```tsx
+<subcircuit name="FILTER" showAsSchematicBox>
+  <resistor name="R1" resistance="1k" footprint="0402" />
+  <port name="INPUT" direction="left" connectsTo="R1.pin1" />
+  <port name="OUTPUT" direction="right" connectsTo="R1.pin2" />
+</subcircuit>
+
+<resistor
+  name="R_LOAD"
+  resistance="10k"
+  footprint="0402"
+  connections={{ pin1: "FILTER.OUTPUT", pin2: "net.GND" }}
+/>
+```
+
+`connectsTo` is resolved inside the subcircuit, while `FILTER.OUTPUT` is
+resolved by the parent circuit against the public port. You can therefore
+rename or reorganize internal components without changing connections outside
+the subcircuit.
+
+When `showAsSchematicBox` is enabled, direct child ports are displayed as the
+box pins. Without it, the ports still define the public electrical interface.
+See [the port documentation](./port.mdx#exposing-a-subcircuit-connection) for a
+complete example and explicit trace selector syntax.
+
 ## Reuse Reference Designators
 
 Reusing reference designators is typically considered a bad practice, but in
@@ -86,5 +117,4 @@ Specifying custom autorouter settings for subcircuits can be extremely useful
 when you have a tricky section of components that have special requirements.
 
 Read more about [the autorouter prop here](./board.mdx#setting-the-autorouter).
-
 
