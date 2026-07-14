@@ -173,23 +173,33 @@ already exists, tscircuit uses it instead of creating a duplicate.
 `schHeight` work on collapsed groups the same way they work on chip schematic
 boxes.
 
+Each direct child `<port />` is part of the group's public interface. Use
+`connectsTo` to map it to one or more ports on components inside the group.
+`direction` and `schPinArrangement` control schematic placement; they do not
+define connectivity.
+
 ## Example: LED matrix module
 
 Collapsed schematic boxes are useful when a group contains repetitive internal
-circuits. This 3x3 LED matrix exposes row and column pins while hiding the
-individual LEDs in the schematic.
+circuits. This 3x3 LED matrix exposes row and column ports while hiding the
+individual LEDs in the schematic. The example uses a row-anode, column-cathode
+topology. To use the inverse topology, swap `anode` and `cathode` throughout.
 
 <CircuitPreview
   alwaysShowCode
   defaultView="schematic"
-  hidePcbTab
+  verticalStack={true}
   code={`
   export default () => (
-    <board width="34mm" height="22mm" routingDisabled>
+    <board width="34mm" height="22mm">
       <group
         name="MATRIX"
         showAsSchematicBox
         schTitle="3x3 LED Matrix"
+        pcbGrid
+        pcbGridCols={3}
+        pcbGridRows={3}
+        pcbGridGap="3mm"
         schPinArrangement={{
           leftSide: {
             direction: "top-to-bottom",
@@ -201,63 +211,92 @@ individual LEDs in the schematic.
           },
         }}
       >
-        <port name="ROW1" />
-        <port name="ROW2" />
-        <port name="ROW3" />
-        <port name="COL1" />
-        <port name="COL2" />
-        <port name="COL3" />
+        <port
+          name="ROW1"
+          direction="left"
+          connectsTo={["D1.anode", "D2.anode", "D3.anode"]}
+        />
+        <port
+          name="ROW2"
+          direction="left"
+          connectsTo={["D4.anode", "D5.anode", "D6.anode"]}
+        />
+        <port
+          name="ROW3"
+          direction="left"
+          connectsTo={["D7.anode", "D8.anode", "D9.anode"]}
+        />
+        <port
+          name="COL1"
+          direction="right"
+          connectsTo={["D1.cathode", "D4.cathode", "D7.cathode"]}
+        />
+        <port
+          name="COL2"
+          direction="right"
+          connectsTo={["D2.cathode", "D5.cathode", "D8.cathode"]}
+        />
+        <port
+          name="COL3"
+          direction="right"
+          connectsTo={["D3.cathode", "D6.cathode", "D9.cathode"]}
+        />
 
-        <led
-          name="D1"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D2"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D3"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D4"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D5"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D6"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D7"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D8"
-          color="red"
-          footprint="0603"
-        />
-        <led
-          name="D9"
-          color="red"
-          footprint="0603"
-        />
+        <led name="D1" color="red" footprint="0603" />
+        <led name="D2" color="red" footprint="0603" />
+        <led name="D3" color="red" footprint="0603" />
+        <led name="D4" color="red" footprint="0603" />
+        <led name="D5" color="red" footprint="0603" />
+        <led name="D6" color="red" footprint="0603" />
+        <led name="D7" color="red" footprint="0603" />
+        <led name="D8" color="red" footprint="0603" />
+        <led name="D9" color="red" footprint="0603" />
+
+        <trace from=".D1 > .anode" to=".D2 > .anode" />
+        <trace from=".D2 > .anode" to=".D3 > .anode" />
+        <trace from=".D4 > .anode" to=".D5 > .anode" />
+        <trace from=".D5 > .anode" to=".D6 > .anode" />
+        <trace from=".D7 > .anode" to=".D8 > .anode" />
+        <trace from=".D8 > .anode" to=".D9 > .anode" />
+        <trace from=".D1 > .cathode" to=".D4 > .cathode" />
+        <trace from=".D4 > .cathode" to=".D7 > .cathode" />
+        <trace from=".D2 > .cathode" to=".D5 > .cathode" />
+        <trace from=".D5 > .cathode" to=".D8 > .cathode" />
+        <trace from=".D3 > .cathode" to=".D6 > .cathode" />
+        <trace from=".D6 > .cathode" to=".D9 > .cathode" />
       </group>
     </board>
   )
   `}
 />
+
+`pcbGrid` arranges the LEDs in three rows and three columns. The internal
+`<trace />` elements define six shared nets, which the autorouter connects on
+the PCB.
+
+| Public module port | Internal LED pins |
+| --- | --- |
+| `ROW1` | `D1.anode`, `D2.anode`, `D3.anode` |
+| `ROW2` | `D4.anode`, `D5.anode`, `D6.anode` |
+| `ROW3` | `D7.anode`, `D8.anode`, `D9.anode` |
+| `COL1` | `D1.cathode`, `D4.cathode`, `D7.cathode` |
+| `COL2` | `D2.cathode`, `D5.cathode`, `D8.cathode` |
+| `COL3` | `D3.cathode`, `D6.cathode`, `D9.cathode` |
+
+External components connect to public ports without referencing internal
+component names:
+
+```tsx
+<resistor
+  name="ROW1_DRIVER"
+  resistance="1k"
+  footprint="0402"
+  connections={{ pin1: "net.ROW1_CONTROL", pin2: "MATRIX.ROW1" }}
+/>
+```
+
+Use `GROUP_NAME.PORT_NAME` selectors such as `MATRIX.ROW1`; internal names such
+as `D1` remain encapsulated.
 
 ## Moving multiple components via a `<group />`
 
