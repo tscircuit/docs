@@ -40,14 +40,96 @@ export default () => (
 
 | Property | Description | Example |
 | --- | --- | --- |
+| `name` | User-facing experiment name. Use a unique name when defining multiple simulations. | `"Startup"` |
 | `duration` | Total simulation time. Accepts numbers or time strings. | `"10ms"` |
 | `timePerStep` | Time interval between simulation steps. | `"0.1ms"` |
 | `spiceEngine` | SPICE engine to use. Typically `"ngspice"` or `"spicey"`. | `"ngspice"` |
 | `graphIndependentAxes` | Give each voltage or current graph channel its own automatically scaled axis. | `true` |
 
-Use `<analogsimulation />` once per `<board />` to define how the simulation
-runs. Combine it with `<voltagesource />` and `<voltageprobe />` elements to
-create and observe waveforms.
+You can use `<analogsimulation />` more than once in the same board. Each
+element creates an independent experiment with its own duration, time step,
+SPICE options, and result graphs.
+
+## Multiple simulations and group scope
+
+Give each simulation a unique `name`. When more than one experiment is
+available, the simulation preview shows a selector for switching between its
+SVG results.
+
+A simulation placed directly in the board collects probes throughout that
+board, including probes inside groups. A simulation inside a `<group />`
+collects only the probes in its nearest containing group. The complete circuit
+is simulated in both cases; the group controls which result graphs are shown.
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  simulationExperimentNames={[
+    "Root Fast",
+    "Root Slow",
+    "Input Group",
+    "Output Group",
+  ]}
+  defaultSimulationExperimentName="Root Fast"
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" />
+    <resistor name="R1" resistance="1k" />
+    <resistor name="R2" resistance="2k" />
+    <resistor name="R3" resistance="3k" />
+
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".R3 > .pin1" />
+    <trace from=".R3 > .pin2" to=".V1 > .pin2" />
+
+    <voltageprobe name="ROOT_PROBE" connectsTo=".V1 > .pin1" />
+    <analogsimulation
+      name="Root Fast"
+      duration="1ms"
+      timePerStep="100us"
+      spiceEngine="ngspice"
+    />
+    <analogsimulation
+      name="Root Slow"
+      duration="2ms"
+      timePerStep="200us"
+      spiceEngine="ngspice"
+    />
+
+    <group name="first-stage">
+      <voltageprobe
+        name="FIRST_STAGE_PROBE"
+        connectsTo=".R1 > .pin2"
+      />
+      <analogsimulation
+        name="Input Group"
+        duration="3ms"
+        timePerStep="300us"
+        spiceEngine="ngspice"
+      />
+    </group>
+
+    <group name="second-stage">
+      <voltageprobe
+        name="SECOND_STAGE_PROBE"
+        connectsTo=".R2 > .pin2"
+      />
+      <analogsimulation
+        name="Output Group"
+        duration="4ms"
+        timePerStep="400us"
+        spiceEngine="ngspice"
+      />
+    </group>
+  </board>
+)
+`}
+/>
 
 ## Multi-axis scope display
 
