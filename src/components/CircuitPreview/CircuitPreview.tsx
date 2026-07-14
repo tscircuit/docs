@@ -173,6 +173,8 @@ export default function CircuitPreview({
   leftView,
   rightView,
   showSimulationGraph = false,
+  simulationExperimentNames = [],
+  defaultSimulationExperimentName,
   verticalStack = false,
   showCourtyards = false,
 }: {
@@ -194,6 +196,8 @@ export default function CircuitPreview({
   rightView?: CircuitPreviewView
   projectBaseUrl?: string
   showSimulationGraph?: boolean
+  simulationExperimentNames?: string[]
+  defaultSimulationExperimentName?: string
   verticalStack?: boolean
   showCourtyards?: boolean
 }) {
@@ -213,6 +217,19 @@ export default function CircuitPreview({
   const [editingFiles, setEditingFiles] = useState<Record<string, boolean>>({})
   const [hasEditedCode, setHasEditedCode] = useState(false)
   const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({})
+  const simulationExperimentNamesKey = simulationExperimentNames.join("\0")
+  const [
+    selectedSimulationExperimentName,
+    setSelectedSimulationExperimentName,
+  ] = useState(
+    defaultSimulationExperimentName ?? simulationExperimentNames[0] ?? null,
+  )
+
+  useEffect(() => {
+    setSelectedSimulationExperimentName(
+      defaultSimulationExperimentName ?? simulationExperimentNames[0] ?? null,
+    )
+  }, [defaultSimulationExperimentName, simulationExperimentNamesKey])
 
   useEffect(() => {
     setEditableCode(
@@ -277,19 +294,33 @@ export default function CircuitPreview({
     const separator = basePcbUrl.includes("?") ? "&" : "?"
     return `${basePcbUrl}${separator}show_courtyards=true`
   }, [fsMapOrCode, mainComponentPath, showCourtyards])
-  const schUrl = useMemo(
-    () =>
-      addMainComponentPath(
-        createSvgUrl(
-          fsMapOrCode,
-          showSimulationGraph ? "schsim" : "schematic",
-          {
-            simulationExperimentId: "simulation_experiment_0",
-          },
-        ),
+  const schUrl = useMemo(() => {
+    const baseUrl = addMainComponentPath(
+      createSvgUrl(
+        fsMapOrCode,
+        showSimulationGraph ? "schsim" : "schematic",
+        showSimulationGraph && !selectedSimulationExperimentName
+          ? { simulationExperimentId: "simulation_experiment_0" }
+          : undefined,
       ),
-    [fsMapOrCode, mainComponentPath, showSimulationGraph],
-  )
+    )
+
+    if (!showSimulationGraph || !selectedSimulationExperimentName) {
+      return baseUrl
+    }
+
+    const url = new URL(baseUrl)
+    url.searchParams.set(
+      "simulation_experiment_name",
+      selectedSimulationExperimentName,
+    )
+    return url.toString()
+  }, [
+    fsMapOrCode,
+    mainComponentPath,
+    selectedSimulationExperimentName,
+    showSimulationGraph,
+  ])
   const pinoutUrl = useMemo(
     () => addMainComponentPath(createSvgUrl(fsMapOrCode, "pinout")),
     [fsMapOrCode, mainComponentPath],
@@ -359,6 +390,8 @@ export default function CircuitPreview({
   }, [hasEditedCode, pcbUrl, schUrl, pinoutUrl, threeDUrl])
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
+  const showSimulationSelector =
+    showSimulationGraph && simulationExperimentNames.length > 1
 
   const currentCode = editableFsMap?.[currentFile] ?? editableCode
   const currentFileKey = currentFile ?? "__code"
@@ -490,8 +523,32 @@ export default function CircuitPreview({
 
   const previewHeaderElm = (showViewTabs: boolean) => (
     <div className={tw("flex items-center justify-between gap-2 px-2")}>
-      <div className={tw("flex min-w-0 items-center mt-2 mb-2")}>
+      <div className={tw("flex min-w-0 items-center gap-2 mt-2 mb-2")}>
         {editorUrl && <TryInEditorLink href={editorUrl} />}
+        {showSimulationSelector && (
+          <label className={tw("min-w-0")}>
+            <select
+              aria-label="Select analog simulation"
+              value={selectedSimulationExperimentName ?? ""}
+              onChange={(event) =>
+                setSelectedSimulationExperimentName(event.target.value)
+              }
+              className={tw(
+                `min-w-0 max-w-full rounded border px-2 py-0.5 text-sm ${
+                  !isDarkTheme
+                    ? "border-slate-300 bg-white text-slate-950"
+                    : "border-slate-600 bg-slate-900 text-white"
+                }`,
+              )}
+            >
+              {simulationExperimentNames.map((name) => (
+                <option key={name} value={name}>
+                  Simulation: {name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
       {showViewTabs && (
         <div
@@ -594,11 +651,15 @@ export default function CircuitPreview({
             }`,
           )} circuit-preview-pane circuit-preview-pane-${v}`}
         >
-          {hasPreviewHeader && previewHeaderElm(false)}
+          {(hasPreviewHeader || showSimulationSelector) &&
+            previewHeaderElm(false)}
           {renderPreviewImage({
             src,
-            alt: `${v.toUpperCase()} Circuit Preview`,
-            hasHeader: hasPreviewHeader,
+            alt:
+              v === "schematic" && selectedSimulationExperimentName
+                ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
+                : `${v.toUpperCase()} Circuit Preview`,
+            hasHeader: hasPreviewHeader || showSimulationSelector,
             imageClassName: `w-full m-0 object-contain ${
               v === "pcb"
                 ? "bg-black flex items-center justify-center"
@@ -634,7 +695,8 @@ export default function CircuitPreview({
     renderCodePane("border-r")
 
   const imageViewHasHeader =
-    shouldSplitCode && (Boolean(editorUrl) || _showTabs)
+    shouldSplitCode &&
+    (Boolean(editorUrl) || _showTabs || showSimulationSelector)
 
   const ImageView = (view === "pcb" ||
     view === "schematic" ||
@@ -663,7 +725,9 @@ export default function CircuitPreview({
       })}
       {renderPreviewImage({
         src: schUrl,
-        alt: "Schematic Circuit Preview",
+        alt: selectedSimulationExperimentName
+          ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
+          : "Schematic Circuit Preview",
         hidden: view !== "schematic",
         hasHeader: imageViewHasHeader,
         imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
@@ -702,7 +766,9 @@ export default function CircuitPreview({
         } rounded-lg mb-8 overflow-hidden`,
       )}
     >
-      {((_showTabs && !shouldSplitCode) || (editorUrl && !shouldSplitCode)) &&
+      {((_showTabs && !shouldSplitCode) ||
+        (editorUrl && !shouldSplitCode) ||
+        (showSimulationSelector && !shouldSplitCode)) &&
         previewHeaderElm(_showTabs)}
       <div
         className={tw(
