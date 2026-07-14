@@ -526,16 +526,7 @@ export default function CircuitPreview({
       <div className={tw("flex min-w-0 items-center gap-2 mt-2 mb-2")}>
         {editorUrl && <TryInEditorLink href={editorUrl} />}
         {showSimulationSelector && (
-          <label
-            className={tw(
-              `flex min-w-0 items-center gap-2 rounded-md px-2 py-1 text-sm ${
-                !isDarkTheme
-                  ? "bg-slate-100 text-slate-700"
-                  : "bg-slate-800 text-slate-200"
-              }`,
-            )}
-          >
-            <span className={tw("font-semibold")}>Simulation</span>
+          <label className={tw("min-w-0")}>
             <select
               aria-label="Select analog simulation"
               value={selectedSimulationExperimentName ?? ""}
@@ -552,7 +543,7 @@ export default function CircuitPreview({
             >
               {simulationExperimentNames.map((name) => (
                 <option key={name} value={name}>
-                  {name}
+                  Simulation: {name}
                 </option>
               ))}
             </select>
