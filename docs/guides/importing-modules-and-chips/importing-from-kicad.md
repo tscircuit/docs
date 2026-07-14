@@ -72,22 +72,30 @@ circuit.add(
 bun add kicad-component-converter
 ```
 
-#### Import `.kicad_mod` files directly
+#### Import `.kicad_mod` and `.kicad_sym` files directly
 
 `kicad-component-converter` registers a bundler loader that lets you import KiCad
-footprints like any other module inside your tscircuit project:
+footprints and symbols like any other modules inside your tscircuit project:
 
 ```tsx
+import circuitJsonForSymbol from "./symbol.kicad_sym"
 import kicadMod from "./footprint.kicad_mod"
 
 export default () => {
   return (
     <board>
-      <chip footprint={kicadMod} name="U1" />
+      <chip
+        name="U1"
+        footprint={kicadMod}
+        symbol={circuitJsonForSymbol}
+        symbolName="LM358"
+      />
     </board>
   )
 }
 ```
+
+`symbolName` is required when the `.kicad_sym` file contains multiple symbols.
 
 #### Convert KiCad files manually
 
