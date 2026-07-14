@@ -41,20 +41,62 @@ Subcircuit selectors are isolated by default. To give the parent circuit a
 stable connection point without exposing an internal reference designator, add
 a direct child [`<port />`](./port.mdx) with `connectsTo`:
 
-```tsx
-<subcircuit name="FILTER" showAsSchematicBox>
-  <resistor name="R1" resistance="1k" footprint="0402" />
-  <port name="INPUT" direction="left" connectsTo="R1.pin1" />
-  <port name="OUTPUT" direction="right" connectsTo="R1.pin2" />
-</subcircuit>
+<CircuitPreview
+  alwaysShowCode
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="24mm" height="14mm">
+    <subcircuit
+      name="FILTER"
+      showAsSchematicBox
+      schTitle="RC Filter"
+      pcbX={0}
+      pcbY={0}
+    >
+      <resistor
+        name="R1"
+        resistance="1k"
+        footprint="0402"
+        pcbX={-1}
+        pcbY={0}
+      />
+      <capacitor
+        name="C1"
+        capacitance="100nF"
+        footprint="0402"
+        pcbX={1}
+        pcbY={-2}
+      />
 
-<resistor
-  name="R_LOAD"
-  resistance="10k"
-  footprint="0402"
-  connections={{ pin1: "FILTER.OUTPUT", pin2: "net.GND" }}
-/>
-```
+      <port name="INPUT" direction="left" connectsTo="R1.pin1" />
+      <port name="OUTPUT" direction="right" connectsTo="R1.pin2" />
+
+      <trace from="R1.pin2" to="C1.pin1" />
+      <trace from="C1.pin2" to="net.GND" />
+    </subcircuit>
+
+    <resistor
+      name="R_SOURCE"
+      resistance="100"
+      footprint="0402"
+      schX={-5}
+      pcbX={-8}
+      pcbY={0}
+      connections={{ pin1: "net.VCC", pin2: "FILTER.INPUT" }}
+    />
+    <resistor
+      name="R_LOAD"
+      resistance="10k"
+      footprint="0402"
+      schX={5}
+      pcbX={8}
+      pcbY={0}
+      connections={{ pin1: "FILTER.OUTPUT", pin2: "net.GND" }}
+    />
+  </board>
+)
+`} />
 
 `connectsTo` is resolved inside the subcircuit, while `FILTER.OUTPUT` is
 resolved by the parent circuit against the public port. You can therefore
@@ -117,4 +159,3 @@ Specifying custom autorouter settings for subcircuits can be extremely useful
 when you have a tricky section of components that have special requirements.
 
 Read more about [the autorouter prop here](./board.mdx#setting-the-autorouter).
-
