@@ -94,8 +94,6 @@ export default () => {
 }
 ```
 
-`symbolName` is required when the `.kicad_sym` file contains multiple symbols.
-
 #### Convert KiCad files manually
 
 If you need to do the conversion yourself (for example inside a build script),
