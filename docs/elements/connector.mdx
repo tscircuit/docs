@@ -115,6 +115,52 @@ When a connector footprint is rendered, tscircuit computes `pcb_component.cable_
 
 In the linked test, the computed cable insertion center is validated and then visualized as a small PCB note rectangle.
 
+## Differential-pair pins
+
+A reusable connector component can return `<connector />` and
+[`<differentialpair />`](./differential-pair.mdx) as siblings. The pair selects
+the connector's labeled positive and negative pins, while the parent circuit
+creates the actual traces.
+
+```tsx
+import type { ConnectorProps } from "@tscircuit/props"
+
+export const UsbCConnector = (
+  props: ConnectorProps & { readonly name: string },
+) => (
+  <>
+    <connector standard="usb_c" {...props} />
+    <differentialpair
+      name={`${props.name}_usb2_data`}
+      positiveConnection={`.${props.name} > .DP1`}
+      negativeConnection={`.${props.name} > .DM1`}
+      maxLengthSkew={0.05}
+    />
+  </>
+)
+
+export default () => (
+  <board width="40mm" height="24mm">
+    <UsbCConnector name="USBC" pcbX={-12} />
+    <pinheader
+      name="J1"
+      pinCount={2}
+      footprint="pinrow2"
+      pinLabels={["USB_DP", "USB_DM"]}
+      pcbX={12}
+    />
+
+    <trace name="usb_dp" from=".USBC > .DP1" to=".J1 > .USB_DP" />
+    <trace name="usb_dm" from=".USBC > .DM1" to=".J1 > .USB_DM" />
+  </board>
+)
+```
+
+The embedded pair uses pin selectors because the parent names the traces. Each
+connection may instead be an exact trace name, such as `"usb_dp"` or
+`"usb_dm"`. In either form, it must resolve to exactly one trace in the same
+board or autorouted subcircuit.
+
 ## Properties
 
 The TypeScript interface for `<connector />` is defined in [`@tscircuit/props`](https://github.com/tscircuit/props/blob/main/lib/components/connector.ts):

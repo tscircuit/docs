@@ -1,0 +1,160 @@
+---
+title: <differentialpair />
+description: Match the routed lengths of two traces within a maximum absolute difference.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Why use a differential pair?
+
+A differential signal, such as USB D+ and D-, travels over a positive and a
+negative trace. If one route is longer than the other, the two halves of the
+signal arrive at different times.
+
+`<differentialpair />` tells a supported autorouter which two existing traces
+form the pair and how much their routed lengths may differ. It does not create
+electrical connections; add those with [`<trace />`](./trace.mdx).
+
+This element currently constrains length matching only. It does not configure
+differential impedance, trace width, pair spacing, or parallel routing.
+
+## Quick start with trace names
+
+Use trace names when the same circuit creates the traces and the constraint.
+Give each `<trace />` a unique `name`, then reference those names from
+`<differentialpair />`.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="24mm" height="12mm">
+      <chip
+        name="U_HOST"
+        footprint="soic8"
+        pinLabels={{ pin1: "USB_DP", pin2: "USB_DM" }}
+        pcbX={-7}
+        pcbY={-2}
+      />
+      <chip
+        name="U_DEVICE"
+        footprint="soic8"
+        pinLabels={{ pin1: "USB_DP", pin2: "USB_DM" }}
+        pcbX={7}
+        pcbY={2}
+      />
+
+      <trace
+        name="usb_dp"
+        from=".U_HOST > .USB_DP"
+        to=".U_DEVICE > .USB_DP"
+      />
+      <trace
+        name="usb_dm"
+        from=".U_HOST > .USB_DM"
+        to=".U_DEVICE > .USB_DM"
+      />
+
+      <differentialpair
+        name="USB_DATA"
+        positiveConnection="usb_dp"
+        negativeConnection="usb_dm"
+        maxLengthSkew={0.05}
+      />
+    </board>
+  )
+`} />
+
+In this example:
+
+- `usb_dp` and `usb_dm` create the electrical connections.
+- `<differentialpair />` groups those connections for length matching.
+- `maxLengthSkew={0.05}` allows an absolute routed-length difference of up to
+  0.05 mm.
+
+Supported autorouters try to add length, often as a meander, to the shorter
+route. Routing can fail when there is no valid segment or enough room to meet
+the tolerance.
+
+## Choosing trace names or pin selectors
+
+| Use | When to choose it | Example |
+| --- | --- | --- |
+| Trace name | The same circuit defines and names the traces. | `positiveConnection="usb_dp"` |
+| Pin selector | A reusable component knows its differential pins, while its parent creates the traces. | `positiveConnection=".USBC > .DP1"` |
+
+You may use a trace name for one connection and a pin selector for the other.
+Each value must ultimately resolve to exactly one trace in the same board or
+autorouted subcircuit.
+
+## Reusable connector component
+
+A reusable connector can declare the constraint using stable pin labels even
+though it does not know what the parent circuit will name the traces.
+
+```tsx
+import type { ConnectorProps } from "@tscircuit/props"
+
+export const UsbCConnector = (
+  props: ConnectorProps & { readonly name: string },
+) => (
+  <>
+    <connector standard="usb_c" {...props} />
+    <differentialpair
+      name={`${props.name}_usb2_data`}
+      positiveConnection={`.${props.name} > .DP1`}
+      negativeConnection={`.${props.name} > .DM1`}
+      maxLengthSkew={0.05}
+    />
+  </>
+)
+
+export default () => (
+  <board width="40mm" height="24mm">
+    <UsbCConnector name="USBC" pcbX={-12} />
+    <pinheader
+      name="J1"
+      pinCount={2}
+      footprint="pinrow2"
+      pinLabels={["USB_DP", "USB_DM"]}
+      pcbX={12}
+    />
+
+    <trace name="usb_dp" from=".USBC > .DP1" to=".J1 > .USB_DP" />
+    <trace name="usb_dm" from=".USBC > .DM1" to=".J1 > .USB_DM" />
+  </board>
+)
+```
+
+The wrapper returns `<connector />` and `<differentialpair />` as siblings. The
+parent creates `usb_dp` and `usb_dm`; tscircuit finds those traces through the
+connector's `DP1` and `DM1` pins.
+
+## How connections are resolved
+
+For each connection, tscircuit first looks for an exact trace `name`. If no
+trace has that name, it treats the value as a pin/port selector. The result must
+be exactly one trace in the differential pair's routing subcircuit.
+
+Connection values are not net names or component selectors. Use a trace name
+such as `"usb_dp"`, or select a specific pin such as `".USBC > .DP1"`.
+
+## Troubleshooting
+
+- **Missing trace name:** Add a `<trace />` with the referenced `name`, or fix
+  the name in the differential pair.
+- **Pin has no trace:** Create a trace connected to the selected pin.
+- **Pin matches multiple traces:** Select a pin used by only one trace, or use
+  the intended trace's unique name. Branched traces make a pin ambiguous.
+- **Component selector used:** `".USBC"` selects a component, not a pin. Use a
+  selector such as `".USBC > .DP1"`.
+- **Different routing scope:** Keep the differential pair and both traces in
+  the same board or autorouted subcircuit.
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Optional name for the differential pair. |
+| `positiveConnection` | `string` | Exact positive trace name or pin/port selector. |
+| `negativeConnection` | `string` | Exact negative trace name or pin/port selector. |
+| `maxLengthSkew` | `number` | Maximum absolute difference between the routed lengths, in millimeters. Accepts `0` through `1`; defaults to `0.1` mm. |
+
