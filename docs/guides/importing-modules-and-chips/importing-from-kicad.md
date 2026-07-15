@@ -88,7 +88,6 @@ export default () => {
         name="U1"
         footprint={kicadMod}
         symbol={circuitJsonForSymbol}
-        symbolName="LM358"
       />
     </board>
   )
