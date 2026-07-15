@@ -1,0 +1,95 @@
+---
+title: <differentialpair />
+description: Match the routed lengths of two traces within a maximum absolute difference.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Why use a differential pair?
+
+A differential signal, such as USB D+ and D-, travels over a positive and a
+negative trace. If one route is longer than the other, the two halves of the
+signal arrive at different times.
+
+`<differentialpair />` tells a supported autorouter which two existing traces
+form the pair and how much their routed lengths may differ. It does not create
+electrical connections; add those with [`<trace />`](./trace.mdx).
+
+This element currently constrains length matching only. It does not configure
+differential impedance, trace width, pair spacing, or parallel routing.
+
+## Quick start with trace names
+
+Use trace names when the same circuit creates the traces and the constraint.
+Give each `<trace />` a unique `name`, then reference those names from
+`<differentialpair />`.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="24mm" height="12mm">
+      <chip
+        name="U_HOST"
+        footprint="soic8"
+        pinLabels={{ pin1: "USB_DP", pin2: "USB_DM" }}
+        pcbX={-7}
+        pcbY={-2}
+      />
+      <chip
+        name="U_DEVICE"
+        footprint="soic8"
+        pinLabels={{ pin1: "USB_DP", pin2: "USB_DM" }}
+        pcbX={7}
+        pcbY={2}
+      />
+
+      <trace
+        name="usb_dp"
+        from=".U_HOST > .USB_DP"
+        to=".U_DEVICE > .USB_DP"
+      />
+      <trace
+        name="usb_dm"
+        from=".U_HOST > .USB_DM"
+        to=".U_DEVICE > .USB_DM"
+      />
+
+      <differentialpair
+        name="USB_DATA"
+        positiveConnection="usb_dp"
+        negativeConnection="usb_dm"
+        maxLengthSkew={0.05}
+      />
+    </board>
+  )
+`} />
+
+In this example:
+
+- `usb_dp` and `usb_dm` create the electrical connections.
+- `<differentialpair />` groups those connections for length matching.
+- `maxLengthSkew={0.05}` allows an absolute routed-length difference of up to
+  0.05 mm.
+
+Supported autorouters try to add length, often as a meander, to the shorter
+route. Routing can fail when there is no valid segment or enough room to meet
+the tolerance.
+
+## Choosing trace names or pin selectors
+
+| Use | When to choose it | Example |
+| --- | --- | --- |
+| Trace name | The same circuit defines and names the traces. | `positiveConnection="usb_dp"` |
+| Pin selector | A reusable component knows its differential pins, while its parent creates the traces. | `positiveConnection=".USBC > .DP1"` |
+
+You may use a trace name for one connection and a pin selector for the other.
+Each value must ultimately resolve to exactly one trace in the same board or
+autorouted subcircuit.
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Optional name for the differential pair. |
+| `positiveConnection` | `string` | Exact positive trace name or pin/port selector. |
+| `negativeConnection` | `string` | Exact negative trace name or pin/port selector. |
+| `maxLengthSkew` | `number` | Maximum absolute difference between the routed lengths, in millimeters. Accepts `0` through `1`; defaults to `0.1` mm. |
