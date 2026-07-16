@@ -78,7 +78,7 @@ bun add kicad-component-converter
 footprints and symbols like any other modules inside your tscircuit project:
 
 ```tsx
-import circuitJsonForSymbol from "./symbol.kicad_sym"
+import kicadSym from "./symbol.kicad_sym"
 import kicadMod from "./footprint.kicad_mod"
 
 export default () => {
@@ -87,7 +87,7 @@ export default () => {
       <chip
         name="U1"
         footprint={kicadMod}
-        symbol={circuitJsonForSymbol}
+        symbol={kicadSym}
       />
     </board>
   )
