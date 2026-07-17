@@ -5,6 +5,39 @@ description: Match the routed lengths of two traces within a maximum absolute di
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
+export const usbDifferentialPairExample = `export default () => (
+  <board width="26mm" height="14mm">
+    <connector
+      name="J1"
+      manufacturerPartNumber="TYPE-C-31-M-12"
+      footprint="jlcpcb:C165948"
+      pinLabels={{ pin8: "USB_DP", pin9: "USB_DM" }}
+      pcbX={-8}
+      pcbRotation={-90}
+    />
+    <testpoint name="TP_DP" pcbX={9} pcbY={2.5} padDiameter="1.2mm" />
+    <testpoint name="TP_DM" pcbX={8} pcbY={-2.5} padDiameter="1.2mm" />
+
+    <trace name="USB_DP" from=".J1 > .USB_DP" to=".TP_DP > .pin1" />
+    <trace name="USB_DM" from=".J1 > .USB_DM" to=".TP_DM > .pin1" />
+
+    <differentialpair
+      name="USB_DATA"
+      positiveConnection="__POSITIVE_CONNECTION__"
+      negativeConnection="__NEGATIVE_CONNECTION__"
+      maxLengthSkew={0.05}
+    />
+  </board>
+)`
+
+export const usbTraceNameExample = usbDifferentialPairExample
+  .replace("__POSITIVE_CONNECTION__", "USB_DP")
+  .replace("__NEGATIVE_CONNECTION__", "USB_DM")
+
+export const usbPinSelectorExample = usbDifferentialPairExample
+  .replace("__POSITIVE_CONNECTION__", ".J1 > .USB_DP")
+  .replace("__NEGATIVE_CONNECTION__", ".J1 > .USB_DM")
+
 ## Why use a differential pair?
 
 A differential signal, such as USB D+ and D-, travels over a positive and a
@@ -23,84 +56,38 @@ differential impedance, trace width, pair spacing, or parallel routing.
 Give each `<trace />` a unique `name`, then reference those names from
 `<differentialpair />`.
 
-<CircuitPreview defaultView="pcb" code={`
-  export default () => (
-    <board width="20mm" height="20mm">
-      <chip name="U1" footprint="soic8" pcbX={-5} />
-      <chip name="U2" footprint="soic8" pcbX={5} />
-
-      <trace
-        name="USB_P"
-        from=".U1 > .pin1"
-        to=".U2 > .pin1"
-      />
-      <trace
-        name="USB_N"
-        from=".U1 > .pin2"
-        to=".U2 > .pin6"
-      />
-
-      <differentialpair
-        name="USB_DATA"
-        positiveConnection="USB_P"
-        negativeConnection="USB_N"
-        maxLengthSkew={0.05}
-      />
-    </board>
-  )
-`} />
+<CircuitPreview defaultView="pcb" code={usbTraceNameExample} />
 
 In this example:
 
-- `USB_P` and `USB_N` create the electrical connections.
+- `USB_DP` and `USB_DM` create the electrical connections.
 - `<differentialpair />` groups those connections for length matching.
+- The center meander makes the route-length correction visible.
 - `maxLengthSkew={0.05}` allows an absolute routed-length difference of up to
   0.05 mm.
+
+The connector uses the real `TYPE-C-31-M-12` footprint, but only one D+/D-
+contact pair is labeled and connected here. The testpoints stand in for
+downstream USB-device pins, so this is not a complete USB circuit.
 
 ## Quick start with pin selectors
 
 Use pin selectors when you want the pair declaration to identify each trace by
 a pin it connects to. Each selector must resolve to one pin that belongs to
-exactly one trace. Pins are ports in tscircuit, so `.U1 > .pin1` is a port
-selector for a specific pin.
+exactly one trace.
 
-<CircuitPreview defaultView="pcb" code={`
-  export default () => (
-    <board width="20mm" height="20mm">
-      <chip name="U1" footprint="soic8" pcbX={-5} />
-      <chip name="U2" footprint="soic8" pcbX={5} />
+<CircuitPreview defaultView="pcb" code={usbPinSelectorExample} />
 
-      <trace
-        name="USB_P"
-        from=".U1 > .pin1"
-        to=".U2 > .pin1"
-      />
-      <trace
-        name="USB_N"
-        from=".U1 > .pin2"
-        to=".U2 > .pin6"
-      />
-
-      <differentialpair
-        name="USB_DATA"
-        positiveConnection=".U1 > .pin1"
-        negativeConnection=".U1 > .pin2"
-        maxLengthSkew={0.05}
-      />
-    </board>
-  )
-`} />
-
-Only one pin from each trace is needed. Here, `.U1 > .pin1` and
-`.U1 > .pin2` resolve to the two existing traces. A component selector such as
-`.U1` is not enough; select a specific pin.
+Only one pin from each trace is needed. Here, `.J1 > .USB_DP` and
+`.J1 > .USB_DM` select named pins and resolve to the two existing traces. A
+component selector such as `.J1` is not enough; select a specific pin.
 
 ## Choosing trace names or pin selectors
 
 | Use | When to choose it | Example |
 | --- | --- | --- |
-| Trace name | The trace has a unique `name`. | `positiveConnection="USB_P"` |
-| Pin selector | The selected pin connects to exactly one trace. | `positiveConnection=".U1 > .pin1"` |
+| Trace name | The trace has a unique `name`. | `positiveConnection="USB_DP"` |
+| Pin selector | The selected pin connects to exactly one trace. | `positiveConnection=".J1 > .USB_DP"` |
 
 You may use a trace name for one connection and a pin selector for the other.
 Each value must ultimately resolve to exactly one trace in the same board or
