@@ -57,20 +57,6 @@ In this example:
 - `maxLengthSkew={0.05}` allows an absolute routed-length difference of up to
   0.05 mm.
 
-Core passes `maxLengthSkew` to the autorouter as the pair's `lengthTolerance`.
-The constraint is satisfied when:
-
-```text
-abs(positiveRouteLength - negativeRouteLength) <= lengthTolerance
-```
-
-The routed lengths and `lengthTolerance` are measured in millimeters.
-`maxLengthSkew` is an absolute length difference, not a ratio or percentage.
-
-Supported autorouters try to add length, often as a meander, to the shorter
-route. Routing can fail when there is no suitable straight segment or
-insufficient room to meet the tolerance.
-
 ## Quick start with pin selectors
 
 Use pin selectors when you want the pair declaration to identify each trace by
