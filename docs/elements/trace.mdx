@@ -162,9 +162,10 @@ refer to the traces by `name` or by a specific pin selector.
 
 The constraint is passed to the autorouter. Supported autorouters try to add
 length to the shorter route until the absolute difference is at most
-`maxLengthSkew`. This only constrains routed length; it does not set pair
-spacing or differential impedance. See the dedicated page for pin selectors,
-reusable connector components, and troubleshooting.
+`maxLengthSkew`. The routed lengths and tolerance are measured in millimeters,
+not as a ratio. This only constrains routed length; it does not set pair spacing
+or differential impedance. See the dedicated page for complete trace-name and
+pin-selector examples.
 
 ## Net vs Direct connections
 
