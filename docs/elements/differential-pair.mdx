@@ -107,9 +107,9 @@ Each value must ultimately resolve to exactly one trace in the same board or
 autorouted subcircuit.
 
 If a selected pin connects to multiple `<trace />` elements, use a trace name
-to avoid an ambiguous match. When using
-[phased autorouting](./autoroutingphase.mdx), give both traces the same
-`routingPhaseIndex`.
+to avoid an ambiguous match. In
+[phased autorouting](./autoroutingphase.mdx), the `routingPhaseIndex` prop
+assigns a `<trace />` to a phase. Both traces in a pair must use the same value.
 
 ## Properties
 
@@ -118,4 +118,4 @@ to avoid an ambiguous match. When using
 | `name` | `string` | Optional name for the differential pair. |
 | `positiveConnection` | `string` | Exact positive trace name or port selector. |
 | `negativeConnection` | `string` | Exact negative trace name or port selector. |
-| `maxLengthSkew` | `number` | Maximum absolute difference between the routed lengths, in millimeters—not a ratio. Accepts any non-negative distance and defaults to `0.1` mm. |
+| `maxLengthSkew` | `number` | Maximum absolute difference between the routed lengths, in millimeters. Accepts any non-negative distance and defaults to `0.1` mm. |
