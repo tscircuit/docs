@@ -20,43 +20,30 @@ differential impedance, trace width, pair spacing, or parallel routing.
 
 ## Quick start with trace names
 
-Use trace names when the same circuit creates the traces and the constraint.
 Give each `<trace />` a unique `name`, then reference those names from
 `<differentialpair />`.
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
-    <board width="24mm" height="12mm">
-      <chip
-        name="U_HOST"
-        footprint="soic8"
-        pinLabels={{ pin1: "USB_DP", pin2: "USB_DM" }}
-        pcbX={-7}
-        pcbY={-2}
-      />
-      <chip
-        name="U_DEVICE"
-        footprint="soic8"
-        pinLabels={{ pin1: "USB_DP", pin2: "USB_DM" }}
-        pcbX={7}
-        pcbY={2}
-      />
+    <board width="20mm" height="20mm">
+      <chip name="U1" footprint="soic8" pcbX={-5} />
+      <chip name="U2" footprint="soic8" pcbX={5} />
 
       <trace
-        name="usb_dp"
-        from=".U_HOST > .USB_DP"
-        to=".U_DEVICE > .USB_DP"
+        name="USB_P"
+        from=".U1 > .pin1"
+        to=".U2 > .pin1"
       />
       <trace
-        name="usb_dm"
-        from=".U_HOST > .USB_DM"
-        to=".U_DEVICE > .USB_DM"
+        name="USB_N"
+        from=".U1 > .pin2"
+        to=".U2 > .pin6"
       />
 
       <differentialpair
         name="USB_DATA"
-        positiveConnection="usb_dp"
-        negativeConnection="usb_dm"
+        positiveConnection="USB_P"
+        negativeConnection="USB_N"
         maxLengthSkew={0.05}
       />
     </board>
@@ -65,31 +52,70 @@ Give each `<trace />` a unique `name`, then reference those names from
 
 In this example:
 
-- `usb_dp` and `usb_dm` create the electrical connections.
+- `USB_P` and `USB_N` create the electrical connections.
 - `<differentialpair />` groups those connections for length matching.
 - `maxLengthSkew={0.05}` allows an absolute routed-length difference of up to
   0.05 mm.
 
-Supported autorouters try to add length, often as a meander, to the shorter
-route. Routing can fail when there is no valid segment or enough room to meet
-the tolerance.
+## Quick start with pin selectors
+
+Use pin selectors when you want the pair declaration to identify each trace by
+a pin it connects to. Each selector must resolve to one pin that belongs to
+exactly one trace. Pins are ports in tscircuit, so `.U1 > .pin1` is a port
+selector for a specific pin.
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="20mm" height="20mm">
+      <chip name="U1" footprint="soic8" pcbX={-5} />
+      <chip name="U2" footprint="soic8" pcbX={5} />
+
+      <trace
+        name="USB_P"
+        from=".U1 > .pin1"
+        to=".U2 > .pin1"
+      />
+      <trace
+        name="USB_N"
+        from=".U1 > .pin2"
+        to=".U2 > .pin6"
+      />
+
+      <differentialpair
+        name="USB_DATA"
+        positiveConnection=".U1 > .pin1"
+        negativeConnection=".U1 > .pin2"
+        maxLengthSkew={0.05}
+      />
+    </board>
+  )
+`} />
+
+Only one pin from each trace is needed. Here, `.U1 > .pin1` and
+`.U1 > .pin2` resolve to the two existing traces. A component selector such as
+`.U1` is not enough; select a specific pin.
 
 ## Choosing trace names or pin selectors
 
 | Use | When to choose it | Example |
 | --- | --- | --- |
-| Trace name | The same circuit defines and names the traces. | `positiveConnection="usb_dp"` |
-| Pin selector | A reusable component knows its differential pins, while its parent creates the traces. | `positiveConnection=".USBC > .DP1"` |
+| Trace name | The trace has a unique `name`. | `positiveConnection="USB_P"` |
+| Pin selector | The selected pin connects to exactly one trace. | `positiveConnection=".U1 > .pin1"` |
 
 You may use a trace name for one connection and a pin selector for the other.
 Each value must ultimately resolve to exactly one trace in the same board or
 autorouted subcircuit.
+
+If a selected pin connects to multiple `<trace />` elements, use a trace name
+to avoid an ambiguous match. In
+[phased autorouting](./autoroutingphase.mdx), the `routingPhaseIndex` prop
+assigns a `<trace />` to a phase. Both traces in a pair must use the same value.
 
 ## Properties
 
 | Property | Type | Description |
 | --- | --- | --- |
 | `name` | `string` | Optional name for the differential pair. |
-| `positiveConnection` | `string` | Exact positive trace name or pin/port selector. |
-| `negativeConnection` | `string` | Exact negative trace name or pin/port selector. |
-| `maxLengthSkew` | `number` | Maximum absolute difference between the routed lengths, in millimeters. Accepts `0` through `1`; defaults to `0.1` mm. |
+| `positiveConnection` | `string` | Exact positive trace name or port selector. |
+| `negativeConnection` | `string` | Exact negative trace name or port selector. |
+| `maxLengthSkew` | `number` | Maximum absolute difference between the routed lengths, in millimeters. Accepts any non-negative distance and defaults to `0.1` mm. |
