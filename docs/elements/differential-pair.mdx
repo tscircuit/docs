@@ -6,17 +6,17 @@ description: Match the routed lengths of two traces within a maximum absolute di
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 export const usbDifferentialPairExample = `export default () => (
-  <board width="26mm" height="14mm">
+  <board width="32mm" height="20mm">
     <connector
       name="J1"
       manufacturerPartNumber="TYPE-C-31-M-12"
       footprint="jlcpcb:C165948"
       pinLabels={{ pin8: "USB_DP", pin9: "USB_DM" }}
-      pcbX={-8}
+      pcbX={-10}
       pcbRotation={-90}
     />
-    <testpoint name="TP_DP" pcbX={9} pcbY={2.5} padDiameter="1.2mm" />
-    <testpoint name="TP_DM" pcbX={8} pcbY={-2.5} padDiameter="1.2mm" />
+    <testpoint name="TP_DP" pcbX={12} pcbY={3} padDiameter="1.2mm" />
+    <testpoint name="TP_DM" pcbX={2} pcbY={-3} padDiameter="1.2mm" />
 
     <trace name="USB_DP" from=".J1 > .USB_DP" to=".TP_DP > .pin1" />
     <trace name="USB_DM" from=".J1 > .USB_DM" to=".TP_DM > .pin1" />
@@ -62,7 +62,7 @@ In this example:
 
 - `USB_DP` and `USB_DM` create the electrical connections.
 - `<differentialpair />` groups those connections for length matching.
-- The center meander makes the route-length correction visible.
+- The large center meander makes the route-length correction visible.
 - `maxLengthSkew={0.05}` allows an absolute routed-length difference of up to
   0.05 mm.
 
