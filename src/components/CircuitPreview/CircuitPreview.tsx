@@ -83,35 +83,6 @@ const FileTab = ({
   )
 }
 
-const EditCodeButton = ({ onClick }: { onClick: () => void }) => {
-  return (
-    <button
-      type="button"
-      className="circuit-preview-edit-button"
-      onClick={onClick}
-      aria-label="Edit circuit source"
-      title="Edit circuit source"
-    >
-      <svg
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        width="1.125rem"
-        height="1.125rem"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="circuit-preview-edit-button-icon"
-      >
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-      </svg>
-    </button>
-  )
-}
-
 const TryInEditorLink = ({ href }: { href: string }) => (
   <a
     className="circuit-preview-open-editor-button"
@@ -206,17 +177,11 @@ export default function CircuitPreview({
   const [currentFile, setCurrentFile] = useState<string>(
     entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
   )
-  const [editableCode, setEditableCode] = useState(
+  const normalizedCode =
     normalizeCircuitPreviewCode(code) ??
-      normalizeCircuitPreviewCode(Object.values(fsMap ?? {})[0]) ??
-      "",
-  )
-  const [editableFsMap, setEditableFsMap] = useState<
-    Record<string, string> | undefined
-  >(() => normalizeCircuitPreviewFsMap(fsMap))
-  const [editingFiles, setEditingFiles] = useState<Record<string, boolean>>({})
-  const [hasEditedCode, setHasEditedCode] = useState(false)
-  const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({})
+    normalizeCircuitPreviewCode(Object.values(fsMap ?? {})[0]) ??
+    ""
+  const normalizedFsMap = normalizeCircuitPreviewFsMap(fsMap)
   const simulationExperimentNamesKey = simulationExperimentNames.join("\0")
   const [
     selectedSimulationExperimentName,
@@ -232,15 +197,6 @@ export default function CircuitPreview({
   }, [defaultSimulationExperimentName, simulationExperimentNamesKey])
 
   useEffect(() => {
-    setEditableCode(
-      normalizeCircuitPreviewCode(code) ??
-        normalizeCircuitPreviewCode(Object.values(fsMap ?? {})[0]) ??
-        "",
-    )
-    setEditableFsMap(normalizeCircuitPreviewFsMap(fsMap))
-    setEditingFiles({})
-    setHasEditedCode(false)
-    setLoadingUrls({})
     setCurrentFile(
       entrypoint ?? mainComponentPath ?? Object.keys(fsMap ?? {})[0],
     )
@@ -270,12 +226,12 @@ export default function CircuitPreview({
   const [view, setView] = useState<CircuitPreviewView>(
     rightView ?? _defaultView,
   )
-  const hasMultipleFiles = Object.keys(editableFsMap ?? {}).length > 1
+  const hasMultipleFiles = Object.keys(normalizedFsMap ?? {}).length > 1
   const fsMapOrCode = hasMultipleFiles
-    ? editableFsMap || editableCode
-    : editableFsMap?.[currentFile] ||
-      Object.values(editableFsMap ?? {})[0] ||
-      editableCode
+    ? normalizedFsMap || normalizedCode
+    : normalizedFsMap?.[currentFile] ||
+      Object.values(normalizedFsMap ?? {})[0] ||
+      normalizedCode
 
   const addMainComponentPath = (url: string) => {
     if (!mainComponentPath || typeof fsMapOrCode === "string") return url
@@ -331,8 +287,8 @@ export default function CircuitPreview({
     }
 
     // If fsMap is provided, use fs_map parameter instead of code
-    if (editableFsMap) {
-      const fsMapJson = JSON.stringify(editableFsMap)
+    if (normalizedFsMap) {
+      const fsMapJson = JSON.stringify(normalizedFsMap)
       // Use browser-compatible base64 encoding
       const encodedFsMap = btoa(
         encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
@@ -364,66 +320,33 @@ export default function CircuitPreview({
 
     const encodedCode = encodeURIComponent(
       getCompressedBase64SnippetString(
-        typeof fsMapOrCode === "string" ? fsMapOrCode : editableCode,
+        typeof fsMapOrCode === "string" ? fsMapOrCode : normalizedCode,
       ),
     )
     return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&code=${encodedCode}`
   }, [
-    editableCode,
-    editableFsMap,
+    normalizedCode,
+    normalizedFsMap,
     fsMapOrCode,
     browser3dView,
     mainComponentPath,
     projectBaseUrl,
   ])
 
-  useEffect(() => {
-    if (!hasEditedCode) return
-
-    setLoadingUrls((prev) => ({
-      ...prev,
-      [pcbUrl]: true,
-      [schUrl]: true,
-      [pinoutUrl]: true,
-      [threeDUrl]: true,
-    }))
-  }, [hasEditedCode, pcbUrl, schUrl, pinoutUrl, threeDUrl])
-
   const shouldSplitCode = _splitView && windowSize !== "mobile"
   const showSimulationSelector =
     showSimulationGraph && simulationExperimentNames.length > 1
 
-  const currentCode = editableFsMap?.[currentFile] ?? editableCode
-  const currentFileKey = currentFile ?? "__code"
-  const isEditingCurrentFile = editingFiles[currentFileKey] ?? false
+  const currentCode = normalizedFsMap?.[currentFile] ?? normalizedCode
   const editorSource =
-    getPreferredFsMapSource(editableFsMap, [
+    getPreferredFsMapSource(normalizedFsMap, [
       entrypoint,
       mainComponentPath,
       currentFile,
-    ]) ?? editableCode
+    ]) ?? normalizedCode
   const editorUrl = editorSource.trim()
     ? createSnippetUrl(editorSource, "board")
     : undefined
-
-  const startEditingCurrentFile = () => {
-    setEditingFiles((prev) => ({ ...prev, [currentFileKey]: true }))
-  }
-
-  const updateCurrentCode = (value: string) => {
-    setHasEditedCode(true)
-
-    if (editableFsMap && currentFile) {
-      setEditableFsMap((prev) => ({ ...(prev ?? {}), [currentFile]: value }))
-      return
-    }
-
-    setEditableCode(value)
-  }
-
-  const markLoaded = (url: string) => {
-    setLoadingUrls((prev) => ({ ...prev, [url]: false }))
-  }
 
   const getPreviewContentHeightCss = (hasHeader: boolean) =>
     hasHeader && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
@@ -438,34 +361,14 @@ export default function CircuitPreview({
           }`,
         )}
       >
-        {isEditingCurrentFile ? (
-          <textarea
-            className={tw(
-              `w-full min-h-[320px] resize-y border-0 rounded-none shadow-none p-4 m-0 font-mono text-sm leading-6 outline-none ${
-                !isDarkTheme
-                  ? "bg-white text-slate-950"
-                  : "bg-slate-950 text-slate-100"
-              }`,
-            )}
-            value={currentCode}
-            onChange={(event) => updateCurrentCode(event.target.value)}
-            spellCheck={false}
-            autoFocus
-            aria-label="Editable circuit source"
-          />
-        ) : (
-          <div
-            className={`${tw("relative w-full min-h-[320px]")} circuit-preview-code-block`}
+        <div className={tw("relative w-full min-h-[320px]")}>
+          <CodeBlock
+            className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
+            language="tsx"
           >
-            <EditCodeButton onClick={startEditingCurrentFile} />
-            <CodeBlock
-              className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
-              language="tsx"
-            >
-              {currentCode.trim()}
-            </CodeBlock>
-          </div>
-        )}
+            {currentCode.trim()}
+          </CodeBlock>
+        </div>
       </div>
     </div>
   )
@@ -483,8 +386,6 @@ export default function CircuitPreview({
     hidden?: boolean
     hasHeader?: boolean
   }) => {
-    const isLoading = loadingUrls[src] ?? false
-
     return (
       <div
         className={tw(
@@ -493,30 +394,7 @@ export default function CircuitPreview({
           }`,
         )}
       >
-        <img
-          src={src}
-          alt={alt}
-          onLoad={() => markLoaded(src)}
-          onError={() => markLoaded(src)}
-          className={tw(
-            `${imageClassName} h-full transition-opacity duration-200 ${
-              isLoading ? "opacity-40" : "opacity-100"
-            }`,
-          )}
-        />
-        {isLoading && (
-          <div
-            className={tw(
-              `absolute top-2 left-2 rounded px-2 py-1 text-xs font-medium ${
-                !isDarkTheme
-                  ? "bg-white text-slate-600"
-                  : "bg-slate-900 text-slate-200"
-              }`,
-            )}
-          >
-            loading...
-          </div>
-        )}
+        <img src={src} alt={alt} className={tw(`${imageClassName} h-full`)} />
       </div>
     )
   }
