@@ -62,6 +62,22 @@ about the following resistor characteristics:
 - **powerRating** - a wattage e.g. "5W" indicating how much power can transfer through the resistor for normal operation
 - **temperatureOperatingRange** - a string indicating the listed range for the resistor's operating temperature `"-15F-150F"`
 
+## Resistor Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| \`resistance\` | The resistance value of the resistor. Can be a string with units or a number in ohms. | \`"1k"\`, \`1000\` |
+| \`name\` | The name or designator of the resistor. | \`"R1"\` |
+| \`footprint\` | The footprint or package size of the resistor. | \`"0402"\`, \`"0603"\` |
+| \`tolerance\` | The acceptable variance in resistance. | \`"1%"\`, \`"5%"\` |
+| \`powerRating\` | The maximum power the resistor can dissipate. | \`"0.1W"\`, \`"5W"\` |
+| \`temperatureOperatingRange\` | The listed range for the resistor's operating temperature. | \`"-15F-150F"\` |
+| \`pullupFor\` | The pin or net this resistor is pulling up. | \`".U1 > .GPIO1"\` |
+| \`pullupTo\` | The net this resistor is pulling up to. | \`"net.VCC"\` |
+| \`pulldownFor\` | The pin or net this resistor is pulling down. | \`".U1 > .GPIO1"\` |
+| \`pulldownTo\` | The net this resistor is pulling down to. | \`"net.GND"\` |
+| \`supplierPartNumbers\` | A dictionary of supplier names to part numbers to explicitly select a part. | \`{ jlcpcb: ["C10020"] }\` |
+
 ## Automatic Part Selection
 
 You generally don't need to specify `supplierPartNumbers` with a resistor, tscircuit
