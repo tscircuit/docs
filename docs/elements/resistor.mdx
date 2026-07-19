@@ -62,6 +62,20 @@ about the following resistor characteristics:
 - **powerRating** - a wattage e.g. "5W" indicating how much power can transfer through the resistor for normal operation
 - **temperatureOperatingRange** - a string indicating the listed range for the resistor's operating temperature `"-15F-150F"`
 
+## Resistor Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `footprint` | The footprint or package size of the resistor. | `"0402"`, `"0603"` |
+| `resistance` | The resistance value of the resistor. Can be a string with units or a number in ohms. | `"1k"`, `1000` |
+| `tolerance` | The acceptable variance in resistance. | `"1%"`, `"5%"` |
+| `pullupFor` | The pin or net this resistor is pulling up. | `".U1 > .GPIO1"` |
+| `pullupTo` | The net this resistor is pulling up to. | `"net.VCC"` |
+| `pulldownFor` | The pin or net this resistor is pulling down. | `".U1 > .GPIO1"` |
+| `pulldownTo` | The net this resistor is pulling down to. | `"net.GND"` |
+| `schOrientation` | The orientation of the resistor on the schematic. | `"vertical"`, `"horizontal"` |
+| `schSize` | The size of the schematic symbol. | `"normal"` |
+
 ## Automatic Part Selection
 
 You generally don't need to specify `supplierPartNumbers` with a resistor, tscircuit
