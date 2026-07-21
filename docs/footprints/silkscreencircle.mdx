@@ -9,7 +9,10 @@ Silkscreen circles are often used to indicate "pin1" on a chip.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-<CircuitPreview code={`
+<CircuitPreview 
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
   export default () => (
   <board width="5mm" height="5mm">
     <group>
