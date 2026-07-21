@@ -59,6 +59,15 @@ Inductors can be configured with these key properties:
 - **saturationCurrent** - Current at which the inductor begins to saturate e.g. `"800mA"`
 - **selfResonantFrequency** - Frequency at which the inductor becomes capacitive e.g. `"100MHz"`
 
+## Inductor Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `footprint` | The footprint or package size of the inductor. | `"0402"`, `"0603"` |
+| `inductance` | The inductance value of the inductor. Can be a string with units or a number in Henrys. | `"10uH"`, `"100nH"` |
+| `maxCurrentRating` | Maximum current rating the inductor can handle. | `"500mA"`, `"2A"` |
+| `schOrientation` | The orientation of the inductor on the schematic. | `"vertical"`, `"horizontal"` |
+
 ## Automatic Part Selection
 
 Like resistors and capacitors, tscircuit will automatically select suitable inductor parts based on your specifications through the [platform parts engine](../guides/running-tscircuit/platform-configuration.md). For specialized inductors (e.g., high-frequency RF inductors, power inductors with specific core materials), you may want to specify `supplierPartNumbers` explicitly.
