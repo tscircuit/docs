@@ -59,6 +59,20 @@ Capacitors can be configured with these key properties:
 - **temperatureCoefficient** - Temperature stability specification e.g. `"X7R"`
 - **equivalentSeriesResistance** - ESR value for critical applications e.g. `"0.5Ω"`
 
+## Capacitor Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `footprint` | The footprint or package size of the capacitor. | `"0402"`, `"0603"`, `"0805"`, `"1206"` |
+| `capacitance` | The capacitance value of the capacitor. Can be a string with units or a number in Farads. | `"100nF"`, `"10uF"` |
+| `polarized` | Whether the capacitor is polarized. | `true`, `false` |
+| `maxVoltageRating` | Maximum operating voltage for the capacitor. | `"6.3V"`, `"25V"` |
+| `decouplingFor` | The pin or net this capacitor is decoupling for. | `".U1 > .VCC"` |
+| `decouplingTo` | The net this capacitor is decoupling to. | `"net.GND"` |
+| `bypassFor` | The pin or net this capacitor is bypassing for. | `".U1 > .VCC"` |
+| `bypassTo` | The net this capacitor is bypassing to. | `"net.GND"` |
+| `schOrientation` | The orientation of the capacitor on the schematic. | `"vertical"`, `"horizontal"` |
+
 ## Automatic Part Selection
 
 Like resistors, tscircuit will automatically select suitable capacitor parts based on your specifications through the [platform parts engine](../guides/running-tscircuit/platform-configuration.md). For specialized capacitors (e.g., low ESR, high voltage), you may want to specify `supplierPartNumbers` explicitly.
