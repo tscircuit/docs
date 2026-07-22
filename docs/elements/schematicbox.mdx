@@ -9,37 +9,58 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-`<schematicbox />` has two common uses:
+`<schematicbox />` has three common uses:
 
-- Draw a fixed-size box or an automatically sized box around selected ports.
+- Draw a fixed-size box at a schematic position.
+- Draw an automatically sized box around selected ports.
 - Show a selected set of pins from one `<chip />`, including on a different
   schematic sheet.
 
-## Draw a Box Around Ports
+## Use a Box Without `chipRef`
+
+Without `chipRef`, `<schematicbox />` is a visual annotation. It creates a
+schematic box and optional title, but it does not create a component or any
+ports.
+
+Choose exactly one sizing mode:
+
+- Pass `width` and `height` for a fixed-size box.
+- Pass a non-empty `overlay` array to calculate the box from existing ports.
+
+Do not pass `width` or `height` together with `overlay`.
+
+### Size a Box from Selected Ports
 
 Use `overlay` with port selectors to size a box around existing schematic
-ports. Padding controls the space between the selected ports and the box.
+ports. The selectors can reference ports from one or more components. After
+schematic layout, the box finds the outermost selected port positions and adds
+the configured padding.
+
+`padding` applies to every side. Use `paddingTop`, `paddingBottom`,
+`paddingLeft`, or `paddingRight` to override individual sides. For an overlay
+box, `schX` and `schY` offset the calculated box position.
 
 <CircuitPreview
   hide3DTab
   hidePCBTab
   defaultView="schematic"
   code={`
-const inputPinSelectors = [
-  ".U1 > .pin1",
-  ".U1 > .pin2",
-  ".U1 > .pin3",
-  ".U1 > .pin4",
+const selectedPortSelectors = [
+  ".U1 > .pin5",
+  ".U1 > .pin6",
+  ".U2 > .pin1",
+  ".U2 > .pin2",
 ]
 
 export default () => (
   <board width="10mm" height="10mm" routingDisabled>
     <chip name="U1" footprint="soic8" />
+    <chip name="U2" footprint="soic8" schX={2} />
     <schematicbox
-      title="U1 input pins"
+      title="Selected U1 and U2 ports"
       titleAlignment="top_left"
       strokeStyle="dashed"
-      overlay={inputPinSelectors}
+      overlay={selectedPortSelectors}
       padding={0.2}
     />
   </board>
@@ -47,7 +68,41 @@ export default () => (
 `}
 />
 
-For a fixed-size box, provide both `width` and `height` instead of `overlay`.
+### Draw a Fixed-Size Box
+
+For a fixed-size box, provide both `width` and `height`. The box is centered at
+`schX` and `schY`.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+const boxWidth = 3
+const boxHeight = 2
+
+export default () => (
+  <board width="10mm" height="10mm" routingDisabled>
+    <schematicbox
+      width={boxWidth}
+      height={boxHeight}
+      schX={0}
+      schY={0}
+      title="Fixed-size region"
+      titleInside={true}
+      titleAlignment="bottom_center"
+      strokeStyle="solid"
+    />
+  </board>
+)
+`}
+/>
+
+### Titles and Outline Style
+
+Use `titleAlignment` to anchor the title to any of the nine box positions, such
+as `top_left`, `center`, or `bottom_right`. `titleInside` controls whether the
+title sits inside or outside the box. Set `strokeStyle` to `solid` or `dashed`.
 
 ## Show Part of a Chip
 
