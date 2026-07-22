@@ -124,37 +124,6 @@ export default () => (
 `}
 />
 
-## How It Works
-
-1. `<chip name="U1" />` creates the component once, before any box references
-   it. Do not duplicate the chip for each sheet.
-2. Each `<schematicbox />` is nested in the sheet where that chip section should
-   appear.
-3. `chipRef=".U1"` selects the chip by name. The leading `.` uses tscircuit's
-   component selector syntax.
-4. The box's `pinLabels` contains only the labels that should appear in that
-   section.
-5. `schPinArrangement` positions those local box pins on its sides.
-
-## Pin Labels Are Local to Each Box
-
-The keys in a box's `pinLabels` are local positions for that box. Their values
-must match labels on the referenced chip.
-
-For example, the original chip's `IO0` label is on `pin3`, but the I/O box can
-place it at its local `pin1` position:
-
-```tsx
-// On the source chip
-const allPinLabels = { pin3: "IO0" }
-
-// In this schematic box
-const ioPinLabels = { pin1: "IO0" }
-```
-
-This lets each section arrange its selected pins clearly without changing the
-physical chip pinout.
-
 ## Connect to a Split Section
 
 Connections still target the original component name and pin label:
