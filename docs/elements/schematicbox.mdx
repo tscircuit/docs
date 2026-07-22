@@ -1,0 +1,127 @@
+---
+title: <schematicbox />
+description: >-
+  Draw a labeled schematic box or show selected pins from a chip as a separate
+  schematic section.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<schematicbox />` has three common uses:
+
+- Draw a fixed-size box at a schematic position.
+- Draw an automatically sized box around selected ports.
+- Show a selected set of pins from one `<chip />`, including on a different
+  schematic sheet.
+
+## Use a Box Without `chipRef`
+
+Without `chipRef`, `<schematicbox />` is a visual annotation. It creates a
+schematic box and optional title, but it does not create a component or any
+ports.
+
+Choose exactly one sizing mode:
+
+- Pass `width` and `height` for a fixed-size box.
+- Pass a non-empty `overlay` array to calculate the box from existing ports.
+
+Do not pass `width` or `height` together with `overlay`.
+
+### Size a Box from Selected Ports
+
+Use `overlay` with port selectors to size a box around existing schematic
+ports. The selectors can reference ports from one or more components. After
+schematic layout, the box finds the outermost selected port positions and adds
+the configured padding.
+
+`padding` applies to every side. Use `paddingTop`, `paddingBottom`,
+`paddingLeft`, or `paddingRight` to override individual sides. For an overlay
+box, `schX` and `schY` offset the calculated box position.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+const selectedPortSelectors = [
+  ".U1 > .pin5",
+  ".U1 > .pin6",
+  ".U2 > .pin1",
+  ".U2 > .pin2",
+]
+
+export default () => (
+  <board width="10mm" height="10mm" routingDisabled>
+    <chip name="U1" footprint="soic8" />
+    <chip name="U2" footprint="soic8" schX={2} />
+    <schematicbox
+      title="Selected U1 and U2 ports"
+      titleAlignment="top_left"
+      strokeStyle="dashed"
+      overlay={selectedPortSelectors}
+      padding={0.2}
+    />
+  </board>
+)
+`}
+/>
+
+## Show Part of a Chip
+
+Set `chipRef` to a chip selector, then pass only the `pinLabels` that should be
+shown by that box. The box creates a separate schematic representation of the
+same component; it does not create another physical chip.
+
+```tsx
+const chipSelector = ".U1"
+const powerPinLabels = {
+  pin1: "VCC",
+  pin2: "GND",
+}
+
+<schematicbox
+  name="U1A"
+  chipRef={chipSelector}
+  width={2.245}
+  height={1}
+  pinLabels={powerPinLabels}
+  schPinArrangement={{
+    leftSide: ["pin1", "pin2"],
+    rightSide: [],
+  }}
+/>
+```
+
+Place a box inside each `<schematicsheet />` where the selected pins should
+appear. Connections continue to use the source component name and label, such
+as `U1.VCC`.
+
+For a complete example, see
+[Split a Component Across Schematic Sheets](https://docs.tscircuit.com/guides/tscircuit-essentials/splitting-a-component-across-schematic-sheets).
+
+## Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `string` | No | Name for the box or chip section. |
+| `chipRef` | `string` | No | Selector for the source chip represented by this box. |
+| `pinLabels` | `PinLabelsProp` | No | Local pin positions mapped to labels from the referenced chip. |
+| `schPinArrangement` | `SchematicPinArrangement` | No | Places the box's local pins on its sides. |
+| `schX` | `distance` | No | X position of a fixed-size box. |
+| `schY` | `distance` | No | Y position of a fixed-size box. |
+| `width` | `distance` | Conditional | Box width. Provide it together with `height`, or use `overlay`. |
+| `height` | `distance` | Conditional | Box height. Provide it together with `width`, or use `overlay`. |
+| `overlay` | `string[]` | Conditional | Port selectors used to calculate the box bounds. Do not combine with `width` and `height`. |
+| `padding` | `distance` | No | Padding on every side of an overlay box. |
+| `paddingLeft` | `distance` | No | Left padding for an overlay box. |
+| `paddingRight` | `distance` | No | Right padding for an overlay box. |
+| `paddingTop` | `distance` | No | Top padding for an overlay box. |
+| `paddingBottom` | `distance` | No | Bottom padding for an overlay box. |
+| `title` | `string` | No | Text displayed with the box. |
+| `titleAlignment` | `ninePointAnchor` | No | Position of the title relative to the box. |
+| `titleColor` | `string` | No | Title text color. |
+| `titleFontSize` | `distance` | No | Title font size. |
+| `titleInside` | `boolean` | No | Places the title inside the box when true. |
+| `strokeStyle` | `"solid" \| "dashed"` | No | Box outline style. |
