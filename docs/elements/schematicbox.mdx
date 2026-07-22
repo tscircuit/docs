@@ -1,0 +1,108 @@
+---
+title: <schematicbox />
+description: >-
+  Draw a labeled schematic box or show selected pins from a chip as a separate
+  schematic section.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<schematicbox />` has two common uses:
+
+- Draw a fixed-size box or an automatically sized box around selected ports.
+- Show a selected set of pins from one `<chip />`, including on a different
+  schematic sheet.
+
+## Draw a Box Around Ports
+
+Use `overlay` with port selectors to size a box around existing schematic
+ports. Padding controls the space between the selected ports and the box.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+const inputPinSelectors = [
+  ".U1 > .pin1",
+  ".U1 > .pin2",
+  ".U1 > .pin3",
+  ".U1 > .pin4",
+]
+
+export default () => (
+  <board width="10mm" height="10mm" routingDisabled>
+    <chip name="U1" footprint="soic8" />
+    <schematicbox
+      title="U1 input pins"
+      titleAlignment="top_left"
+      strokeStyle="dashed"
+      overlay={inputPinSelectors}
+      padding={0.2}
+    />
+  </board>
+)
+`}
+/>
+
+For a fixed-size box, provide both `width` and `height` instead of `overlay`.
+
+## Show Part of a Chip
+
+Set `chipRef` to a chip selector, then pass only the `pinLabels` that should be
+shown by that box. The box creates a separate schematic representation of the
+same component; it does not create another physical chip.
+
+```tsx
+const chipSelector = ".U1"
+const powerPinLabels = {
+  pin1: "VCC",
+  pin2: "GND",
+}
+
+<schematicbox
+  name="U1A"
+  chipRef={chipSelector}
+  width={2.245}
+  height={1}
+  pinLabels={powerPinLabels}
+  schPinArrangement={{
+    leftSide: ["pin1", "pin2"],
+    rightSide: [],
+  }}
+/>
+```
+
+Place a box inside each `<schematicsheet />` where the selected pins should
+appear. Connections continue to use the source component name and label, such
+as `U1.VCC`.
+
+For a complete two-sheet example, see
+[Split a Component Across Schematic Sheets](../guides/tscircuit-essentials/splitting-a-component-across-schematic-sheets.mdx).
+
+## Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `string` | No | Name for the box or chip section. |
+| `chipRef` | `string` | No | Selector for the source chip represented by this box. |
+| `pinLabels` | `PinLabelsProp` | No | Local pin positions mapped to labels from the referenced chip. |
+| `schPinArrangement` | `SchematicPinArrangement` | No | Places the box's local pins on its sides. |
+| `schX` | `distance` | No | X position of a fixed-size box. |
+| `schY` | `distance` | No | Y position of a fixed-size box. |
+| `width` | `distance` | Conditional | Box width. Provide it together with `height`, or use `overlay`. |
+| `height` | `distance` | Conditional | Box height. Provide it together with `width`, or use `overlay`. |
+| `overlay` | `string[]` | Conditional | Port selectors used to calculate the box bounds. Do not combine with `width` and `height`. |
+| `padding` | `distance` | No | Padding on every side of an overlay box. |
+| `paddingLeft` | `distance` | No | Left padding for an overlay box. |
+| `paddingRight` | `distance` | No | Right padding for an overlay box. |
+| `paddingTop` | `distance` | No | Top padding for an overlay box. |
+| `paddingBottom` | `distance` | No | Bottom padding for an overlay box. |
+| `title` | `string` | No | Text displayed with the box. |
+| `titleAlignment` | `ninePointAnchor` | No | Position of the title relative to the box. |
+| `titleColor` | `string` | No | Title text color. |
+| `titleFontSize` | `distance` | No | Title font size. |
+| `titleInside` | `boolean` | No | Places the title inside the box when true. |
+| `strokeStyle` | `"solid" \| "dashed"` | No | Box outline style. |

@@ -1,0 +1,175 @@
+---
+title: Split a Component Across Schematic Sheets
+description: >-
+  Show selected pins from one component on multiple schematic sheets with
+  schematicbox and chipRef.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+Large chips are often easier to read when their power pins and signal pins are
+shown on separate schematic sheets. Declare the `<chip />` once, then add a
+`<schematicbox />` to each sheet that needs to show part of it.
+
+Each box uses `chipRef` to select the source chip and `pinLabels` to choose the
+pins shown in that section. All sections still represent the same physical
+component.
+
+## Complete Example
+
+This example shows `U1` as a two-pin power section on the first sheet and an
+eight-pin I/O section on the second sheet.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+const chipSelector = ".U1"
+const powerSheetName = "U1 Power"
+const ioSheetName = "U1 I/O"
+const chipSectionWidth = 2.245
+const chipSectionHeight = 1
+
+const allPinLabels = {
+  pin1: "VCC",
+  pin2: "GND",
+  pin3: "IO0",
+  pin4: "IO1",
+  pin5: "IO2",
+  pin6: "IO3",
+  pin7: "IO4",
+  pin8: "IO5",
+  pin9: "IO6",
+  pin10: "IO7",
+}
+
+const powerPinLabels = {
+  pin1: "VCC",
+  pin2: "GND",
+}
+
+const ioPinLabels = {
+  pin1: "IO0",
+  pin2: "IO1",
+  pin3: "IO2",
+  pin4: "IO3",
+  pin5: "IO4",
+  pin6: "IO5",
+  pin7: "IO6",
+  pin8: "IO7",
+}
+
+export default () => (
+  <board routingDisabled>
+    <schematicsheet
+      name={powerSheetName}
+      displayName={powerSheetName}
+      sheetIndex={0}
+    >
+      <schematicbox
+        name="U1A"
+        chipRef={chipSelector}
+        width={chipSectionWidth}
+        height={chipSectionHeight}
+        pinLabels={powerPinLabels}
+        schPinArrangement={{
+          leftSide: ["pin1", "pin2"],
+          rightSide: [],
+        }}
+      />
+      <resistor
+        name="R1"
+        resistance="1k"
+        footprint="0402"
+        connections={{ pin1: "U1.VCC" }}
+      />
+    </schematicsheet>
+
+    <schematicsheet
+      name={ioSheetName}
+      displayName={ioSheetName}
+      sheetIndex={1}
+    >
+      <schematicbox
+        name="U1B"
+        chipRef={chipSelector}
+        width={chipSectionWidth}
+        height={chipSectionHeight}
+        pinLabels={ioPinLabels}
+        schPinArrangement={{
+          leftSide: ["pin1", "pin2", "pin3", "pin4"],
+          rightSide: ["pin5", "pin6", "pin7", "pin8"],
+        }}
+      />
+      <resistor
+        name="R2"
+        resistance="1k"
+        footprint="0402"
+        connections={{ pin1: "U1.IO0" }}
+      />
+      <resistor
+        name="R3"
+        resistance="1k"
+        footprint="0402"
+        connections={{ pin1: "U1.IO1" }}
+      />
+    </schematicsheet>
+
+    <chip name="U1" pinLabels={allPinLabels} />
+  </board>
+)
+`}
+/>
+
+## How It Works
+
+1. `<chip name="U1" />` creates the component once. Do not duplicate the chip
+   for each sheet.
+2. Each `<schematicbox />` is nested in the sheet where that chip section should
+   appear.
+3. `chipRef=".U1"` selects the chip by name. The leading `.` uses tscircuit's
+   component selector syntax.
+4. The box's `pinLabels` contains only the labels that should appear in that
+   section.
+5. `schPinArrangement` positions those local box pins on its sides.
+
+## Pin Labels Are Local to Each Box
+
+The keys in a box's `pinLabels` are local positions for that box. Their values
+must match labels on the referenced chip.
+
+For example, the original chip's `IO0` label is on `pin3`, but the I/O box can
+place it at its local `pin1` position:
+
+```tsx
+// On the source chip
+const allPinLabels = { pin3: "IO0" }
+
+// In this schematic box
+const ioPinLabels = { pin1: "IO0" }
+```
+
+This lets each section arrange its selected pins clearly without changing the
+physical chip pinout.
+
+## Connect to a Split Section
+
+Connections still target the original component name and pin label:
+
+```tsx
+<resistor
+  name="R2"
+  resistance="1k"
+  footprint="0402"
+  connections={{ pin1: "U1.IO0" }}
+/>
+```
+
+When the resistor and matching schematic box are on the same sheet, the
+schematic connection is drawn to that box's `IO0` port.
+
+See the [`<schematicbox />` reference](../../elements/schematicbox.mdx) for all
+available box props.
