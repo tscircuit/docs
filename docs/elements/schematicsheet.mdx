@@ -165,3 +165,13 @@ assigned to a sheet by matching the sheet's `name`.
 Use direct `schSheetName` for one-off components. Use container-level
 `schSheetName`, usually on `<subcircuit />`, when a complete functional block
 belongs on the same sheet.
+
+## Split One Component Across Multiple Sheets
+
+To show different pins from one chip on separate sheets, declare the `<chip />`
+once and add a `<schematicbox />` with `chipRef` to each sheet. Each box receives
+only the `pinLabels` that should appear on that sheet.
+
+See
+[Split a Component Across Schematic Sheets](../guides/tscircuit-essentials/splitting-a-component-across-schematic-sheets.mdx)
+for the complete pattern, including connections to each chip section.
