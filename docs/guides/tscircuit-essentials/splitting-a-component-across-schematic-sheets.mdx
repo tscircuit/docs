@@ -64,6 +64,8 @@ const ioPinLabels = {
 
 export default () => (
   <board routingDisabled>
+    <chip name="U1" pinLabels={allPinLabels} />
+
     <schematicsheet
       name={powerSheetName}
       displayName={powerSheetName}
@@ -117,8 +119,6 @@ export default () => (
         connections={{ pin1: "U1.IO1" }}
       />
     </schematicsheet>
-
-    <chip name="U1" pinLabels={allPinLabels} />
   </board>
 )
 `}
@@ -126,8 +126,8 @@ export default () => (
 
 ## How It Works
 
-1. `<chip name="U1" />` creates the component once. Do not duplicate the chip
-   for each sheet.
+1. `<chip name="U1" />` creates the component once, before any box references
+   it. Do not duplicate the chip for each sheet.
 2. Each `<schematicbox />` is nested in the sheet where that chip section should
    appear.
 3. `chipRef=".U1"` selects the chip by name. The leading `.` uses tscircuit's
