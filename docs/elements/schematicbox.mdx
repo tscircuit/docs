@@ -68,35 +68,6 @@ export default () => (
 `}
 />
 
-### Draw a Fixed-Size Box
-
-For a fixed-size box, provide both `width` and `height`. The box is centered at
-`schX` and `schY`.
-
-<CircuitPreview
-  hide3DTab
-  hidePCBTab
-  defaultView="schematic"
-  code={`
-const boxWidth = 3
-const boxHeight = 2
-
-export default () => (
-  <board width="10mm" height="10mm" routingDisabled>
-    <schematicbox
-      width={boxWidth}
-      height={boxHeight}
-      schX={0}
-      schY={0}
-      title="Fixed-size region"
-      titleInside={true}
-      titleAlignment="bottom_center"
-      strokeStyle="solid"
-    />
-  </board>
-)
-`}
-/>
 
 ### Titles and Outline Style
 
