@@ -345,5 +345,40 @@ endpoint or the `/autorouting/solve` endpoint to configure the autorouter.
 | Parameter | Example Value | Description |
 | --------- | ------------- | ----------- |
 | `display_name` | `"Nine-key Macropad"` | A display name for the autorouting job. Useful for debugging! |
-| `provider` | `"freerouting"` | The autorouting algorithm to use |
+| `provider` | `"freerouting"` / `"topola"` | The autorouting algorithm to use (cloud jobs typically use freerouting; local Topola uses the `topola` preset / solve-endpoint adapter) |
 | `subcircuit_id` | `"subcircuit_source_group_1"` | To support subcircuit autorouting, you must accept this parameter and only solve for the subset of routes within the subcircuit. |
+
+## Example: Topola (local Specctra autorouter)
+
+[Topola](https://topola.dev/) is an MIT-licensed Rust topological Specctra
+(DSN→SES) autorouter. You can run it behind tscircuit's `solve-endpoint` API
+and select it with the `topola` autorouter preset:
+
+```tsx
+<board autorouter="topola">
+  {/* ... */}
+</board>
+```
+
+That preset is equivalent to:
+
+```tsx
+<board
+  autorouter={{
+    serverUrl: "http://127.0.0.1:3099",
+    serverMode: "solve-endpoint",
+    inputFormat: "simplified",
+  }}
+>
+  {/* ... */}
+</board>
+```
+
+Run a local adapter that shells the Topola CLI (see
+[`djmango/lightbar-dock` `packages/topola-autorouter`](https://github.com/djmango/lightbar-dock/tree/master/packages/topola-autorouter)
+or the example package once published), then start your board with
+`autorouter="topola"`.
+
+You can also register Topola through `platform.autorouterMap` if you prefer a
+custom `createAutorouter` wrapper instead of the HTTP preset.
+

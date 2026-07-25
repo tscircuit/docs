@@ -272,10 +272,13 @@ Usually you'll want to use an autorouter preset:
 - `autorouter="auto-cloud"` - Use the platform configuration for
 - `autorouter="laser_prefab"` - Reserve prefabricated vias that can be reassigned during routing. Ideal for rapid-turn PCBs produced with laser ablation and mechanical drilling templates. See the [ViaGrid / Prefabricated Vias guide](../guides/tscircuit-essentials/using-viagrid-prefabricated-vias-with-autorouter.mdx) for a complete walkthrough.
 - `autorouter="auto_jumper"` - Route single-layer boards by inserting jumper wires when traces would otherwise cross. See the [Single Layer Jumper Autorouting guide](../guides/tscircuit-essentials/single-layer-jumper-autorouting.mdx) for a complete walkthrough.
+- `autorouter="topola"` - Use a local [Topola](https://topola.dev/) Specctra autorouter over the HTTP `solve-endpoint` API (default `http://127.0.0.1:3099`). See the [Autorouting API](../web-apis/autorouting-api.mdx#example-topola-local-specctra-autorouter).
 
 For complex boards with over 50 traces, you should use `autorouter="auto-cloud"`
 to take advantage of tscircuit's cloud autorouters, which internally use the popular
-[freerouting](https://github.com/freerouting/freerouting) library.
+[freerouting](https://github.com/freerouting/freerouting) library. For an
+open-source local Specctra alternative, use `autorouter="topola"` with a local
+Topola adapter.
 
 ### Tuning Router Work with `autorouterEffortLevel`
 

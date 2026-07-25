@@ -27,6 +27,7 @@ All of the following features of the platform can be configured:
 - **partsEngine** - The engine used to automatically find parts matching component specifications
 - **registryApiUrl** - The registry to use, defaults to `https://api.tscircuit.com`. See [Registry API](../../web-apis/the-registry-api.md) for more details
 - **cloudAutorouterUrl** - The cloud autorouter to use, defaults to a tscircuit cloud service that uses freerouting
+- **autorouterMap** - Named local autorouter factories (for example `krt`). Board code can select them with `autorouter="krt"`. For Topola, prefer the built-in `autorouter="topola"` HTTP preset, or register your own adapter here.
 - Disable specific circuit outputs to optimize build times, such as disabling autorouting
 - **footprintLibraryMap** - Configure custom prefixes for loading footprint strings from a server. This is how built-in strings like `kicad:*` and `jlcpcb:*` are loaded.
 - **printBoardInformationToSilkscreen** - Print the board information to the silkscreen. This includes standard board and platform information like the board name, version etc.
