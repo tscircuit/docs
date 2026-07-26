@@ -47,19 +47,19 @@ export default () => (
     <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
 
     {/* GPIO18 (PWM) to base resistor */}
-    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+    <trace from=".HAT1 > .GPIO_18" to=".R1 > .pin1" />
 
     {/* Resistor to transistor base */}
-    <trace from=".R1 > .pin2" to=".Q1 .B" />
+    <trace from=".R1 > .pin2" to=".Q1 > .B" />
 
     {/* Transistor emitter to ground */}
-    <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
+    <trace from=".Q1 > .E" to=".HAT1 > .GND_1" />
 
     {/* Buzzer positive to 5V */}
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1 > .V5_1" />
 
     {/* Buzzer negative to transistor collector */}
-    <trace from=".BZ1 > .pin2" to=".Q1 .C" />
+    <trace from=".BZ1 > .pin2" to=".Q1 > .C" />
   </RaspberryPiHatBoard>
 )
 `} />
@@ -227,19 +227,19 @@ export default () => (
     <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
 
     {/* GPIO18 (PWM) to base resistor */}
-    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+    <trace from=".HAT1 > .GPIO_18" to=".R1 > .pin1" />
 
     {/* Resistor to transistor base */}
-    <trace from=".R1 > .pin2" to=".Q1 .B" />
+    <trace from=".R1 > .pin2" to=".Q1 > .B" />
 
     {/* Transistor emitter to ground */}
-    <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
+    <trace from=".Q1 > .E" to=".HAT1 > .GND_1" />
 
     {/* Buzzer positive to 5V */}
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1 > .V5_1" />
 
     {/* Buzzer negative to transistor collector */}
-    <trace from=".BZ1 > .pin2" to=".Q1 .C" />
+    <trace from=".BZ1 > .pin2" to=".Q1 > .C" />
   </RaspberryPiHatBoard>
 )
 `} />
@@ -290,11 +290,11 @@ export default () => (
     />
     <resistor name="R1" resistance="1k" footprint="0402" pcbX={-10} pcbY={-10} />
 
-    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
-    <trace from=".R1 > .pin2" to=".Q1 .B" />
-    <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
-    <trace from=".BZ1 > .pin2" to=".Q1 .C" />
+    <trace from=".HAT1 > .GPIO_18" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".Q1 > .B" />
+    <trace from=".Q1 > .E" to=".HAT1 > .GND_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1 > .V5_1" />
+    <trace from=".BZ1 > .pin2" to=".Q1 > .C" />
   </RaspberryPiHatBoard>
 )
 `} />
