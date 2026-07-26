@@ -59,6 +59,10 @@ Capacitors can be configured with these key properties:
 - **temperatureCoefficient** - Temperature stability specification e.g. `"X7R"`
 - **equivalentSeriesResistance** - ESR value for critical applications e.g. `"0.5Ω"`
 
+## Automatic Part Selection
+
+Like resistors, tscircuit will automatically select suitable capacitor parts based on your specifications through the [platform parts engine](../guides/running-tscircuit/platform-configuration.md). For specialized capacitors (e.g., low ESR, high voltage), you may want to specify `supplierPartNumbers` explicitly.
+
 ## Capacitor Properties
 
 | Property | Description | Example |
