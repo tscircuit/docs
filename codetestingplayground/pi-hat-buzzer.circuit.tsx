@@ -38,16 +38,16 @@ export default () => (
     />
 
     {/* Connect GPIO18 (PWM) to base resistor */}
-    <trace from=".HAT1_chip .GPIO_18" to=".R1 > .pin1" />
+    <trace from=".HAT1 .GPIO_18" to=".R1 > .pin1" />
 
     {/* Connect resistor to transistor base */}
     <trace from=".R1 > .pin2" to=".Q1 .B" />
 
     {/* Connect transistor emitter to ground */}
-    <trace from=".Q1 .E" to=".HAT1_chip .GND_1" />
+    <trace from=".Q1 .E" to=".HAT1 .GND_1" />
 
     {/* Connect buzzer positive to 5V */}
-    <trace from=".BZ1 > .pin1" to=".HAT1_chip .V5_1" />
+    <trace from=".BZ1 > .pin1" to=".HAT1 .V5_1" />
 
     {/* Connect buzzer negative to transistor collector */}
     <trace from=".BZ1 > .pin2" to=".Q1 .C" />
