@@ -27,7 +27,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
     <inductor
       name="L1"
       footprint="0603"
-      inductance="10μH"
+      inductance="10µH"
     />
    </board>
   )
@@ -52,8 +52,8 @@ Since inductors are non-polar components, pin1 and pin2 are functionally equival
 
 Inductors can be configured with these key properties:
 
-- **inductance** - The inductance value specified as a string e.g. `"10μH"`, `"100nH"`, or `"1mH"`
-- **currentRating** - Maximum current the inductor can handle e.g. `"500mA"` or `"2A"`
+- **inductance** - The inductance value specified as a string e.g. `"10µH"`, `"100nH"`, or `"1mH"`
+- **maxCurrentRating** - Maximum current the inductor can handle e.g. `"500mA"` or `"2A"`
 - **tolerance** - Inductance tolerance percentage e.g. `"±20%"` or `"±10%"`
 - **dcResistance** - DC resistance of the inductor windings e.g. `"0.1Ω"`
 - **saturationCurrent** - Current at which the inductor begins to saturate e.g. `"800mA"`
@@ -64,7 +64,7 @@ Inductors can be configured with these key properties:
 | Property | Description | Example |
 | -------- | ----------- | ------- |
 | `footprint` | The footprint or package size of the inductor. | `"0402"`, `"0603"`, `"0805"`, `"1206"` |
-| `inductance` | The inductance value of the inductor. Can be a string with units or a number in Henrys. | `"10uH"`, `"100nH"` |
+| `inductance` | The inductance value of the inductor. Can be a string with units or a number in Henrys. | `"10µH"`, `"100nH"` |
 | `maxCurrentRating` | Maximum current rating the inductor can handle. | `"500mA"`, `"2A"` |
 | `schOrientation` | The orientation of the inductor on the schematic. | `"vertical"`, `"horizontal"` |
 
@@ -85,7 +85,7 @@ Inductors are essential in switching power supplies for energy storage and filte
         <inductor
           name="L1"
           footprint="0805"
-          inductance="22μH"
+          inductance="22µH"
           maxCurrentRating="2A"
           schX={-2}
           pcbX={-2}
@@ -93,7 +93,7 @@ Inductors are essential in switching power supplies for energy storage and filte
         <capacitor
           name="C1"
           footprint="0603"
-          capacitance="100μF"
+          capacitance="100µF"
           schX={2}
           pcbX={2}
         />
