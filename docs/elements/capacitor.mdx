@@ -54,7 +54,7 @@ For polarized capacitors, you must connect the positive and negative pins correc
 Capacitors can be configured with these key properties:
 
 - **capacitance** - The capacitance value specified as a string e.g. `"100nF"` or `"2.2μF"`
-- **voltageRating** - Maximum voltage the capacitor can handle e.g. `"25V"`
+- **maxVoltageRating** - Maximum voltage the capacitor can handle e.g. `"25V"`
 - **tolerance** - Capacitance tolerance percentage e.g. `"±10%"`
 - **temperatureCoefficient** - Temperature stability specification e.g. `"X7R"`
 - **equivalentSeriesResistance** - ESR value for critical applications e.g. `"0.5Ω"`
@@ -89,5 +89,29 @@ Valid orientation values are:
   schX={0}
   schY={0}
   connections={{ pos: "net.POS", neg: "net.NEG" }}
-/>```
+/>
+```
+
+## Capacitor Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `name` | The name or reference designator of the capacitor. | `"C1"` |
+| `footprint` | The footprint or package size of the capacitor. | `"0402"`, `"0603"`, `"axial_p5mm"` |
+| `capacitance` | The capacitance value of the capacitor. Can be a string with units or a number in farads. | `"100nF"`, `"10uF"`, `"10μF"` |
+| `polarized` | Specifies whether the capacitor is polarized. | `polarized={true}`, `polarized={false}` |
+| `maxVoltageRating` | Maximum voltage rating the capacitor can handle. | `"16V"`, `"25V"` |
+| `schShowRatings` | Whether to display capacitance/voltage ratings on the schematic symbol. | `schShowRatings={true}`, `schShowRatings={false}` |
+| `decouplingFor` | The pin, component, or selector this capacitor is decoupling. | `".U1 > .VCC"` |
+| `decouplingTo` | The net this capacitor is decoupling to. | `"net.GND"` |
+| `bypassFor` | The pin, component, or selector this capacitor is bypassing. | `".U1 > .VCC"` |
+| `bypassTo` | The net this capacitor is bypassing to. | `"net.GND"` |
+| `maxDecouplingTraceLength` | Maximum allowable trace length (in mm) for decoupling connection. | `10` |
+| `schOrientation` | The orientation of the capacitor on the schematic. | `"vertical"`, `"horizontal"`, `"pos_top"` |
+| `schSize` | The size of the schematic symbol. | `"normal"`, `"small"` |
+| `connections` | Map of pin names/aliases to net names or selectors. | `{{ pos: "net.POS", neg: "net.NEG" }}` |
+| `supplierPartNumbers` | Map of supplier names to supplier part numbers. | `{{ jlcpcb: ["C1525"] }}` |
+| `manufacturerPartNumber` | Manufacturer part number for exact component selection. | `"GRM188R71C105KA12D"` |
+
+
 
