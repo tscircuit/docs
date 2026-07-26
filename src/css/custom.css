@@ -1399,7 +1399,7 @@ article,
 }
 
 /* Responsive adjustments */
-@media (max-width: 500px) {
+@media (max-width: 800px) {
   .copy-page-dropdown {
     right: auto;
     left: 0;
