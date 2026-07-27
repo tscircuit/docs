@@ -194,6 +194,7 @@ to that sheet. See [`<schematicsheet />`](./schematicsheet.mdx).
 | `symbolName` | `string` | Yes | Symbol name from the [tscircuit symbol library](https://symbols.tscircuit.com/). |
 | `chipRef` | `string` | No | Selector for the physical chip represented by this symbol. Requires `connections`. |
 | `connections` | `Record<string, string \| string[]>` | No | Maps every symbol port label to exactly one port on the chip selected by `chipRef`. |
+| `displayName` | `string` | No | Human-facing name for the schematic representation. |
 | `schX` | `distance` | No | X position in the schematic. |
 | `schY` | `distance` | No | Y position in the schematic. |
 | `schRotation` | `number \| string` | No | Schematic rotation in 90-degree increments. |
