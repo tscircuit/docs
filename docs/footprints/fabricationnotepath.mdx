@@ -18,7 +18,8 @@ supported.
 
 ## Basic Usage
 
-This example draws an arrow that points from a fabrication note to a component.
+This example uses two paths to draw a clean arrow from a fabrication note to a
+component: one path for the leader line and another for the arrowhead.
 
 <CircuitPreview
   defaultView="pcb"
@@ -30,25 +31,30 @@ export default () => (
     <resistor
       name="R1"
       resistance="10k"
-      footprint="0603"
+      footprint="1206"
       pcbX={7}
       pcbY={0}
     />
     <fabricationnotetext
       text="Inspect R1"
-      pcbX={-8}
+      pcbX={-7}
       pcbY={5}
       fontSize="1.2mm"
       color="#2563eb"
     />
     <fabricationnotepath
       route={[
-        { x: -5, y: 4 },
-        { x: 4, y: 1 },
-        { x: 7, y: 0 },
-        { x: 5, y: -1 },
-        { x: 7, y: 0 },
-        { x: 5, y: 1 },
+        { x: -6, y: 3.5 },
+        { x: 4.5, y: 0 },
+      ]}
+      strokeWidth="0.25mm"
+      color="#2563eb"
+    />
+    <fabricationnotepath
+      route={[
+        { x: 2.5, y: 1.2 },
+        { x: 4.5, y: 0 },
+        { x: 2.5, y: -1.2 },
       ]}
       strokeWidth="0.25mm"
       color="#2563eb"
@@ -107,9 +113,9 @@ export default () => (
 
 - The route coordinates define the path directly; positioning props such as
   `pcbX`, `pcbY`, `pcbRotation`, and PCB edge anchors are not supported.
-- Use [`<fabricationnotetext />`](../footprints/fabricationnotetext.mdx) to add
+- Use [`<fabricationnotetext />`](./fabricationnotetext.mdx) to add
   explanatory text next to the path.
-- Use [`<fabricationnoterect />`](../footprints/fabricationnoterect.mdx) when a
+- Use [`<fabricationnoterect />`](./fabricationnoterect.mdx) when a
   filled or dashed rectangular callout is needed.
 - Fabrication paths are documentation elements and do not create copper,
   silkscreen, or routing constraints.
