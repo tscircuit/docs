@@ -1,0 +1,121 @@
+---
+title: <fabricationnotepath />
+description: Draw fabrication-layer paths for assembly instructions, board outlines, and manufacturing callouts.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<fabricationnotepath />` element draws a path through a sequence of points
+on the PCB fabrication layer. Use it for assembly callouts, inspection markers,
+custom outlines, and other instructions that should appear in fabrication
+outputs instead of on the finished PCB silkscreen.
+
+Each point in `route` accepts an `x` and `y` coordinate. Numeric coordinates are
+interpreted as millimeters, and unit strings such as `"0.25in"` are also
+supported.
+
+## Basic Usage
+
+This example uses two paths to draw a clean arrow from a fabrication note to a
+component: one path for the leader line and another for the arrowhead.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="1206"
+      pcbX={7}
+      pcbY={0}
+    />
+    <fabricationnotetext
+      text="Inspect R1"
+      pcbX={-5}
+      pcbY={3}
+      fontSize="1.2mm"
+      color="#2563eb"
+    />
+    <fabricationnotepath
+      route={[
+        { x: -7, y: 0 },
+        { x: 5.2, y: 0 },
+      ]}
+      strokeWidth="0.25mm"
+      color="#2563eb"
+    />
+    <fabricationnotepath
+      route={[
+        { x: 3.5, y: 1 },
+        { x: 5.2, y: 0 },
+        { x: 3.5, y: -1 },
+      ]}
+      strokeWidth="0.25mm"
+      color="#2563eb"
+    />
+  </board>
+)
+`}
+/>
+
+## Closed Paths
+
+Repeat the first point at the end of `route` to close a path. The element draws
+the connected segments but does not fill the enclosed area.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="24mm" height="18mm">
+    <fabricationnotepath
+      route={[
+        { x: -8, y: -5 },
+        { x: 8, y: -5 },
+        { x: 8, y: 5 },
+        { x: -8, y: 5 },
+        { x: -8, y: -5 },
+      ]}
+      strokeWidth={0.2}
+      color="#f97316"
+    />
+    <fabricationnotetext
+      text="Manual assembly area"
+      pcbX={0}
+      pcbY={0}
+      fontSize="1.2mm"
+      anchorAlignment="center"
+      color="#f97316"
+    />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `route` | `Array<{ x: length; y: length }>` | Yes | – | Ordered points connected by straight line segments. |
+| `strokeWidth` | length | No | `0.1mm` | Width of the rendered path. |
+| `color` | string | No | – | Preview color, provided as a CSS color name, hex value, or other supported color string. |
+| `layer` | `"top" \| "bottom"` | No | `"top"` | Fabrication side on which the path is rendered. |
+
+## Notes
+
+- The route coordinates define the path directly; positioning props such as
+  `pcbX`, `pcbY`, `pcbRotation`, and PCB edge anchors are not supported.
+- Use [`<fabricationnotetext />`](./fabricationnotetext.mdx) to add
+  explanatory text next to the path.
+- Use [`<fabricationnoterect />`](./fabricationnoterect.mdx) when a
+  filled or dashed rectangular callout is needed.
+- Fabrication paths are documentation elements and do not create copper,
+  silkscreen, or routing constraints.
