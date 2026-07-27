@@ -186,12 +186,6 @@ To place a representation on a named schematic sheet, set `schSheetName` on
 the `<schematicsymbol />`. Connected schematic components must also be assigned
 to that sheet. See [`<schematicsheet />`](./schematicsheet.mdx).
 
-:::note `displayName` is not rendered yet
-`displayName` is accepted by the props API, but it cannot yet replace `name` in
-the schematic renderer because `schematic_component` does not have a
-`display_name` field. The symbol currently displays its `name`.
-:::
-
 ## Props
 
 | Prop | Type | Required | Description |
@@ -200,7 +194,6 @@ the schematic renderer because `schematic_component` does not have a
 | `symbolName` | `string` | Yes | Symbol name from the [tscircuit symbol library](https://symbols.tscircuit.com/). |
 | `chipRef` | `string` | No | Selector for the physical chip represented by this symbol. Requires `connections`. |
 | `connections` | `Record<string, string \| string[]>` | No | Maps every symbol port label to exactly one port on the chip selected by `chipRef`. |
-| `displayName` | `string` | No | Reserved human-facing name. Currently accepted but not rendered. |
 | `schX` | `distance` | No | X position in the schematic. |
 | `schY` | `distance` | No | Y position in the schematic. |
 | `schRotation` | `number \| string` | No | Schematic rotation in 90-degree increments. |
