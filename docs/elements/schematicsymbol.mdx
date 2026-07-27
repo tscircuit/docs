@@ -78,6 +78,7 @@ export default () => (
 
     <schematicsymbol
       name="A"
+      displayName="Q1A"
       chipRef=".Q1"
       symbolName="n_channel_e_mosfet_transistor_horz"
       connections={{
@@ -156,6 +157,7 @@ and `B` while keeping a single physical `Q1`:
 
 <schematicsymbol
   name="A"
+  displayName="Q1A"
   chipRef=".Q1"
   symbolName="n_channel_e_mosfet_transistor_horz"
   connections={{
@@ -168,6 +170,7 @@ and `B` while keeping a single physical `Q1`:
 
 <schematicsymbol
   name="B"
+  displayName="Q1B"
   chipRef=".Q1"
   symbolName="n_channel_e_mosfet_transistor_horz"
   connections={{
@@ -179,8 +182,10 @@ and `B` while keeping a single physical `Q1`:
 />
 ```
 
-The `name` belongs to the schematic representation. The referenced chip keeps
-its own name and remains the only physical component on the PCB.
+The `name` identifies the schematic representation. Set `displayName` when its
+rendered reference should differ, such as `name="A"` with
+`displayName="Q1A"`. The referenced chip keeps its own name and remains the
+only physical component on the PCB.
 
 To place a representation on a named schematic sheet, set `schSheetName` on
 the `<schematicsymbol />`. Connected schematic components must also be assigned
@@ -190,11 +195,11 @@ to that sheet. See [`<schematicsheet />`](./schematicsheet.mdx).
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `name` | `string` | Yes | Name of this schematic representation. This is currently displayed as its reference text. |
+| `name` | `string` | Yes | Name of this schematic representation and its default reference text. |
 | `symbolName` | `string` | Yes | Symbol name from the [tscircuit symbol library](https://symbols.tscircuit.com/). |
 | `chipRef` | `string` | No | Selector for the physical chip represented by this symbol. Requires `connections`. |
 | `connections` | `Record<string, string \| string[]>` | No | Maps every symbol port label to exactly one port on the chip selected by `chipRef`. |
-| `displayName` | `string` | No | Human-facing name for the schematic representation. |
+| `displayName` | `string` | No | Overrides the reference text rendered for this schematic representation. |
 | `schX` | `distance` | No | X position in the schematic. |
 | `schY` | `distance` | No | Y position in the schematic. |
 | `schRotation` | `number \| string` | No | Schematic rotation in 90-degree increments. |
