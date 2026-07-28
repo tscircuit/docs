@@ -4,13 +4,20 @@ export interface TscircuitIframeProps {
   fsMap?: Record<string, string>
   entrypoint?: string
   code?: string
+  defaultView?: string
+  showTabs?: boolean
 }
 
 export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  let additionalProps: Record<string, any> = { isWebEmbedded: true }
+  let additionalProps: Record<string, any> = {
+    isWebEmbedded: true,
+    hideHeader: true,
+    showHeader: false,
+    headerVisible: false,
+  }
 
   if (runFrameProps.code) {
     additionalProps = {
@@ -27,6 +34,14 @@ export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
       fsMap: runFrameProps.fsMap,
       entrypoint: runFrameProps.entrypoint,
     }
+  }
+
+  if (runFrameProps.defaultView) {
+    additionalProps.defaultView = runFrameProps.defaultView
+  }
+
+  if (runFrameProps.showTabs !== undefined) {
+    additionalProps.showTabs = runFrameProps.showTabs
   }
 
   useEffect(() => {
