@@ -545,7 +545,7 @@ export default function CircuitPreview({
                   ? "bg-[#F5F1ED]"
                   : v === "pinout"
                     ? "bg-white"
-                    : "bg-white object-cover"
+                    : "bg-white"
             }`,
           })}
         </div>
@@ -622,7 +622,7 @@ export default function CircuitPreview({
         alt: "3D Circuit Preview",
         hidden: view !== "3d",
         hasHeader: imageViewHasHeader,
-        imageClassName: "w-full m-0 object-cover bg-white",
+        imageClassName: "w-full m-0 object-contain bg-white",
       })}
       {showRunFrame && view === "runframe" && (
         <div
