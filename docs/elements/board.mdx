@@ -288,7 +288,7 @@ Use lower values while iterating quickly, then increase effort for dense boards
 or final route attempts.
 
 ```tsx
-<board width="30mm" height="20mm" autorouter="sequential-trace" autorouterEffortLevel="10x">
+<board width="30mm" height="20mm" autorouter="auto" autorouterEffortLevel="10x">
   <chip name="U1" footprint="qfn32" pcbX={-4} pcbY={0} />
   <chip name="U2" footprint="qfn32" pcbX={4} pcbY={0} />
   <trace from=".U1 > .pin1" to=".U2 > .pin1" />
