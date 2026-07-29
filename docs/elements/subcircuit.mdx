@@ -75,7 +75,7 @@ To specify a custom autorouter configuration, just set the `autorouter` property
 on a `<subcircuit />` element.
 
 ```tsx
-<subcircuit autorouter="auto-cloud">
+<subcircuit autorouter="auto">
   <resistor name="R1" resistance="1k" footprint="0402" />
   <resistor name="R2" resistance="1k" footprint="0402" />
   {/* ... */}
@@ -86,5 +86,3 @@ Specifying custom autorouter settings for subcircuits can be extremely useful
 when you have a tricky section of components that have special requirements.
 
 Read more about [the autorouter prop here](./board.mdx#setting-the-autorouter).
-
-
