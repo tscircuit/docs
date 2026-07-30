@@ -24,12 +24,11 @@ flashlight that we make in [this tutorial](../tutorials/building-a-simple-usb-fl
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-<CircuitPreview defaultView="3d" browser3dView={true} hideEditorLink={true} code={`
+<CircuitPreview defaultView="3d" code={`
 import { PushButton } from "@tsci/seveibar.push-button"
 import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
 
 export default () => {
-  // trigger cache bust
   return (
     <board width="12mm" height="30mm">
       <SmdUsbC

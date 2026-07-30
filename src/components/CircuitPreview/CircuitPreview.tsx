@@ -143,7 +143,6 @@ export default function CircuitPreview({
   projectBaseUrl = "https://docs.tscircuit.com/",
   leftView,
   rightView,
-  hideEditorLink = false,
   showSimulationGraph = false,
   simulationExperimentNames = [],
   defaultSimulationExperimentName,
@@ -166,7 +165,6 @@ export default function CircuitPreview({
   browser3dView?: boolean
   leftView?: CircuitPreviewView
   rightView?: CircuitPreviewView
-  hideEditorLink?: boolean
   projectBaseUrl?: string
   showSimulationGraph?: boolean
   simulationExperimentNames?: string[]
@@ -404,7 +402,7 @@ export default function CircuitPreview({
   const previewHeaderElm = (showViewTabs: boolean) => (
     <div className={tw("flex items-center justify-between gap-2 px-2")}>
       <div className={tw("flex min-w-0 items-center gap-2 mt-2 mb-2")}>
-        {editorUrl && !hideEditorLink && <TryInEditorLink href={editorUrl} />}
+        {editorUrl && <TryInEditorLink href={editorUrl} />}
         {showSimulationSelector && (
           <label className={tw("min-w-0")}>
             <select
@@ -619,22 +617,13 @@ export default function CircuitPreview({
         hasHeader: imageViewHasHeader,
         imageClassName: "w-full m-0 object-contain bg-white",
       })}
-      <div
-        className={tw(
-          `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)} ${
-            view !== "3d" ? "hidden" : ""
-          } bg-white overflow-hidden`,
-        )}
-      >
-        <div style={{ marginTop: "-64px", height: "calc(100% + 64px)" }}>
-          <TscircuitIframe
-            fsMap={fsMap}
-            code={typeof fsMapOrCode === "string" ? fsMapOrCode : undefined}
-            defaultView="3d"
-            showTabs={false}
-          />
-        </div>
-      </div>
+      {renderPreviewImage({
+        src: threeDUrl,
+        alt: "3D Circuit Preview",
+        hidden: view !== "3d",
+        hasHeader: imageViewHasHeader,
+        imageClassName: "w-full m-0 object-cover bg-white",
+      })}
       {showRunFrame && view === "runframe" && (
         <div
           className={tw(
