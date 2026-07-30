@@ -32,18 +32,18 @@ Copy the files into your tscircuit project. Import them and pass them to the
 `footprint`, `symbol`, and `cadModel` props of a `<chip />`:
 
 ```tsx
-import stepModelUrl from "./CadModel.stp"
-import kicadSym from "./symbol.kicad_sym"
+import stepUrl from "./CadModel.step"
 import kicadMod from "./footprint.kicad_mod"
+import kicadSymbol from "./symbol.kicad_sym"
 
 export default () => {
   return (
     <board>
       <chip
-        name="U1"
         footprint={kicadMod}
-        symbol={kicadSym}
-        cadModel={<cadmodel modelUrl={stepModelUrl} />}
+        name="U1"
+        symbol={kicadSymbol}
+        cadModel={stepUrl}
       />
     </board>
   )
