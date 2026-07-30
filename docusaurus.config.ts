@@ -169,6 +169,7 @@ const config: Config = {
       logo: {
         alt: "tscircuit logo",
         src: "logo/logo.svg",
+        href: "https://tscircuit.com/",
       },
       items: [
         {
