@@ -14,9 +14,9 @@ connections that leave the breakout.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-This 100-pin BGA breakout groups signals into four buses. The fanout phase sends
-each bus toward the side of the package where its connector is placed, then the
-default autorouter completes the routes.
+This 100-pin BGA breakout groups signals into four buses. The default fanout
+autorouter sends each bus toward the side of the package where its connector is
+placed, then completes the routes.
 
 <CircuitPreview defaultView="pcb" code={`
 const buses = [
@@ -61,17 +61,11 @@ export default () => (
     minViaHoleDiameter="0.2mm"
     minViaPadDiameter="0.5mm"
   >
-    <breakout name="BGA_BREAKOUT" padding="2mm">
-      <autoroutingphase
-        autorouter="fanout"
-        busFanoutDirections={{
-          DATA: "center_right",
-          ADDRESS: "center_left",
-          CONTROL: "top_center",
-          POWER: "bottom_center",
-        }}
-        fanoutBoundaryPadding="1.5mm"
-      />
+    <breakout
+      name="BGA_BREAKOUT"
+      padding="2mm"
+      fanoutBoundaryPadding="1.5mm"
+    >
       <chip
         name="U1"
         footprint="bga100_grid10x10_p0.8mm_pad0.35mm_circularpads"
@@ -123,10 +117,6 @@ export default () => (
   </board>
 )
 `} />
-
-The keys in `busFanoutDirections` match `<bus />` names. Direction values use
-nine-point anchors such as `center_right`, `top_center`, and `bottom_center`;
-use `center` when a bus can escape in any direction.
 
 ## Auto-Generated Breakout Points
 
