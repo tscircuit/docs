@@ -14,26 +14,105 @@ connections that leave the breakout.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
+This 100-pin BGA breakout groups signals into four buses. The default fanout
+autorouter sends each bus toward the side of the package where its connector is
+placed, then completes the routes.
+
 <CircuitPreview defaultView="pcb" code={`
+const buses = [
+  {
+    name: "DATA",
+    signals: ["D0", "D1", "D2", "D3"],
+    pcbX: 12,
+    pcbY: 0,
+    pcbRotation: 90,
+  },
+  {
+    name: "ADDRESS",
+    signals: ["A0", "A1", "A2", "A3"],
+    pcbX: -12,
+    pcbY: 0,
+    pcbRotation: 90,
+  },
+  {
+    name: "CONTROL",
+    signals: ["CS", "CLK", "RESET", "IRQ"],
+    pcbX: 0,
+    pcbY: 12,
+    pcbRotation: 0,
+  },
+  {
+    name: "POWER",
+    signals: ["VDD0", "GND0", "VDD1", "GND1"],
+    pcbX: 0,
+    pcbY: -12,
+    pcbRotation: 0,
+  },
+]
+
 export default () => (
-  <board width="20mm" height="20mm">
-    <breakout autorouter="auto">
-      <resistor
-        name="R1"
-        resistance="1k"
-        footprint="0402"
-        pcbX={0}
-        pcbY={0}
+  <board
+    width="32mm"
+    height="32mm"
+    layers={2}
+    minTraceWidth="0.1mm"
+    minTraceToPadEdgeClearance="0.1mm"
+    minViaEdgeToPadEdgeClearance="0.1mm"
+    minViaHoleDiameter="0.2mm"
+    minViaPadDiameter="0.5mm"
+  >
+    <breakout
+      name="BGA_BREAKOUT"
+      padding="2mm"
+      fanoutBoundaryPadding="1.5mm"
+    >
+      <chip
+        name="U1"
+        footprint="bga100_grid10x10_p0.8mm_pad0.35mm_circularpads"
+        pinLabels={{
+          pin39: "D0",
+          pin40: "D1",
+          pin49: "D2",
+          pin50: "D3",
+          pin31: "A0",
+          pin32: "A1",
+          pin41: "A2",
+          pin42: "A3",
+          pin85: "CS",
+          pin86: "CLK",
+          pin95: "RESET",
+          pin96: "IRQ",
+          pin5: "VDD0",
+          pin6: "GND0",
+          pin15: "VDD1",
+          pin16: "GND1",
+        }}
       />
-      <capacitor
-        name="C1"
-        capacitance="1uF"
-        footprint="0402"
-        pcbX={2}
-        pcbY={0}
-      />
-      <trace from="R1.2" to="C1.1" />
-      <breakoutpoint connection="R1.1" pcbX={5} pcbY={5} />
+      {buses.map((bus) => (
+        <pinheader
+          key={bus.name}
+          name={"J_" + bus.name}
+          pinCount={4}
+          footprint="pinrow4"
+          pinLabels={bus.signals}
+          pcbX={bus.pcbX}
+          pcbY={bus.pcbY}
+          pcbRotation={bus.pcbRotation}
+        />
+      ))}
+      {buses.map((bus) => (
+        <bus key={bus.name} name={bus.name} connections={bus.signals} />
+      ))}
+      {buses.flatMap((bus) =>
+        bus.signals.map((signal) => (
+          <trace
+            key={signal}
+            name={signal}
+            from={"U1." + signal}
+            to={"J_" + bus.name + "." + signal}
+          />
+        )),
+      )}
     </breakout>
   </board>
 )
@@ -121,4 +200,5 @@ export default () => (
 |----------|-------------|
 | `padding` | Uniform padding around the breakout region. |
 | `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Control padding for each side individually. |
-| `autorouter` | Autorouter configuration inherited by children. |
+| `autorouter` | Autorouter used to escape components inside the breakout. Defaults to `fanout`. |
+| `fanoutBoundaryPadding` | Padding between the source pads and the shared boundary where fanout traces terminate. |
