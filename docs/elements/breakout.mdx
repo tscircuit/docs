@@ -33,7 +33,7 @@ const buses = [
       "DATA7",
     ],
     pins: [20, 30, 40, 50, 60, 70, 80, 90],
-    targetX: 5.275,
+    targetX: 5.75,
   },
   {
     name: "ADDRESS",
@@ -48,7 +48,7 @@ const buses = [
       "ADDR7",
     ],
     pins: [11, 21, 31, 41, 51, 61, 71, 81],
-    targetX: -5.275,
+    targetX: -5.75,
   },
 ]
 
@@ -91,24 +91,26 @@ export default () => (
   >
     <copperpour layer="inner1" connectsTo="net.GND" />
     <copperpour layer="inner2" connectsTo="net.VCC" />
-    <breakout name="BGA_BREAKOUT" width="14mm" height="11mm">
-      <autoroutingphase
-        autorouter="fanout"
-        fanoutRoutingLayers={["top"]}
-        fanoutBoundaryPadding="1.5mm"
-        busFanoutDirections={{
-          DATA: "center_right",
-          ADDRESS: "center_left",
-          GND_44: "center_left",
-          VCC_45: "bottom_center",
-          GND_46: "bottom_center",
-          VCC_47: "center_right",
-          VCC_54: "center_left",
-          GND_55: "top_center",
-          VCC_56: "top_center",
-          GND_57: "center_right",
-        }}
-      />
+    <breakout
+      name="BGA_BREAKOUT"
+      width="14mm"
+      height="11mm"
+      fanoutRoutingLayers={["top"]}
+      fanoutBoundaryPadding="1.5mm"
+      fanoutPourNetMap={{ inner1: "GND", inner2: "VCC" }}
+      busFanoutDirections={{
+        DATA: "center_right",
+        ADDRESS: "center_left",
+        GND_44: "center_left",
+        VCC_45: "bottom_center",
+        GND_46: "bottom_center",
+        VCC_47: "center_right",
+        VCC_54: "center_left",
+        GND_55: "top_center",
+        VCC_56: "top_center",
+        GND_57: "center_right",
+      }}
+    >
       <chip
         name="U1"
         footprint="bga100_grid10x10_p0.8mm_pad0.35mm_circularpads"
@@ -174,26 +176,27 @@ export default () => (
 )
 `} />
 
-The explicit `<autoroutingphase />` is needed here because the advanced fanout
-controls live on the phase. `busFanoutDirections` sends each named bus toward a
-specific side and can also guide an individual source trace, as shown for the
-power balls.
+The breakout uses the fanout autorouter by default, so its fanout controls can
+be set directly on `<breakout />`. `busFanoutDirections` sends each named bus
+toward a specific side and can also guide an individual source trace, as shown
+for the power balls.
 
 `fanoutRoutingLayers={["top"]}` reserves the top layer for signal escape. The
-GND and VCC traces have only one component endpoint, so the fanout router
-infers their destination layers from the matching `<copperpour />` elements
-and drops them to `inner1` and `inner2`. Those pour layers do not need to appear
-in `fanoutRoutingLayers`.
+GND and VCC traces have only one component endpoint, so `fanoutPourNetMap`
+drops them to `inner1` and `inner2`. Those plane layers do not need to appear in
+`fanoutRoutingLayers`.
 
-If a net has pours on multiple layers, disambiguate the plane destination with
-an explicit map:
+When `fanoutPourNetMap` is omitted, tscircuit infers the plane destinations
+from matching `<copperpour />` elements. An explicit map is useful when a net
+has pours on multiple layers:
 
 ```tsx
-<autoroutingphase
-  autorouter="fanout"
+<breakout
   fanoutRoutingLayers={["top"]}
   fanoutPourNetMap={{ inner1: "GND", inner2: "VCC" }}
-/>
+>
+  {/* BGA, buses, and traces */}
+</breakout>
 ```
 
 ## Auto-Generated Breakout Points
@@ -279,4 +282,7 @@ export default () => (
 | `padding` | Uniform padding around the breakout region. |
 | `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Control padding for each side individually. |
 | `autorouter` | Autorouter used to escape components inside the breakout. Defaults to `fanout`. |
+| `busFanoutDirections` | Maps named buses or source traces to preferred escape directions. |
 | `fanoutBoundaryPadding` | Padding between the source pads and the shared boundary where fanout traces terminate. |
+| `fanoutRoutingLayers` | Copper layers available to boundary-terminated fanout buses. |
+| `fanoutPourNetMap` | Maps plane layers to nets for source-only fanout escapes. Matching copper pours are inferred when omitted. |
