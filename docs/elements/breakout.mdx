@@ -149,6 +149,7 @@ export default () => (
           connections={bus.signals.map(
             (signal) => bus.name + "_" + signal,
           )}
+        />
       ))}
       {buses.flatMap((bus) =>
         bus.signals.map((signal) => (
