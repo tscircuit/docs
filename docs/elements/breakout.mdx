@@ -89,8 +89,6 @@ export default () => (
     minViaHoleDiameter="0.2mm"
     minViaPadDiameter="0.5mm"
   >
-    <copperpour layer="inner1" connectsTo="net.GND" />
-    <copperpour layer="inner2" connectsTo="net.VCC" />
     <breakout
       name="BGA_BREAKOUT"
       width="14mm"
@@ -103,6 +101,8 @@ export default () => (
         ADDRESS: "center_left",
       }}
     >
+      <copperpour layer="inner1" connectsTo="net.GND" />
+      <copperpour layer="inner2" connectsTo="net.VCC" />
       <chip
         name="U1"
         footprint="bga100_grid10x10_p0.8mm_pad0.35mm_circularpads"
