@@ -14,183 +14,181 @@ connections that leave the breakout.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-This 100-pin BGA breakout groups signals into four buses. The default fanout
-autorouter sends each bus toward the side of the package where its connector is
-placed, then completes the routes.
+This 100-pin BGA keeps two 8-bit buses on contiguous outer columns and assigns
+each bus an explicit fanout direction. Eight center-region balls connect to
+GND and VCC pours on separate inner layers.
 
 <CircuitPreview defaultView="pcb" code={`
 const buses = [
   {
     name: "DATA",
-    signals: ["D0", "D1", "D2", "D3"],
-    pcbX: 12,
-    pcbY: 0,
-    pcbRotation: 90,
+    signals: [
+      "DATA0",
+      "DATA1",
+      "DATA2",
+      "DATA3",
+      "DATA4",
+      "DATA5",
+      "DATA6",
+      "DATA7",
+    ],
+    pins: [20, 30, 40, 50, 60, 70, 80, 90],
+    targetX: 5.75,
   },
   {
     name: "ADDRESS",
-    signals: ["A0", "A1", "A2", "A3"],
-    pcbX: -12,
-    pcbY: 0,
-    pcbRotation: 90,
-  },
-  {
-    name: "CONTROL",
-    signals: ["CS", "CLK", "RESET", "IRQ"],
-    pcbX: 0,
-    pcbY: 12,
-    pcbRotation: 0,
-  },
-  {
-    name: "POWER",
-    signals: ["VDD0", "GND0", "VDD1", "GND1"],
-    pcbX: 0,
-    pcbY: -12,
-    pcbRotation: 0,
+    signals: [
+      "ADDR0",
+      "ADDR1",
+      "ADDR2",
+      "ADDR3",
+      "ADDR4",
+      "ADDR5",
+      "ADDR6",
+      "ADDR7",
+    ],
+    pins: [11, 21, 31, 41, 51, 61, 71, 81],
+    targetX: -5.75,
   },
 ]
 
+const powerDrops = [
+  { pin: 44, name: "GND_44", net: "GND" },
+  { pin: 45, name: "VCC_45", net: "VCC" },
+  { pin: 46, name: "GND_46", net: "GND" },
+  { pin: 47, name: "VCC_47", net: "VCC" },
+  { pin: 54, name: "VCC_54", net: "VCC" },
+  { pin: 55, name: "GND_55", net: "GND" },
+  { pin: 56, name: "VCC_56", net: "VCC" },
+  { pin: 57, name: "GND_57", net: "GND" },
+]
+
+const fanoutExitYs = [
+  -1.2, -0.625, -0.375, -0.125, 0.125, 0.375, 0.625, 1.2,
+]
+
+const bgaPinLabels = Object.fromEntries([
+  ...buses.flatMap((bus) =>
+    bus.signals.map((signal, index) => [
+      "pin" + bus.pins[index],
+      signal,
+    ]),
+  ),
+  ...powerDrops.map((drop) => ["pin" + drop.pin, drop.name]),
+])
+
 export default () => (
   <board
-    width="32mm"
-    height="32mm"
-    layers={2}
+    width="18mm"
+    height="12mm"
+    layers={6}
     minTraceWidth="0.1mm"
+    defaultTraceWidth="0.1mm"
     minTraceToPadEdgeClearance="0.1mm"
     minViaEdgeToPadEdgeClearance="0.1mm"
     minViaHoleDiameter="0.2mm"
     minViaPadDiameter="0.5mm"
   >
+    <copperpour layer="inner1" connectsTo="net.GND" />
+    <copperpour layer="inner2" connectsTo="net.VCC" />
     <breakout
       name="BGA_BREAKOUT"
-      padding="2mm"
+      width="14mm"
+      height="11mm"
+      fanoutRoutingLayers={["top"]}
       fanoutBoundaryPadding="1.5mm"
+      fanoutPourNetMap={{ inner1: "GND", inner2: "VCC" }}
+      busFanoutDirections={{
+        DATA: "center_right",
+        ADDRESS: "center_left",
+      }}
     >
       <chip
         name="U1"
         footprint="bga100_grid10x10_p0.8mm_pad0.35mm_circularpads"
-        pinLabels={{
-          pin39: "D0",
-          pin40: "D1",
-          pin49: "D2",
-          pin50: "D3",
-          pin31: "A0",
-          pin32: "A1",
-          pin41: "A2",
-          pin42: "A3",
-          pin85: "CS",
-          pin86: "CLK",
-          pin95: "RESET",
-          pin96: "IRQ",
-          pin5: "VDD0",
-          pin6: "GND0",
-          pin15: "VDD1",
-          pin16: "GND1",
-        }}
+        pinLabels={bgaPinLabels}
       />
       {buses.map((bus) => (
-        <pinheader
-          key={bus.name}
-          name={"J_" + bus.name}
-          pinCount={4}
-          footprint="pinrow4"
-          pinLabels={bus.signals}
-          pcbX={bus.pcbX}
-          pcbY={bus.pcbY}
-          pcbRotation={bus.pcbRotation}
+        <chip
+          key={"EDGE_" + bus.name}
+          name={"EDGE_" + bus.name}
+          pcbX={bus.targetX}
+          pinLabels={Object.fromEntries(
+            bus.signals.map((signal, index) => [
+              "pin" + (index + 1),
+              signal,
+            ]),
+          )}
+          footprint={
+            <footprint>
+              {fanoutExitYs.map((pcbY, index) => (
+                <smtpad
+                  key={"pin" + (index + 1)}
+                  portHints={["pin" + (index + 1)]}
+                  pcbX={0}
+                  pcbY={pcbY}
+                  width="0.4mm"
+                  height="0.1mm"
+                  shape="rect"
+                />
+              ))}
+            </footprint>
+          }
         />
       ))}
       {buses.map((bus) => (
-        <bus key={bus.name} name={bus.name} connections={bus.signals} />
+        <bus
+          key={bus.name}
+          name={bus.name}
+          connections={bus.signals.map(
+            (signal) => bus.name + "_" + signal,
+          )}
+        />
       ))}
       {buses.flatMap((bus) =>
         bus.signals.map((signal) => (
           <trace
             key={signal}
-            name={signal}
+            name={bus.name + "_" + signal}
             from={"U1." + signal}
-            to={"J_" + bus.name + "." + signal}
+            to={"EDGE_" + bus.name + "." + signal}
           />
         )),
       )}
+      {powerDrops.map((drop) => (
+        <trace
+          key={drop.name}
+          name={drop.name}
+          from={"U1." + drop.name}
+          to={"net." + drop.net}
+        />
+      ))}
     </breakout>
   </board>
 )
 `} />
 
-## Auto-Generated Breakout Points
+The breakout uses the fanout autorouter by default, so its fanout controls can
+be set directly on `<breakout />`. `busFanoutDirections` sends each named bus
+toward a specific side.
 
-When traces connect from components inside a `<breakout />` to components outside
-of it, tscircuit can create the needed breakout points automatically. This keeps
-the breakout local to the component cluster while still letting board-level
-traces connect to headers and other surrounding parts.
+`fanoutRoutingLayers={["top"]}` reserves the top layer for signal escape. The
+GND and VCC traces have only one component endpoint, so `fanoutPourNetMap`
+drops them to `inner1` and `inner2`. Those plane layers do not need to appear in
+`fanoutRoutingLayers`.
 
-The example below routes a QFP16 controller inside a breakout to an external pin
-header and nearby passives without adding any manual `<breakoutpoint />`
-elements.
+When `fanoutPourNetMap` is omitted, tscircuit infers the plane destinations
+from matching `<copperpour />` elements. An explicit map is useful when a net
+has pours on multiple layers:
 
-<CircuitPreview defaultView="pcb" code={`
-export default () => (
-  <board width="20mm" height="16mm">
-    <breakout name="MCU_BREAKOUT" padding="1mm">
-      <chip
-        footprint="qfp16"
-        name="U1"
-        pinLabels={{
-          pin1: "GPIO1",
-          pin2: "GPIO2",
-          pin3: "GPIO3",
-          pin4: "GPIO4",
-          pin5: "VCC",
-          pin6: "GND",
-          pin7: "SDA",
-          pin8: "SCL",
-          pin9: "RESET",
-          pin10: "BOOT",
-          pin11: "GPIO5",
-          pin12: "GPIO6",
-          pin13: "GPIO7",
-          pin14: "GPIO8",
-          pin15: "GPIO9",
-          pin16: "GPIO10",
-        }}
-        pcbX={0}
-        pcbY={0}
-      />
-      <capacitor
-        name="C1"
-        capacitance="100nF"
-        footprint="0402"
-        pcbX={-3.5}
-        pcbY={2.4}
-      />
-      <trace from="C1.1" to="U1.GPIO1" />
-      <trace from="C1.2" to="U1.GPIO3" />
-    </breakout>
-    <pinheader
-      name="J1"
-      pinCount={4}
-      footprint="pinrow4"
-      pinLabels={["VCC", "GND", "SDA", "SCL"]}
-      pcbX={7}
-      pcbY={0}
-      pcbRotation={90}
-    />
-    <resistor
-      name="R1"
-      resistance="10k"
-      footprint="0402"
-      pcbX={-5}
-      pcbY={-2.4}
-      connections={{ pin1: "U1.RESET", pin2: "net.VCC" }}
-    />
-    <trace from="J1.VCC" to="U1.VCC" />
-    <trace from="J1.GND" to="U1.GND" />
-    <trace from="J1.SDA" to="U1.SDA" />
-    <trace from="J1.SCL" to="U1.SCL" />
-  </board>
-)
-`} />
+```tsx
+<breakout
+  fanoutRoutingLayers={["top"]}
+  fanoutPourNetMap={{ inner1: "GND", inner2: "VCC" }}
+>
+  {/* BGA, buses, and traces */}
+</breakout>
+```
 
 ## Properties
 
@@ -201,4 +199,7 @@ export default () => (
 | `padding` | Uniform padding around the breakout region. |
 | `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Control padding for each side individually. |
 | `autorouter` | Autorouter used to escape components inside the breakout. Defaults to `fanout`. |
+| `busFanoutDirections` | Maps named buses to preferred escape directions. |
 | `fanoutBoundaryPadding` | Padding between the source pads and the shared boundary where fanout traces terminate. |
+| `fanoutRoutingLayers` | Copper layers available to boundary-terminated fanout buses. |
+| `fanoutPourNetMap` | Maps plane layers to nets for source-only fanout escapes. Matching copper pours are inferred when omitted. |
