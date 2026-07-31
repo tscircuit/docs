@@ -101,14 +101,6 @@ export default () => (
       busFanoutDirections={{
         DATA: "center_right",
         ADDRESS: "center_left",
-        GND_44: "center_left",
-        VCC_45: "bottom_center",
-        GND_46: "bottom_center",
-        VCC_47: "center_right",
-        VCC_54: "center_left",
-        GND_55: "top_center",
-        VCC_56: "top_center",
-        GND_57: "center_right",
       }}
     >
       <chip
@@ -178,8 +170,7 @@ export default () => (
 
 The breakout uses the fanout autorouter by default, so its fanout controls can
 be set directly on `<breakout />`. `busFanoutDirections` sends each named bus
-toward a specific side and can also guide an individual source trace, as shown
-for the power balls.
+toward a specific side.
 
 `fanoutRoutingLayers={["top"]}` reserves the top layer for signal escape. The
 GND and VCC traces have only one component endpoint, so `fanoutPourNetMap`
@@ -208,7 +199,7 @@ has pours on multiple layers:
 | `padding` | Uniform padding around the breakout region. |
 | `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Control padding for each side individually. |
 | `autorouter` | Autorouter used to escape components inside the breakout. Defaults to `fanout`. |
-| `busFanoutDirections` | Maps named buses or source traces to preferred escape directions. |
+| `busFanoutDirections` | Maps named buses to preferred escape directions. |
 | `fanoutBoundaryPadding` | Padding between the source pads and the shared boundary where fanout traces terminate. |
 | `fanoutRoutingLayers` | Copper layers available to boundary-terminated fanout buses. |
 | `fanoutPourNetMap` | Maps plane layers to nets for source-only fanout escapes. Matching copper pours are inferred when omitted. |
