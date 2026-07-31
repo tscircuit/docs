@@ -6,11 +6,13 @@ description: >-
 
 ## Overview
 
-A `<breakout />` is similar to a [`<group />`](./group.mdx) but is meant for situations where you
-want to guide the autorouter on where connections should exit the group. Inside
-a breakout you can place [`<breakoutpoint />`](./breakoutpoint.mdx) elements to
-define explicit exit locations, or let tscircuit generate breakout points for
-connections that leave the breakout.
+A `<breakout />` is a transparent routing container similar to a
+[`<group />`](./group.mdx). It does not create a subcircuit, selector scope, or
+private net scope. Instead, its routing properties guide the autorouter on where
+connections should exit the region. Inside a breakout you can place
+[`<breakoutpoint />`](./breakoutpoint.mdx) elements to define explicit exit
+locations, or let tscircuit generate breakout points for connections that leave
+the breakout.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
@@ -89,6 +91,8 @@ export default () => (
     minViaHoleDiameter="0.2mm"
     minViaPadDiameter="0.5mm"
   >
+    <copperpour layer="inner1" connectsTo="net.GND" />
+    <copperpour layer="inner2" connectsTo="net.VCC" />
     <breakout
       name="BGA_BREAKOUT"
       width="14mm"
@@ -101,8 +105,6 @@ export default () => (
         ADDRESS: "center_left",
       }}
     >
-      <copperpour layer="inner1" connectsTo="net.GND" />
-      <copperpour layer="inner2" connectsTo="net.VCC" />
       <chip
         name="U1"
         footprint="bga100_grid10x10_p0.8mm_pad0.35mm_circularpads"
@@ -172,14 +174,18 @@ The breakout uses the fanout autorouter by default, so its fanout controls can
 be set directly on `<breakout />`. `busFanoutDirections` sends each named bus
 toward a specific side.
 
+Because `<breakout />` is transparent, its traces use the same GND and VCC nets
+as the board-level copper pours. The pours do not need to be children of the
+breakout, and no net exposure or separate `<autoroutingphase />` is required.
+
 `fanoutRoutingLayers={["top"]}` reserves the top layer for signal escape. The
 GND and VCC traces have only one component endpoint, so `fanoutPourNetMap`
 drops them to `inner1` and `inner2`. Those plane layers do not need to appear in
 `fanoutRoutingLayers`.
 
 When `fanoutPourNetMap` is omitted, tscircuit infers the plane destinations
-from matching `<copperpour />` elements. An explicit map is useful when a net
-has pours on multiple layers:
+from matching `<copperpour />` elements on the enclosing board. An explicit map
+is useful when a net has pours on multiple layers:
 
 ```tsx
 <breakout
