@@ -1,0 +1,202 @@
+---
+title: <schematicsymbol />
+description: >-
+  Render a symbol from the tscircuit schematic-symbol library, either by itself
+  or as a schematic representation of an existing physical chip.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<schematicsymbol />` renders a symbol from the
+[tscircuit symbol library](https://symbols.tscircuit.com/). It is a
+schematic-only element and does not create a PCB component or footprint.
+
+Use it in either of these ways:
+
+- Render a standalone schematic symbol.
+- Show a library symbol as an additional schematic representation of an
+  existing physical `<chip />`.
+
+## Render a Standalone Symbol
+
+Set `symbolName` to a name from the
+[symbol library](https://symbols.tscircuit.com/).
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="10mm" height="10mm" routingDisabled>
+    <schematicsymbol name="D1" symbolName="diode_right" />
+  </board>
+)
+`}
+/>
+
+A standalone `<schematicsymbol />` can participate in schematic connections,
+but it has no physical representation on the PCB.
+
+## Represent a Physical Chip
+
+Use `chipRef` together with `connections` to make the symbol represent ports
+from an existing physical chip:
+
+- `chipRef` selects the physical `<chip />`.
+- Each `connections` key identifies a port exposed by `symbolName`.
+- Each value selects the matching physical port on the referenced chip.
+
+Every port exposed by the symbol must have exactly one connection.
+
+<CircuitPreview
+  splitView
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="20mm" height="12mm">
+    <chip
+      name="Q1"
+      footprint="soic8"
+      noSchematicRepresentation
+      pcbX={0}
+      pcbY={0}
+      pinLabels={{
+        pin1: "G1",
+        pin2: "S1",
+        pin3: "G2",
+        pin4: "S2",
+        pin5: "D2",
+        pin6: "D2",
+        pin7: "D1",
+        pin8: "D1",
+      }}
+    />
+
+    <schematicsymbol
+      name="A"
+      chipRef=".Q1"
+      symbolName="n_channel_e_mosfet_transistor_horz"
+      connections={{
+        gate: "Q1.G1",
+        source: "Q1.S1",
+        drain: "Q1.D1",
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+      pcbX={-5}
+      pcbY={1}
+      schX={-2}
+      schY={-0.1}
+    />
+    <resistor
+      name="R2"
+      resistance="10k"
+      footprint="0402"
+      pcbX={5}
+      pcbY={1}
+      schX={2}
+      schY={0.55}
+    />
+
+    <trace from=".R1 > .pin2" to=".Q1 > .G1" />
+    <trace from=".R2 > .pin1" to=".Q1 > .D1" />
+  </board>
+)
+`}
+/>
+
+The `connections` mapping does not create electrical traces. Normal `<trace />`
+elements still target the physical chip, such as `.Q1 > .G1`. On the
+schematic, those traces terminate at the mapped symbol ports. On the PCB, they
+terminate at the physical `Q1` pads.
+
+`noSchematicRepresentation` hides the chip's default schematic box so only the
+library symbol is shown. The physical chip still appears once on the PCB.
+
+:::warning Pair `chipRef` with `connections`
+`chipRef` and `connections` only take effect when both are provided. If either
+prop is used by itself, it is ignored and tscircuit emits a
+`source_property_ignored_warning`.
+
+Port labels are not matched automatically.
+:::
+
+## Show Multiple Symbols for One Chip
+
+Multiple `<schematicsymbol />` elements can represent different port groups
+from one physical chip. For example, a dual MOSFET can use symbols named `A`
+and `B` while keeping a single physical `Q1`:
+
+```tsx
+<chip
+  name="Q1"
+  footprint="soic8"
+  noSchematicRepresentation
+  pinLabels={{
+    pin1: "G1",
+    pin2: "S1",
+    pin3: "G2",
+    pin4: "S2",
+    pin5: "D2",
+    pin6: "D2",
+    pin7: "D1",
+    pin8: "D1",
+  }}
+/>
+
+<schematicsymbol
+  name="A"
+  chipRef=".Q1"
+  symbolName="n_channel_e_mosfet_transistor_horz"
+  connections={{
+    gate: "Q1.G1",
+    source: "Q1.S1",
+    drain: "Q1.D1",
+  }}
+  schX={-2.5}
+/>
+
+<schematicsymbol
+  name="B"
+  chipRef=".Q1"
+  symbolName="n_channel_e_mosfet_transistor_horz"
+  connections={{
+    gate: "Q1.G2",
+    source: "Q1.S2",
+    drain: "Q1.D2",
+  }}
+  schX={2.5}
+/>
+```
+
+The `name` belongs to the schematic representation. The referenced chip keeps
+its own name and remains the only physical component on the PCB.
+
+To place a representation on a named schematic sheet, set `schSheetName` on
+the `<schematicsymbol />`. Connected schematic components must also be assigned
+to that sheet. See [`<schematicsheet />`](./schematicsheet.mdx).
+
+## Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `string` | Yes | Name of this schematic representation. This is currently displayed as its reference text. |
+| `symbolName` | `string` | Yes | Symbol name from the [tscircuit symbol library](https://symbols.tscircuit.com/). |
+| `chipRef` | `string` | No | Selector for the physical chip represented by this symbol. Requires `connections`. |
+| `connections` | `Record<string, string \| string[]>` | No | Maps every symbol port label to exactly one port on the chip selected by `chipRef`. |
+| `displayName` | `string` | No | Human-facing name for the schematic representation. |
+| `schX` | `distance` | No | X position in the schematic. |
+| `schY` | `distance` | No | Y position in the schematic. |
+| `schRotation` | `number \| string` | No | Schematic rotation in 90-degree increments. |
+| `schSectionName` | `string` | No | Schematic section containing the symbol. |
+| `schSheetName` | `string` | No | Name of the schematic sheet containing the symbol. |

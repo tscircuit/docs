@@ -32,7 +32,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
 | `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
-| `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'auto-cloud' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
+| `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
 | `autorouterVersion` | `'v1' \| 'v2' \| 'v3' \| 'v4' \| 'v5' \| 'latest'` | Pin routing to a specific autorouter implementation when comparing routing behavior across versions. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
@@ -269,13 +269,8 @@ Usually you'll want to use an autorouter preset:
 - `autorouter="auto"` - Uses the [platform configuration](../guides/running-tscircuit/platform-configuration.md). For tscircuit.com this defaults to `sequential-trace`.
 - `autorouter="sequential-trace"` - Iterate over each trace and use tscircuit's fast built-in autorouter. This method is fast and deterministic but often fails with over 50 traces.
 - `autorouter="auto-local"` - Use the platform configuration, but only route locally (do not make API calls)
-- `autorouter="auto-cloud"` - Use the platform configuration for
 - `autorouter="laser_prefab"` - Reserve prefabricated vias that can be reassigned during routing. Ideal for rapid-turn PCBs produced with laser ablation and mechanical drilling templates. See the [ViaGrid / Prefabricated Vias guide](../guides/tscircuit-essentials/using-viagrid-prefabricated-vias-with-autorouter.mdx) for a complete walkthrough.
 - `autorouter="auto_jumper"` - Route single-layer boards by inserting jumper wires when traces would otherwise cross. See the [Single Layer Jumper Autorouting guide](../guides/tscircuit-essentials/single-layer-jumper-autorouting.mdx) for a complete walkthrough.
-
-For complex boards with over 50 traces, you should use `autorouter="auto-cloud"`
-to take advantage of tscircuit's cloud autorouters, which internally use the popular
-[freerouting](https://github.com/freerouting/freerouting) library.
 
 ### Tuning Router Work with `autorouterEffortLevel`
 
@@ -293,7 +288,7 @@ Use lower values while iterating quickly, then increase effort for dense boards
 or final route attempts.
 
 ```tsx
-<board width="30mm" height="20mm" autorouter="auto-cloud" autorouterEffortLevel="10x">
+<board width="30mm" height="20mm" autorouter="auto" autorouterEffortLevel="10x">
   <chip name="U1" footprint="qfn32" pcbX={-4} pcbY={0} />
   <chip name="U2" footprint="qfn32" pcbX={4} pcbY={0} />
   <trace from=".U1 > .pin1" to=".U2 > .pin1" />

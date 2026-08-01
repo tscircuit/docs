@@ -1,6 +1,6 @@
 ---
 title: tsci login
-description: Sign in to the tscircuit registry to enable publishing and cloud tools
+description: Sign in to the tscircuit registry to enable publishing tools
 sidebar_position: 1
 ---
 
@@ -8,7 +8,6 @@ sidebar_position: 1
 login to tscircuit to use any tools, but logging in does enable the following
 great features:
 
-- Cloud Autorouting (`autorouter="auto-cloud"`)
 - Package Management (publishing and automatic bundling)
 
 :::info
@@ -17,7 +16,7 @@ You don't need a tscircuit account to download and use other people's packages
 
 `tsci login` will take you to a login page where you'll sign in with Github.
 After the login flow you'll have have token on your machine that authenticates
-you to publish packages or use the cloud autorouter.
+you to publish packages.
 
 ## Logout
 

@@ -27,7 +27,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
     <inductor
       name="L1"
       footprint="0603"
-      inductance="10μH"
+      inductance="10uH"
     />
    </board>
   )
@@ -52,7 +52,7 @@ Since inductors are non-polar components, pin1 and pin2 are functionally equival
 
 Inductors can be configured with these key properties:
 
-- **inductance** - The inductance value specified as a string e.g. `"10μH"`, `"100nH"`, or `"1mH"`
+- **inductance** - The inductance value specified as a string e.g. `"10uH"`, `"100nH"`, or `"1mH"`
 - **maxCurrentRating** - Maximum current the inductor can handle e.g. `"500mA"` or `"2A"`
 - **tolerance** - Inductance tolerance percentage e.g. `"±20%"` or `"±10%"`
 - **dcResistance** - DC resistance of the inductor windings e.g. `"0.1Ω"`
@@ -85,7 +85,7 @@ Inductors are essential in switching power supplies for energy storage and filte
         <inductor
           name="L1"
           footprint="0805"
-          inductance="22μH"
+          inductance="22uH"
           maxCurrentRating="2A"
           schX={-2}
           pcbX={-2}
