@@ -1,34 +1,25 @@
 ---
-title: Generating Circuit Boards with AI
+title: How to prompt AI to build tscircuit circuits
 sidebar_position: 1
-description: Learn how to use AI assistants with the tscircuit skill to design and generate circuit boards in tscircuit
+description: Learn how to write effective prompts for AI-assisted circuit design with tscircuit
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview";
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
-AI assistants can help you design and generate circuit boards more quickly by understanding your requirements, searching for components, and writing tscircuit code. This guide walks you through setting up your project for AI-assisted circuit design.
+AI assistants are most useful when a circuit prompt describes the product, the important interfaces, the physical constraints, and how the result should be checked. The examples below are based on real tscircuit design prompts. They are intentionally direct: the goal is to give the AI enough engineering context to make useful decisions without prescribing every implementation detail.
 
-## Step 1: Choose Your Form Factor
+## Start from a form factor
 
-Before generating a circuit with AI, you'll typically want to start with a specific form factor or template. Common form factors include:
+Before asking an AI assistant to place parts, decide whether the board needs to fit an existing standard. Common starting points include Arduino shields, Raspberry Pi HATs, MicroMod modules, or a custom outline with mounting holes. A reusable form factor gives the AI a mechanical boundary and lets the prompt focus on the circuit.
 
-- **Arduino Shield** - A PCB designed to stack on top of Arduino boards
-- **Raspberry Pi Hat** - A PCB designed to connect to Raspberry Pi GPIO headers
-- **MicroMod Module** - SparkFun's modular prototyping standard
-- **Custom Board** - Define your own dimensions and shape
-
-Many of these templates are available via `@tscircuit/common`, making it easy to get started with a compatible board layout.
-
-### Example: Using an Arduino Shield Template
-
-Here's how you can start with an Arduino Shield form factor:
+For example, an Arduino shield can provide the board outline and headers while the prompt describes the new function:
 
 <CircuitPreview defaultView="pcb" code={`
 import { ArduinoShield } from "@tscircuit/common"
 
 export default () => (
   <ArduinoShield name="example">
-    <resistor name="R1" resistance="220ohm" footprint="0805" pcbX={0} pcbY={5}  />
+    <resistor name="R1" resistance="220ohm" footprint="0805" pcbX={0} pcbY={5} />
     <led name="LED1" color="red" footprint="0603" pcbX={0} pcbY={-5} />
     <trace from=".D13" to="R1.pin1" />
     <trace from="R1.pin2" to="LED1.pin1" />
@@ -37,123 +28,263 @@ export default () => (
 )
 `} />
 
-The `ArduinoShield` component automatically includes the correct mounting holes, header connectors, and board dimensions to fit standard Arduino boards.
+## Start with the tscircuit skill
 
-## Step 2: Install the tscircuit Skill
-
-Install the `tscircuit` skill so your AI assistant has the context it needs to
-design boards with tscircuit:
+Install the [`tscircuit` skill](https://github.com/tscircuit/skill) so your AI assistant has the syntax, CLI workflows, component-selection guidance, and layout conventions it needs:
 
 ```bash
-npx skills add tscircuit/skill
+bunx skills add tscircuit/skill
 ```
 
-The skill lives in the [tscircuit/skill](https://github.com/tscircuit/skill)
-repository, and it includes the syntax, CLI workflows, and design patterns the
-AI needs to build a board from scratch.
+The skill is especially useful when the task involves importing parts, choosing footprints, running `tsci build`, inspecting placement, or iterating on a real board. See [Use tscircuit with AI](/advanced/ai-context) for the general setup.
 
-Once the skill is installed, describe the board you want to build, your form
-factor, and any constraints. The AI can then search for parts, write circuit
-code, and iterate on the design with the right tscircuit context.
+## A useful prompt structure
 
-## Step 3: How AI Assists with Circuit Design
+A strong circuit-building prompt usually contains:
 
-Once configured, AI assistants can help you by:
+1. **The product goal** — what the board or device should do.
+2. **The main components and interfaces** — MCU, transceiver, display, connector, sensor, power input, or motor driver.
+3. **Sourcing requirements** — for example, parts should be available from JLCPCB, or a known component should come from `tscircuit/common`.
+4. **Mechanical requirements** — board size, mounting holes, connector direction, layer count, or a particular enclosure or form factor.
+5. **Validation and workflow** — commands such as `tsci build`, `tsci check placement`, snapshots, or visual inspection.
+6. **A sequence of work** — placement and connectivity first, then routing and optimization.
 
-### Searching for Components
+Here is a reusable template:
 
-When you ask for a specific component, the AI can use `tsci search` to find suitable parts:
+```text
+Use the tscircuit skill to build a board for [product or function].
 
-```bash
-$ tsci search "555 timer"
-Found 5 footprint(s) from KiCad:
- 1. Package_SO/SOIC-8_3.9x4.9mm_P1.27mm
- 2. Package_DIP/DIP-8_W7.62mm
- ...
+The board should use [main components and interfaces].
+Use [tscircuit/common components, JLCPCB imports, or specific part numbers]
+where appropriate.
 
-Found 3 package(s) in the tscircuit registry:
-1. johndoe/555-timer-circuit (v1.0.2) - Complete 555 timer circuit
-...
+Mechanical constraints:
+- [dimensions, mounting holes, connector orientation, enclosure, or shape]
+- [layer count, size, or clearance constraints]
+
+First create a complete, readable placement and netlist. Then run
+tsci check placement, inspect the PCB image, and fix overlaps or missing
+connections before enabling routing. Use tsci build and report any
+remaining errors.
 ```
 
-### Importing Components
+## Prompt examples by use case
 
-The AI can import pre-built components from the registry:
+### Describe a product and its important interfaces
 
-```bash
-$ tsci import seveibar/usb-c-connector
+Start with the behavior of the device and name the parts that define its architecture. This gives the AI a meaningful system boundary while leaving it room to choose supporting components.
+
+```text
+Use tscircuit to build the following electronic device: Race-kart CAN bus
+telemetry puck built around an NXP S32K144 and a TJA1051 transceiver with a
+sealed M12 connector and microSD logging.
 ```
 
-This adds the component to your project dependencies, making it available to import in your circuit files.
+For a smaller sensor board, include the signal path and the physical arrangement:
 
-### Writing Circuit Code
+```text
+Please create a USB-C RP2040 board (use tscircuit/common for the RP2040
+circuit) that has 4 photo diodes, amplified, connected to the RP2040 using
+tscircuit.
 
-The AI can generate tscircuit code based on your requirements, using the correct syntax for:
+We want to be able to read photodiode levels rapidly from the RP2040 via
+USB-C. Space out the diodes in a row over 100mm (the device should be shaped
+like a stick) and make sure there are mounting holes.
+```
 
-- Component placement
-- Trace routing
-- Pin configurations
-- Footprint selection
+For power electronics, state the complete power path and the size target:
 
-### Iterating on Designs
+```text
+Can you generate a 1 cell 18650 battery board with BMS, 3.4V to 12V step up
+and USB-C charger circuit?
 
-As you provide feedback, the AI can:
+Keep it relatively small. Use tscircuit, use components from JLCPCB.
+```
 
-- Adjust component values
-- Add or remove parts
-- Reorganize layouts
-- Fix connection errors
+Other useful product-oriented prompts include:
 
-## Example Workflow
+```text
+Use tscircuit to build the following electronic device: Ultrasonic imaging
+intro kit using TDC7200 time-to-digital converter to measure echo delays from
+a transducer array.
+```
 
-Here's a typical workflow for AI-assisted circuit design:
+```text
+Use tscircuit to build the following electronics device: I2S-to-analog hi-fi
+DAC module using a PCM5102A to modernize a vintage CD player or streamer with
+low-noise RCA outputs.
+```
 
-1. **Define your goal**: "I want to create an Arduino Shield that reads temperature from a sensor and displays it on an LCD"
+### Recreate or extend an existing design
 
-2. **AI searches for components**:
+When a reference design exists, tell the AI what to inspect and what parts of the reference should be preserved. It can then use the reference for architecture while still producing tscircuit source.
 
-   ```bash
-   tsci search "temperature sensor"
-   tsci search "16x2 LCD"
-   ```
+```text
+Read this article, pull all the relevant images and analyze them (to
+understand the schematic), recreate the board Pico Z80:
+https://eaw.app/picoz80/
 
-3. **AI generates initial circuit**:
+Use tsci import with JLCPCB to get the chips you need. Keep things organized
+into multiple files since the project is complex. Don't worry about routing
+but get decent placement.
+```
 
-   ```tsx
-   import { ArduinoShield } from "@tscircuit/common";
+For an existing PCB file or online reference, be explicit about the first verification step:
 
-   export default () => (
-     <ArduinoShield>
-       <chip
-         name="U1"
-         footprint="soic8"
-         pinLabels={{
-           pin1: "VCC",
-           pin2: "SCL",
-           pin3: "SDA",
-           pin4: "GND",
-         }}
-       />
-       {/* ... rest of circuit ... */}
-     </ArduinoShield>
-   );
-   ```
+```text
+Please recreate this circuit board using tscircuit. Use the tscircuit skill
+and tsci check placement to check placement:
+https://www.kicadprojects.com/d-1281214538485596160
+```
 
-4. **Preview and iterate**: Run `tsci dev` to see the design, then ask the AI to make adjustments
+To extend a known tscircuit design, identify the reusable circuit and the new behavior:
 
-5. **Export fabrication files**: When ready, use `tsci export gerber` to generate files for manufacturing
+```text
+Referencing tscircuit/common's RP2040 microcontroller board and
+tscircuit.com/abse/gameboy, please build a dual RP2350 board where one RP2350
+functions as the GPU, taking serial commands for what to draw from the CPU
+RP2350.
 
-## Tips for Working with AI
+Otherwise we want the same stuff with regard to the screen header, the
+buttons, and the speaker circuit.
+```
 
-- **Be specific**: Describe exactly what you want, including component types and values
-- **Provide context**: Reference your form factor and any physical constraints
-- **Iterate gradually**: Make changes in small steps rather than redesigning everything at once
-- **Verify connections**: Always check that all components are properly connected
-- **Review footprints**: Confirm that selected footprints match your manufacturing requirements
+### Give the AI sourcing and footprint constraints
 
-## Next Steps
+If the board must be manufacturable, say so in the first prompt. The AI can then search for real footprints instead of filling the design with placeholders.
 
-- Learn more about [essential tscircuit elements](/guides/tscircuit-essentials/essential-elements)
-- Explore [automatic PCB layout](/guides/tscircuit-essentials/automatic-pcb-layout)
-- Read about [configuring chips](/guides/tscircuit-essentials/configuring-chips)
-- Check out the [tscircuit CLI commands](/command-line/tsci-dev)
+```text
+I want to build a PCB that goes on the back of a NEMA 17 stepper and is
+RP2040/A4988 based. Please use the tscircuit skill and import from JLCPCB
+extensively using `tsci import --jlcpcb` and `tsci search --jlcpcb`.
+```
+
+For a development board, specify the sourcing tradeoff and the intended use:
+
+```text
+Can you select a good starter FPGA and create a dev board with tscircuit?
+The parts should generally be available and stocked at JLCPCB so we can
+order the board.
+
+The FPGA should drive a very low-resolution 320x160 display. Include a
+breakout with a pin header for an ILI9341-driven 2.8-inch screen. Ideally the
+board should be programmable via USB-C; if a programmer is needed, use a
+simple, inexpensive RP2040, STM32, or a part recommended by the FPGA maker.
+```
+
+For a single part where the footprint is the main goal, a short prompt is enough:
+
+```text
+Using tscircuit, create an RK3326. Feel free to import a footprint from
+JLCPCB.
+```
+
+### Include the physical constraints
+
+Physical details are not secondary to the circuit. They determine the board outline, connector placement, mounting-hole locations, and often the routing strategy.
+
+```text
+Can you use tscircuit to make me a board that is an RP2040 XIAO board with
+an I2C screen and standard push buttons so you can play Tetris with it?
+
+Use a two-layer board, set minViaCopperDiameter to 2.5 and
+minViaHoleDiameter to 1, and keep the board fairly small.
+```
+
+For a board that must fit a mechanical assembly, state the mounting relationship and the power architecture:
+
+```text
+I want to build a PCB that goes on the back of a NEMA 17 stepper and is
+RP2040/A4988 based. Treat USB-C and the RP2040, the motor driver and power,
+sensing/protection, and the motor-side mechanical interface as separate
+blocks. The board needs the NEMA 17 mounting pattern and practical motor and
+USB connections.
+```
+
+### Ask for validation before routing
+
+The best first result is a correct, inspectable placement and netlist. Ask the AI to validate those before spending time on autorouting:
+
+```text
+Please create a circuit for an 8x8 USB audio interface core using an XMOS
+XU208 to stream multichannel audio for a small studio rack with ADAT
+expansion.
+
+Use tsci build and tsci check placement. Inspect the PCB image, make the
+board compact, and keep the decoupling capacitors near the relevant pins.
+```
+
+Useful follow-up prompts are concrete and testable:
+
+```text
+Use `tsci build --pcb-png` and inspect the board visually. It is extremely
+sparse right now; try to pack it more tightly.
+```
+
+```text
+Run `tsci check placement`. Resolve every overlap and missing connection you
+find before turning routing back on.
+```
+
+```text
+Create a simple USB-C 1:2 hub in tscircuit. First make the placement and
+connectivity readable, then build it and check for placement errors.
+```
+
+### Generate families of test circuits
+
+For datasets or design exploration, define the common structure and the variation you want. Make the generation rules explicit so the AI does not produce ten copies of the same board:
+
+```text
+Initialize a tscircuit dataset of typical boards with connectors on the
+edges, one to three MCU-like components in the center, and 0201/0402/0603
+passives around them. Import real connector and MCU footprints with tsci
+search or tsci import, create the placement JSON first, then generate the
+TSX circuit files. Run tsci check placement and generate five example
+circuits for inspection. Keep routing disabled until placement is correct.
+```
+
+Then refine the family with small, measurable follow-ups:
+
+```text
+Generate 10 more boards, keeping them at or below 60mm by 40mm and enforcing
+at least 50% board density. For this batch, import some of the MCUs from the
+JLCPCB Wi-Fi modules list so the examples have more variation.
+```
+
+## A good iteration loop
+
+After the first build, give the AI one focused correction at a time:
+
+1. Run `tsci build` with routing disabled if placement is still changing.
+2. Run [`tsci check placement`](/command-line/tsci-check) and fix overlaps, off-board parts, courtyard violations, and missing connections.
+3. Inspect a PCB snapshot or `--pcb-png` output. Ask about visible empty space, connector orientation, and component grouping.
+4. Check the netlist before routing. Make sure both pins of every passive are connected.
+5. Enable routing only after the placement and connectivity are credible.
+6. Run the build and checks again after each meaningful change.
+
+Good feedback is specific:
+
+```text
+The USB connector is facing away from the board edge. Rotate it 180 degrees,
+move it close to the edge without putting a plated hole off-board, then run
+tsci check placement again.
+```
+
+Avoid asking for placement, routing, mechanical changes, and a new architecture in one follow-up. Small feedback loops make it easier for both you and the AI to see which change improved the board.
+
+## Common prompt mistakes
+
+- **Only naming a chip:** “Make an RP2040 board” leaves the power, USB, programming, and mechanical requirements undefined.
+- **Omitting the manufacturing target:** If the board must be orderable, say whether parts should be available from JLCPCB or another supplier.
+- **Routing too early:** Ask for placement and connectivity checks before asking for a finished routed board.
+- **No physical context:** A board mounted to a motor, placed in a case, or shaped like a stick needs those constraints in the first prompt.
+- **No acceptance criteria:** Include the commands, snapshots, or checks the AI should run before calling the task complete.
+
+## Related guides
+
+- [Use tscircuit with AI](/advanced/ai-context)
+- [Importing from JLCPCB](/guides/importing-modules-and-chips/importing-from-jlcpcb)
+- [`tsci import`](/command-line/tsci-import)
+- [`tsci build`](/command-line/tsci-build)
+- [Automatic PCB layout](/guides/tscircuit-essentials/automatic-pcb-layout)
