@@ -20,18 +20,67 @@ Some use cases:
 - Organizations may want to use their own internal registry for importing circuits instead of [tscircuit.com](https://tscircuit.com)
 - For [autorouting.com](https://autorouting.com), we configure the platform to not perform any autorouting
 
-## Customizing the Platform
+## Platform Configuration Reference
 
-All of the following features of the platform can be configured:
+Every platform configuration property is optional. The available properties are
+grouped below by purpose.
 
-- **partsEngine** - The engine used to automatically find parts matching component specifications
-- **registryApiUrl** - The registry to use, defaults to `https://api.tscircuit.com`. See [Registry API](../../web-apis/the-registry-api.md) for more details
-- **cloudAutorouterUrl** - The cloud autorouter to use, defaults to a tscircuit cloud service that uses freerouting
-- Disable specific circuit outputs to optimize build times, such as disabling autorouting
-- **footprintLibraryMap** - Configure custom prefixes for loading footprint strings from a server. This is how built-in strings like `kicad:*` and `jlcpcb:*` are loaded.
-- **printBoardInformationToSilkscreen** - Print the board information to the silkscreen. This includes standard board and platform information like the board name, version etc.
+### Engines and routing
 
-> See the full specification for the [tscircuit platform configuration](https://github.com/tscircuit/props/blob/main/lib/platformConfig.ts)
+| Property | Type | Description |
+| --- | --- | --- |
+| `partsEngine` | `PartsEngine` | Finds purchasable parts that match component specifications. |
+| `autorouter` | `AutorouterProp` | Selects or configures the autorouter used by the platform. |
+| `autorouterMap` | `Record<string, AutorouterDefinition>` | Registers named custom autorouters. Each definition creates an autorouter instance from Simple Route JSON. |
+| `allowLegacyAutorouters` | `boolean` | Enables the deprecated `sequential_trace` and `auto_cloud` autorouter presets. Defaults to `false`; enable this only temporarily while migrating projects. |
+| `cloudAutorouterUrl` | `string` | Sets the cloud autorouter endpoint. The default tscircuit platform uses a tscircuit cloud service. |
+| `defaultSpiceEngine` | `"spicey" \| "ngspice" \| string` | Selects the default SPICE simulation engine. Custom engine names can refer to entries in `spiceEngineMap`. |
+| `spiceEngineMap` | `Record<string, SpiceEngine>` | Registers named SPICE engines. Each engine accepts a SPICE netlist and returns simulation-result Circuit JSON. |
+| `localCacheEngine` | `LocalCacheEngine` | Provides a `localStorage`-compatible cache for render phases and engines, with `getItem`, `setItem`, and optional `removeItem` methods. |
+| `enablePartOrientationAnalysis` | `boolean` | Analyzes rendered and supplier footprints so manufacturing exporters can align their semantic pin 1 orientations. |
+| `pcbPackSolverTimeoutMs` | `number` | Sets the maximum time, in milliseconds, that an individual PCB pack solver may run. The timeout is checked between solver steps. |
+
+### Registry and project metadata
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `registryApiUrl` | `string` | Sets the registry API used to import circuits. It defaults to `https://api.tscircuit.com`. See the [Registry API](../../web-apis/the-registry-api.md) for details. |
+| `projectName` | `string` | Sets the project or board name exposed to platform features and exporters. |
+| `projectBaseUrl` | `string` | Sets the base URL used to resolve project resources. |
+| `version` | `string` | Sets the project or platform version exposed to platform features and exporters. |
+| `url` | `string` | Sets the canonical URL associated with the project or platform. |
+| `printBoardInformationToSilkscreen` | `boolean` | Prints standard board and platform information, such as the board name and version, on the silkscreen. |
+| `includeBoardFiles` | `string[]` | Selects the board files that `tsci build` builds automatically. Entries may be paths or globs; the default is `["**/*.circuit.tsx"]`. |
+| `snapshotsDir` | `string` | Sets the directory used by `tsci snapshot`. The default is `tests/__snapshots__`. |
+| `unitPreference` | `"mm" \| "in" \| "mil"` | Sets the platform's preferred display unit. |
+
+### Render and DRC controls
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `pcbDisabled` | `boolean` | Disables PCB rendering. |
+| `routingDisabled` | `boolean` | Disables PCB routing. |
+| `schematicDisabled` | `boolean` | Disables schematic rendering. |
+| `partsEngineDisabled` | `boolean` | Disables automatic part selection through the parts engine. |
+| `drcChecksDisabled` | `boolean` | Disables all design-rule checks. |
+| `netlistDrcChecksDisabled` | `boolean` | Disables netlist design-rule checks. |
+| `routingDrcChecksDisabled` | `boolean` | Disables routing design-rule checks. |
+| `placementDrcChecksDisabled` | `boolean` | Disables placement design-rule checks. |
+| `pinSpecificationDrcChecksDisabled` | `boolean` | Disables pin-specification design-rule checks. |
+
+### Footprints, files, and platform hooks
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `footprintLibraryMap` | `Record<string, footprint loader or library>` | Registers footprint-library prefixes and their loaders. This is how strings such as `kicad:*` and `jlcpcb:*` are resolved. A loader returns footprint Circuit JSON and may also return a CAD model. |
+| `footprintFileParserMap` | `Record<string, FootprintFileParserEntry>` | Registers footprint-file extensions, such as `kicad_mod`, with parsers that load footprint Circuit JSON from a URL. |
+| `staticFileLoaderMap` | `Record<string, static file loader>` | Registers file-extension loaders that convert static-file contents into ES module import results. |
+| `resolveProjectStaticFileImportUrl` | `(path: string) => Promise<string>` | Resolves a project-relative static-file path to an importable URL. |
+| `nodeModulesResolver` | `(modulePath: string) => Promise<string \| null>` | Resolves a Node module specifier to a loadable path or URL, or returns `null` when it cannot be resolved. |
+| `platformFetch` | `typeof fetch` | Replaces the fetch implementation used for platform requests. |
+
+See the source for the complete TypeScript definitions in
+[`platformConfig.ts`](https://github.com/tscircuit/props/blob/main/lib/platformConfig.ts).
 
 ### The Default Platform
 
