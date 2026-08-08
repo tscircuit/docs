@@ -1,75 +1,95 @@
 ---
 title: tsci search
-description: Discover footprints and packages across the tscircuit ecosystem
+description: Search supplier inventory, footprints, and packages across the tscircuit ecosystem
 ---
 
-`tsci search` finds footprints and packages from across the tscircuit ecosystem.
+`tsci search` finds supplier components, footprints, and packages across the
+tscircuit ecosystem.
 
-### Options
+## Options
+
 - `--kicad` – search KiCad footprints
 - `--jlcpcb` – search JLCPCB components
 - `--lcsc` – alias for `--jlcpcb`
+- `--digikey` – search DigiKey components
+- `--mouser` – search Mouser components
 - `--tscircuit` – search tscircuit registry packages
 - `--json` – output search results as JSON
 
-When no filter options are provided, all sources are searched.
+When no source option is provided, the command searches JLCPCB. You can combine
+source options to search multiple providers in the same command.
 
 ## Usage
 
 ```bash
 $ tsci search resistor
-Found 10 footprint(s) from KiCad:
- 1. Resistor_SMD/R_01005_0402Metric_Pad0.57x0.30mm_HandSolder
- 2. Resistor_SMD/R_01005_0402Metric
- 3. Resistor_SMD/R_0201_0603Metric_Pad0.64x0.40mm_HandSolder
- 4. Resistor_SMD/R_0201_0603Metric
- 5. Resistor_SMD/R_0402_1005Metric_Pad0.72x0.64mm_HandSolder
- 6. Resistor_SMD/R_0402_1005Metric
- 7. Resistor_SMD/R_0603_1608Metric_Pad0.98x0.95mm_HandSolder
- 8. Resistor_SMD/R_0603_1608Metric
- 9. Resistor_SMD/R_0612_1632Metric_Pad1.18x3.40mm_HandSolder
-10. Resistor_SMD/R_0612_1632Metric
-Found 11 package(s) in the tscircuit registry:
-1. seveibar/usb-c-flashlight (vundefined) - Stars: 5 - A compact USB-C powered push button board with a red LED, utilizing a single current-limiting resistor for the LED indicator.
-2. ArnavK-09/OPT4048DTSR (vundefined) - Stars: 3 - Sparkfun schematic with an 8-pin SOIC-8 IC (OPT4048) connected to a 3.3V power supply, ground, I2C bus lines (SCL, SDA), an address pin, an interrupt pin, plus a pull-up resistor and a decoupling capacitor.
-...
+Found 10 component(s) in JLC search:
+1. 0603WAF1002T5E (C25804) - ... (stock: 37,165,617)
 ```
 
-Use any search term to discover related footprints or published projects.
-
-### JSON Output Example
-
-You can output search results as JSON by using the `--json` flag.
+Select a source when you need a particular kind of result:
 
 ```bash
-$ tsci search --jlcpcb "RP2040" --json
+# Distributor inventory
+$ tsci search --digikey "10k 0603 resistor"
+$ tsci search --mouser "10k 0603 resistor"
+
+# Compare DigiKey and Mouser in one result set
+$ tsci search --digikey --mouser "STM32F4 microcontroller"
+
+# Footprints or reusable tscircuit packages
+$ tsci search --kicad "QFP-32"
+$ tsci search --tscircuit "ESP32"
+```
+
+The distributor output includes the manufacturer part number, the supplier's
+orderable part number, description, and cached stock quantity. DigiKey results
+are served through
+[digikeysearch.tscircuit.com](https://digikeysearch.tscircuit.com), while
+Mouser results are served through
+[mousersearch.tscircuit.com](https://mousersearch.tscircuit.com).
+
+:::note
+
+Stock and price values are cached snapshots and may differ from the supplier's
+checkout page. `--digikey` and `--mouser` are discovery options; `tsci import`
+does not currently import components directly from those distributors.
+
+:::
+
+## JSON output
+
+Use `--json` for scripts and tools. Every result has a `source` discriminator;
+DigiKey and Mouser results use `digikey_product_number` and
+`mouser_product_number`, respectively.
+
+```bash
+$ tsci search --digikey --mouser "10k 0603 resistor" --json
 ```
 
 ```json
 {
-  "query": "RP2040",
+  "query": "10k 0603 resistor",
   "results": [
     {
-      "source": "jlcpcb",
-      "lcsc": 2040,
-      "mfr": "RP2040",
-      "package": "LQFN-56(7x7)",
-      "is_basic": false,
-      "is_preferred": false,
-      "description": "",
-      "stock": 42449,
-      "price": 0.872857143
+      "source": "digikey",
+      "digikey_product_number": "311-10.0KHRCT-ND",
+      "mfr": "RC0603FR-0710KL",
+      "manufacturer": "YAGEO",
+      "package": "0603",
+      "description": "RES 10K OHM 1% 1/10W 0603",
+      "stock": 100000,
+      "price": 0.1
     },
     {
-      "source": "jlcpcb",
-      "lcsc": 5350143,
-      "mfr": "RP2040-Zero",
-      "package": "-",
-      "is_basic": false,
-      "is_preferred": false,
-      "description": "",
-      "stock": 51,
-      "price": 5.091428571
+      "source": "mouser",
+      "mouser_product_number": "603-RC0603FR-0710KL",
+      "mfr": "RC0603FR-0710KL",
+      "manufacturer": "YAGEO",
+      "package": "0603",
+      "description": "Thick Film Resistors - SMD 10K ohm 1%",
+      "stock": 100000,
+      "price": 0.1
     }
   ]
 }
