@@ -125,9 +125,15 @@ Search for footprints and components across the tscircuit ecosystem.
 tsci search "usb-c connector"
 tsci search "temperature sensor"
 tsci search "atmega328"
+tsci search --digikey "10k 0603 resistor"
+tsci search --mouser "10k 0603 resistor"
+tsci search --digikey --mouser "STM32F4 microcontroller" --json
 ```
 
-**Output:** Returns matching footprints from KiCad libraries and published packages from the tscircuit registry.
+**Output:** Returns matching supplier components, KiCad footprints, or published
+packages from the selected sources. With no source flag, JLCPCB is searched.
+DigiKey and Mouser results include cached stock and supplier part numbers; use
+them for discovery rather than as direct `tsci import` sources.
 
 ### `tsci import [component]`
 
