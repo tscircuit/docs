@@ -1,0 +1,107 @@
+---
+title: Pin attributes
+description: >-
+  Use pinAttributes in TSX to describe pin intent and understand connection
+  warnings and errors.
+---
+
+`pinAttributes` maps each pin label to metadata about that pin:
+
+```tsx
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+        pin3: "RESET",
+        pin4: "NC",
+      }}
+      pinAttributes={{
+        VCC: { requiresPower: true },
+        GND: { requiresGround: true },
+        RESET: { mustBeConnected: true },
+        NC: { doNotConnect: true },
+      }}
+    />
+  </board>
+)
+```
+
+## Attribute reference
+
+| Attribute | Example | Effect |
+| --- | --- | --- |
+| `requiresPower` | `VCC: { requiresPower: true }` | Opts the port into missing-trace validation for a required power connection. |
+| `requiresGround` | `GND: { requiresGround: true }` | Opts the port into missing-trace validation for a required ground connection. |
+| `requiresVoltage` | `SENSE: { requiresVoltage: 3.3 }` | Opts the port into missing-trace validation and records the required voltage; it does not validate the net's voltage. |
+| `mustBeConnected` | `RESET: { mustBeConnected: true }` | Requires the port to be part of a net; a floating port is an error. |
+| `doNotConnect` | `NC: { doNotConnect: true }` | Records an intentional float, so missing-trace validation ignores the port. |
+| `providesPower`, `providesGround`, `providesVoltage` | `VOUT: { providesPower: true }` | Describes a power or ground source for downstream tools. |
+| `capabilities`, `activeCapabilities`, `activeCapability` | `SDA: { capabilities: ["i2c_sda"] }` | Describes supported or selected I2C, SPI, or UART roles. |
+| `canUseInternalPullup`, `isUsingInternalPullup`, `needsExternalPullup` | `GPIO: { needsExternalPullup: true }` | Describes pull-up support, selection, or requirement. |
+| `canUseInternalPulldown`, `isUsingInternalPulldown`, `needsExternalPulldown` | `GPIO: { needsExternalPulldown: true }` | Describes pull-down support, selection, or requirement. |
+| `canUseOpenDrain`, `isUsingOpenDrain`, `canUsePushPull`, `isUsingPushPull` | `GPIO: { canUseOpenDrain: true }` | Describes supported or selected output modes. |
+| `shouldHaveDecouplingCapacitor`, `recommendedDecouplingCapacitorCapacitance` | `VCC: { shouldHaveDecouplingCapacitor: true }` | Describes decoupling requirements for downstream tools. |
+| `includeInBoardPinout`, `highlightColor`, `isGpio` | `LED: { includeInBoardPinout: true }` | Adds display, pinout, or GPIO metadata. See the [Pinout SVG guide](./pinout-svg). |
+
+## Warnings and errors
+
+For `<chip />` ports, `requiresPower`, `requiresGround`, and
+`requiresVoltage` are the opt-in to the core missing-trace check. An ordinary
+floating I/O pin does not produce this warning because no required connection
+has been declared for it.
+
+This TSX declares three required connections but leaves all three ports
+without a trace:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{ pin1: "VCC", pin2: "GND", pin3: "SENSE" }}
+  pinAttributes={{
+    VCC: { requiresPower: true },
+    GND: { requiresGround: true },
+    SENSE: { requiresVoltage: 3.3 },
+  }}
+/>
+```
+
+Each required port produces a `source_pin_missing_trace_warning`, for example:
+
+```text
+Port VCC on U1 is missing a trace
+```
+
+`mustBeConnected` invokes a stricter netlist check: the port must resolve to a
+connection, regardless of whether it is a power, ground, or voltage pin. A
+floating port produces:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{ pin1: "RESET" }}
+  pinAttributes={{ RESET: { mustBeConnected: true } }}
+/>
+```
+
+```text
+source_pin_must_be_connected_error
+Port RESET on U1 must be connected but is floating
+```
+
+`doNotConnect: true` tells the core that a floating port is intentional. It
+therefore suppresses the missing-trace diagnostic for that port:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{ pin1: "NC" }}
+  pinAttributes={{ NC: { doNotConnect: true } }}
+/>
+```

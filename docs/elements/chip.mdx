@@ -86,6 +86,7 @@ export default () => (
 | `name` | `string` | Component identifier (e.g., "U1") |
 | [`footprint`](#custom-footprints) | `string \| Footprint` | PCB footprint string or custom `<footprint>` element |
 | `pinLabels` | `Record<string, string>` | Mapping of pin numbers to labels (e.g., `{ pin1: "VCC" }`) |
+| [`pinAttributes`](/guides/tscircuit-essentials/pin-attributes) | `Record<string, PinAttributeMap>` | Describe per-pin connectivity, power, no-connect, and pinout behavior |
 | `connections` | `Record<string, string>` | Pin-to-net mappings for wiring |
 | `manufacturerPartNumber` | `string` | Manufacturer part number (MPN) |
 | `supplierPartNumbers` | `Record<string, string[]>` | Part numbers by supplier (e.g., `{ jlcpcb: ["C12345"] }`) |
