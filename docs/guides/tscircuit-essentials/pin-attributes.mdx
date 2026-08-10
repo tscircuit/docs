@@ -1,0 +1,254 @@
+---
+title: Pin attributes
+description: >-
+  Describe chip pins with pinAttributes so tscircuit can check required
+  connections, intentional no-connect pins, power and ground pins, and pinouts.
+---
+
+`pinAttributes` describes what individual pins on a component are for. It is a
+map from a pin label (or another pin alias) to a set of attributes:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{
+    pin1: "VCC",
+    pin2: "GND",
+    pin3: "RESET",
+    pin4: "NC",
+  }}
+  pinAttributes={{
+    VCC: { requiresPower: true },
+    GND: { requiresGround: true },
+    RESET: { mustBeConnected: true },
+    NC: { doNotConnect: true },
+  }}
+/>
+```
+
+The keys above use the labels from `pinLabels`, so `VCC` matches the first pin
+and `GND` matches the second. tscircuit also matches aliases such as `pin1`
+when a port has that alias, but using the logical pin label is usually clearer.
+For the complete type, see [`PinAttributeMap`](https://github.com/tscircuit/props/blob/main/lib/common/pinAttributeMap.ts).
+
+`pinAttributes` declares intent; it does not create a connection. Use a
+`<trace />` or the component's `connections` prop to wire a pin.
+
+## Common attributes
+
+| Attribute | What it describes | How it affects checks |
+| --- | --- | --- |
+| `requiresPower` | The pin must be connected to a power rail. | Satisfies the component's required-power declaration. A floating chip pin also produces a missing-trace warning. |
+| `requiresGround` | The pin must be connected to ground. | Satisfies the component's required-ground declaration. A floating chip pin also produces a missing-trace warning. |
+| `requiresVoltage` | The voltage the pin requires, such as `3.3`. | Stores the voltage requirement and causes a missing-trace warning when the pin is floating. It does not, by itself, verify that the connected net has that voltage. |
+| `mustBeConnected` | The pin may not be left floating. | The netlist check reports an error when the pin is not connected to a trace. |
+| `doNotConnect` | The pin is intentionally left unconnected. | Prevents the core missing-trace check from reporting that pin. It does not make a `mustBeConnected` pin valid. |
+| `includeInBoardPinout` | The pin should appear in the board pinout view. | Used by the [Pinout SVG guide](./pinout-svg). |
+
+## Required pins and missing-trace warnings
+
+For `<chip />` pins, the core's missing-trace check is opt-in. It checks a pin
+when its `pinAttributes` entry contains `requiresPower`, `requiresGround`, or
+`requiresVoltage`. An ordinary unconnected chip I/O pin does not produce this
+warning just because it has no trace.
+
+For example, this chip has three required pins but no traces:
+
+```tsx
+export default () => (
+  <board width="10mm" height="10mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: "VCC",
+        pin2: "GND",
+        pin3: "SENSE",
+      }}
+      pinAttributes={{
+        VCC: { requiresPower: true },
+        GND: { requiresGround: true },
+        SENSE: { requiresVoltage: 3.3 },
+      }}
+    />
+  </board>
+)
+```
+
+Rendering or building this circuit produces warnings like:
+
+```text
+source_pin_missing_trace_warning
+Port VCC on U1 is missing a trace
+
+source_pin_missing_trace_warning
+Port GND on U1 is missing a trace
+
+source_pin_missing_trace_warning
+Port SENSE on U1 is missing a trace
+```
+
+The attributes do not automatically connect the pins. Add traces to resolve
+the warnings:
+
+```tsx
+<trace name="VCC" from=".U1 > .VCC" to="net.VCC" />
+<trace name="GND" from=".U1 > .GND" to="net.GND" />
+<trace name="SENSE" from=".U1 > .SENSE" to="net.SENSE" />
+```
+
+You can also use `connections` on the chip instead of writing the traces
+explicitly.
+
+## Requiring a connection with `mustBeConnected`
+
+Use `mustBeConnected` for a pin that must never be left floating, even if it is
+not a power or ground pin:
+
+```tsx
+<board width="10mm" height="10mm">
+  <chip
+    name="U1"
+    footprint="soic8"
+    pinLabels={{ pin1: "RESET" }}
+    pinAttributes={{
+      RESET: { mustBeConnected: true },
+    }}
+  />
+</board>
+```
+
+The netlist check reports an error for the floating pin:
+
+```text
+source_pin_must_be_connected_error
+Port RESET on U1 must be connected but is floating
+```
+
+This is a stronger connectivity check than the required-power, required-ground,
+and required-voltage missing-trace warning. Resolve it by connecting the pin,
+for example:
+
+```tsx
+<trace name="RESET" from=".U1 > .RESET" to="net.RESET" />
+```
+
+## Intentional no-connect pins
+
+Use `doNotConnect` when a pin is intentionally left floating. It marks the
+source port as do-not-connect, so the core does not report a missing trace for
+that pin:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{ pin1: "NC" }}
+  pinAttributes={{
+    NC: { doNotConnect: true },
+  }}
+/>
+```
+
+For `<chip />`, the `noConnect` prop is a shorthand for the same intent:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{ pin1: "NC" }}
+  noConnect={["NC"]}
+/>
+```
+
+Do not combine `doNotConnect: true` and `mustBeConnected: true` for the same
+pin. The former says that the pin is intentionally floating, while the latter
+asks the netlist check to reject a floating pin.
+
+## Pin-specification warnings
+
+The pin-specification checks inspect the source-port attributes created from
+`pinAttributes`. A chip with no pin attributes can produce all three of these
+warnings:
+
+| Warning | Meaning |
+| --- | --- |
+| `source_component_pins_underspecified_warning` | None of the chip's ports has a recognized pin attribute. |
+| `source_no_power_pin_defined_warning` | No pin has `requiresPower: true`. |
+| `source_no_ground_pin_defined_warning` | No pin has `requiresGround: true`. |
+
+The underspecified check is component-level: it detects a chip where *none* of
+the ports has any recognized pin metadata. It does not require every pin to
+have an entry. For a meaningful component description, annotate every power,
+ground, required, and intentionally unconnected pin anyway.
+
+This is a useful minimum for a chip with power, ground, a required signal, and
+an unused pin:
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic8"
+  pinLabels={{
+    pin1: "VCC",
+    pin2: "GND",
+    pin3: "INT",
+    pin4: "NC",
+  }}
+  pinAttributes={{
+    VCC: { requiresPower: true },
+    GND: { requiresGround: true },
+    INT: { mustBeConnected: true },
+    NC: { doNotConnect: true },
+  }}
+/>
+```
+
+The power and ground entries satisfy the corresponding pin-specification
+checks. The `INT` entry additionally opts that pin into the netlist check, so it
+must have a trace.
+
+## Other pin metadata
+
+`pinAttributes` also carries information for downstream tools:
+
+- `providesPower`, `providesGround`, and `providesVoltage` describe a power
+  source or output. They are different from `requiresPower` and
+  `requiresGround`, and do not satisfy those required-pin checks.
+- `capabilities`, `activeCapabilities`, and `activeCapability` describe
+  supported or selected I2C, SPI, and UART roles.
+- Pull-up, pull-down, open-drain, push-pull, and decoupling attributes describe
+  additional electrical intent for tools that consume source-port metadata.
+- `includeInBoardPinout: true` adds a pin to the board pinout. See [Pinout
+  SVG](./pinout-svg) for a complete example.
+
+These fields are metadata; the warnings described above only validate the
+specific requirements listed in the earlier sections.
+
+## Inspecting the checks
+
+Build the circuit normally to see the diagnostics in the build output:
+
+```bash
+tsci build
+```
+
+For code that works directly with Circuit JSON, the relevant checks are exposed
+by `@tscircuit/checks`:
+
+```tsx
+import {
+  checkPinMustBeConnected,
+  runAllPinSpecificationChecks,
+} from "@tscircuit/checks"
+
+const circuitJson = circuit.getCircuitJson()
+const netlistErrors = checkPinMustBeConnected(circuitJson)
+const pinSpecificationWarnings = await runAllPinSpecificationChecks(circuitJson)
+```
+
+When debugging a diagnostic, first check that the `pinAttributes` key matches a
+pin label or alias. Then check whether the pin should be connected, explicitly
+marked `doNotConnect`, or annotated with the appropriate power or ground
+requirement.
