@@ -1,13 +1,11 @@
 ---
 title: Pin attributes
 description: >-
-  Use pinAttributes in TSX to describe pin intent and surface connection
+  Use pinAttributes in TSX to describe pin intent and understand connection
   warnings and errors.
 ---
 
-`pinAttributes` maps each pin label to metadata about that pin. Add it to a
-`<chip />` to describe required connections, intentional no-connect pins,
-power and ground pins, and other electrical intent:
+`pinAttributes` maps each pin label to metadata about that pin:
 
 ```tsx
 export default () => (
@@ -32,19 +30,15 @@ export default () => (
 )
 ```
 
-The keys in `pinAttributes` must match the labels in `pinLabels` or a pin
-alias. `pinAttributes` describes intent; it does not create a connection.
-Use a `<trace />` or the component's `connections` prop to connect a pin.
-
 ## Attribute reference
 
 | Attribute | Example | Effect |
 | --- | --- | --- |
-| `requiresPower` | `VCC: { requiresPower: true }` | A floating pin emits a missing-trace warning. |
-| `requiresGround` | `GND: { requiresGround: true }` | A floating pin emits a missing-trace warning. |
-| `requiresVoltage` | `SENSE: { requiresVoltage: 3.3 }` | A floating pin emits a missing-trace warning. It records the required voltage but does not verify the connected net's voltage. |
-| `mustBeConnected` | `RESET: { mustBeConnected: true }` | A floating pin emits a connection error. |
-| `doNotConnect` | `NC: { doNotConnect: true }` | Marks an intentionally floating pin and suppresses the missing-trace warning. |
+| `requiresPower` | `VCC: { requiresPower: true }` | Opts the port into missing-trace validation for a required power connection. |
+| `requiresGround` | `GND: { requiresGround: true }` | Opts the port into missing-trace validation for a required ground connection. |
+| `requiresVoltage` | `SENSE: { requiresVoltage: 3.3 }` | Opts the port into missing-trace validation and records the required voltage; it does not validate the net's voltage. |
+| `mustBeConnected` | `RESET: { mustBeConnected: true }` | Requires the port to be part of a net; a floating port is an error. |
+| `doNotConnect` | `NC: { doNotConnect: true }` | Records an intentional float, so missing-trace validation ignores the port. |
 | `providesPower`, `providesGround`, `providesVoltage` | `VOUT: { providesPower: true }` | Describes a power or ground source for downstream tools. |
 | `capabilities`, `activeCapabilities`, `activeCapability` | `SDA: { capabilities: ["i2c_sda"] }` | Describes supported or selected I2C, SPI, or UART roles. |
 | `canUseInternalPullup`, `isUsingInternalPullup`, `needsExternalPullup` | `GPIO: { needsExternalPullup: true }` | Describes pull-up support, selection, or requirement. |
@@ -53,13 +47,15 @@ Use a `<trace />` or the component's `connections` prop to connect a pin.
 | `shouldHaveDecouplingCapacitor`, `recommendedDecouplingCapacitorCapacitance` | `VCC: { shouldHaveDecouplingCapacitor: true }` | Describes decoupling requirements for downstream tools. |
 | `includeInBoardPinout`, `highlightColor`, `isGpio` | `LED: { includeInBoardPinout: true }` | Adds display, pinout, or GPIO metadata. See the [Pinout SVG guide](./pinout-svg). |
 
-For `<chip />`, `noConnect={["NC"]}` is shorthand for marking a pin as
-intentionally unconnected.
-
 ## Warnings and errors
 
-The following TSX produces missing-trace warnings because all three required
-pins are left unconnected:
+For `<chip />` ports, `requiresPower`, `requiresGround`, and
+`requiresVoltage` are the opt-in to the core missing-trace check. An ordinary
+floating I/O pin does not produce this warning because no required connection
+has been declared for it.
+
+This TSX declares three required connections but leaves all three ports
+without a trace:
 
 ```tsx
 <chip
@@ -74,23 +70,15 @@ pins are left unconnected:
 />
 ```
 
-The build output includes a `source_pin_missing_trace_warning` for each pin,
-such as:
+Each required port produces a `source_pin_missing_trace_warning`, for example:
 
 ```text
 Port VCC on U1 is missing a trace
 ```
 
-Connect the pins to clear the warnings:
-
-```tsx
-<trace name="VCC" from=".U1 > .VCC" to="net.VCC" />
-<trace name="GND" from=".U1 > .GND" to="net.GND" />
-<trace name="SENSE" from=".U1 > .SENSE" to="net.SENSE" />
-```
-
-`mustBeConnected` reports an error instead of a warning when a pin is left
-floating:
+`mustBeConnected` invokes a stricter netlist check: the port must resolve to a
+connection, regardless of whether it is a power, ground, or voltage pin. A
+floating port produces:
 
 ```tsx
 <chip
@@ -101,16 +89,13 @@ floating:
 />
 ```
 
-The build output includes:
-
 ```text
 source_pin_must_be_connected_error
 Port RESET on U1 must be connected but is floating
 ```
 
-Add a trace or use the component's `connections` prop to resolve the error.
-
-Use `doNotConnect: true` for a pin that should remain unconnected:
+`doNotConnect: true` tells the core that a floating port is intentional. It
+therefore suppresses the missing-trace diagnostic for that port:
 
 ```tsx
 <chip
