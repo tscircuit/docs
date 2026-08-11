@@ -44,6 +44,6 @@ When you're ready to order your board, check out the [ordering prototypes guide]
 electronics fully assembled and ready to use from the many services that accept
 our standard fabrication files.
 
-## Using the AI Assistant
+## Using an AI Assistant
 
-Our AI assistant is available in beta but is undergoing a big overhaul. We'll update this section when we're happy with it!
+See [how to prompt AI to build tscircuit circuits](../guides/circuit-generation/generating-circuit-boards-with-ai.mdx) for a simple prompt structure and examples.
