@@ -96,6 +96,183 @@ Current vendors used for automatic part sourcing:
 For each vendor, tscircuit populates multiple available chips. This means even
 if tscircuit finds parts for a vendor, you don't have to use that vendor!
 
+## Parts engines and footprint libraries
+
+Parts engines and footprint libraries solve different problems:
+
+| Extension point | Use it when you need to... | Input | Output |
+| --- | --- | --- | --- |
+| `partsEngine` | Select an orderable part for a source component | Component properties and its footprint string | Supplier part numbers, such as a JLCPCB or DigiKey number |
+| `footprintLibraryMap` | Resolve a footprint prefix such as `kicad:` or `my-company:` | The text after the prefix | Footprint Circuit JSON and, optionally, a CAD model |
+| `footprintFileParserMap` | Load a footprint file referenced by a URL or project path | A URL ending in a registered extension | Footprint Circuit JSON and, optionally, a CAD model |
+
+For example, `footprint="kicad:Resistor_SMD/R_0603_1608Metric"` is
+resolved by `footprintLibraryMap.kicad`. It does not call
+`partsEngine.findPart`. If you only want to load footprints from a local KiCad
+installation, configure a footprint-library loader rather than a parts engine.
+
+### Create a custom parts engine
+
+A parts engine implements the `PartsEngine` interface from `@tscircuit/props`.
+Its required `findPart` method receives the rendered source component and the
+resolved footprinter string. It returns zero or more recognized supplier part
+numbers. Returning an empty object means that the engine did not find a match.
+
+```ts title="parts-engine.ts"
+import type {
+  PartsEngine,
+  SupplierPartNumbers,
+} from "@tscircuit/props"
+
+const internalCatalog: Record<string, SupplierPartNumbers> = {
+  "simple_resistor:0603": { jlcpcb: ["C25804"] },
+  "simple_capacitor:0603": { jlcpcb: ["C14663"] },
+}
+
+export const internalPartsEngine: PartsEngine = {
+  findPart({ sourceComponent, footprinterString }) {
+    const componentType =
+      "ftype" in sourceComponent ? sourceComponent.ftype : sourceComponent.type
+    const key = `${componentType}:${footprinterString ?? ""}`
+    return internalCatalog[key] ?? {}
+  },
+}
+```
+
+Register it for every board in a CLI project:
+
+```ts title="tscircuit.config.ts"
+import type { PlatformConfig } from "@tscircuit/props"
+import { internalPartsEngine } from "./parts-engine"
+
+export default {
+  platformConfig: {
+    partsEngine: internalPartsEngine,
+  } satisfies PlatformConfig,
+}
+```
+
+`PartsEngine` also has an optional `fetchPartCircuitJson` method. Implement it
+when an engine can retrieve the complete Circuit JSON for a supplier or
+manufacturer part number. This is required when a supplier-prefixed footprint
+must be loaded through that engine. See the
+[`PartsEngine` type](https://github.com/tscircuit/props/blob/main/lib/components/group.ts)
+and the open-source
+[`@tscircuit/parts-engine`](https://github.com/tscircuit/parts-engine) for the
+current contract and production implementations.
+
+:::note
+Supplier keys are currently limited to the `SupplierName` values defined by
+`@tscircuit/props`, including `jlcpcb`, `digikey`, and `mouser`. Use
+`footprintLibraryMap` when you want to introduce an arbitrary prefix such as
+`my-company:`.
+:::
+
+### Load `kicad:` footprints from a local KiCad installation
+
+The default `kicad:` loader downloads converted footprints from tscircuit's
+KiCad cache. A CLI project can replace that loader with one that reads the
+`.kicad_mod` files installed on the same computer.
+
+Install the converter and types used by the configuration:
+
+```sh
+bun add -D @tscircuit/props kicad-to-circuit-json
+```
+
+Set `KICAD_FOOTPRINT_DIR` to the directory containing KiCad's `.pretty`
+directories. Common locations include `/usr/share/kicad/footprints` on Linux
+and
+`/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints` on macOS.
+Then add this configuration:
+
+```ts title="tscircuit.config.ts"
+import { readFile } from "node:fs/promises"
+import { resolve, sep } from "node:path"
+import type { PlatformConfig } from "@tscircuit/props"
+import { KicadFootprintToCircuitJsonConverter } from "kicad-to-circuit-json"
+
+const configuredRoot = process.env.KICAD_FOOTPRINT_DIR
+
+if (!configuredRoot) {
+  throw new Error("Set KICAD_FOOTPRINT_DIR to KiCad's footprints directory")
+}
+
+const footprintRoot = resolve(configuredRoot)
+
+const loadLocalKicadFootprint = async (footprintPath: string) => {
+  const segments = footprintPath.split("/")
+  if (
+    segments.length !== 2 ||
+    segments.some(
+      (segment) =>
+        !segment ||
+        segment === "." ||
+        segment === ".." ||
+        segment.includes("\\"),
+    )
+  ) {
+    throw new Error(
+      `Expected a KiCad footprint in the form "Library/Footprint", got "${footprintPath}"`,
+    )
+  }
+
+  const [libraryName, footprintName] = segments
+  const filePath = resolve(
+    footprintRoot,
+    `${libraryName}.pretty`,
+    `${footprintName}.kicad_mod`,
+  )
+
+  // Do not allow a footprint reference to escape KICAD_FOOTPRINT_DIR.
+  if (!filePath.startsWith(`${footprintRoot}${sep}`)) {
+    throw new Error(`Footprint path is outside ${footprintRoot}`)
+  }
+
+  const fileContent = await readFile(filePath, "utf8")
+  const converter = new KicadFootprintToCircuitJsonConverter()
+  converter.addFile(filePath, fileContent)
+  converter.runUntilFinished()
+
+  const output = converter.getOutput()
+  return {
+    footprintCircuitJson: Array.isArray(output) ? output : [output],
+  }
+}
+
+export default {
+  platformConfig: {
+    footprintLibraryMap: {
+      // This replaces the default network-backed kicad: loader.
+      kicad: loadLocalKicadFootprint,
+    },
+  } satisfies PlatformConfig,
+}
+```
+
+The normal footprint syntax now reads from disk:
+
+```tsx
+export default () => (
+  <board width="20mm" height="20mm">
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="kicad:Resistor_SMD/R_0603_1608Metric"
+    />
+  </board>
+)
+```
+
+This file-system loader is intended for CLI commands that load
+`tscircuit.config.ts` in the local runtime, such as `tsci build`, `tsci export`,
+and `tsci snapshot`. Browser-based runtimes cannot read arbitrary files from
+your computer. For `tsci dev`, import a `.kicad_mod` file that is inside the
+project directly, or replace the file-system read with a loader that fetches
+from a local HTTP service. See [Importing Components from
+KiCad](../importing-modules-and-chips/importing-from-kicad.md#import-kicad_mod-and-kicad_sym-files-directly)
+for the direct-import approach.
+
 ## Using your Platform
 
 :::info
