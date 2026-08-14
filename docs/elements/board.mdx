@@ -188,46 +188,6 @@ For boards that require components on both sides, set `doubleSidedAssembly={true
 This informs manufacturing that components will be placed on both the top and
 bottom layers of the board.
 
-### Allowing Vias Inside Pads
-
-Set `isViaInPadAllowed` when a design intentionally places vias inside component
-pads. The prop defaults to `false`; setting it to `true` marks via-in-pad
-placement as allowed for the board's design-rule checks.
-
-<CircuitPreview defaultView="pcb" hideSchematicTab code={`
-  export default () => (
-    <board width="10mm" height="10mm" isViaInPadAllowed>
-      <chip
-        name="U1"
-        footprint={
-          <footprint>
-            <smtpad
-              pcbX={0}
-              pcbY={0}
-              layer="top"
-              shape="circle"
-              radius="1mm"
-              portHints={["pin1"]}
-            />
-          </footprint>
-        }
-      />
-      <via
-        pcbX={0}
-        pcbY={0}
-        fromLayer="top"
-        toLayer="bottom"
-        holeDiameter="0.3mm"
-        outerDiameter="0.6mm"
-        connectsTo=".U1 > .pin1"
-      />
-    </board>
-  )
-`} />
-
-Via-in-pad fabrication commonly requires filled and capped vias. Confirm that
-the selected PCB manufacturer supports the process before using this option.
-
 ### Rounding Board Corners with `borderRadius`
 
 To soften sharp corners on a rectangular board, set the optional `borderRadius`
