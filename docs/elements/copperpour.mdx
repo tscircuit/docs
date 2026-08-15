@@ -21,25 +21,34 @@ maintaining a clearance gap that you control.
 ## Basic Usage
 
 Add a copper pour to any board by connecting it to a net—most commonly
-`net.GND`. The example below shows a top-layer pour surrounding a chip, with a
-few traces stitching components back to ground.
+`net.GND`. Set `useThermalReliefs` to connect same-net plated holes through
+thermal spokes instead of merging each hole directly into the surrounding
+copper. The example below shows two grounded through-holes with thermal reliefs
+beside two unconnected holes.
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
-    <board
-      width="30mm"
-      height="20mm"
-    >
-      <chip name="U1" footprint="soic8" pcbX={-6} pcbY={0} />
-      <resistor name="R1" resistance="10k" footprint="0402" pcbX={6} pcbY={4} />
-      <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={6} pcbY={-4} />
-      <trace from=".R1 > .pin2" to="net.GND" />
-      <trace from=".C1 > .pin2" to="net.GND" />
-      <trace from=".U1 > .pin4" to="net.GND" />
-      <copperpour connectsTo="net.GND" layer="top" clearance="0.15mm" />
+    <board width="18mm" height="10mm">
+      <pinheader
+        name="J1"
+        pinCount={4}
+        footprint="pinrow4"
+      />
+      <trace name="J1_GND_1" from=".J1 > .pin1" to="net.GND" />
+      <trace name="J1_GND_2" from=".J1 > .pin2" to="net.GND" />
+      <copperpour
+        connectsTo="net.GND"
+        layer="top"
+        padMargin="0.45mm"
+        useThermalReliefs
+      />
     </board>
   )
 `} />
+
+Thermal reliefs currently use four `0.3mm` spokes. Unconnected plated holes and
+plated holes on other nets continue to receive the normal clearance from the
+pour.
 
 ## Copper Pour Properties
 
@@ -52,7 +61,7 @@ few traces stitching components back to ground.
 | `traceMargin` | Minimum distance from traces on other nets. Overrides `clearance`. | `"0.1mm"` |
 | `boardEdgeMargin` | Minimum distance from the board edge. Overrides `clearance`. | `"2mm"` |
 | `cutoutMargin` | Minimum distance from board cutouts. Overrides `clearance`. | `"0.1mm"` |
-| `thermalRelief` | Configure spoke width/count when attaching to pads. | `{ spokeWidth: "0.3mm", spokeCount: 4 }` |
+| `useThermalReliefs` | Connect same-net plated holes through four thermal spokes instead of solid copper. | `true` |
 | `outline` | Optional polygon describing a custom pour boundary. | `[{ x: -10, y: -8 }, { x: 10, y: -8 }, ...]` |
 
 ## Creating Pours on Multiple Layers
