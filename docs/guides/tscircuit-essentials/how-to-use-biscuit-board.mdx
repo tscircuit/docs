@@ -61,17 +61,25 @@ through vias.
 import { BiscuitBoard } from "biscuitboard"
 
 export default () => (
-  <BiscuitBoard>
-    <connector name="J_USB" standard="usb_c" pcbX={10} pcbY={0} />
+  <BiscuitBoard autorouter="laser_prefab">
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={10}
+      pcbY={-23.75}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
-      pcbX={19}
-      pcbY={2}
+      pcbX={6}
+      pcbY={-17}
     />
-    <led name="LED1" footprint="0603" pcbX={19} pcbY={-2} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led name="LED1" footprint="0603" pcbX={14} pcbY={-17} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </BiscuitBoard>
 )
 `}
@@ -90,17 +98,37 @@ than pre-connected like a solderless breadboard.
 import { BreadboardClad } from "biscuitboard"
 
 export default () => (
-  <BreadboardClad markHeadersNoConnect>
-    <connector name="J_USB" standard="usb_c" pcbX={0} pcbY={0} />
+  <BreadboardClad
+    autorouter="laser_prefab"
+    nominalTraceWidth={0.15}
+    markHeadersNoConnect
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={-34}
+      pcbY={0}
+      pcbRotation={270}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
-      pcbX={-10}
-      pcbY={0}
+      pcbX={-30}
+      pcbY={7}
+      pcbRotation={90}
     />
-    <led name="LED1" footprint="0603" pcbX={10} pcbY={0} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led
+      name="LED1"
+      footprint="0603"
+      pcbX={-30}
+      pcbY={10}
+      pcbRotation={90}
+    />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </BreadboardClad>
 )
 `}
@@ -118,17 +146,25 @@ holes and three concentric rings containing 72 fixed vias.
 import { Clad40x40 } from "biscuitboard"
 
 export default () => (
-  <Clad40x40>
-    <connector name="J_USB" standard="usb_c" pcbX={0} pcbY={-10} />
+  <Clad40x40 autorouter="laser_prefab">
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={0}
+      pcbY={-16.55}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
-      pcbX={-3}
-      pcbY={8}
+      pcbX={-2}
+      pcbY={-10.5}
     />
-    <led name="LED1" footprint="0603" pcbX={3} pcbY={8} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={-10.5} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </Clad40x40>
 )
 `}
@@ -147,17 +183,26 @@ connector geometry.
 import { ArduinoShieldClad } from "biscuitboard"
 
 export default () => (
-  <ArduinoShieldClad markHeadersNoConnect>
-    <connector name="J_USB" standard="usb_c" pcbX={6} pcbY={0} />
+  <ArduinoShieldClad autorouter="laser_prefab" markHeadersNoConnect>
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={-34}
+      pcbY={0}
+      pcbRotation={270}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
-      pcbX={6}
-      pcbY={8}
+      pcbX={-29}
+      pcbY={-2}
     />
-    <led name="LED1" footprint="0603" pcbX={12} pcbY={8} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led name="LED1" footprint="0603" pcbX={-29} pcbY={2} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </ArduinoShieldClad>
 )
 `}
@@ -176,17 +221,26 @@ fields.
 import { BoosterPackClad } from "biscuitboard"
 
 export default () => (
-  <BoosterPackClad>
-    <connector name="J_USB" standard="usb_c" pcbX={0} pcbY={-5} />
+  <BoosterPackClad autorouter="laser_prefab">
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={34}
+      pcbY={0}
+      pcbRotation={90}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
-      pcbX={-3}
-      pcbY={7}
+      pcbX={29}
+      pcbY={-2}
     />
-    <led name="LED1" footprint="0603" pcbX={3} pcbY={7} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led name="LED1" footprint="0603" pcbX={29} pcbY={2} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </BoosterPackClad>
 )
 `}
@@ -204,17 +258,30 @@ through-hole header pattern. The central area remains available for components.
 import { XiaoCladWithPinHeaders } from "biscuitboard"
 
 export default () => (
-  <XiaoCladWithPinHeaders markHeadersNoConnect>
-    <connector name="J_USB" standard="usb_c" pcbX={0} pcbY={5} />
+  <XiaoCladWithPinHeaders
+    autorouter="laser_prefab"
+    markHeadersNoConnect
+    showUsbLabel={false}
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={0}
+      pcbY={7.05}
+      pcbRotation={180}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
       pcbX={-2}
-      pcbY={-5}
+      pcbY={2}
     />
-    <led name="LED1" footprint="0603" pcbX={2} pcbY={-5} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={2} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </XiaoCladWithPinHeaders>
 )
 `}
@@ -224,29 +291,50 @@ export default () => (
 
 Use the perforated XIAO wrapper when its header pads should extend to notches on
 the board edge. It has the same outline and pin centers as the ordinary XIAO
-header wrapper.
+header wrapper. The accompanying config disables placement DRC for this preview
+because the intentional edge perforations overlap their cutouts; routing and
+the remaining checks stay enabled.
 
 <CircuitPreview
   leftView="code"
   rightView="pcb"
-  code={`
-import { XiaoCladWithPerforatedPinHeaders } from "biscuitboard"
+  entrypoint="index.circuit.tsx"
+  mainComponentPath="index.circuit.tsx"
+  fsMap={{
+    "index.circuit.tsx": `import { XiaoCladWithPerforatedPinHeaders } from "biscuitboard"
 
 export default () => (
-  <XiaoCladWithPerforatedPinHeaders markHeadersNoConnect>
-    <connector name="J_USB" standard="usb_c" pcbX={0} pcbY={5} />
+  <XiaoCladWithPerforatedPinHeaders
+    autorouter="laser_prefab"
+    markHeadersNoConnect
+    showUsbLabel={false}
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      pcbX={0}
+      pcbY={7.05}
+      pcbRotation={180}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
       pcbX={-2}
-      pcbY={-5}
+      pcbY={2}
     />
-    <led name="LED1" footprint="0603" pcbX={2} pcbY={-5} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={2} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </XiaoCladWithPerforatedPinHeaders>
-)
-`}
+)`,
+    "tscircuit.config.ts": `export default {
+  platformConfig: {
+    placementDrcChecksDisabled: true,
+  },
+}`,
+  }}
 />
 
 ### `FeatherCladWithPinHeaders`
@@ -262,17 +350,30 @@ component field.
 import { FeatherCladWithPinHeaders } from "biscuitboard"
 
 export default () => (
-  <FeatherCladWithPinHeaders markHeadersNoConnect>
-    <connector name="J_USB" standard="usb_c" pcbX={0} pcbY={18} />
+  <FeatherCladWithPinHeaders
+    autorouter="laser_prefab"
+    markHeadersNoConnect
+    showUsbLabel={false}
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={0}
+      pcbY={21.95}
+      pcbRotation={180}
+    />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
-      pcbX={-3}
-      pcbY={8}
+      pcbX={-2}
+      pcbY={16}
     />
-    <led name="LED1" footprint="0603" pcbX={3} pcbY={8} />
-    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={16} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
   </FeatherCladWithPinHeaders>
 )
 `}
