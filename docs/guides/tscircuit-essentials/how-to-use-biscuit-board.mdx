@@ -1,0 +1,95 @@
+---
+title: How to use Biscuit Board
+description: Build a tscircuit design on a prefabricated Biscuit Board and route through its fixed vias.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# How to use Biscuit Board
+
+The `biscuitboard` package provides reusable tscircuit wrappers for
+prefabricated copper-clad boards. `BiscuitBoard` is a 75 mm × 55 mm, two-layer
+board with mounting holes and a fixed set of through vias. Its default
+autorouter changes layers only at those prefabricated vias.
+
+## Install the package
+
+```bash
+bun add biscuitboard
+```
+
+## Add your circuit
+
+Import `BiscuitBoard`, then place ordinary tscircuit components and traces
+inside it. You do not need to create the board outline, mounting holes, or via
+field yourself.
+
+In this example, the resistor is on the top layer and the LED is on the bottom
+layer. The route must therefore use one of the board's existing vias to change
+layers.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { BiscuitBoard } from "biscuitboard"
+
+export default () => (
+  <BiscuitBoard>
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={-8}
+      pcbY={0}
+    />
+    <led
+      name="LED1"
+      footprint="0603"
+      layer="bottom"
+      pcbX={8}
+      pcbY={0}
+    />
+    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+  </BiscuitBoard>
+)
+`}
+/>
+
+## Tune routing when needed
+
+`BiscuitBoard` accepts the usual children plus a few routing controls:
+
+- `nominalTraceWidth` sets the preferred routed trace width. It defaults to
+  0.3 mm.
+- `minTraceWidth` sets the board's enforced minimum trace width.
+- `autorouterOptions` tunes route ordering, grid spacing, rip-up limits, and
+  search effort.
+- `routingDisabled` keeps the board geometry and vias but skips automatic
+  routing.
+
+For example:
+
+```tsx
+<BiscuitBoard
+  nominalTraceWidth={0.25}
+  minTraceWidth={0.15}
+  autorouterOptions={{ routeOrder: "adaptive" }}
+>
+  {/* components and traces */}
+</BiscuitBoard>
+```
+
+## Use another clad format
+
+The same package also exports `ArduinoShieldClad`, `BoosterPackClad`,
+`BreadboardClad`, `Clad40x40`, `FeatherCladWithPinHeaders`,
+`XiaoCladWithPinHeaders`, and `XiaoCladWithPerforatedPinHeaders`. Each wrapper
+provides its board geometry and prefabricated connection points while accepting
+normal tscircuit children.
+
+Build your project normally after choosing a wrapper:
+
+```bash
+bunx tsci build
+```
