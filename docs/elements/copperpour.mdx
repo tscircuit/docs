@@ -23,8 +23,8 @@ maintaining a clearance gap that you control.
 Add a copper pour to any board by connecting it to a net—most commonly
 `net.GND`. Set `useThermalReliefs` to connect same-net plated holes through
 thermal spokes instead of merging each hole directly into the surrounding
-copper. The example below shows four grounded through-holes with thermal
-reliefs.
+copper. The example below shows two grounded through-holes with thermal reliefs
+beside two unconnected holes.
 
 <CircuitPreview defaultView="pcb" code={`
   export default () => (
@@ -36,8 +36,6 @@ reliefs.
       />
       <trace name="J1_GND_1" from=".J1 > .pin1" to="net.GND" />
       <trace name="J1_GND_2" from=".J1 > .pin2" to="net.GND" />
-      <trace name="J1_GND_3" from=".J1 > .pin3" to="net.GND" />
-      <trace name="J1_GND_4" from=".J1 > .pin4" to="net.GND" />
       <copperpour
         connectsTo="net.GND"
         layer="top"
@@ -48,8 +46,9 @@ reliefs.
   )
 `} />
 
-Thermal reliefs currently use four `0.3mm` spokes. Plated holes on other nets
-continue to receive the normal clearance from the pour.
+Thermal reliefs currently use four `0.3mm` spokes. Unconnected plated holes and
+plated holes on other nets continue to receive the normal clearance from the
+pour.
 
 ## Copper Pour Properties
 
