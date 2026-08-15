@@ -12,11 +12,13 @@ Connectors support:
 - Custom pin naming via `pinLabels`
 - Explicit internal shorting via `internallyConnectedPins`
 - Schematic pin styling and arrangement controls
-- Optional connector `standard` hints (currently `"usb_c"` and `"m2"`)
+- Optional connector `standard` hints for USB-C, M.2, and common JST families
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-## Standard Connector Example
+## Standard Connector Examples
+
+### USB-C
 
 <CircuitPreview
   defaultView="schematic"
@@ -28,6 +30,40 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   )
   `}
 />
+
+### JST connectors
+
+For a JST connector, set `standard` to the connector family and `pinCount` to
+the number of electrical circuits. When you do not provide a `footprint`, the
+parts engine uses both values to select a compatible part.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+  export default () => (
+    <board width="30mm" height="20mm">
+      <connector name="J1" standard="jst_ph" pinCount={2} />
+    </board>
+  )
+  `}
+/>
+
+The supported JST families are:
+
+| `standard` value | JST family | Nominal pitch |
+| --- | --- | ---: |
+| `"jst_sh"` | SH | 1.0 mm |
+| `"jst_gh"` | GH | 1.25 mm |
+| `"jst_zh"` | ZH | 1.5 mm |
+| `"jst_ph"` | PH | 2.0 mm |
+| `"jst_xh"` | XH | 2.5 mm |
+| `"jst_vh"` | VH | 3.96 mm |
+
+The family determines the pitch, so use the exact family-only value. For
+example, `"jst_sh_2mm"` is invalid. `pinCount` must be a positive integer. To
+select a specific connector instead of allowing automatic part selection, set
+`manufacturerPartNumber` or provide an explicit `footprint`; an explicit
+footprint takes priority over `standard`-based selection.
 
 ## Custom Footprint Example
 
@@ -133,7 +169,16 @@ export interface ConnectorProps extends CommonComponentProps {
   schDirection?: "left" | "right"
   schPortArrangement?: SchematicPortArrangement
   internallyConnectedPins?: (string | number)[][]
-  standard?: "usb_c" | "m2"
+  standard?:
+    | "usb_c"
+    | "m2"
+    | "jst_sh"
+    | "jst_gh"
+    | "jst_zh"
+    | "jst_ph"
+    | "jst_xh"
+    | "jst_vh"
+  pinCount?: number
 }
 ```
 
@@ -148,6 +193,7 @@ export interface ConnectorProps extends CommonComponentProps {
 | `schDirection` | `"left" \| "right"` | Direction of the connector symbol pins. |
 | `schPortArrangement` | `SchematicPortArrangement` | Schematic port layout strategy. |
 | `internallyConnectedPins` | `(string \| number)[][]` | Pin groups treated as internally shorted. |
-| `standard` | `"usb_c" \| "m2"` | Optional connector standard hint. |
+| `standard` | `ConnectorStandard` | Connector interface or product family. See the supported values above. |
+| `pinCount` | `number` | Number of electrical circuits. Must be a positive integer. |
 
 Like most components, `<connector />` also accepts common placement and PCB props from `CommonComponentProps` such as `pcbX`, `pcbY`, `rotation`, and `footprint`.
