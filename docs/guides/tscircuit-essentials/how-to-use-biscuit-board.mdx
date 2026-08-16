@@ -12,6 +12,10 @@ board layouts. Each wrapper supplies its board outline, mounting features,
 connectors, and fixed vias. Choose a wrapper, then place ordinary tscircuit
 components and traces inside it.
 
+The wrappers also supply the Biscuit Board autorouter by default. Leave the
+`autorouter` prop unset when using a clad wrapper so routes use its fixed-via
+layout; use `autorouterOptions` only when you need to tune that router.
+
 ## Install the package
 
 ```bash
@@ -61,7 +65,7 @@ through vias.
 import { BiscuitBoard } from "biscuitboard"
 
 export default () => (
-  <BiscuitBoard autorouter="laser_prefab">
+  <BiscuitBoard>
     <connector
       name="J_USB"
       standard="usb_c"
@@ -99,7 +103,6 @@ import { BreadboardClad } from "biscuitboard"
 
 export default () => (
   <BreadboardClad
-    autorouter="laser_prefab"
     nominalTraceWidth={0.15}
     markHeadersNoConnect
   >
@@ -146,7 +149,7 @@ holes and three concentric rings containing 72 fixed vias.
 import { Clad40x40 } from "biscuitboard"
 
 export default () => (
-  <Clad40x40 autorouter="laser_prefab">
+  <Clad40x40>
     <connector
       name="J_USB"
       standard="usb_c"
@@ -183,7 +186,7 @@ connector geometry.
 import { ArduinoShieldClad } from "biscuitboard"
 
 export default () => (
-  <ArduinoShieldClad autorouter="laser_prefab" markHeadersNoConnect>
+  <ArduinoShieldClad markHeadersNoConnect>
     <connector
       name="J_USB"
       standard="usb_c"
@@ -221,7 +224,7 @@ fields.
 import { BoosterPackClad } from "biscuitboard"
 
 export default () => (
-  <BoosterPackClad autorouter="laser_prefab">
+  <BoosterPackClad>
     <connector
       name="J_USB"
       standard="usb_c"
@@ -235,9 +238,9 @@ export default () => (
       resistance="1k"
       footprint="0603"
       pcbX={29}
-      pcbY={-2}
+      pcbY={-4}
     />
-    <led name="LED1" footprint="0603" pcbX={29} pcbY={2} />
+    <led name="LED1" footprint="0603" pcbX={29} pcbY={-6} />
     <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
     <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
     <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
@@ -259,7 +262,6 @@ import { XiaoCladWithPinHeaders } from "biscuitboard"
 
 export default () => (
   <XiaoCladWithPinHeaders
-    autorouter="laser_prefab"
     markHeadersNoConnect
     showUsbLabel={false}
   >
@@ -305,13 +307,13 @@ the remaining checks stay enabled.
 
 export default () => (
   <XiaoCladWithPerforatedPinHeaders
-    autorouter="laser_prefab"
     markHeadersNoConnect
     showUsbLabel={false}
   >
     <connector
       name="J_USB"
       standard="usb_c"
+      footprint="jlcpcb:C456012"
       pcbX={0}
       pcbY={7.05}
       pcbRotation={180}
@@ -351,7 +353,6 @@ import { FeatherCladWithPinHeaders } from "biscuitboard"
 
 export default () => (
   <FeatherCladWithPinHeaders
-    autorouter="laser_prefab"
     markHeadersNoConnect
     showUsbLabel={false}
   >
