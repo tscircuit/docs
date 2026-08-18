@@ -26,12 +26,12 @@ Each clad wrapper is a complete `<board>`, so use one as the root of your
 circuit:
 
 ```tsx
-import { Clad40x40 } from "biscuitboard"
+import { Clad32x32 } from "biscuitboard"
 
 export default () => (
-  <Clad40x40>
+  <Clad32x32>
     {/* components and traces */}
-  </Clad40x40>
+  </Clad32x32>
 )
 ```
 
@@ -41,7 +41,7 @@ export default () => (
 | --- | --- | --- |
 | `BiscuitBoard` | 75 mm × 55 mm | General circuits using large fixed through vias |
 | `BreadboardClad` | 75 mm × 55 mm | Plug-in, breadboard-style prototypes with custom routed connections |
-| `Clad40x40` | 40 mm × 40 mm | Compact modules and sensor boards |
+| `Clad32x32` | 32 mm × 32 mm | Compact modules and sensor boards |
 | `ArduinoShieldClad` | 75 mm × 55 mm | Arduino UNO R3-compatible shields |
 | `BoosterPackClad` | 75 mm × 55 mm | TI LaunchPad BoosterPack-compatible add-ons |
 | `XiaoCladWithPinHeaders` | 17.8 mm × 21 mm | XIAO-sized boards using through-hole headers |
@@ -137,38 +137,39 @@ export default () => (
 `}
 />
 
-### `Clad40x40`
+### `Clad32x32`
 
-Use the 40 mm square wrapper for a compact custom module. It has two mounting
-holes and three concentric rings containing 72 fixed vias.
+Use the 32 mm square wrapper for a compact custom module. It has four corner
+mounting holes and four L-shaped fields containing 64 fixed vias, leaving the
+middle of every board edge open for connectors.
 
 <CircuitPreview
   leftView="code"
   rightView="pcb"
   code={`
-import { Clad40x40 } from "biscuitboard"
+import { Clad32x32 } from "biscuitboard"
 
 export default () => (
-  <Clad40x40>
+  <Clad32x32>
     <connector
       name="J_USB"
       standard="usb_c"
       footprint="jlcpcb:C456012"
       pcbX={0}
-      pcbY={-16.55}
+      pcbY={-12.55}
     />
     <resistor
       name="R1"
       resistance="1k"
       footprint="0603"
       pcbX={-2}
-      pcbY={-10.5}
+      pcbY={-6.5}
     />
-    <led name="LED1" footprint="0603" pcbX={2} pcbY={-10.5} />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={-6.5} />
     <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
     <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
     <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
-  </Clad40x40>
+  </Clad32x32>
 )
 `}
 />
