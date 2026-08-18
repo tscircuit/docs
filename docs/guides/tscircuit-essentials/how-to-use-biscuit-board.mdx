@@ -1,0 +1,403 @@
+---
+title: How to use Biscuit Board templates
+description: Choose and import a Biscuit Board clad wrapper for a tscircuit design.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+# How to use Biscuit Board templates
+
+The `biscuitboard` package exports clad wrappers for several prefabricated
+board layouts. Each wrapper supplies its board outline, mounting features,
+connectors, and fixed vias. Choose a wrapper, then place ordinary tscircuit
+components and traces inside it.
+
+The wrappers also supply the Biscuit Board autorouter by default. Leave the
+`autorouter` prop unset when using a clad wrapper so routes use its fixed-via
+layout; use `autorouterOptions` only when you need to tune that router.
+
+## Install the package
+
+```bash
+bun add biscuitboard
+```
+
+Each clad wrapper is a complete `<board>`, so use one as the root of your
+circuit:
+
+```tsx
+import { Clad40x40 } from "biscuitboard"
+
+export default () => (
+  <Clad40x40>
+    {/* components and traces */}
+  </Clad40x40>
+)
+```
+
+## Choose a clad wrapper
+
+| Wrapper | Size | Best suited for |
+| --- | --- | --- |
+| `BiscuitBoard` | 75 mm × 55 mm | General circuits using large fixed through vias |
+| `BreadboardClad` | 75 mm × 55 mm | Plug-in, breadboard-style prototypes with custom routed connections |
+| `Clad40x40` | 40 mm × 40 mm | Compact modules and sensor boards |
+| `ArduinoShieldClad` | 75 mm × 55 mm | Arduino UNO R3-compatible shields |
+| `BoosterPackClad` | 75 mm × 55 mm | TI LaunchPad BoosterPack-compatible add-ons |
+| `XiaoCladWithPinHeaders` | 17.8 mm × 21 mm | XIAO-sized boards using through-hole headers |
+| `XiaoCladWithPerforatedPinHeaders` | 17.8 mm × 21 mm | XIAO-sized boards with perforated edge header pads |
+| `FeatherCladWithPinHeaders` | 22.86 mm × 50.8 mm | Adafruit Feather-compatible boards |
+
+Every preview below contains the same USB-C connector, 0603 resistor, and 0603
+LED. Comparing those familiar parts against each outline makes the relative
+board sizes easier to understand.
+
+### `BiscuitBoard`
+
+Use the general 75 mm × 55 mm wrapper when none of the connector-specific clad
+layouts apply. Its autorouter changes layers only at its large prefabricated
+through vias.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { BiscuitBoard } from "biscuitboard"
+
+export default () => (
+  <BiscuitBoard>
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={10}
+      pcbY={-23.75}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={6}
+      pcbY={-17}
+    />
+    <led name="LED1" footprint="0603" pcbX={14} pcbY={-17} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </BiscuitBoard>
+)
+`}
+/>
+
+### `BreadboardClad`
+
+Use the breadboard wrapper for plug-in prototypes and DIP-style layouts. Its
+210 A1–J21 sockets and four power/header rails are individually routable rather
+than pre-connected like a solderless breadboard.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { BreadboardClad } from "biscuitboard"
+
+export default () => (
+  <BreadboardClad
+    nominalTraceWidth={0.15}
+    markHeadersNoConnect
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={-34}
+      pcbY={0}
+      pcbRotation={270}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={-30}
+      pcbY={7}
+      pcbRotation={90}
+    />
+    <led
+      name="LED1"
+      footprint="0603"
+      pcbX={-30}
+      pcbY={10}
+      pcbRotation={90}
+    />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </BreadboardClad>
+)
+`}
+/>
+
+### `Clad40x40`
+
+Use the 40 mm square wrapper for a compact custom module. It has two mounting
+holes and three concentric rings containing 72 fixed vias.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { Clad40x40 } from "biscuitboard"
+
+export default () => (
+  <Clad40x40>
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={0}
+      pcbY={-16.55}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={-2}
+      pcbY={-10.5}
+    />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={-10.5} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </Clad40x40>
+)
+`}
+/>
+
+### `ArduinoShieldClad`
+
+Use the Arduino wrapper for a shield that mates with an Arduino UNO
+R3-compatible host. It supplies the power, analog, digital, I²C, and ICSP
+connector geometry.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { ArduinoShieldClad } from "biscuitboard"
+
+export default () => (
+  <ArduinoShieldClad markHeadersNoConnect>
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={-34}
+      pcbY={0}
+      pcbRotation={270}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={-29}
+      pcbY={-2}
+    />
+    <led name="LED1" footprint="0603" pcbX={-29} pcbY={2} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </ArduinoShieldClad>
+)
+`}
+/>
+
+### `BoosterPackClad`
+
+Use the BoosterPack wrapper for a TI LaunchPad add-on. It includes the 40-pin
+BoosterPack mating pattern, an additional edge header, and dense fixed-via
+fields.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { BoosterPackClad } from "biscuitboard"
+
+export default () => (
+  <BoosterPackClad>
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={34}
+      pcbY={0}
+      pcbRotation={90}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={29}
+      pcbY={-4}
+    />
+    <led name="LED1" footprint="0603" pcbX={29} pcbY={-6} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </BoosterPackClad>
+)
+`}
+/>
+
+### `XiaoCladWithPinHeaders`
+
+Use this XIAO wrapper for a compact board that mates through the classic two-row
+through-hole header pattern. The central area remains available for components.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { XiaoCladWithPinHeaders } from "biscuitboard"
+
+export default () => (
+  <XiaoCladWithPinHeaders
+    markHeadersNoConnect
+    showUsbLabel={false}
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={0}
+      pcbY={7.05}
+      pcbRotation={180}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={-2}
+      pcbY={2}
+    />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={2} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </XiaoCladWithPinHeaders>
+)
+`}
+/>
+
+### `XiaoCladWithPerforatedPinHeaders`
+
+Use the perforated XIAO wrapper when its header pads should extend to notches on
+the board edge. It has the same outline and pin centers as the ordinary XIAO
+header wrapper. The accompanying config disables placement DRC for this preview
+because the intentional edge perforations overlap their cutouts; routing and
+the remaining checks stay enabled.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  entrypoint="index.circuit.tsx"
+  mainComponentPath="index.circuit.tsx"
+  fsMap={{
+    "index.circuit.tsx": `import { XiaoCladWithPerforatedPinHeaders } from "biscuitboard"
+
+export default () => (
+  <XiaoCladWithPerforatedPinHeaders
+    markHeadersNoConnect
+    showUsbLabel={false}
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={0}
+      pcbY={7.05}
+      pcbRotation={180}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={-2}
+      pcbY={2}
+    />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={2} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </XiaoCladWithPerforatedPinHeaders>
+)`,
+    "tscircuit.config.ts": `export default {
+  platformConfig: {
+    placementDrcChecksDisabled: true,
+  },
+}`,
+  }}
+/>
+
+### `FeatherCladWithPinHeaders`
+
+Use the Feather wrapper for an Adafruit Feather-compatible board. It includes
+the classic 1×16 and 1×12 header rows, four mounting holes, and an open central
+component field.
+
+<CircuitPreview
+  leftView="code"
+  rightView="pcb"
+  code={`
+import { FeatherCladWithPinHeaders } from "biscuitboard"
+
+export default () => (
+  <FeatherCladWithPinHeaders
+    markHeadersNoConnect
+    showUsbLabel={false}
+  >
+    <connector
+      name="J_USB"
+      standard="usb_c"
+      footprint="jlcpcb:C456012"
+      pcbX={0}
+      pcbY={21.95}
+      pcbRotation={180}
+    />
+    <resistor
+      name="R1"
+      resistance="1k"
+      footprint="0603"
+      pcbX={-2}
+      pcbY={16}
+    />
+    <led name="LED1" footprint="0603" pcbX={2} pcbY={16} />
+    <trace name="vbus_to_resistor" from=".J_USB > .VBUS1" to=".R1 > .pin1" />
+    <trace name="resistor_to_led" from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace name="led_to_ground" from=".LED1 > .cathode" to=".J_USB > .GND1" />
+  </FeatherCladWithPinHeaders>
+)
+`}
+/>
+
+`markHeadersNoConnect` is useful in these small previews because none of the
+host or breadboard headers are part of the three-component example. In a real
+design, remove that prop and connect the header pins you use, or mark only the
+remaining pins as unconnected.
+
+## Tune routing when needed
+
+All clad wrappers accept the usual children plus the same routing controls:
+
+- `nominalTraceWidth` sets the preferred routed trace width.
+- `minTraceWidth` sets the enforced minimum trace width.
+- `autorouterOptions` tunes route ordering, grid spacing, rip-up limits, and
+  search effort.
+- `routingDisabled` keeps the board geometry and vias but skips automatic
+  routing.
+
+Build your project normally after choosing a wrapper:
+
+```bash
+bunx tsci build
+```
