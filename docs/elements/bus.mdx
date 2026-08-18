@@ -1,0 +1,119 @@
+---
+title: <bus />
+description: >-
+  The `<bus />` element groups related connections so they can share PCB
+  routing constraints and fanout behavior.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<bus />` element tells the autorouter that two or more connections belong
+to the same group. Each entry in `connections` can be a named [`<trace />`](./trace.mdx)
+or a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
+
+A bus does not electrically connect its members. It groups existing
+connections so the autorouter can apply shared constraints such as layer
+selection, trace width, and maximum length skew.
+
+## Constrain Fanout Layers
+
+Use `preferredLayer` for one layer and `preferredLayers` for additional layers.
+When an `autorouter="fanout"` phase routes the bus, tscircuit currently combines
+these props into a hard allowed-layer constraint. The fanout solver will not
+fall back to another layer.
+
+This four-layer BGA example allows the `DATA` bus to escape only on `inner2` or
+`bottom`. The bus name is also used by `busFanoutDirections` to send every
+member toward the right side of the package.
+
+<CircuitPreview verticalStack defaultView="pcb" code={`
+const innerPinNumbers = [6, 7, 10, 11]
+
+const bgaPads = Array.from({ length: 16 }, (_, padIndex) => {
+  const pinNumber = padIndex + 1
+  return (
+    <smtpad
+      key={pinNumber}
+      portHints={["pin" + pinNumber]}
+      pcbX={(padIndex % 4) * 0.8 - 1.2}
+      pcbY={Math.floor(padIndex / 4) * 0.8 - 1.2}
+      shape="circle"
+      radius="0.175mm"
+    />
+  )
+})
+
+export default () => (
+  <board
+    width="20mm"
+    height="12mm"
+    layers={4}
+    minTraceWidth="0.1mm"
+    defaultTraceWidth="0.1mm"
+    minTraceToPadEdgeClearance="0.1mm"
+    minViaEdgeToPadEdgeClearance="0.1mm"
+    minViaHoleDiameter="0.2mm"
+    minViaPadDiameter="0.5mm"
+  >
+    <autoroutingphase
+      autorouter="fanout"
+      busFanoutDirections={{ DATA: { direction: "center_right" } }}
+      fanoutBoundaryPadding={{ right: "1.2mm" }}
+    />
+
+    <chip
+      name="U1"
+      pcbX={-4}
+      footprint={<footprint>{bgaPads}</footprint>}
+    />
+
+    <bus
+      name="DATA"
+      connections={["D0", "D1", "D2", "D3"]}
+      preferredLayer="inner2"
+      preferredLayers={["bottom"]}
+    />
+
+    {innerPinNumbers.map((pinNumber, busIndex) => (
+      <resistor
+        key={pinNumber}
+        name={"R" + (busIndex + 1)}
+        resistance="1k"
+        footprint="0402"
+        pcbX={5}
+        pcbY={busIndex * 2 - 3}
+      />
+    ))}
+
+    {innerPinNumbers.map((pinNumber, busIndex) => (
+      <trace
+        key={pinNumber}
+        name={"D" + busIndex}
+        from={".U1 > .pin" + pinNumber}
+        to={".R" + (busIndex + 1) + " > .pin1"}
+      />
+    ))}
+  </board>
+)
+`} />
+
+`preferredLayer` is considered first, followed by the entries in
+`preferredLayers`; duplicate layers are removed. If `pcbAllowedLayers` is also
+set, the fanout solver uses the intersection of the two sets, so make sure at
+least one layer remains.
+
+## Bus Properties
+
+| Property | Description | Example |
+| -------- | ----------- | ------- |
+| `connections` | Two or more trace names or port selectors in the bus. | `["D0", "D1"]` |
+| `name` | Optional bus name. Name the bus when referring to it from `busFanoutDirections`. | `"DATA"` |
+| `routingPhaseIndex` | Assigns every member of the bus to an autorouting phase. | `0` |
+| `maxLengthSkew` | Maximum routed-length difference between members. Raw numbers are millimeters. | `"0.2mm"` |
+| `targetImpedance` | Intended single-ended characteristic impedance. Raw numbers are ohms. | `"50ohm"` |
+| `pcbTraceWidth` | PCB trace width applied to every member. Raw numbers are millimeters. | `"0.15mm"` |
+| `pcbAllowedLayers` | Layers on which the bus may be routed. | `["inner2", "bottom"]` |
+| `preferredLayer` | First-choice PCB layer. With the fanout solver, this becomes part of its hard allowed-layer set. | `"inner2"` |
+| `preferredLayers` | Additional PCB layers in priority order. With the fanout solver, these become part of its hard allowed-layer set. | `["bottom"]` |
