@@ -8,6 +8,22 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 AI assistants are most useful when a circuit prompt describes the product, the important interfaces, the physical constraints, and how the result should be checked. The examples below are based on real tscircuit design prompts. They are intentionally direct: the goal is to give the AI enough engineering context to make useful decisions without prescribing every implementation detail.
 
+<video
+  controls
+  playsInline
+  preload="metadata"
+  poster="https://cdn.jsdelivr.net/gh/tscircuit/usage-video@main/outputs/tscircuit-usage-video-poster.png"
+  style={{ width: "100%", borderRadius: "12px" }}
+>
+  <source
+    src="https://cdn.jsdelivr.net/gh/tscircuit/usage-video@main/outputs/tscircuit-usage-video.mp4"
+    type="video/mp4"
+  />
+  <a href="https://github.com/tscircuit/usage-video/blob/main/outputs/tscircuit-usage-video.mp4">
+    Watch the tscircuit AI usage video on GitHub.
+  </a>
+</video>
+
 ## Start from a form factor
 
 Before asking an AI assistant to place parts, decide whether the board needs to fit an existing standard. Common starting points include Arduino shields, Raspberry Pi HATs, MicroMod modules, or a custom outline with mounting holes. A reusable form factor gives the AI a mechanical boundary and lets the prompt focus on the circuit.
