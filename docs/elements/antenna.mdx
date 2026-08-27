@@ -1,0 +1,108 @@
+---
+title: <antenna />
+description: >-
+  The `<antenna />` element represents a single-feed antenna with a footprint,
+  PCB placement, and an optional explicit copper path.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<antenna />` element represents a single-feed antenna. It is a normal
+component, so its feed pad is defined by a `footprint` and the complete antenna
+can be placed with props such as `pcbX`, `pcbY`, `pcbRotation`, and `layer`.
+
+Use `pcbPath` to draw an open-ended copper shape from the feed. Coordinate
+entries are local to the feed pad and move with the antenna, unlike board-level
+coordinates. The copper route begins at the feed automatically.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`
+  export default () => (
+    <board width="32mm" height="16mm" minTraceWidth="0.3mm">
+      <antenna
+        name="ANT1"
+        pcbX={-8}
+        pcbY={-1}
+        footprint={
+          <footprint>
+            <smtpad
+              shape="rect"
+              width="1mm"
+              height="1mm"
+              portHints={["pin1"]}
+            />
+          </footprint>
+        }
+        pcbPath={[
+          { x: 1, y: 0 },
+          { x: 1, y: 5 },
+          { x: 12, y: 5 },
+          { x: 12, y: 3.5 },
+          { x: 3, y: 3.5 },
+          { x: 3, y: 2 },
+          { x: 12, y: 2 },
+          { x: 12, y: 0.5 },
+          { x: 3, y: 0.5 },
+          { x: 3, y: -1 },
+          { x: 12, y: -1 },
+        ]}
+      />
+    </board>
+  )
+`} />
+
+## Pins
+
+An antenna has one electrical connection:
+
+| Pin | Alias | Description |
+| --- | --- | --- |
+| `pin1` | `feed` | Feed point for the antenna and the anchor for local `pcbPath` coordinates |
+
+Connect the antenna to another component with either pin name:
+
+```tsx
+<trace from=".U1 > .pin1" to=".ANT1 > .feed" />
+```
+
+## Properties
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | Yes | Component name or reference designator, typically `"ANT1"` |
+| `footprint` | `string \| JSX.Element` | For PCB use | Physical antenna footprint. Provide a pad with `portHints={["pin1"]}` to anchor `pcbPath` |
+| `pcbPath` | `PcbPath` | No | Explicit open-ended copper path using the same point, selector, and via entries as [`<trace />`](./trace.mdx#manual-pcb-paths) |
+| `pcbX` | `number \| string` | No | X position of the antenna feed |
+| `pcbY` | `number \| string` | No | Y position of the antenna feed |
+| `pcbRotation` | `number \| string` | No | Counter-clockwise PCB rotation applied to the footprint and local path |
+| `layer` | `LayerRef` | No | PCB layer for the component; defaults to `"top"` |
+| `symbol` | `string \| JSX.Element` | No | Custom schematic representation |
+| `cadModel` | `object \| JSX.Element` | No | Optional 3D model configuration |
+
+The antenna also accepts the common PCB and schematic layout props used by
+normal components.
+
+## PCB path entries
+
+A `pcbPath` can contain:
+
+- Local coordinate points such as `{ x: 4, y: 2 }`. Raw numbers are
+  millimeters relative to the feed.
+- Port selectors such as `".TP1 > .pin1"`. Selector positions use their global
+  PCB coordinates.
+- Via points such as
+  `{ x: 4, y: 2, via: true, fromLayer: "top", toLayer: "bottom" }`.
+
+The copper width follows `minTraceWidth` on the enclosing board or subcircuit.
+See [Draw a WiFi Antenna](../guides/tscircuit-essentials/draw-a-wifi-antenna.mdx)
+for a complete example connected to an RF chip.
+
+:::caution RF geometry
+
+The example demonstrates the tscircuit API, not a tuned RF design. Use antenna
+dimensions, controlled impedance, substrate parameters, and clearance rules
+from a validated reference design or antenna datasheet. Preserve the specified
+ground and copper clearance with a [`<keepout />`](./keepout.mdx) where needed.
+
+:::
