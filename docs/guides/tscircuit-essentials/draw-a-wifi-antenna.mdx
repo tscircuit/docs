@@ -1,46 +1,69 @@
 ---
 title: Draw a WiFi Antenna
 description: >-
-  Draw an open-ended PCB antenna shape from a chip pin with a manual trace path.
+  Draw and place an open-ended PCB antenna with the antenna element and pcbPath.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 # Draw a WiFi Antenna
 
-Use a manual trace path when you want to draw open-ended copper from an RF pin,
-such as a simple WiFi antenna or antenna feed. Instead of using `from` and `to`,
-provide a `pcbPath` with the RF pin selector and define the copper shape with
-`pcbPath`.
+Use [`<antenna />`](../../elements/antenna.mdx) when you want a placed component
+with an open-ended copper shape, such as a printed WiFi antenna. Define a
+one-pad footprint for its feed, place the feed with `pcbX` and `pcbY`, and draw
+the antenna geometry with `pcbPath`.
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
   export default () => (
-    <board width="32mm" height="16mm">
-      <chip name="U1" footprint="qfn32" />
-      <trace
-        path={[".U1 > .pin1"]}
-        width="0.3mm"
+    <board width="32mm" height="16mm" minTraceWidth="0.3mm">
+      <chip name="U1" footprint="qfn32" pcbX={-12} />
+      <antenna
+        name="ANT1"
+        pcbX={-8}
+        pcbY={-1}
+        footprint={
+          <footprint>
+            <smtpad
+              shape="rect"
+              width="1mm"
+              height="1mm"
+              portHints={["pin1"]}
+            />
+          </footprint>
+        }
         pcbPath={[
-          ".U1 > .pin1",
-          { x: -2.5, y: 4.2 },
-          { x: 4.0, y: 4.2 },
-          { x: 4.0, y: 6.6 },
-          { x: 15.0, y: 6.6 },
-          { x: 15.0, y: 5.2 },
-          { x: 6.0, y: 5.2 },
-          { x: 6.0, y: 3.8 },
-          { x: 15.0, y: 3.8 },
-          { x: 15.0, y: 2.4 },
-          { x: 6.0, y: 2.4 },
-          { x: 6.0, y: 1.0 },
-          { x: 15.0, y: 1.0 },
+          { x: 1, y: 0 },
+          { x: 1, y: 5 },
+          { x: 12, y: 5 },
+          { x: 12, y: 3.5 },
+          { x: 3, y: 3.5 },
+          { x: 3, y: 2 },
+          { x: 12, y: 2 },
+          { x: 12, y: 0.5 },
+          { x: 3, y: 0.5 },
+          { x: 3, y: -1 },
+          { x: 12, y: -1 },
         ]}
       />
+      <trace from=".U1 > .pin1" to=".ANT1 > .feed" />
     </board>
   )
 `} />
 
-The `pcbPath` points are PCB coordinates in millimeters. This example draws a
-meandered printed antenna near the board edge. Adjust the points to change the
-overall length, spacing between runs, and feed location.
+The antenna route begins at the footprint's `pin1` pad automatically. Each
+coordinate object is measured in millimeters relative to that feed, so changing
+`pcbX`, `pcbY`, or `pcbRotation` moves the footprint and copper shape together.
+The separate `<trace />` connects the RF chip to the antenna's `feed` alias.
 
+Set `minTraceWidth` on the board or subcircuit to control the antenna copper
+width. The path can also use selector strings and via entries supported by
+[`<trace pcbPath>`](../../elements/trace.mdx#manual-pcb-paths).
+
+:::caution
+
+This meander is an API example, not a tuned 2.4 GHz antenna. Copy dimensions,
+board stackup, feed impedance, and ground-clearance requirements from a
+validated antenna design. Use a [`<keepout />`](../../elements/keepout.mdx) to
+preserve the required copper-free region.
+
+:::
