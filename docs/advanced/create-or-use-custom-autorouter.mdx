@@ -530,61 +530,31 @@ const placeBreakoutPoints: ImplicitBreakoutPointSolverFn = (input) => {
 }
 
 export default () => (
-  <board width="20mm" height="20mm">
-    <breakout
-      name="B1"
-      pcbX={-4}
-      padding="1mm"
-      autorouter={{ implicitBreakoutPointSolverFn: placeBreakoutPoints }}
-    >
-      <resistor name="R1" resistance="1k" footprint="0402" pcbY={-1} />
-      <resistor name="R2" resistance="1k" footprint="0402" pcbY={1} />
-    </breakout>
-    <breakout
-      name="B2"
-      pcbX={4}
-      padding="1mm"
-      autorouter={{ implicitBreakoutPointSolverFn: placeBreakoutPoints }}
-    >
-      <resistor name="R3" resistance="1k" footprint="0402" pcbY={-1} />
-      <resistor name="R4" resistance="1k" footprint="0402" pcbY={1} />
-    </breakout>
-    <trace name="signal_a" from="R1.1" to="R3.1" />
-    <trace name="signal_b" from="R2.1" to="R4.1" />
-    <bus
-      name="data_bus"
-      connections={["signal_a", "signal_b"]}
-      preferredLayers={["top", "bottom"]}
-    />
-  </board>
+  <breakout
+    autorouter={{ implicitBreakoutPointSolverFn: placeBreakoutPoints }}
+  >
+    {/* components */}
+  </breakout>
 )
 ```
 
-This intentionally small solver spaces points from the lower or left end of
-each boundary. A production solver should also check the available boundary
-length, preserve bus ordering, keep differential-pair members together, and
-choose layers that satisfy the board's routing constraints.
+A production solver should also check boundary length, bus ordering,
+differential pairs, and layer constraints.
 
 The input contains:
 
 | Field | Description |
 | --- | --- |
 | `regions` | Breakout IDs, rectangular bounds, and selected boundary edges. Coordinates are PCB world-space millimeters. |
-| `connections` | Ordinary connections or differential pairs. Each endpoint identifies its region and position. |
+| `connections` | Ordinary connections or differential pairs. Each endpoint identifies its region and position. The type includes optional `externalDestination`, but Core does not currently populate it. |
 | `buses` | Bus IDs, member connection IDs, and optional ordered target layers. |
 | `boundaryPointSpacing` | Recommended spacing between generated boundary points, in millimeters. |
 
-The endpoint type also includes an optional `externalDestination`, representing
-a PCB-world position beyond its breakout region. Core does not currently
-populate this field, so solvers must not rely on it being present.
-
-Return `{ breakoutPoints }`. Every point must provide `regionId`,
-`connectionId`, `layer`, `x`, and `y`. The point must lie on the corresponding
-region boundary. Return exactly one point for every `(regionId, connectionId)`
-pair requested by the input, counting the two members of a differential pair
-separately. Unknown or duplicate pairs, as well as missing points, cause PCB
-layout to fail. Core invokes this callback synchronously; returning a `Promise`
-throws an error.
+Return `{ breakoutPoints }` synchronously. Every point must provide `regionId`,
+`connectionId`, `layer`, `x`, and `y` on the matching region boundary, with
+exactly one point per `(regionId, connectionId)` pair; differential-pair
+members count separately. Missing, unknown, or duplicate pairs and Promise
+returns all cause layout to fail.
 
 ## Run the Example Locally
 
