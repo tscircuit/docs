@@ -35,7 +35,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `allowBlindAndBuriedVias` | `boolean` | Allow the autorouter to use vias that span only part of a multilayer stack. Defaults to `false`. |
 | `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
-| `autorouterVersion` | `'v1' \| 'v2' \| 'v3' \| 'v4' \| 'v5' \| 'latest'` | Pin routing to a specific autorouter implementation when comparing routing behavior across versions. |
+| `autorouterVersion` | `'beta_pipeline1' \| 'beta_pipeline3' \| 'beta_pipeline4' \| 'beta_pipeline5' \| 'beta_pipeline7' \| 'beta_pipeline9' \| 'latest'` | Pin routing to a known autorouter implementation when comparing routing behavior across versions. Unknown values fall back to `latest` with a warning. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
 | `bomDisabled` | `boolean` | Skip bill-of-material generation for this board. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
@@ -44,7 +44,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `schMaxTraceDistance` | `string \| number` | Maximum span a schematic trace can travel before the auto layout prefers labels or different routing. |
 | `outline` | `BoardOutlinePoint[]` | Supply a custom polygon to replace the default rectangular outline. Points can also define castellated holes. |
 | `outlineOffsetX`, `outlineOffsetY` | `string \| number` | Offset a custom outline relative to the bounding box origin. |
-| `material` | `'fr4' \| 'fr1'` | PCB substrate material. Defaults to 'fr4'. |
+| `material` | `'fr4' \| 'fr1' \| 'flex'` | PCB substrate material. Defaults to `'fr4'`. |
 | `thickness` | `string \| number` | Board thickness in millimeters. |
 | `title` | `string` | Title for the board, displayed in documentation and exports. |
 | `solderMaskColor` | `string` | Color applied to both top and bottom solder masks. |
