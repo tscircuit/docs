@@ -80,37 +80,6 @@ grouped below by purpose.
 | `nodeModulesResolver` | `(modulePath: string) => Promise<string \| null>` | Resolves a Node module specifier to a loadable path or URL, or returns `null` when it cannot be resolved. |
 | `platformFetch` | `typeof fetch` | Replaces the fetch implementation used for platform requests. |
 
-### Disable Analog Simulation
-
-Set `analogSimulationDisabled` when a project should render its PCB and
-schematic without processing SPICE models or running `<analogsimulation />`
-elements. This can speed up documentation builds, previews, and other workflows
-that do not consume simulation output.
-
-In `tscircuit.config.ts`, it is available as a top-level project option:
-
-```ts title="tscircuit.config.ts"
-export default {
-  analogSimulationDisabled: true,
-}
-```
-
-When creating a circuit programmatically, set the same option on the platform:
-
-```tsx
-import { RootCircuit } from "@tscircuit/core"
-
-const circuit = new RootCircuit({
-  platform: {
-    analogSimulationDisabled: true,
-  },
-})
-```
-
-When enabled, tscircuit skips SPICE-model processing and validation as well as
-calls to the configured simulation engine. Omit the option or set it to `false`
-to retain normal analog simulation behavior.
-
 See the source for the complete TypeScript definitions in
 [`platformConfig.ts`](https://github.com/tscircuit/props/blob/main/lib/platformConfig.ts).
 
