@@ -9,13 +9,34 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<bus />` element tells the autorouter that two or more connections belong
-to the same group. Each entry in `connections` can be a named [`<trace />`](./trace.mdx)
-or a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
+The `<bus />` element tells the autorouter that one or more connections belong
+to the same group. Each entry in `connections` can be a named
+[`<trace />`](./trace.mdx) or a
+[port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
 
 A bus does not electrically connect its members. It groups existing
 connections so the autorouter can apply shared constraints such as layer
 selection, trace width, and maximum length skew.
+
+## Group a Single Connection
+
+A bus may contain one connection. This is useful for control signals that
+should retain bus-level routing and fanout intent even though they do not need
+length-skew matching.
+
+```tsx
+<autoroutingphase
+  autorouter="fanout"
+  busFanoutDirections={{ RESET: "rightside_center" }}
+/>
+
+<trace name="RESET_n" from="U1.RESET" to="J1.RESET" />
+<bus name="RESET" connections={["RESET_n"]} />
+```
+
+The bus name matches the `busFanoutDirections` key, so the singleton
+`RESET_n` connection exits through the center region of the right boundary.
+At least one connection is required; an empty `connections` array is invalid.
 
 ## Constrain Fanout Layers
 
@@ -59,7 +80,7 @@ export default () => (
   >
     <autoroutingphase
       autorouter="fanout"
-      busFanoutDirections={{ DATA: { direction: "center_right" } }}
+      busFanoutDirections={{ DATA: { direction: "rightside_center" } }}
       fanoutBoundaryPadding={{ right: "1.2mm" }}
     />
 
@@ -108,7 +129,7 @@ least one layer remains.
 
 | Property | Description | Example |
 | -------- | ----------- | ------- |
-| `connections` | Two or more trace names or port selectors in the bus. | `["D0", "D1"]` |
+| `connections` | One or more trace names or port selectors in the bus. Empty arrays are invalid. | `["RESET_n"]` |
 | `name` | Optional bus name. Name the bus when referring to it from `busFanoutDirections`. | `"DATA"` |
 | `routingPhaseIndex` | Assigns every member of the bus to an autorouting phase. | `0` |
 | `maxLengthSkew` | Maximum routed-length difference between members. Raw numbers are millimeters. | `"0.2mm"` |

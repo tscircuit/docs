@@ -101,8 +101,8 @@ export default () => (
       fanoutBoundaryPadding="1.5mm"
       fanoutPourNetMap={{ inner1: "GND", inner2: "VCC" }}
       busFanoutDirections={{
-        DATA: "center_right",
-        ADDRESS: "center_left",
+        DATA: "rightside_center",
+        ADDRESS: "leftside_center",
       }}
     >
       <chip
@@ -172,7 +172,7 @@ export default () => (
 
 The breakout uses the fanout autorouter by default, so its fanout controls can
 be set directly on `<breakout />`. `busFanoutDirections` sends each named bus
-toward a specific side.
+to a specific physical edge and region.
 
 Because `<breakout />` is transparent, its traces use the same GND and VCC nets
 as the board-level copper pours. The pours do not need to be children of the
@@ -196,6 +196,66 @@ is useful when a net has pours on multiple layers:
 </breakout>
 ```
 
+## Choose Exact Fanout Exit Edges
+
+Use edge-first `busFanoutDirections` values when the physical exit edge
+matters. The prefix before `side` names the boundary edge, while the suffix
+names the region along that edge and the local direction used to escape the
+source pads.
+
+For example, `rightside_top` terminates on the right edge in its upper region
+after escaping the source pads toward the top. `topside_right` instead
+terminates on the top edge in its right region after escaping toward the
+right.
+
+```tsx
+<breakout
+  busFanoutDirections={{
+    CONTROL: "rightside_top",
+    CLOCKS: { direction: "topside_right" },
+  }}
+>
+  {/* Components, buses, and traces */}
+</breakout>
+```
+
+| Physical edge | Canonical values |
+| --- | --- |
+| Top | `topside_left`, `topside_center`, `topside_right` |
+| Right | `rightside_top`, `rightside_center`, `rightside_bottom` |
+| Bottom | `bottomside_right`, `bottomside_center`, `bottomside_left` |
+| Left | `leftside_bottom`, `leftside_center`, `leftside_top` |
+| Unconstrained | `center` |
+
+Directions use board world coordinates: right is positive X and top is
+positive Y. They do not rotate with the source component. Legacy nine-point
+values such as `center_right` and `top_left` remain accepted and keep their
+destination-guided behavior, but edge-first values are preferable when the
+exit edge must be unambiguous.
+
+## Keep Space Between Fanout Boundaries
+
+Set `fanoutMargin` to require clearance between sibling breakout boundaries.
+It accepts a nonnegative distance; raw numbers are millimeters.
+
+```tsx
+<breakout name="LEFT" pcbX="-4mm" fanoutMargin="0.6mm">
+  {/* Left fanout */}
+</breakout>
+<breakout name="RIGHT" pcbX="4mm" fanoutMargin="0.3mm">
+  {/* Right fanout */}
+</breakout>
+```
+
+When two sibling breakouts specify different margins, tscircuit requires the
+larger value, so the example requires at least `0.6mm` between their
+boundaries. Fanout boundaries may never overlap, even when `fanoutMargin` is
+omitted or zero.
+
+`fanoutMargin` controls clearance between separate fanout boundaries.
+`fanoutBoundaryPadding` instead controls the distance from a fanout's source
+pads to its own shared termination boundary.
+
 ## Properties
 
 `<breakout />` accepts all the layout properties of `<group />` plus a few extras:
@@ -205,7 +265,8 @@ is useful when a net has pours on multiple layers:
 | `padding` | Uniform padding around the breakout region. |
 | `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Control padding for each side individually. |
 | `autorouter` | Autorouter used to escape components inside the breakout. Defaults to `fanout`. |
-| `busFanoutDirections` | Maps named buses to preferred escape directions. |
+| `busFanoutDirections` | Maps named buses to fanout directions and boundary regions. Prefer edge-first values when the physical exit edge matters. |
 | `fanoutBoundaryPadding` | Padding between the source pads and the shared boundary where fanout traces terminate. |
+| `fanoutMargin` | Nonnegative minimum clearance between sibling fanout boundaries. Raw numbers are millimeters; the larger margin in a pair is used. |
 | `fanoutRoutingLayers` | Copper layers available to boundary-terminated fanout buses. |
 | `fanoutPourNetMap` | Maps plane layers to nets for source-only fanout escapes. Matching copper pours are inferred when omitted. |
