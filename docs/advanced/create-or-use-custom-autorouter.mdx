@@ -485,8 +485,8 @@ selection, obstacle checks, and progress/error reporting.
 Use `implicitBreakoutPointSolverFn` when the normal autorouter should still
 route traces, but your application needs to choose where connections leave
 [`<breakout />`](../elements/breakout.mdx) regions. The callback runs during
-PCB layout and must synchronously return the PCB-world positions
-and layers of the generated breakout points.
+PCB layout and must synchronously return the PCB-world positions and layers of
+the generated breakout points.
 
 ```tsx
 import type { ImplicitBreakoutPointSolverFn } from "@tscircuit/props"
@@ -530,14 +530,32 @@ const placeBreakoutPoints: ImplicitBreakoutPointSolverFn = (input) => {
 }
 
 export default () => (
-  <board width="20mm" height="12mm">
+  <board width="20mm" height="20mm">
     <breakout
-      name="U1_ESCAPE"
+      name="B1"
+      pcbX={-4}
       padding="1mm"
       autorouter={{ implicitBreakoutPointSolverFn: placeBreakoutPoints }}
     >
-      {/* components whose traces leave this region */}
+      <resistor name="R1" resistance="1k" footprint="0402" pcbY={-1} />
+      <resistor name="R2" resistance="1k" footprint="0402" pcbY={1} />
     </breakout>
+    <breakout
+      name="B2"
+      pcbX={4}
+      padding="1mm"
+      autorouter={{ implicitBreakoutPointSolverFn: placeBreakoutPoints }}
+    >
+      <resistor name="R3" resistance="1k" footprint="0402" pcbY={-1} />
+      <resistor name="R4" resistance="1k" footprint="0402" pcbY={1} />
+    </breakout>
+    <trace name="signal_a" from="R1.1" to="R3.1" />
+    <trace name="signal_b" from="R2.1" to="R4.1" />
+    <bus
+      name="data_bus"
+      connections={["signal_a", "signal_b"]}
+      preferredLayers={["top", "bottom"]}
+    />
   </board>
 )
 ```
@@ -556,9 +574,9 @@ The input contains:
 | `buses` | Bus IDs, member connection IDs, and optional ordered target layers. |
 | `boundaryPointSpacing` | Recommended spacing between generated boundary points, in millimeters. |
 
-An endpoint can also include `externalDestination`, the PCB-world position
-beyond its breakout region. Use it to prefer an edge nearer the connection's
-eventual destination or to align related escapes.
+The endpoint type also includes an optional `externalDestination`, representing
+a PCB-world position beyond its breakout region. Core does not currently
+populate this field, so solvers must not rely on it being present.
 
 Return `{ breakoutPoints }`. Every point must provide `regionId`,
 `connectionId`, `layer`, `x`, and `y`. The point must lie on the corresponding
