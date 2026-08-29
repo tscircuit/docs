@@ -55,6 +55,5 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | id | string | auto-generated | Unique identifier for the component |
 
 The two mating-side aliases are mutually exclusive. An explicit `layer` takes
-precedence; unlike footprint `invert`, these props choose the PCB side without
-reversing pin orientation.
-
+precedence. They choose the PCB side; footprint `invert` instead installs the
+header backwards on that side.
