@@ -103,6 +103,12 @@ const fallbackSvg =
 | `width` | `distance` | No | Positive rendered width. |
 | `height` | `distance` | No | Positive rendered height. |
 
+::::note PDF export
+The current `tsci` schematic PDF export may omit `<text>` elements nested inside
+an embedded SVG. Convert important SVG labels to paths when they must appear in
+the exported PDF.
+::::
+
 ## SVG Requirements
 
 Inline and loaded SVGs should be complete standalone documents:
