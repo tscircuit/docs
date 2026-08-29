@@ -40,14 +40,14 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | pinCount | number | (required) | Number of pins in the header |
 | pitch | number \| string | "2.54mm" | Distance between pins |
 | schFacingDirection | "up" \| "down" \| "left" \| "right" | "right" | Direction the header faces in schematic view |
-| gender | "male" \| "female" | "male" | Whether the header is male or female |
-| connectsFromAbove | boolean | false | Mounts the header on the top layer, describing a mating connector that approaches from above. |
-| connectsFromBelow | boolean | false | Mounts the header on the bottom layer, describing a mating connector that approaches from below. |
+| gender | "male" \| "female" \| "unpopulated" | "male" | Whether the header is male, female, or left unpopulated |
+| connectsFromAbove | boolean | omitted (`false`) | Mounts the header on the top layer, describing a mating connector that approaches from above. |
+| connectsFromBelow | boolean | omitted (`false`) | Mounts the header on the bottom layer, describing a mating connector that approaches from below. |
 | showSilkscreenPinLabels | boolean | false | Whether to show pin labels in silkscreen |
 | doubleRow | boolean | false | Whether the header has two rows of pins |
 | holeDiameter | number \| string | "1mm" | Diameter of the through-hole for each pin |
 | platedDiameter | number \| string | "1.7mm" | Diameter of the plated area around each hole |
-| pinLabels | string[] | undefined | Labels for each pin |
+| pinLabels | Record<string, string> \| string[] | undefined | Labels for each pin, supplied as a pin-keyed map or an ordered array |
 | facingDirection | "left" \| "right" | "right" | Direction the header is facing |
 | pcbX | number | 0 | X position of the component |
 | pcbY | number | 0 | Y position of the component |
@@ -83,7 +83,6 @@ two aliases; enabling both is invalid. If `layer` is also present, the explicit
 These props choose which side of the PCB the component occupies. They are not
 the same as `invert` in a footprint string, which reverses the header's pin
 orientation on its current layer.
-
 
 
 
