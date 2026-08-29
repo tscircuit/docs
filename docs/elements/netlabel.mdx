@@ -116,6 +116,7 @@ export default () => (
 | `inline` | Places the net name along its connected schematic trace using automatic, collision-aware placement. Anchored positioning props are ignored while active. | `true` |
 | `anchorSide` | Which side of the connection to place the label. One of `"top"`, `"bottom"`, `"left"`, or `"right"` | `"top"` |
 | `schX`, `schY` | Position of the label on the schematic | `0`, `-1` |
+| `schRotation` | Rotation of an anchored label in degrees. Ignored when `inline` is active. | `90` |
 
 Use `<netlabel />` to clearly mark nets in your schematic, especially for
 power rails or when multiple wires join at a single connection point.
