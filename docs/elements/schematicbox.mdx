@@ -109,6 +109,7 @@ For a complete example, see
 | `chipRef` | `string` | No | Selector for the source chip represented by this box. |
 | `pinLabels` | `PinLabelsProp` | No | Local pin positions mapped to labels from the referenced chip. |
 | `schPinArrangement` | `SchematicPinArrangement` | No | Places the box's local pins on its sides. |
+| `schPinStyle` | `SchematicPinStyle` | No | Per-pin margins keyed by local pin number or label. Styles inherit from the referenced chip and merge field by field; use `0` to clear an inherited margin. |
 | `schX` | `distance` | No | X position of a fixed-size box. |
 | `schY` | `distance` | No | Y position of a fixed-size box. |
 | `width` | `distance` | Conditional | Box width. Provide it together with `height`, or use `overlay`. |
