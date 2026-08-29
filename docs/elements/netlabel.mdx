@@ -66,46 +66,6 @@ schematic alongside the example code.
   `}
 />
 
-## Inline Labels
-
-Set `inline` to place the net name along the connected schematic trace instead
-of beside its port. Placement is automatic, so `schX`, `schY`, `schRotation`,
-and `anchorSide` do not position an inline label. If the schematic trace solver
-cannot find a collision-free inline position, tscircuit falls back to an
-anchored label.
-
-<CircuitPreview
-  hide3DTab
-  hidePCBTab
-  defaultView="schematic"
-  code={`
-export default () => (
-  <board
-    width="20mm"
-    height="10mm"
-    routingDisabled
-    schMaxTraceDistance={10}
-  >
-    <resistor
-      name="R1"
-      resistance="1k"
-      footprint="0603"
-      schX={-3}
-    />
-    <resistor
-      name="R2"
-      resistance="1k"
-      footprint="0603"
-      schX={3}
-    />
-
-    <netlabel net="SIGNAL" connection="R1.pin2" inline />
-    <trace from="R2.pin1" to="net.SIGNAL" />
-  </board>
-)
-`}
-/>
-
 ## Properties
 
 | Property | Description | Example |
@@ -113,7 +73,7 @@ export default () => (
 | `net` | Name of the net that the label represents | `"VCC"` |
 | `connectsTo` | One or more [port selectors](../guides/tscircuit-essentials/port-and-net-selectors.md) that the label attaches to | `"U1.VCC"`, `["U1.VCC", "U2.VCC"]` |
 | `connection` | Legacy singular port selector that the label attaches to | `"U1.VCC"` |
-| `inline` | Places the net name along its connected schematic trace using automatic, collision-aware placement. Anchored positioning props are ignored while active. | `true` |
+| `inline` | Places the net name automatically along its trace, falling back to an anchored label when needed. Positioning props are ignored while active. | `true` |
 | `anchorSide` | Which side of the connection to place the label. One of `"top"`, `"bottom"`, `"left"`, or `"right"` | `"top"` |
 | `schX`, `schY` | Position of the label on the schematic | `0`, `-1` |
 | `schRotation` | Rotation of an anchored label in degrees. Ignored when `inline` is active. | `90` |

@@ -62,49 +62,6 @@ about the following resistor characteristics:
 - **powerRating** - a wattage e.g. "5W" indicating how much power can transfer through the resistor for normal operation
 - **temperatureOperatingRange** - a string indicating the listed range for the resistor's operating temperature `"-15F-150F"`
 
-## Compact Schematic Symbols
-
-Use `schSize="sm"` or `schSize="xs"` to fit resistors into dense schematics.
-The compact symbols have pin-to-pin spans of `0.5` and `0.35` schematic units,
-respectively. Omit `schSize`, or use `"default"`, `"md"`, or a `Distance`, for
-the standard symbol.
-
-The compact selection preserves the resistor style: the default IEC box remains
-an IEC box, while `symbolName="resistor"` uses the corresponding compact US
-zigzag symbol.
-
-<CircuitPreview
-  hide3DTab
-  hidePCBTab
-  defaultView="schematic"
-  code={`
-export default () => (
-  <board width="12mm" height="8mm" routingDisabled>
-    <resistor
-      name="R1"
-      resistance="1k"
-      footprint="0402"
-      schX={-3}
-    />
-    <resistor
-      name="R2"
-      resistance="1k"
-      footprint="0402"
-      schSize="sm"
-      schX={0}
-    />
-    <resistor
-      name="R3"
-      resistance="1k"
-      footprint="0402"
-      schSize="xs"
-      schX={3}
-    />
-  </board>
-)
-`}
-/>
-
 ## Resistor Properties
 
 | Property | Description | Example |
