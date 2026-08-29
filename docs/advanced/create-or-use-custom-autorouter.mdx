@@ -484,9 +484,9 @@ selection, obstacle checks, and progress/error reporting.
 
 Use `implicitBreakoutPointSolverFn` when the normal autorouter should still
 route traces, but your application needs to choose where connections leave
-[`<breakout />`](../elements/breakout.mdx) regions. The callback may be
-synchronous or asynchronous and returns the PCB-world positions and layers of
-the generated breakout points.
+[`<breakout />`](../elements/breakout.mdx) regions. The callback runs during
+PCB layout and must synchronously return the PCB-world positions
+and layers of the generated breakout points.
 
 ```tsx
 import type { ImplicitBreakoutPointSolverFn } from "@tscircuit/props"
@@ -562,8 +562,11 @@ eventual destination or to align related escapes.
 
 Return `{ breakoutPoints }`. Every point must provide `regionId`,
 `connectionId`, `layer`, `x`, and `y`. The point must lie on the corresponding
-region boundary. The callback can return the object directly or return a
-`Promise` when it needs asynchronous computation.
+region boundary. Return exactly one point for every `(regionId, connectionId)`
+pair requested by the input, counting the two members of a differential pair
+separately. Unknown or duplicate pairs, as well as missing points, cause PCB
+layout to fail. Core invokes this callback synchronously; returning a `Promise`
+throws an error.
 
 ## Run the Example Locally
 
