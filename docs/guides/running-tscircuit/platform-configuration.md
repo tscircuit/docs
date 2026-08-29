@@ -62,6 +62,7 @@ grouped below by purpose.
 | `routingDisabled` | `boolean` | Disables PCB routing. |
 | `schematicDisabled` | `boolean` | Disables schematic rendering. |
 | `partsEngineDisabled` | `boolean` | Disables automatic part selection through the parts engine. |
+| `analogSimulationDisabled` | `boolean` | Skips analog simulation model processing, validation, and simulator execution. Defaults to `false`. |
 | `drcChecksDisabled` | `boolean` | Disables all design-rule checks. |
 | `netlistDrcChecksDisabled` | `boolean` | Disables netlist design-rule checks. |
 | `routingDrcChecksDisabled` | `boolean` | Disables routing design-rule checks. |
@@ -78,6 +79,37 @@ grouped below by purpose.
 | `resolveProjectStaticFileImportUrl` | `(path: string) => Promise<string>` | Resolves a project-relative static-file path to an importable URL. |
 | `nodeModulesResolver` | `(modulePath: string) => Promise<string \| null>` | Resolves a Node module specifier to a loadable path or URL, or returns `null` when it cannot be resolved. |
 | `platformFetch` | `typeof fetch` | Replaces the fetch implementation used for platform requests. |
+
+### Disable Analog Simulation
+
+Set `analogSimulationDisabled` when a project should render its PCB and
+schematic without processing SPICE models or running `<analogsimulation />`
+elements. This can speed up documentation builds, previews, and other workflows
+that do not consume simulation output.
+
+In `tscircuit.config.ts`, it is available as a top-level project option:
+
+```ts title="tscircuit.config.ts"
+export default {
+  analogSimulationDisabled: true,
+}
+```
+
+When creating a circuit programmatically, set the same option on the platform:
+
+```tsx
+import { RootCircuit } from "@tscircuit/core"
+
+const circuit = new RootCircuit({
+  platform: {
+    analogSimulationDisabled: true,
+  },
+})
+```
+
+When enabled, tscircuit skips SPICE-model processing and validation as well as
+calls to the configured simulation engine. Omit the option or set it to `false`
+to retain normal analog simulation behavior.
 
 See the source for the complete TypeScript definitions in
 [`platformConfig.ts`](https://github.com/tscircuit/props/blob/main/lib/platformConfig.ts).
