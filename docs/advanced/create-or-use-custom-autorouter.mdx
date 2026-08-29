@@ -1,6 +1,8 @@
 ---
 title: Create or Use a Custom Autorouter
-description: Use a custom autorouter directly from tscircuit code with algorithmFn.
+description: >-
+  Use a custom PCB autorouter or implicit breakout-point solver directly from
+  tscircuit code.
 ---
 
 import CircuitExample from "@site/src/components/CircuitPreview"
@@ -478,7 +480,83 @@ The example's `SimpleCustomAutorouter` is intentionally small, but it shows the
 full shape: event handlers, sync solving, trace IDs, route widths, layer
 selection, obstacle checks, and progress/error reporting.
 
-## Run the Example Locally
+## Customize Implicit Breakout Points
+
+Use `implicitBreakoutPointSolverFn` when the normal autorouter should still
+route traces, but your application needs to choose where connections leave
+[`<breakout />`](../elements/breakout.mdx) regions. The callback runs during
+PCB layout and must synchronously return the PCB-world positions and layers of
+the generated breakout points.
+
+```tsx
+import type { ImplicitBreakoutPointSolverFn } from "@tscircuit/props"
+
+const placeBreakoutPoints: ImplicitBreakoutPointSolverFn = (input) => {
+  const connections = input.connections.flatMap((connection) =>
+    "type" in connection ? connection.connections : [connection],
+  )
+
+  return {
+    breakoutPoints: input.regions.flatMap((region) => {
+      const regionConnections = connections.filter((connection) =>
+        connection.endpoints.some(
+          (endpoint) => endpoint.regionId === region.regionId,
+        ),
+      )
+
+      return regionConnections.map((connection, index) => {
+        const offset = input.boundaryPointSpacing * (index + 1)
+
+        return {
+          regionId: region.regionId,
+          connectionId: connection.connectionId,
+          layer: "top",
+          x:
+            region.edge === "left"
+              ? region.bounds.minX
+              : region.edge === "right"
+                ? region.bounds.maxX
+                : region.bounds.minX + offset,
+          y:
+            region.edge === "bottom"
+              ? region.bounds.minY
+              : region.edge === "top"
+                ? region.bounds.maxY
+                : region.bounds.minY + offset,
+        }
+      })
+    }),
+  }
+}
+
+export default () => (
+  <breakout
+    autorouter={{ implicitBreakoutPointSolverFn: placeBreakoutPoints }}
+  >
+    {/* components */}
+  </breakout>
+)
+```
+
+A production solver should also check boundary length, bus ordering,
+differential pairs, and layer constraints.
+
+The input contains:
+
+| Field | Description |
+| --- | --- |
+| `regions` | Breakout IDs, rectangular bounds, and selected boundary edges. Coordinates are PCB world-space millimeters. |
+| `connections` | Ordinary connections or differential pairs. Each endpoint identifies its region and position. The type includes optional `externalDestination`, but Core does not currently populate it. |
+| `buses` | Bus IDs, member connection IDs, and optional ordered target layers. |
+| `boundaryPointSpacing` | Recommended spacing between generated boundary points, in millimeters. |
+
+Return `{ breakoutPoints }` synchronously. Every point must provide `regionId`,
+`connectionId`, `layer`, `x`, and `y` on the matching region boundary, with
+exactly one point per `(regionId, connectionId)` pair; differential-pair
+members count separately. Missing, unknown, or duplicate pairs and Promise
+returns all cause layout to fail.
+
+## Run the Custom Autorouter Example Locally
 
 ```bash
 git clone https://github.com/tscircuit/example-custom-autorouter
