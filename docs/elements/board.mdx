@@ -31,7 +31,8 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | --- | --- | --- |
 | `width`, `height` | `string \| number` | Define the board's bounding box dimensions in millimeters. |
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
-| `layers` | `1 \| 2 \| 4 \| 6 \| 8` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
+| `layers` | `1 \| 2 \| 4 \| 6 \| 8 \| 10` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
+| `allowBlindAndBuriedVias` | `boolean` | Allow the autorouter to use vias that span only part of a multilayer stack. Defaults to `false`. |
 | `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
 | `autorouterVersion` | `'v1' \| 'v2' \| 'v3' \| 'v4' \| 'v5' \| 'latest'` | Pin routing to a specific autorouter implementation when comparing routing behavior across versions. |
@@ -41,7 +42,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `schAutoLayoutEnabled` | `boolean` | Enable automatic schematic layout for supported grouped circuits. |
 | `schTraceAutoLabelEnabled` | `boolean` | Automatically create schematic net labels for complex traces. |
 | `schMaxTraceDistance` | `string \| number` | Maximum span a schematic trace can travel before the auto layout prefers labels or different routing. |
-| `outline` | `Array<{ x: number, y: number }>` | Supply a custom polygon to replace the default rectangular outline. |
+| `outline` | `BoardOutlinePoint[]` | Supply a custom polygon to replace the default rectangular outline. Points can also define castellated holes. |
 | `outlineOffsetX`, `outlineOffsetY` | `string \| number` | Offset a custom outline relative to the bounding box origin. |
 | `material` | `'fr4' \| 'fr1'` | PCB substrate material. Defaults to 'fr4'. |
 | `thickness` | `string \| number` | Board thickness in millimeters. |
@@ -67,6 +68,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `minViaHoleDiameter` | `string \| number` | Smallest via drill diameter the router may use. |
 | `minViaPadDiameter` | `string \| number` | Smallest via pad diameter the router may use. |
 | `isViaInPadAllowed` | `boolean` | Allow intentional vias inside PCB pads to pass DRC. Defaults to `false`. |
+| `automaticPoursEnabled` | `boolean` | Generate implicit copper pours for eligible power nets. Defaults to `false`. |
 | `partsEngine` | `object` | Override the parts lookup engine used to resolve bill of materials. |
 | `circuitJson` | `any[]` | Provide precompiled circuit JSON to embed or reuse as the board contents. |
 | `pcbStyle` | `object` | Style configuration object for PCB elements. See [Global Silkscreen Text Size](#global-silkscreen-text-size-adjustment) below. |
@@ -232,6 +234,19 @@ components across that stackup:
   )
 `} />
 
+Supported layer counts are `1`, `2`, `4`, `6`, `8`, and `10`. On multilayer
+boards, autorouted vias span the complete stack by default. Set
+`allowBlindAndBuriedVias` to permit the autorouter to use partial layer spans:
+
+```tsx
+<board width="30mm" height="20mm" layers={10} allowBlindAndBuriedVias>
+  {/* components and traces */}
+</board>
+```
+
+This option permits logical blind and buried via spans; confirm that the
+selected stackup and via constructions are supported by your manufacturer.
+
 ### Board Thickness
 
 The board thickness can be specified using the `thickness` prop (e.g., `thickness="1.6mm"`).
@@ -259,6 +274,37 @@ You can set default and minimum trace widths for all traces within a board:
 
 These settings help ensure your traces meet manufacturing requirements and
 handle the expected current loads.
+
+### Generating Copper Pours Automatically
+
+Set `automaticPoursEnabled` to let tscircuit generate implicit copper-pour
+regions for ground, power, and positive-voltage-source nets:
+
+<CircuitPreview defaultView="pcb" code={`
+  export default () => (
+    <board width="18mm" height="12mm" automaticPoursEnabled>
+      <resistor
+        name="R1"
+        resistance="1k"
+        footprint="0603"
+        pcbX={-3}
+        connections={{ pin1: "net.VCC", pin2: "net.GND" }}
+      />
+      <capacitor
+        name="C1"
+        capacitance="100nF"
+        footprint="0603"
+        pcbX={3}
+        connections={{ pin1: "net.VCC", pin2: "net.GND" }}
+      />
+    </board>
+  )
+`} />
+
+The option defaults to `false`. Automatic pours are generated only when
+routing is enabled and the board contains an eligible power net. Use explicit
+[`<copperpour />`](./copperpour.mdx) elements when you need to choose exact
+layers, clearances, outlines, or thermal-relief behavior.
 
 ### Setting the `autorouter`
 
@@ -380,6 +426,47 @@ export default () => (
 )
 
 `} />
+
+#### Add Castellated Holes to an Outline
+
+An outline point can also mark the center of a castellated plated hole. Set
+`isCastellatedHole: true` and provide both `holeDiameter` and `padDiameter`.
+Use `connectsTo` when the edge contact should join a port or net.
+
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
+const outline = [
+  { x: -8, y: -5 },
+  { x: 8, y: -5 },
+  {
+    x: 8,
+    y: 0,
+    isCastellatedHole: true,
+    holeDiameter: "0.8mm",
+    padDiameter: "1.2mm",
+    connectsTo: "net.GND",
+  },
+  { x: 8, y: 5 },
+  { x: -8, y: 5 },
+  {
+    x: -8,
+    y: 0,
+    isCastellatedHole: true,
+    holeDiameter: "0.8mm",
+    padDiameter: "1.2mm",
+  },
+]
+
+export default () => (
+  <board outline={outline}>
+    <pcbnotetext text="CASTELLATED EDGE" fontSize="0.7mm" />
+  </board>
+)
+`} />
+
+The marked point remains a board-outline vertex and becomes the plated-hole
+center. A `connectsTo` value also creates an electrically connected board
+pinout port. Supplying a diameter or connection without
+`isCastellatedHole: true` is invalid.
 
 ### Offsetting the board origin
 
