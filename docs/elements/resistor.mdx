@@ -66,7 +66,8 @@ about the following resistor characteristics:
 
 Use `schSize="sm"` or `schSize="xs"` to fit resistors into dense schematics.
 The compact symbols have pin-to-pin spans of `0.5` and `0.35` schematic units,
-respectively. Omit `schSize`, or use `"default"`, for the standard symbol.
+respectively. Omit `schSize`, or use `"default"`, `"md"`, or a `Distance`, for
+the standard symbol.
 
 The compact selection preserves the resistor style: the default IEC box remains
 an IEC box, while `symbolName="resistor"` uses the corresponding compact US
@@ -116,7 +117,7 @@ export default () => (
 | `pulldownFor` | The pin or net this resistor is pulling down. | `".U1 > .GPIO1"` |
 | `pulldownTo` | The net this resistor is pulling down to. | `"net.GND"` |
 | `schOrientation` | The orientation of the resistor on the schematic. | `"vertical"`, `"horizontal"` |
-| `schSize` | Selects the schematic symbol size. Use `"sm"` or `"xs"` for compact symbols; omit it or use `"default"` for the standard size. | `"sm"`, `"xs"` |
+| `schSize` | Accepts `Distance \| "xs" \| "sm" \| "default" \| "md"`. Only `"sm"` and `"xs"` select compact symbols; all other accepted values use the standard symbol. | `"sm"`, `"xs"`, `"default"` |
 
 ## Automatic Part Selection
 
