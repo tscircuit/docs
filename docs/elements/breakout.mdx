@@ -174,6 +174,10 @@ The breakout uses the fanout autorouter by default, so its fanout controls can
 be set directly on `<breakout />`. `busFanoutDirections` sends each named bus
 to a specific physical edge and region.
 
+Edge-first names follow `<edge>side_<region>` (for example,
+`rightside_top`), use PCB-world coordinates, and do not rotate with the
+component. Legacy destination-guided names remain accepted.
+
 Because `<breakout />` is transparent, its traces use the same GND and VCC nets
 as the board-level copper pours. The pours do not need to be children of the
 breakout, and no net exposure or separate `<autoroutingphase />` is required.
@@ -196,67 +200,6 @@ is useful when a net has pours on multiple layers:
 </breakout>
 ```
 
-## Choose Exact Fanout Exit Edges
-
-Use edge-first `busFanoutDirections` values when the physical exit edge
-matters. The prefix before `side` names the boundary edge, while the suffix
-always names the region along that edge. A corner suffix also names the local
-direction used to escape the source pads. For a `*_center` value, the pads
-instead escape toward the physical edge named by the prefix.
-
-For example, `rightside_top` terminates on the right edge in its upper region
-after escaping the source pads toward the top. `topside_right` instead
-terminates on the top edge in its right region after escaping toward the
-right.
-
-```tsx
-<breakout
-  busFanoutDirections={{
-    CONTROL: "rightside_top",
-    CLOCKS: { direction: "topside_right" },
-  }}
->
-  {/* Components, buses, and traces */}
-</breakout>
-```
-
-| Physical edge | Canonical values |
-| --- | --- |
-| Top | `topside_left`, `topside_center`, `topside_right` |
-| Right | `rightside_top`, `rightside_center`, `rightside_bottom` |
-| Bottom | `bottomside_right`, `bottomside_center`, `bottomside_left` |
-| Left | `leftside_bottom`, `leftside_center`, `leftside_top` |
-| Unconstrained | `center` |
-
-Directions use board world coordinates: right is positive X and top is
-positive Y. They do not rotate with the source component. Legacy nine-point
-values such as `center_right` and `top_left` remain accepted and keep their
-destination-guided behavior, but edge-first values are preferable when the
-exit edge must be unambiguous.
-
-## Keep Space Between Fanout Boundaries
-
-Set `fanoutMargin` to require clearance between sibling breakout boundaries.
-It accepts a nonnegative distance; raw numbers are millimeters.
-
-```tsx
-<breakout name="LEFT" pcbX="-4mm" fanoutMargin="0.6mm">
-  {/* Left fanout */}
-</breakout>
-<breakout name="RIGHT" pcbX="4mm" fanoutMargin="0.3mm">
-  {/* Right fanout */}
-</breakout>
-```
-
-When two sibling breakouts specify different margins, tscircuit requires the
-larger value, so the example requires at least `0.6mm` between their
-boundaries. Fanout boundaries may never overlap, even when `fanoutMargin` is
-omitted or zero.
-
-`fanoutMargin` controls clearance between separate fanout boundaries.
-`fanoutBoundaryPadding` instead controls the distance from a fanout's source
-pads to its own shared termination boundary.
-
 ## Properties
 
 `<breakout />` accepts all the layout properties of `<group />` plus a few extras:
@@ -266,8 +209,8 @@ pads to its own shared termination boundary.
 | `padding` | Uniform padding around the breakout region. |
 | `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Control padding for each side individually. |
 | `autorouter` | Autorouter used to escape components inside the breakout. Defaults to `fanout`. |
-| `busFanoutDirections` | Maps named buses to fanout directions and boundary regions. Prefer edge-first values when the physical exit edge matters. |
+| `busFanoutDirections` | Maps named buses to PCB-world fanout edges and regions. |
 | `fanoutBoundaryPadding` | Padding between the source pads and the shared boundary where fanout traces terminate. |
-| `fanoutMargin` | Nonnegative minimum clearance between sibling fanout boundaries. Raw numbers are millimeters; the larger margin in a pair is used. |
+| `fanoutMargin` | Nonnegative clearance between sibling fanout boundaries; the larger margin in a pair is used. |
 | `fanoutRoutingLayers` | Copper layers available to boundary-terminated fanout buses. |
 | `fanoutPourNetMap` | Maps plane layers to nets for source-only fanout escapes. Matching copper pours are inferred when omitted. |

@@ -17,26 +17,7 @@ to the same group. Each entry in `connections` can be a named
 A bus does not electrically connect its members. It groups existing
 connections so the autorouter can apply shared constraints such as layer
 selection, trace width, and maximum length skew.
-
-## Group a Single Connection
-
-A bus may contain one connection. This is useful for control signals that
-should retain bus-level routing and fanout intent even though they do not need
-length-skew matching.
-
-```tsx
-<autoroutingphase
-  autorouter="fanout"
-  busFanoutDirections={{ RESET: "rightside_center" }}
-/>
-
-<trace name="RESET_n" from="U1.RESET" to="J1.RESET" />
-<bus name="RESET" connections={["RESET_n"]} />
-```
-
-The bus name matches the `busFanoutDirections` key, so the singleton
-`RESET_n` connection exits through the center region of the right boundary.
-At least one connection is required; an empty `connections` array is invalid.
+A singleton bus can apply those bus-level constraints to one control signal.
 
 ## Constrain Fanout Layers
 
