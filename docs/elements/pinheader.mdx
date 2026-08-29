@@ -47,7 +47,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | doubleRow | boolean | false | Whether the header has two rows of pins |
 | holeDiameter | number \| string | "1mm" | Diameter of the through-hole for each pin |
 | platedDiameter | number \| string | "1.7mm" | Diameter of the plated area around each hole |
-| pinLabels | Record<string, string> \| string[] | undefined | Labels for each pin, supplied as a pin-keyed map or an ordered array |
+| pinLabels | `Record<string, string>` \| `string[]` | undefined | Labels for each pin, supplied as a pin-keyed map or an ordered array |
 | facingDirection | "left" \| "right" | "right" | Direction the header is facing |
 | pcbX | number | 0 | X position of the component |
 | pcbY | number | 0 | Y position of the component |
@@ -83,6 +83,5 @@ two aliases; enabling both is invalid. If `layer` is also present, the explicit
 These props choose which side of the PCB the component occupies. They are not
 the same as `invert` in a footprint string, which reverses the header's pin
 orientation on its current layer.
-
 
 
