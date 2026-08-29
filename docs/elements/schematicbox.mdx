@@ -101,60 +101,6 @@ as `U1.VCC`.
 For a complete example, see
 [Split a Component Across Schematic Sheets](https://docs.tscircuit.com/guides/tscircuit-essentials/splitting-a-component-across-schematic-sheets).
 
-## Inherit and Override Pin Styles
-
-A box with `chipRef` inherits `schPinStyle` from the referenced component. Use
-box-level `schPinStyle` when a split section needs different spacing. Keys can
-be local pin numbers such as `pin1` or labels such as `VCC`.
-
-<CircuitPreview
-  hide3DTab
-  hidePCBTab
-  defaultView="schematic"
-  code={`
-const chipPinLabels = {
-  pin1: "VCC",
-  pin2: "GND",
-  pin3: "DATA",
-}
-
-export default () => (
-  <board routingDisabled>
-    <chip
-      name="U1"
-      pinLabels={chipPinLabels}
-      schX={-3}
-      schPinStyle={{
-        VCC: { marginTop: "0.4mm", marginRight: "0.2mm" },
-        GND: { marginBottom: "0.4mm" },
-      }}
-    />
-
-    <schematicbox
-      name="U1A"
-      chipRef=".U1"
-      width="3mm"
-      height="1.5mm"
-      schX={3}
-      pinLabels={chipPinLabels}
-      schPinArrangement={{
-        leftSide: ["pin1", "pin2"],
-        rightSide: ["pin3"],
-      }}
-      schPinStyle={{
-        VCC: { marginTop: 0, marginLeft: "0.6mm" },
-      }}
-    />
-  </board>
-)
-`}
-/>
-
-Style objects merge field by field. In this example, the box's `VCC` style
-keeps the inherited `marginRight`, sets a new `marginLeft`, and uses
-`marginTop: 0` to clear the inherited top margin. Styles for pins that the box
-does not override remain inherited unchanged.
-
 ## Props
 
 | Prop | Type | Required | Description |
@@ -163,7 +109,7 @@ does not override remain inherited unchanged.
 | `chipRef` | `string` | No | Selector for the source chip represented by this box. |
 | `pinLabels` | `PinLabelsProp` | No | Local pin positions mapped to labels from the referenced chip. |
 | `schPinArrangement` | `SchematicPinArrangement` | No | Places the box's local pins on its sides. |
-| `schPinStyle` | `SchematicPinStyle` | No | Per-pin schematic margins. Inherits from the referenced chip and merges box-level overrides field by field. |
+| `schPinStyle` | `SchematicPinStyle` | No | Per-pin margins keyed by local pin number or label. Styles inherit from the referenced chip and merge field by field; use `0` to clear an inherited margin. |
 | `schX` | `distance` | No | X position of a fixed-size box. |
 | `schY` | `distance` | No | Y position of a fixed-size box. |
 | `width` | `distance` | Conditional | Box width. Provide it together with `height`, or use `overlay`. |
