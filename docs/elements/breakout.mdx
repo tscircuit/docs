@@ -200,8 +200,9 @@ is useful when a net has pours on multiple layers:
 
 Use edge-first `busFanoutDirections` values when the physical exit edge
 matters. The prefix before `side` names the boundary edge, while the suffix
-names the region along that edge and the local direction used to escape the
-source pads.
+always names the region along that edge. A corner suffix also names the local
+direction used to escape the source pads. For a `*_center` value, the pads
+instead escape toward the physical edge named by the prefix.
 
 For example, `rightside_top` terminates on the right edge in its upper region
 after escaping the source pads toward the top. `topside_right` instead
