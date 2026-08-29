@@ -62,6 +62,7 @@ grouped below by purpose.
 | `routingDisabled` | `boolean` | Disables PCB routing. |
 | `schematicDisabled` | `boolean` | Disables schematic rendering. |
 | `partsEngineDisabled` | `boolean` | Disables automatic part selection through the parts engine. |
+| `analogSimulationDisabled` | `boolean` | Top-level project/platform option that skips SPICE-model processing, validation, and simulator execution. Defaults to `false`. |
 | `drcChecksDisabled` | `boolean` | Disables all design-rule checks. |
 | `netlistDrcChecksDisabled` | `boolean` | Disables netlist design-rule checks. |
 | `routingDrcChecksDisabled` | `boolean` | Disables routing design-rule checks. |
