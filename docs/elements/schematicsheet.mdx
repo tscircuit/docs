@@ -18,6 +18,9 @@ ANSI B preset, or set `sheetWidth` and `sheetHeight` to provide custom
 dimensions. Explicit dimensions override the corresponding dimensions from the
 selected preset.
 
+Place [`<schematicgraphic />`](./schematicgraphic.mdx) inside a sheet to embed
+an SVG diagram or asset.
+
 Schematic elements can be assigned to a sheet in three common ways:
 
 - Put the elements inside the `<schematicsheet />`.
@@ -52,39 +55,6 @@ export default () => (
 )
 `}
 />
-
-## Set the Sheet Size
-
-Use `sheetSize` to select a supported page preset:
-
-```tsx
-<schematicsheet
-  name="Main Sheet"
-  displayName="Main Sheet"
-  sheetSize="ANSI_B"
->
-  {/* Schematic elements */}
-</schematicsheet>
-```
-
-Supported presets are `"A4"` and `"ANSI_B"`. A4 is the default.
-
-For a custom page, provide positive `sheetWidth` and `sheetHeight` distances:
-
-```tsx
-<schematicsheet
-  name="Main Sheet"
-  displayName="Main Sheet"
-  sheetWidth="500mm"
-  sheetHeight="300mm"
->
-  {/* Schematic elements */}
-</schematicsheet>
-```
-
-Each explicit dimension overrides the corresponding dimension from
-`sheetSize`. The resolved dimensions are also used when checking whether
-schematic elements fall outside the sheet.
 
 ## Assign an Element with `schSheetName`
 
@@ -177,24 +147,6 @@ export default () => (
 )
 `}
 />
-
-## Add an SVG Graphic
-
-Place `<schematicgraphic />` inside a sheet to add a block diagram, system
-overview, or other SVG asset:
-
-```tsx
-<schematicsheet name="System Overview" sheetIndex={0}>
-  <schematicgraphic
-    imageUrl="/assets/system-overview.svg"
-    width="160mm"
-    height="80mm"
-  />
-</schematicsheet>
-```
-
-See [`<schematicgraphic />`](./schematicgraphic.mdx) for inline SVG content,
-asset loading, sizing, and fallback behavior.
 
 ## Props
 
