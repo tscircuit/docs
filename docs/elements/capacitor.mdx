@@ -92,6 +92,48 @@ Valid orientation values are:
 />
 ```
 
+## Compact Schematic Symbols
+
+Use `schSize="sm"` or `schSize="xs"` to fit non-polarized capacitors into
+dense schematics. The compact symbols have pin-to-pin spans of `0.5` and `0.35`
+schematic units, respectively. Omit `schSize`, or use `"default"`, for the
+standard symbol.
+
+Compact variants currently apply only to non-polarized capacitors. Polarized
+capacitors keep their standard symbol when `schSize` is `"sm"` or `"xs"`.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="12mm" height="8mm" routingDisabled>
+    <capacitor
+      name="C1"
+      capacitance="1uF"
+      footprint="0402"
+      schX={-3}
+    />
+    <capacitor
+      name="C2"
+      capacitance="1uF"
+      footprint="0402"
+      schSize="sm"
+      schX={0}
+    />
+    <capacitor
+      name="C3"
+      capacitance="1uF"
+      footprint="0402"
+      schSize="xs"
+      schX={3}
+    />
+  </board>
+)
+`}
+/>
+
 ## Capacitor Properties
 
 | Property | Description | Example |
@@ -108,10 +150,9 @@ Valid orientation values are:
 | `bypassTo` | The net this capacitor is bypassing to. | `"net.GND"` |
 | `maxDecouplingTraceLength` | Maximum allowable trace length (in mm) for decoupling connection. | `10` |
 | `schOrientation` | The orientation of the capacitor on the schematic. | `"vertical"`, `"horizontal"`, `"pos_top"` |
-| `schSize` | The size of the schematic symbol. | `"normal"`, `"small"` |
+| `schSize` | Selects the schematic symbol size. Use `"sm"` or `"xs"` for compact non-polarized symbols; omit it or use `"default"` for the standard size. | `"sm"`, `"xs"` |
 | `connections` | Map of pin names/aliases to net names or selectors. | `{{ pos: "net.POS", neg: "net.NEG" }}` |
 | `supplierPartNumbers` | Map of supplier names to supplier part numbers. | `{{ jlcpcb: ["C1525"] }}` |
 | `manufacturerPartNumber` | Manufacturer part number for exact component selection. | `"GRM188R71C105KA12D"` |
-
 
 
