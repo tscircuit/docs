@@ -1,0 +1,50 @@
+---
+title: <schematicgraphic />
+description: Embed an SVG asset or inline SVG markup on a schematic sheet.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+`<schematicgraphic />` embeds a standalone SVG inside a
+[`<schematicsheet />`](./schematicsheet.mdx). Provide `svgContent`, `imageUrl`,
+or both; other image formats are not supported.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+const svg =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 20">' +
+  '<circle cx="20" cy="10" r="8" fill="#dbeafe" stroke="#1d4ed8" />' +
+  '</svg>'
+
+export default () => (
+  <board routingDisabled>
+    <schematicsheet name="Overview">
+      <schematicgraphic svgContent={svg} width="40mm" height="20mm" />
+    </schematicsheet>
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `imageUrl` | `string` | One source required | Canonical standalone SVG URL, data URL, or project asset. When both sources are provided, a failed non-data URL load falls back to `svgContent`. |
+| `svgContent` | `string` | One source required | Complete inline SVG markup, or fallback content when `imageUrl` is also provided. |
+| `width` | `distance` | No | Positive rendered width. |
+| `height` | `distance` | No | Positive rendered height. |
+
+Include `xmlns` and preferably a `viewBox` in the SVG root for predictable
+rendering and sizing.
+
+::::note PDF export
+The current `tsci` schematic PDF export may omit `<text>` elements nested inside
+an embedded SVG. Convert important SVG labels to paths when they must appear in
+the exported PDF.
+::::

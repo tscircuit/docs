@@ -1,17 +1,25 @@
 ---
 title: <schematicsheet />
 description: >-
-  Split a schematic into named sheets and assign schematic elements with
-  schSheetName.
+  Split a schematic into named and sized sheets, assign schematic elements, and
+  add sheet graphics.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-`<schematicsheet />` creates a named schematic sheet. Use it when a design is too
+`<schematicsheet />` creates a schematic sheet. Use it when a design is too
 large for one schematic view, or when you want to present functional blocks on
 separate pages.
+
+Sheets use A4 dimensions by default. Set `sheetSize="ANSI_B"` to use the larger
+ANSI B preset, or set `sheetWidth` and `sheetHeight` to provide custom
+dimensions. Explicit dimensions override the corresponding dimensions from the
+selected preset.
+
+Place [`<schematicgraphic />`](./schematicgraphic.mdx) inside a sheet to embed
+an SVG diagram or asset.
 
 Schematic elements can be assigned to a sheet in three common ways:
 
@@ -144,9 +152,12 @@ export default () => (
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `name` | `string` | Yes | Sheet identifier. Match this value from `schSheetName`. |
+| `name` | `string` | No | Sheet identifier. When omitted, `displayName` is used or a name such as `Sheet 1` is generated. Match this value from `schSheetName` when assigning elements externally. |
 | `displayName` | `string` | No | Label shown for the sheet in schematic viewers. |
 | `sheetIndex` | `number` | No | Ordering value for multi-sheet schematics. Lower numbers appear first. |
+| `sheetSize` | `"A4" \| "ANSI_B"` | No | Page-size preset. Defaults to `"A4"`. |
+| `sheetWidth` | `distance` | No | Positive explicit page width. Overrides the width from `sheetSize`. |
+| `sheetHeight` | `distance` | No | Positive explicit page height. Overrides the height from `sheetSize`. |
 
 ## `schSheetName`
 
