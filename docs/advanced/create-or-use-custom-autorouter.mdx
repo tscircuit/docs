@@ -1,6 +1,8 @@
 ---
 title: Create or Use a Custom Autorouter
-description: Use a custom autorouter directly from tscircuit code with algorithmFn.
+description: >-
+  Use a custom PCB autorouter or implicit breakout-point solver directly from
+  tscircuit code.
 ---
 
 import CircuitExample from "@site/src/components/CircuitPreview"
@@ -477,6 +479,91 @@ optional `via` points.
 The example's `SimpleCustomAutorouter` is intentionally small, but it shows the
 full shape: event handlers, sync solving, trace IDs, route widths, layer
 selection, obstacle checks, and progress/error reporting.
+
+## Customize Implicit Breakout Points
+
+Use `implicitBreakoutPointSolverFn` when the normal autorouter should still
+route traces, but your application needs to choose where connections leave
+[`<breakout />`](../elements/breakout.mdx) regions. The callback may be
+synchronous or asynchronous and returns the PCB-world positions and layers of
+the generated breakout points.
+
+```tsx
+import type { ImplicitBreakoutPointSolverFn } from "@tscircuit/props"
+
+const placeBreakoutPoints: ImplicitBreakoutPointSolverFn = (input) => {
+  const connections = input.connections.flatMap((connection) =>
+    "type" in connection ? connection.connections : [connection],
+  )
+
+  return {
+    breakoutPoints: input.regions.flatMap((region) => {
+      const regionConnections = connections.filter((connection) =>
+        connection.endpoints.some(
+          (endpoint) => endpoint.regionId === region.regionId,
+        ),
+      )
+
+      return regionConnections.map((connection, index) => {
+        const offset = input.boundaryPointSpacing * (index + 1)
+
+        return {
+          regionId: region.regionId,
+          connectionId: connection.connectionId,
+          layer: "top",
+          x:
+            region.edge === "left"
+              ? region.bounds.minX
+              : region.edge === "right"
+                ? region.bounds.maxX
+                : region.bounds.minX + offset,
+          y:
+            region.edge === "bottom"
+              ? region.bounds.minY
+              : region.edge === "top"
+                ? region.bounds.maxY
+                : region.bounds.minY + offset,
+        }
+      })
+    }),
+  }
+}
+
+export default () => (
+  <board width="20mm" height="12mm">
+    <breakout
+      name="U1_ESCAPE"
+      padding="1mm"
+      autorouter={{ implicitBreakoutPointSolverFn: placeBreakoutPoints }}
+    >
+      {/* components whose traces leave this region */}
+    </breakout>
+  </board>
+)
+```
+
+This intentionally small solver spaces points from the lower or left end of
+each boundary. A production solver should also check the available boundary
+length, preserve bus ordering, keep differential-pair members together, and
+choose layers that satisfy the board's routing constraints.
+
+The input contains:
+
+| Field | Description |
+| --- | --- |
+| `regions` | Breakout IDs, rectangular bounds, and selected boundary edges. Coordinates are PCB world-space millimeters. |
+| `connections` | Ordinary connections or differential pairs. Each endpoint identifies its region and position. |
+| `buses` | Bus IDs, member connection IDs, and optional ordered target layers. |
+| `boundaryPointSpacing` | Recommended spacing between generated boundary points, in millimeters. |
+
+An endpoint can also include `externalDestination`, the PCB-world position
+beyond its breakout region. Use it to prefer an edge nearer the connection's
+eventual destination or to align related escapes.
+
+Return `{ breakoutPoints }`. Every point must provide `regionId`,
+`connectionId`, `layer`, `x`, and `y`. The point must lie on the corresponding
+region boundary. The callback can return the object directly or return a
+`Promise` when it needs asynchronous computation.
 
 ## Run the Example Locally
 
