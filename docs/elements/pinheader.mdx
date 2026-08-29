@@ -41,6 +41,8 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | pitch | number \| string | "2.54mm" | Distance between pins |
 | schFacingDirection | "up" \| "down" \| "left" \| "right" | "right" | Direction the header faces in schematic view |
 | gender | "male" \| "female" | "male" | Whether the header is male or female |
+| connectsFromAbove | boolean | false | Mounts the header on the top layer, describing a mating connector that approaches from above. |
+| connectsFromBelow | boolean | false | Mounts the header on the bottom layer, describing a mating connector that approaches from below. |
 | showSilkscreenPinLabels | boolean | false | Whether to show pin labels in silkscreen |
 | doubleRow | boolean | false | Whether the header has two rows of pins |
 | holeDiameter | number \| string | "1mm" | Diameter of the through-hole for each pin |
@@ -52,6 +54,35 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | rotation | number | 0 | Rotation of the component in degrees |
 | id | string | auto-generated | Unique identifier for the component |
 
+## Choose the Mating Side
+
+Use `connectsFromAbove` or `connectsFromBelow` when it is clearer to describe
+which side a cable or mating connector approaches from:
+
+```tsx
+<pinheader
+  name="J_TOP"
+  pinCount={4}
+  footprint="pinrow4"
+  connectsFromAbove
+/>
+
+<pinheader
+  name="J_BOTTOM"
+  pinCount={4}
+  footprint="pinrow4"
+  connectsFromBelow
+/>
+```
+
+`connectsFromAbove` is an alias for `layer="top"`, which is the default.
+`connectsFromBelow` is an alias for `layer="bottom"`. Set at most one of the
+two aliases; enabling both is invalid. If `layer` is also present, the explicit
+`layer` value takes precedence.
+
+These props choose which side of the PCB the component occupies. They are not
+the same as `invert` in a footprint string, which reverses the header's pin
+orientation on its current layer.
 
 
 
