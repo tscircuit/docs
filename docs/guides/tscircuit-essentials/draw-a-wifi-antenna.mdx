@@ -1,26 +1,60 @@
 ---
 title: Draw a WiFi Antenna
 description: >-
-  Draw and place an open-ended PCB antenna with the antenna element and pcbPath.
+  Draw and place validated custom PCB antenna geometry with antenna pcbPath.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 # Draw a WiFi Antenna
 
-Use [`<antenna />`](../../elements/antenna.mdx) when you want a placed component
-with an open-ended copper shape, such as a printed WiFi antenna. Define a
-one-pad footprint for its feed, place the feed with `pcbX` and `pcbY`, and draw
-the antenna geometry with `pcbPath`.
+Use [`<antenna />`](../../elements/antenna.mdx) with `antennaShape` for a
+generated PCB antenna. Use `pcbPath` instead when you have copper coordinates
+from a validated reference design or RF simulation. Define a one-pad footprint
+for its feed, place the feed with `pcbX` and `pcbY`, and enter the custom
+geometry in feed-local coordinates.
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
   export default () => (
-    <board width="32mm" height="16mm" minTraceWidth="0.3mm">
-      <chip name="U1" footprint="qfn32" pcbX={-12} />
+    <board width="32mm" height="18mm" minTraceWidth="0.3mm">
+      <chip
+        name="U1"
+        manufacturerPartNumber="ESP32-C3"
+        footprint="qfn32_w5mm_h5mm_p0.5mm_thermalpad3.7x3.7mm"
+        pinLabels={{ pin1: "LNA_IN" }}
+        pcbX={-12}
+        schX={-8}
+      />
+      <capacitor
+        name="C11"
+        capacitance="1.5pF"
+        footprint="0201"
+        pcbX={-9}
+        pcbY={2}
+        schX={-4}
+        schY={2}
+      />
+      <inductor
+        name="L2"
+        inductance="2.4nH"
+        footprint="0201"
+        pcbX={-7}
+        schX={0}
+      />
+      <capacitor
+        name="C12"
+        capacitance="1.5pF"
+        footprint="0201"
+        pcbX={-5}
+        pcbY={2}
+        schX={4}
+        schY={2}
+      />
       <antenna
         name="ANT1"
-        pcbX={-8}
+        pcbX={-3}
         pcbY={-1}
+        schX={8}
         footprint={
           <footprint>
             <smtpad
@@ -45,7 +79,12 @@ the antenna geometry with `pcbPath`.
           { x: 12, y: -1 },
         ]}
       />
-      <trace from=".U1 > .pin1" to=".ANT1 > .feed" />
+      <trace from=".U1 > .LNA_IN" to=".L2 > .pin1" />
+      <trace from=".C11 > .pin1" to=".L2 > .pin1" />
+      <trace from=".C11 > .pin2" to="net.GND" />
+      <trace from=".L2 > .pin2" to=".ANT1 > .feed" />
+      <trace from=".C12 > .pin1" to=".L2 > .pin2" />
+      <trace from=".C12 > .pin2" to="net.GND" />
     </board>
   )
 `} />
@@ -53,7 +92,10 @@ the antenna geometry with `pcbPath`.
 The antenna route begins at the footprint's `pin1` pad automatically. Each
 coordinate object is measured in millimeters relative to that feed, so changing
 `pcbX`, `pcbY`, or `pcbRotation` moves the footprint and copper shape together.
-The separate `<trace />` connects the RF chip to the antenna's `feed` alias.
+The separate `<trace />` elements connect an ESP32-C3-style RF output and CLC
+matching network to the antenna's `feed` alias. This is only the RF fragment;
+the rest of the radio support circuit is omitted. Matching values are specific
+to the stackup, layout, and antenna, so tune them for the finished board.
 
 Set `minTraceWidth` on the board or subcircuit to control the antenna copper
 width. The path can also use selector strings and via entries supported by
