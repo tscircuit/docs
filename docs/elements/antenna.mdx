@@ -8,7 +8,7 @@ description: >-
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 export const esp32C3Radio = `
-const Esp32C3Radio = ({ pcbX, pcbY = 0 }) => (
+const Esp32C3Radio = ({ pcbX, pcbY = 0, pcbRotation = 180 }) => (
   <chip
     name="U1"
     manufacturerPartNumber="ESP32-C3"
@@ -16,7 +16,7 @@ const Esp32C3Radio = ({ pcbX, pcbY = 0 }) => (
     pinLabels={{ pin1: "LNA_IN" }}
     pcbX={pcbX}
     pcbY={pcbY}
-    pcbRotation={180}
+    pcbRotation={pcbRotation}
     schX={-4}
   />
 )
@@ -112,18 +112,18 @@ ground point includes a tented via intended to land on the RF ground plane.
 <CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
   <board
-    width="36mm"
+    width="29mm"
     height="14mm"
     minTraceWidth="0.2mm"
     routingDisabled
     placementDrcChecksDisabled
   >
-    <Esp32C3Radio pcbX={-13} pcbY={-3.5} />
+    <Esp32C3Radio pcbX={-9.75} pcbY={-4.2} pcbRotation={270} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_inverted_f"
-      pcbX={-5}
-      pcbY={-1.75}
+      pcbX={-8}
+      pcbY={-1.5}
       schX={4}
     />
     <trace
@@ -145,17 +145,17 @@ a tented via.
 <CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
   <board
-    width="24mm"
-    height="9mm"
+    width="19mm"
+    height="13mm"
     minTraceWidth="0.2mm"
     routingDisabled
     placementDrcChecksDisabled
   >
-    <Esp32C3Radio pcbX={-8} pcbY={-1} />
+    <Esp32C3Radio pcbX={-5.75} pcbY={-3.7} pcbRotation={270} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_meandered_inverted_f"
-      pcbX={-2}
+      pcbX={-4}
       pcbY={-1}
       schX={4}
     />
