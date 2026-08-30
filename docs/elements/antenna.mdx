@@ -1,81 +1,289 @@
 ---
 title: <antenna />
 description: >-
-  The `<antenna />` element represents a single-feed antenna with a footprint,
-  PCB placement, and an optional explicit copper path.
+  The `<antenna />` element represents a generated PCB antenna, a custom copper
+  antenna, or a packaged chip antenna.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
+export const esp32C3RadioFrontEnd = `
+const Esp32C3RadioFrontEnd = () => (
+  <>
+    <chip
+      name="U1"
+      manufacturerPartNumber="ESP32-C3"
+      footprint="qfn32_w5mm_h5mm_p0.5mm_thermalpad3.7x3.7mm"
+      pinLabels={{ pin1: "LNA_IN" }}
+      pcbX={-20}
+      pcbY={0}
+      schX={-8}
+    />
+    <capacitor
+      name="C11"
+      capacitance="1.5pF"
+      footprint="0201"
+      pcbX={-14}
+      pcbY={2}
+      schX={-4}
+      schY={2}
+    />
+    <inductor
+      name="L2"
+      inductance="2.4nH"
+      footprint="0201"
+      pcbX={-10}
+      pcbY={0}
+      schX={0}
+    />
+    <capacitor
+      name="C12"
+      capacitance="1.5pF"
+      footprint="0201"
+      pcbX={-6}
+      pcbY={2}
+      schX={4}
+      schY={2}
+    />
+
+    <trace from=".U1 > .LNA_IN" to=".L2 > .pin1" />
+    <trace from=".C11 > .pin1" to=".L2 > .pin1" />
+    <trace from=".C11 > .pin2" to="net.GND" />
+    <trace from=".L2 > .pin2" to=".ANT1 > .feed" />
+    <trace from=".C12 > .pin1" to=".L2 > .pin2" />
+    <trace from=".C12 > .pin2" to="net.GND" />
+  </>
+)
+`
+
 ## Overview
 
-The `<antenna />` element represents a single-feed antenna. It is a normal
-component, so its feed pad is defined by a `footprint` and the complete antenna
-can be placed with props such as `pcbX`, `pcbY`, `pcbRotation`, and `layer`.
+Use `<antenna />` for any of these PCB representations:
 
-Use `pcbPath` to draw an open-ended copper shape from the feed. Coordinate
-entries are local to the feed pad and move with the antenna, unlike board-level
-coordinates. The copper route begins at the feed automatically.
+- Set `antennaShape` to generate a common band-qualified PCB copper shape.
+- Set `pcbPath` when you have validated custom copper geometry.
+- Set `footprint` without a shape or path for a packaged chip antenna.
+
+`frequencyBand` is optional metadata. It does not select or resize generated
+copper; the value embedded in `antennaShape` is authoritative. Wi-Fi, Bluetooth
+LE, Thread, and Zigbee can share a 2.4 GHz antenna when the complete RF design
+has the required impedance and bandwidth, so there is no wireless-standard
+prop.
+
+The generated shapes use component-local coordinates with `feed` at the
+origin. `pcbX`, `pcbY`, `pcbRotation`, and `layer` transform the entire antenna.
+An explicit `pcbPath` takes precedence over `antennaShape`.
+
+## Generated 2.4 GHz PCB antennas
+
+The examples below use an ESP32-C3-style QFN32 radio and CLC matching network
+to make the connection context visible. They show only the RF fragment, not the
+radio's complete power, clock, flash, and decoupling circuit. The component
+values are within Espressif's example ranges, but matching values vary with the
+board and antenna and must be tuned for the final product. See the
+[ESP32-C3 RF design guidance](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32c3/schematic-checklist.html#rf).
+
+### Quarter-wave monopole
+
+`2.4ghz_quarter_wave_monopole` generates a straight, single-ended radiator. It
+uses only the `feed` port and needs the most board-edge length of the monopole
+options.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+export default () => (
+  <board width="66mm" height="22mm" minTraceWidth="0.15mm">
+    <Esp32C3RadioFrontEnd />
+    <antenna
+      name="ANT1"
+      antennaShape="2.4ghz_quarter_wave_monopole"
+      pcbX={0}
+      pcbY={0}
+      schX={8}
+    />
+  </board>
+)
+`} />
+
+### Meandered monopole
+
+`2.4ghz_meandered_monopole` folds a single-ended radiator into a smaller
+rectangle. Connect the radio output to `feed`.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+export default () => (
+  <board width="50mm" height="22mm" minTraceWidth="0.15mm">
+    <Esp32C3RadioFrontEnd />
+    <antenna
+      name="ANT1"
+      antennaShape="2.4ghz_meandered_monopole"
+      pcbX={0}
+      pcbY={-3}
+      schX={8}
+    />
+  </board>
+)
+`} />
+
+### Inverted-F antenna
+
+`2.4ghz_inverted_f` has a `feed` and a shorting `ground` port. The generated
+ground point includes a tented via; connect it to the RF ground network.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+export default () => (
+  <board width="58mm" height="24mm" minTraceWidth="0.15mm">
+    <Esp32C3RadioFrontEnd />
+    <antenna
+      name="ANT1"
+      antennaShape="2.4ghz_inverted_f"
+      pcbX={0}
+      pcbY={-4}
+      schX={8}
+    />
+    <trace from=".ANT1 > .ground" to="net.GND" />
+  </board>
+)
+`} />
+
+### Meandered inverted-F antenna
+
+`2.4ghz_meandered_inverted_f` combines the IFA ground short with a compact
+meander. Connect both `feed` and `ground`.
+
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+export default () => (
+  <board width="50mm" height="22mm" minTraceWidth="0.15mm">
+    <Esp32C3RadioFrontEnd />
+    <antenna
+      name="ANT1"
+      antennaShape="2.4ghz_meandered_inverted_f"
+      pcbX={0}
+      pcbY={-3}
+      schX={8}
+    />
+    <trace from=".ANT1 > .ground" to="net.GND" />
+  </board>
+)
+`} />
+
+### Folded dipole
+
+`2.4ghz_folded_dipole` is balanced and exposes `feed` and `feed2`. The preview
+uses the two RF outputs of an nRF24L01+-style QFN20 radio to demonstrate the
+two-port connection.
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
-  export default () => (
-    <board width="32mm" height="16mm" minTraceWidth="0.3mm">
-      <antenna
-        name="ANT1"
-        pcbX={-8}
-        pcbY={-1}
-        footprint={
-          <footprint>
-            <smtpad
-              shape="rect"
-              width="1mm"
-              height="1mm"
-              portHints={["pin1"]}
-            />
-          </footprint>
-        }
-        pcbPath={[
-          { x: 1, y: 0 },
-          { x: 1, y: 5 },
-          { x: 12, y: 5 },
-          { x: 12, y: 3.5 },
-          { x: 3, y: 3.5 },
-          { x: 3, y: 2 },
-          { x: 12, y: 2 },
-          { x: 12, y: 0.5 },
-          { x: 3, y: 0.5 },
-          { x: 3, y: -1 },
-          { x: 12, y: -1 },
-        ]}
-      />
-    </board>
-  )
+export default () => (
+  <board width="62mm" height="32mm" minTraceWidth="0.15mm">
+    <chip
+      name="U1"
+      manufacturerPartNumber="nRF24L01+"
+      footprint="qfn20_w4mm_h4mm_p0.5mm_thermalpad2.6x2.6mm"
+      pinLabels={{ pin12: "ANT1", pin13: "ANT2" }}
+      pcbX={0}
+      pcbY={-8}
+      schX={-4}
+    />
+    <antenna
+      name="ANT1"
+      antennaShape="2.4ghz_folded_dipole"
+      pcbX={0}
+      pcbY={5}
+      schX={4}
+    />
+    <trace from=".U1 > .ANT1" to=".ANT1 > .feed" />
+    <trace from=".U1 > .ANT2" to=".ANT1 > .feed2" />
+  </board>
+)
 `} />
+
+The two direct traces illustrate the balanced port mapping. A production
+nRF24L01+ design still needs the bias, harmonic-filtering, and impedance-
+matching network from the radio's
+[reference design](https://www.nordicsemi.com/Products/nRF24-series); do not
+replace that network with these two traces.
+
+## Packaged chip antenna
+
+For a chip antenna, omit `antennaShape` and describe the manufacturer's land
+pattern with `footprint`. This example models a Johanson
+2450AT18A0100001E/legacy 2450AT18A100: terminal 1 is the 50 Ω feed and terminal
+2 is NC. The second pad is therefore physical copper without a `portHints`
+mapping. Copy the exact land pattern and placement clearance from the current
+[manufacturer datasheet](https://www.johansontechnology.com/docs/3827/Antenna-2450AT18A0100001E-Rev4.0.pdf).
+
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+export default () => (
+  <board width="50mm" height="22mm" minTraceWidth="0.15mm">
+    <Esp32C3RadioFrontEnd />
+    <antenna
+      name="ANT1"
+      manufacturerPartNumber="2450AT18A0100001E"
+      frequencyBand="2.4ghz"
+      pcbX={0}
+      pcbY={0}
+      schX={8}
+      footprint={
+        <footprint>
+          <smtpad
+            shape="rect"
+            width="0.7mm"
+            height="1.6mm"
+            pcbX={0}
+            portHints={["pin1"]}
+          />
+          <smtpad
+            shape="rect"
+            width="0.7mm"
+            height="1.6mm"
+            pcbX={2.7}
+          />
+          <silkscreenrect
+            width="3.2mm"
+            height="1.6mm"
+            pcbX={1.35}
+          />
+        </footprint>
+      }
+    />
+  </board>
+)
+`} />
+
+## Shape and port reference
+
+| `antennaShape` | Topology | Electrical ports |
+| --- | --- | --- |
+| `2.4ghz_quarter_wave_monopole` | Straight monopole | `feed` |
+| `2.4ghz_meandered_monopole` | Compact meandered monopole | `feed` |
+| `2.4ghz_inverted_f` | Inverted-F with ground short | `feed`, `ground` |
+| `2.4ghz_meandered_inverted_f` | Compact meandered inverted-F | `feed`, `ground` |
+| `2.4ghz_folded_dipole` | Balanced folded dipole | `feed`, `feed2` |
+
+When `pcbPath` is supplied, the antenna uses the custom-path behavior and has
+only `feed`, even if `antennaShape` is also present.
 
 ## Pins
 
-An antenna has one electrical connection:
-
-| Pin | Alias | Description |
-| --- | --- | --- |
-| `pin1` | `feed` | Feed point for the antenna and the anchor for local `pcbPath` coordinates |
-
-Connect the antenna to another component with either pin name:
-
-```tsx
-<trace from=".U1 > .pin1" to=".ANT1 > .feed" />
-```
+| Pin | Alias | Present for | Description |
+| --- | --- | --- | --- |
+| `pin1` | `feed` | Every antenna | Primary RF feed and local-coordinate origin |
+| `pin2` | `ground`, `gnd` | Inverted-F shapes | Ground short for the IFA |
+| `pin2` | `feed2` | Folded dipole | Second side of the balanced feed |
 
 ## Properties
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
 | `name` | `string` | Yes | Component name or reference designator, typically `"ANT1"` |
-| `footprint` | `string \| JSX.Element` | For PCB use | Physical antenna footprint. Provide a pad with `portHints={["pin1"]}` to anchor `pcbPath` |
-| `pcbPath` | `PcbPath` | No | Explicit open-ended copper path using the same point, selector, and via entries as [`<trace />`](./trace.mdx#manual-pcb-paths) |
+| `antennaShape` | `AntennaShape` | No | Generates one of the band-qualified PCB shapes listed above |
+| `frequencyBand` | `"2.4ghz" \| "5ghz" \| "6ghz" \| "dual_band_2.4ghz_5ghz" \| "tri_band_2.4ghz_5ghz_6ghz"` | No | Nominal-band metadata; never changes generated geometry |
+| `footprint` | `string \| JSX.Element` | For packaged antennas | Physical antenna land pattern. Generated shapes create their own feed pads when omitted |
+| `pcbPath` | `PcbPath` | No | Validated custom copper path; overrides generated shape geometry |
+| `manufacturerPartNumber` | `string` | No | Manufacturer part number, especially useful for packaged antennas |
 | `pcbX` | `number \| string` | No | X position of the antenna feed |
 | `pcbY` | `number \| string` | No | Y position of the antenna feed |
-| `pcbRotation` | `number \| string` | No | Counter-clockwise PCB rotation applied to the footprint and local path |
+| `pcbRotation` | `number \| string` | No | Counter-clockwise rotation applied to footprint and generated or custom copper |
 | `layer` | `LayerRef` | No | PCB layer for the component; defaults to `"top"` |
 | `symbol` | `string \| JSX.Element` | No | Custom schematic representation |
 | `cadModel` | `object \| JSX.Element` | No | Optional 3D model configuration |
@@ -83,26 +291,39 @@ Connect the antenna to another component with either pin name:
 The antenna also accepts the common PCB and schematic layout props used by
 normal components.
 
-## PCB path entries
+## Custom PCB paths
 
-A `pcbPath` can contain:
+Use `pcbPath` for antenna geometry copied from a validated reference design.
+The route starts at `feed`, and raw coordinate entries are millimeters in the
+antenna's local frame. It can contain coordinate points, global port selectors,
+and via entries supported by [`<trace pcbPath>`](./trace.mdx#manual-pcb-paths).
 
-- Local coordinate points such as `{ x: 4, y: 2 }`. Raw numbers are
-  millimeters relative to the feed.
-- Port selectors such as `".TP1 > .pin1"`. Selector positions use their global
-  PCB coordinates.
-- Via points such as
-  `{ x: 4, y: 2, via: true, fromLayer: "top", toLayer: "bottom" }`.
+```tsx
+<antenna
+  name="ANT1"
+  pcbX={-8}
+  pcbY={-1}
+  footprint="0402"
+  pcbPath={[
+    { x: 1, y: 0 },
+    { x: 1, y: 5 },
+    { x: 12, y: 5 },
+    { x: 12, y: 3.5 },
+    { x: 3, y: 3.5 },
+  ]}
+/>
+```
 
-The copper width follows `minTraceWidth` on the enclosing board or subcircuit.
 See [Draw a WiFi Antenna](../guides/tscircuit-essentials/draw-a-wifi-antenna.mdx)
-for a complete example connected to an RF chip.
+for a focused custom-path example.
 
 :::caution RF geometry
 
-The example demonstrates the tscircuit API, not a tuned RF design. Use antenna
-dimensions, controlled impedance, substrate parameters, and clearance rules
-from a validated reference design or antenna datasheet. Preserve the specified
-ground and copper clearance with a [`<keepout />`](./keepout.mdx) where needed.
+Generated geometry is a practical starting point, not a tuned or certified RF
+design. Antenna dimensions, controlled impedance, stackup, ground plane,
+matching network, enclosure, and clearance all affect performance. Start from
+the radio and antenna manufacturers' reference designs, preserve the required
+copper-free area, then verify and tune the assembled product with suitable RF
+test equipment.
 
 :::
