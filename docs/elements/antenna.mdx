@@ -7,52 +7,18 @@ description: >-
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-export const esp32C3RadioFrontEnd = `
-const Esp32C3RadioFrontEnd = () => (
-  <>
-    <chip
-      name="U1"
-      manufacturerPartNumber="ESP32-C3"
-      footprint="qfn32_w5mm_h5mm_p0.5mm_thermalpad3.7x3.7mm"
-      pinLabels={{ pin1: "LNA_IN" }}
-      pcbX={-20}
-      pcbY={0}
-      schX={-8}
-    />
-    <capacitor
-      name="C11"
-      capacitance="1.5pF"
-      footprint="0201"
-      pcbX={-14}
-      pcbY={2}
-      schX={-4}
-      schY={2}
-    />
-    <inductor
-      name="L2"
-      inductance="2.4nH"
-      footprint="0201"
-      pcbX={-10}
-      pcbY={0}
-      schX={0}
-    />
-    <capacitor
-      name="C12"
-      capacitance="1.5pF"
-      footprint="0201"
-      pcbX={-6}
-      pcbY={2}
-      schX={4}
-      schY={2}
-    />
-
-    <trace from=".U1 > .LNA_IN" to=".L2 > .pin1" />
-    <trace from=".C11 > .pin1" to=".L2 > .pin1" />
-    <trace from=".C11 > .pin2" to="net.GND" />
-    <trace from=".L2 > .pin2" to=".ANT1 > .feed" />
-    <trace from=".C12 > .pin1" to=".L2 > .pin2" />
-    <trace from=".C12 > .pin2" to="net.GND" />
-  </>
+export const esp32C3Radio = `
+const Esp32C3Radio = ({ pcbX, pcbY = 0, pcbRotation = 180 }) => (
+  <chip
+    name="U1"
+    manufacturerPartNumber="ESP32-C3"
+    footprint="qfn32_w5mm_h5mm_p0.5mm_pw0.2mm_pl0.4mm_thermalpad3mmx3mm"
+    pinLabels={{ pin1: "LNA_IN" }}
+    pcbX={pcbX}
+    pcbY={pcbY}
+    pcbRotation={pcbRotation}
+    schX={-4}
+  />
 )
 `
 
@@ -76,11 +42,13 @@ An explicit `pcbPath` takes precedence over `antennaShape`.
 
 ## Generated 2.4 GHz PCB antennas
 
-The examples below use an ESP32-C3-style QFN32 radio and CLC matching network
-to make the connection context visible. They show only the RF fragment, not the
-radio's complete power, clock, flash, and decoupling circuit. The component
-values are within Espressif's example ranges, but matching values vary with the
-board and antenna and must be tuned for the final product. See the
+The examples below put an ESP32-C3-style QFN32 radio immediately beside the
+antenna and show the routed RF feed. They intentionally omit the matching
+network so the antenna topology stays legible. Each board disables autorouting
+and uses `pcbPath={[]}` to keep the intentionally short feed direct at an
+illustrative `0.3mm` width; neither that width nor the omitted network should
+be copied as a 50 Ω design. Determine both from the finished stackup and tune
+the assembled product. See the
 [ESP32-C3 RF design guidance](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32c3/schematic-checklist.html#rf).
 
 ### Quarter-wave monopole
@@ -89,16 +57,22 @@ board and antenna and must be tuned for the final product. See the
 uses only the `feed` port and needs the most board-edge length of the monopole
 options.
 
-<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
-  <board width="66mm" height="22mm" minTraceWidth="0.15mm">
-    <Esp32C3RadioFrontEnd />
+  <board width="40mm" height="7mm" minTraceWidth="0.2mm" routingDisabled>
+    <Esp32C3Radio pcbX={-16} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_quarter_wave_monopole"
-      pcbX={0}
-      pcbY={0}
-      schX={8}
+      pcbX={-12}
+      pcbY={-1.75}
+      schX={4}
+    />
+    <trace
+      from=".U1 > .LNA_IN"
+      to=".ANT1 > .feed"
+      pcbPath={[]}
+      thickness="0.3mm"
     />
   </board>
 )
@@ -109,16 +83,22 @@ export default () => (
 `2.4ghz_meandered_monopole` folds a single-ended radiator into a smaller
 rectangle. Connect the radio output to `feed`.
 
-<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
-  <board width="50mm" height="22mm" minTraceWidth="0.15mm">
-    <Esp32C3RadioFrontEnd />
+  <board width="24mm" height="10mm" minTraceWidth="0.2mm" routingDisabled>
+    <Esp32C3Radio pcbX={-8} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_meandered_monopole"
-      pcbX={0}
-      pcbY={-3}
-      schX={8}
+      pcbX={-4}
+      pcbY={-1.75}
+      schX={4}
+    />
+    <trace
+      from=".U1 > .LNA_IN"
+      to=".ANT1 > .feed"
+      pcbPath={[]}
+      thickness="0.3mm"
     />
   </board>
 )
@@ -127,20 +107,31 @@ export default () => (
 ### Inverted-F antenna
 
 `2.4ghz_inverted_f` has a `feed` and a shorting `ground` port. The generated
-ground point includes a tented via; connect it to the RF ground network.
+ground point includes a tented via intended to land on the RF ground plane.
 
-<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
-  <board width="58mm" height="24mm" minTraceWidth="0.15mm">
-    <Esp32C3RadioFrontEnd />
+  <board
+    width="29mm"
+    height="15mm"
+    minTraceWidth="0.2mm"
+    routingDisabled
+    placementDrcChecksDisabled
+  >
+    <Esp32C3Radio pcbX={-9.75} pcbY={-4.7} pcbRotation={270} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_inverted_f"
-      pcbX={0}
-      pcbY={-4}
-      schX={8}
+      pcbX={-8}
+      pcbY={-1.5}
+      schX={4}
     />
-    <trace from=".ANT1 > .ground" to="net.GND" />
+    <trace
+      from=".U1 > .LNA_IN"
+      to=".ANT1 > .feed"
+      pcbPath={[]}
+      thickness="0.3mm"
+    />
   </board>
 )
 `} />
@@ -148,51 +139,77 @@ export default () => (
 ### Meandered inverted-F antenna
 
 `2.4ghz_meandered_inverted_f` combines the IFA ground short with a compact
-meander. Connect both `feed` and `ground`.
+meander. Feed the radio into `feed`; the generated `ground` short terminates at
+a tented via.
 
-<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
-  <board width="50mm" height="22mm" minTraceWidth="0.15mm">
-    <Esp32C3RadioFrontEnd />
+  <board
+    width="20mm"
+    height="14mm"
+    minTraceWidth="0.2mm"
+    routingDisabled
+    placementDrcChecksDisabled
+  >
+    <Esp32C3Radio pcbX={-5.75} pcbY={-4.3} pcbRotation={270} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_meandered_inverted_f"
-      pcbX={0}
-      pcbY={-3}
-      schX={8}
+      pcbX={-4}
+      pcbY={-1}
+      schX={4}
     />
-    <trace from=".ANT1 > .ground" to="net.GND" />
+    <trace
+      from=".U1 > .LNA_IN"
+      to=".ANT1 > .feed"
+      pcbPath={[]}
+      thickness="0.3mm"
+    />
   </board>
 )
 `} />
 
+The IFA previews scope `placementDrcChecksDisabled` to their boards because the
+generated shorting via intentionally occupies the ground pad.
+
 ### Folded dipole
 
-`2.4ghz_folded_dipole` is balanced and exposes `feed` and `feed2`. The preview
-uses the two RF outputs of an nRF24L01+-style QFN20 radio to demonstrate the
-two-port connection.
+`2.4ghz_folded_dipole` is balanced and exposes `feed1` and `feed2`; `feed`
+remains an alias of `feed1`. The preview uses the two RF outputs of an
+nRF24L01+-style QFN20 radio to demonstrate the two-port connection.
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
 export default () => (
-  <board width="62mm" height="32mm" minTraceWidth="0.15mm">
+  <board width="50mm" height="18mm" minTraceWidth="0.2mm" routingDisabled>
     <chip
       name="U1"
       manufacturerPartNumber="nRF24L01+"
-      footprint="qfn20_w4mm_h4mm_p0.5mm_thermalpad2.6x2.6mm"
+      footprint="qfn20_w4mm_h4mm_p0.5mm_pw0.2mm_pl0.4mm_thermalpad2mmx2mm"
       pinLabels={{ pin12: "ANT1", pin13: "ANT2" }}
       pcbX={0}
-      pcbY={-8}
+      pcbY={-5}
+      pcbRotation={90}
       schX={-4}
     />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_folded_dipole"
-      pcbX={0}
-      pcbY={5}
+      pcbX={-0.6}
+      pcbY={-1.5}
       schX={4}
     />
-    <trace from=".U1 > .ANT1" to=".ANT1 > .feed" />
-    <trace from=".U1 > .ANT2" to=".ANT1 > .feed2" />
+    <trace
+      from=".U1 > .ANT1"
+      to=".ANT1 > .feed2"
+      pcbPath={[]}
+      thickness="0.3mm"
+    />
+    <trace
+      from=".U1 > .ANT2"
+      to=".ANT1 > .feed1"
+      pcbPath={[]}
+      thickness="0.3mm"
+    />
   </board>
 )
 `} />
@@ -212,17 +229,17 @@ pattern with `footprint`. This example models a Johanson
 mapping. Copy the exact land pattern and placement clearance from the current
 [manufacturer datasheet](https://www.johansontechnology.com/docs/3827/Antenna-2450AT18A0100001E-Rev4.0.pdf).
 
-<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3RadioFrontEnd}
+<CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
-  <board width="50mm" height="22mm" minTraceWidth="0.15mm">
-    <Esp32C3RadioFrontEnd />
+  <board width="13mm" height="8mm" minTraceWidth="0.2mm" routingDisabled>
+    <Esp32C3Radio pcbX={-3.5} />
     <antenna
       name="ANT1"
       manufacturerPartNumber="2450AT18A0100001E"
       frequencyBand="2.4ghz"
-      pcbX={0}
-      pcbY={0}
-      schX={8}
+      pcbX={0.5}
+      pcbY={-1.75}
+      schX={4}
       footprint={
         <footprint>
           <smtpad
@@ -246,6 +263,12 @@ export default () => (
         </footprint>
       }
     />
+    <trace
+      from=".U1 > .LNA_IN"
+      to=".ANT1 > .feed"
+      pcbPath={[]}
+      thickness="0.3mm"
+    />
   </board>
 )
 `} />
@@ -258,7 +281,7 @@ export default () => (
 | `2.4ghz_meandered_monopole` | Compact meandered monopole | `feed` |
 | `2.4ghz_inverted_f` | Inverted-F with ground short | `feed`, `ground` |
 | `2.4ghz_meandered_inverted_f` | Compact meandered inverted-F | `feed`, `ground` |
-| `2.4ghz_folded_dipole` | Balanced folded dipole | `feed`, `feed2` |
+| `2.4ghz_folded_dipole` | Balanced folded dipole | `feed1` (`feed` alias), `feed2` |
 
 When `pcbPath` is supplied, the antenna uses the custom-path behavior and has
 only `feed`, even if `antennaShape` is also present.
@@ -268,6 +291,7 @@ only `feed`, even if `antennaShape` is also present.
 | Pin | Alias | Present for | Description |
 | --- | --- | --- | --- |
 | `pin1` | `feed` | Every antenna | Primary RF feed and local-coordinate origin |
+| `pin1` | `feed1` | Folded dipole | Explicit name for the first balanced feed when `feed2` is present |
 | `pin2` | `ground`, `gnd` | Inverted-F shapes | Ground short for the IFA |
 | `pin2` | `feed2` | Folded dipole | Second side of the balanced feed |
 
