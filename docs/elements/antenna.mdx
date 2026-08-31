@@ -113,12 +113,12 @@ ground point includes a tented via intended to land on the RF ground plane.
 export default () => (
   <board
     width="29mm"
-    height="14mm"
+    height="15mm"
     minTraceWidth="0.2mm"
     routingDisabled
     placementDrcChecksDisabled
   >
-    <Esp32C3Radio pcbX={-9.75} pcbY={-4.2} pcbRotation={270} />
+    <Esp32C3Radio pcbX={-9.75} pcbY={-4.7} pcbRotation={270} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_inverted_f"
@@ -145,13 +145,13 @@ a tented via.
 <CircuitPreview leftView="code" rightView="pcb" code={`${esp32C3Radio}
 export default () => (
   <board
-    width="19mm"
-    height="13mm"
+    width="20mm"
+    height="14mm"
     minTraceWidth="0.2mm"
     routingDisabled
     placementDrcChecksDisabled
   >
-    <Esp32C3Radio pcbX={-5.75} pcbY={-3.7} pcbRotation={270} />
+    <Esp32C3Radio pcbX={-5.75} pcbY={-4.3} pcbRotation={270} />
     <antenna
       name="ANT1"
       antennaShape="2.4ghz_meandered_inverted_f"
@@ -174,9 +174,9 @@ generated shorting via intentionally occupies the ground pad.
 
 ### Folded dipole
 
-`2.4ghz_folded_dipole` is balanced and exposes `feed` and `feed2`. The preview
-uses the two RF outputs of an nRF24L01+-style QFN20 radio to demonstrate the
-two-port connection.
+`2.4ghz_folded_dipole` is balanced and exposes `feed1` and `feed2`; `feed`
+remains an alias of `feed1`. The preview uses the two RF outputs of an
+nRF24L01+-style QFN20 radio to demonstrate the two-port connection.
 
 <CircuitPreview leftView="code" rightView="pcb" code={`
 export default () => (
@@ -206,7 +206,7 @@ export default () => (
     />
     <trace
       from=".U1 > .ANT2"
-      to=".ANT1 > .feed"
+      to=".ANT1 > .feed1"
       pcbPath={[]}
       thickness="0.3mm"
     />
@@ -281,7 +281,7 @@ export default () => (
 | `2.4ghz_meandered_monopole` | Compact meandered monopole | `feed` |
 | `2.4ghz_inverted_f` | Inverted-F with ground short | `feed`, `ground` |
 | `2.4ghz_meandered_inverted_f` | Compact meandered inverted-F | `feed`, `ground` |
-| `2.4ghz_folded_dipole` | Balanced folded dipole | `feed`, `feed2` |
+| `2.4ghz_folded_dipole` | Balanced folded dipole | `feed1` (`feed` alias), `feed2` |
 
 When `pcbPath` is supplied, the antenna uses the custom-path behavior and has
 only `feed`, even if `antennaShape` is also present.
@@ -291,6 +291,7 @@ only `feed`, even if `antennaShape` is also present.
 | Pin | Alias | Present for | Description |
 | --- | --- | --- | --- |
 | `pin1` | `feed` | Every antenna | Primary RF feed and local-coordinate origin |
+| `pin1` | `feed1` | Folded dipole | Explicit name for the first balanced feed when `feed2` is present |
 | `pin2` | `ground`, `gnd` | Inverted-F shapes | Ground short for the IFA |
 | `pin2` | `feed2` | Folded dipole | Second side of the balanced feed |
 
