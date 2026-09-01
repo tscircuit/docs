@@ -1,0 +1,319 @@
+---
+title: Routing DDR
+description: Model DDR buses, fan out controller and memory packages, and verify the complete routed channel.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+export const controllerByteLaneFanoutCode = `const laneSignals = [
+  "DQ0",
+  "DQ1",
+  "DQS0_t",
+  "DQS0_c",
+]
+const bgaPinNumbers = [6, 7, 10, 11]
+const fanoutExitYs = [-0.75, -0.25, 0.25, 0.75]
+
+const controllerPinLabels = Object.fromEntries(
+  laneSignals.map((signal, index) => [
+    "pin" + bgaPinNumbers[index],
+    signal,
+  ]),
+)
+
+export default () => (
+  <board
+    width="18mm"
+    height="12mm"
+    layers={6}
+    defaultTraceWidth="0.1mm"
+    minTraceWidth="0.1mm"
+    minTraceToPadEdgeClearance="0.1mm"
+    minViaEdgeToPadEdgeClearance="0.1mm"
+    minViaHoleDiameter="0.2mm"
+    minViaPadDiameter="0.45mm"
+    isViaInPadAllowed={false}
+  >
+    <breakout
+      name="CONTROLLER_FANOUT"
+      width="14mm"
+      height="9mm"
+      fanoutBoundaryPadding={{ right: "1.5mm" }}
+      fanoutRoutingLayers={["top", "inner2"]}
+      busFanoutDirections={{
+        DDR_BYTE0: "rightside_center",
+      }}
+    >
+      <chip
+        name="U_CONTROLLER"
+        footprint="bga16_grid4x4_p0.8mm_pad0.35mm_circularpads"
+        pinLabels={controllerPinLabels}
+      />
+
+      <chip
+        name="CHANNEL"
+        pcbX={5}
+        pinLabels={Object.fromEntries(
+          laneSignals.map((signal, index) => [
+            "pin" + (index + 1),
+            signal,
+          ]),
+        )}
+        footprint={
+          <footprint>
+            {fanoutExitYs.map((pcbY, index) => (
+              <smtpad
+                key={index}
+                portHints={["pin" + (index + 1)]}
+                pcbX={0}
+                pcbY={pcbY}
+                width="0.4mm"
+                height="0.1mm"
+                shape="rect"
+              />
+            ))}
+          </footprint>
+        }
+      />
+
+      <bus
+        name="DDR_BYTE0"
+        connections={laneSignals}
+        preferredLayers={["top", "inner2"]}
+        maxLengthSkew="0.5mm"
+      />
+      <differentialpair
+        name="DDR_DQS0_PAIR"
+        positiveConnection="DQS0_t"
+        negativeConnection="DQS0_c"
+        maxLengthSkew="0.1mm"
+      />
+
+      {laneSignals.map((signal) => (
+        <trace
+          key={signal}
+          name={signal}
+          from={"U_CONTROLLER." + signal}
+          to={"CHANNEL." + signal}
+        />
+      ))}
+    </breakout>
+  </board>
+)`
+
+export const memoryByteLaneFanoutCode = controllerByteLaneFanoutCode
+  .replace('name="CONTROLLER_FANOUT"', 'name="MEMORY_FANOUT"')
+  .replace('name="U_CONTROLLER"', 'name="U_MEMORY"')
+  .replaceAll("U_CONTROLLER.", "U_MEMORY.")
+  .replace('right: "1.5mm"', 'left: "1.5mm"')
+  .replace("rightside_center", "leftside_center")
+  .replace("pcbX={5}", "pcbX={-5}")
+
+DDR routing is a board-level timing and signal-integrity problem, not only a
+shortest-path problem. Use the memory and processor data sheets to establish
+the topology, impedance, allowed layers, reference planes, length budgets,
+skew limits, trace spacing, and via geometry before configuring the router.
+The values in this guide are illustrative rather than requirements for a
+particular DDR generation or component.
+
+## Divide the channel into routing regions
+
+Treat the routed channel as three connected regions:
+
+1. The controller fanout escapes package pads to a shared boundary.
+2. The global channel connects the two fanout boundaries.
+3. The memory fanout enters the memory package from its shared boundary.
+
+This separation makes crowded package escapes independently debuggable. A
+[`<breakout />`](../elements/breakout.mdx) around each package owns its local
+fanout, while the enclosing board routes the connection between the two
+breakouts.
+
+## Model timing groups as buses
+
+Create every electrical connection with a named `<trace />`, then group related
+trace names with [`<bus />`](../elements/bus.mdx). A bus does not electrically
+connect its members.
+
+A practical starting decomposition is:
+
+| Bus | Typical members | Why keep it separate |
+| --- | --- | --- |
+| Byte lane | DQ, DMI/DM, and the lane's DQS pair | These signals share a local package region and timing relationship. |
+| Address/command | Address, bank, command, and control signals | This group usually has a different destination region and length budget. |
+| Clock | CK_t and CK_c | The clock is a differential pair with its own matching requirement. |
+| Reset or other asynchronous controls | RESET_n and similar controls | These signals often do not need the same skew constraint as synchronous buses. |
+
+Keep lane-level rules distinct even when two buses happen to use the same
+layers. Do not place every DDR signal in one large bus: that unnecessarily
+couples routing direction, layer selection, and skew solving across unrelated
+timing groups.
+
+```tsx
+<bus
+  name="DDR_BYTE0"
+  connections={["DQ0", "DQ1", "DMI0", "DQS0_t", "DQS0_c"]}
+  preferredLayers={["top", "inner4"]}
+  maxLengthSkew="0.5mm"
+/>
+
+<differentialpair
+  name="DDR_DQS0_PAIR"
+  positiveConnection="DQS0_t"
+  negativeConnection="DQS0_c"
+  maxLengthSkew="0.1mm"
+/>
+```
+
+`maxLengthSkew` on the bus constrains the spread between all bus members.
+`<differentialpair />` adds a separate relationship between the positive and
+negative strobe or clock traces. These properties express length matching;
+they do not calculate stackup impedance or differential-pair spacing.
+
+## Point both fanouts into the channel
+
+Use explicit, opposing `busFanoutDirections` on the controller and memory
+breakouts. Canonical direction names start with the physical boundary edge.
+For example, `rightside_top` terminates on the right boundary in its upper
+region. Directions use board coordinates and do not rotate with the component.
+
+The first preview isolates a controller byte-lane fanout. The small pads on the
+right stand in for the global channel so the local escape is easy to inspect.
+
+<CircuitPreview
+  verticalStack
+  defaultView="pcb"
+  code={controllerByteLaneFanoutCode}
+/>
+
+The memory side mirrors the physical exit edge. Its channel boundary is on the
+left, facing the controller.
+
+<CircuitPreview
+  verticalStack
+  defaultView="pcb"
+  code={memoryByteLaneFanoutCode}
+/>
+
+In a complete design, put the actual packages in separate breakouts and define
+the buses and point-to-point traces on the enclosing board:
+
+```tsx
+<breakout
+  name="CONTROLLER_FANOUT"
+  pcbX={-10}
+  padding="3mm"
+  fanoutRoutingLayers={["top", "inner4", "inner5", "bottom"]}
+  busFanoutDirections={{
+    DDR_BYTE0: "rightside_top",
+    DDR_BYTE1: "rightside_bottom",
+    DDR_ADDR_CTRL: "rightside_center",
+  }}
+>
+  <Controller name="U1" />
+</breakout>
+
+<breakout
+  name="MEMORY_FANOUT"
+  pcbX={10}
+  padding="3mm"
+  fanoutRoutingLayers={["top", "inner4", "inner5", "bottom"]}
+  busFanoutDirections={{
+    DDR_BYTE0: "leftside_top",
+    DDR_BYTE1: "leftside_bottom",
+    DDR_ADDR_CTRL: "leftside_center",
+  }}
+>
+  <Memory name="U2" />
+</breakout>
+
+<bus
+  name="DDR_BYTE0"
+  connections={["DQ0", "DQ1", "DMI0", "DQS0_t", "DQS0_c"]}
+  preferredLayers={["top", "inner4"]}
+  maxLengthSkew="0.5mm"
+/>
+
+<trace name="DQ0" from="U1.DQ0" to="U2.DQ0" />
+<trace name="DQ1" from="U1.DQ1" to="U2.DQ1" />
+<trace name="DMI0" from="U1.DMI0" to="U2.DMI0" />
+<trace name="DQS0_t" from="U1.DQS0_t" to="U2.DQS0_t" />
+<trace name="DQS0_c" from="U1.DQS0_c" to="U2.DQS0_c" />
+```
+
+## Allocate layers deliberately
+
+`fanoutRoutingLayers` defines the layers available to boundary-terminated
+fanout buses. A bus's `preferredLayer`, `preferredLayers`, and
+`pcbAllowedLayers` narrow that choice. With the fanout router these values are
+currently a hard allowed-layer set, not a soft preference, so an empty
+intersection cannot route.
+
+Choose those layers from a reviewed stackup:
+
+- Keep each high-speed signal layer adjacent to an appropriate reference
+  plane.
+- Avoid unnecessary reference-plane changes and layer transitions.
+- Give dense byte lanes separate routing resources when their escapes compete.
+- Configure board trace, clearance, via-hole, and via-pad rules from the chosen
+  fabricator's capabilities.
+- Keep `isViaInPadAllowed={false}` unless the fabrication and assembly process
+  explicitly supports the via-in-pad construction you intend to use.
+
+Power and ground escapes are not ordinary signal buses. Route them to their
+planes with copper pours and `fanoutPourNetMap`, or let tscircuit infer the map
+from matching board-level pours:
+
+```tsx
+<copperpour layer="inner1" connectsTo="net.GND" />
+<copperpour layer="inner2" connectsTo="net.VDDQ" />
+
+<breakout
+  fanoutRoutingLayers={["top", "inner4", "bottom"]}
+  fanoutPourNetMap={{ inner1: "GND", inner2: "VDDQ" }}
+>
+  {/* Package, buses, and traces */}
+</breakout>
+```
+
+## Leave room for the fanout
+
+`fanoutBoundaryPadding` is the tuning and spreading corridor between the
+package pads and the shared fanout boundary. Begin with enough room for the
+dense buses and their legal vias. If a bus cannot escape:
+
+1. Add one bus at a time to identify which group consumes the corridor.
+2. Check that both packages send the bus toward facing boundary regions.
+3. Check that the bus and breakout layer sets have a non-empty intersection.
+4. Increase the relevant boundary padding or breakout size.
+5. Include nearby series resistors or decoupling parts inside the breakout when
+   their pads should participate in the local route instead of obstructing its
+   boundary.
+
+Explicit exit regions also prevent multiple buses from choosing the same
+crowded strip. Keep related lanes adjacent, but reserve different regions for
+lanes that would otherwise cross.
+
+## Verify the complete channel
+
+A successful local fanout is not proof that the complete DDR channel meets its
+requirements. Before fabrication:
+
+- Confirm that every expected signal has a continuous controller-to-memory PCB
+  trace and that there are no autorouting errors.
+- Measure end-to-end routed lengths. A skew constraint satisfied independently
+  in both fanouts does not by itself prove the total channel skew.
+- Run clearance and placement DRC, then visually inspect vias near BGA and
+  decoupling pads. Same-net copper still needs to match the intended
+  manufacturing process.
+- Check layer transitions, reference planes, return-current paths, and breakout
+  congestion in the PCB view.
+- Keep visual snapshots while adding buses progressively so a new lane's impact
+  is reviewable.
+- Perform stackup-aware signal-integrity review against the processor, memory,
+  and PCB-fabricator requirements. Autorouting constraints do not replace that
+  analysis.
+
+For general fanout controls, see [`<breakout />`](../elements/breakout.mdx) and
+[`<bus />`](../elements/bus.mdx). For ordered board-level routing, see
+[`<autoroutingphase />`](../elements/autoroutingphase.mdx).
