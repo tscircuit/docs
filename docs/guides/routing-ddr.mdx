@@ -50,14 +50,6 @@ export default () => (
         footprint="bga16_grid4x4_p0.8mm_pad0.35mm_circularpads"
         pinLabels={controllerPinLabels}
       />
-      {laneSignals.map((signal, index) => (
-        <breakoutpoint
-          key={signal}
-          connection={".U_CONTROLLER > ." + signal}
-          pcbX={5.9999}
-          pcbY={fanoutExitYs[index]}
-        />
-      ))}
     </breakout>
 
     <chip
@@ -115,7 +107,6 @@ export const memoryByteLaneFanoutCode = controllerByteLaneFanoutCode
   .replaceAll("U_CONTROLLER", "U_MEMORY")
   .replace("rightside_center", "leftside_center")
   .replace("pcbX={-4}", "pcbX={4}")
-  .replace("pcbX={5.9999}", "pcbX={-5.9999}")
   .replace("pcbX={6}", "pcbX={-6}")
 
 DDR routing is a board-level timing and signal-integrity problem, not only a
@@ -188,9 +179,9 @@ region. Directions use board coordinates and do not rotate with the component.
 
 The first preview isolates a controller byte-lane fanout. The small pads on the
 right stand in for the global channel so the local escape is easy to inspect.
-They are outside the breakout; explicit [`<breakoutpoint />`](../elements/breakoutpoint.mdx)
-elements hold the shared boundary between the local fanout and the global
-channel route.
+They are outside the breakout. Because each trace crosses the breakout
+boundary, tscircuit creates the breakout points automatically and the winding
+solver distributes them along the requested side in bus order.
 
 <CircuitPreview
   verticalStack
