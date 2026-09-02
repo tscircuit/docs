@@ -5,16 +5,14 @@ description: Model DDR buses, fan out controller and memory packages, and verify
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-export const controllerByteLaneFanoutCode = `const laneSignals = [
+export const routedByteLaneCode = `const laneSignals = [
   "DQ0",
   "DQ1",
   "DQS0_t",
   "DQS0_c",
 ]
 const bgaPinNumbers = [6, 7, 10, 11]
-const fanoutExitYs = [-0.75, -0.25, 0.25, 0.75]
-
-const controllerPinLabels = Object.fromEntries(
+const byteLanePinLabels = Object.fromEntries(
   laneSignals.map((signal, index) => [
     "pin" + bgaPinNumbers[index],
     signal,
@@ -23,7 +21,7 @@ const controllerPinLabels = Object.fromEntries(
 
 export default () => (
   <board
-    width="20mm"
+    width="24mm"
     height="12mm"
     layers={6}
     defaultTraceWidth="0.1mm"
@@ -37,8 +35,8 @@ export default () => (
     <breakout
       name="CONTROLLER_FANOUT"
       autorouter="fanout"
-      pcbX={-4}
-      width="12mm"
+      pcbX={-6}
+      width="8mm"
       height="8mm"
       fanoutRoutingLayers={["top", "inner2"]}
       busFanoutDirections={{
@@ -48,35 +46,27 @@ export default () => (
       <chip
         name="U_CONTROLLER"
         footprint="bga16_grid4x4_p0.8mm_pad0.35mm_circularpads"
-        pinLabels={controllerPinLabels}
+        pinLabels={byteLanePinLabels}
       />
     </breakout>
 
-    <chip
-      name="CHANNEL"
+    <breakout
+      name="MEMORY_FANOUT"
+      autorouter="fanout"
       pcbX={6}
-      pinLabels={Object.fromEntries(
-        laneSignals.map((signal, index) => [
-          "pin" + (index + 1),
-          signal,
-        ]),
-      )}
-      footprint={
-        <footprint>
-          {fanoutExitYs.map((pcbY, index) => (
-            <smtpad
-              key={index}
-              portHints={["pin" + (index + 1)]}
-              pcbX={0}
-              pcbY={pcbY}
-              width="0.4mm"
-              height="0.1mm"
-              shape="rect"
-            />
-          ))}
-        </footprint>
-      }
-    />
+      width="8mm"
+      height="8mm"
+      fanoutRoutingLayers={["top", "inner2"]}
+      busFanoutDirections={{
+        DDR_BYTE0: "leftside_center",
+      }}
+    >
+      <chip
+        name="U_MEMORY"
+        footprint="bga16_grid4x4_p0.8mm_pad0.35mm_circularpads"
+        pinLabels={byteLanePinLabels}
+      />
+    </breakout>
 
     <bus
       name="DDR_BYTE0"
@@ -96,18 +86,11 @@ export default () => (
         key={signal}
         name={signal}
         from={"U_CONTROLLER." + signal}
-        to={"CHANNEL." + signal}
+        to={"U_MEMORY." + signal}
       />
     ))}
   </board>
 )`
-
-export const memoryByteLaneFanoutCode = controllerByteLaneFanoutCode
-  .replace('name="CONTROLLER_FANOUT"', 'name="MEMORY_FANOUT"')
-  .replaceAll("U_CONTROLLER", "U_MEMORY")
-  .replace("rightside_center", "leftside_center")
-  .replace("pcbX={-4}", "pcbX={4}")
-  .replace("pcbX={6}", "pcbX={-6}")
 
 DDR routing is a board-level timing and signal-integrity problem, not only a
 shortest-path problem. Use the memory and processor data sheets to establish
@@ -177,72 +160,22 @@ breakouts. Canonical direction names start with the physical boundary edge.
 For example, `rightside_top` terminates on the right boundary in its upper
 region. Directions use board coordinates and do not rotate with the component.
 
-The first preview isolates a controller byte-lane fanout. The small pads on the
-right stand in for the global channel so the local escape is easy to inspect.
-They are outside the breakout. Because each trace crosses the breakout
-boundary, tscircuit creates the breakout points automatically and the winding
-solver distributes them along the requested side in bus order.
+This preview routes a byte lane end to end between a controller and memory
+package. Each package is in its own breakout, so tscircuit creates implicit
+breakout points for every boundary-crossing trace. The winding solver
+coordinates the opposing boundary points in bus order before the fanout and
+global routing phases run.
+
+The dashed boxes are `pcb_debug_object` overlays emitted for the two package
+fanouts and the board-level channel. Showing them makes the ownership and order
+of the three routing phases visible without changing the circuit.
 
 <CircuitPreview
   verticalStack
   defaultView="pcb"
-  code={controllerByteLaneFanoutCode}
+  showDebugObjects
+  code={routedByteLaneCode}
 />
-
-The memory side mirrors the physical exit edge. Its channel boundary is on the
-left, facing the controller.
-
-<CircuitPreview
-  verticalStack
-  defaultView="pcb"
-  code={memoryByteLaneFanoutCode}
-/>
-
-In a complete design, put the actual packages in separate breakouts and define
-the buses and point-to-point traces on the enclosing board:
-
-```tsx
-<breakout
-  name="CONTROLLER_FANOUT"
-  pcbX={-10}
-  padding="3mm"
-  fanoutRoutingLayers={["top", "inner4", "inner5", "bottom"]}
-  busFanoutDirections={{
-    DDR_BYTE0: "rightside_top",
-    DDR_BYTE1: "rightside_bottom",
-    DDR_ADDR_CTRL: "rightside_center",
-  }}
->
-  <Controller name="U1" />
-</breakout>
-
-<breakout
-  name="MEMORY_FANOUT"
-  pcbX={10}
-  padding="3mm"
-  fanoutRoutingLayers={["top", "inner4", "inner5", "bottom"]}
-  busFanoutDirections={{
-    DDR_BYTE0: "leftside_top",
-    DDR_BYTE1: "leftside_bottom",
-    DDR_ADDR_CTRL: "leftside_center",
-  }}
->
-  <Memory name="U2" />
-</breakout>
-
-<bus
-  name="DDR_BYTE0"
-  connections={["DQ0", "DQ1", "DMI0", "DQS0_t", "DQS0_c"]}
-  preferredLayers={["top", "inner4"]}
-  maxLengthSkew="0.5mm"
-/>
-
-<trace name="DQ0" from="U1.DQ0" to="U2.DQ0" />
-<trace name="DQ1" from="U1.DQ1" to="U2.DQ1" />
-<trace name="DMI0" from="U1.DMI0" to="U2.DMI0" />
-<trace name="DQS0_t" from="U1.DQS0_t" to="U2.DQS0_t" />
-<trace name="DQS0_c" from="U1.DQS0_c" to="U2.DQS0_c" />
-```
 
 ## Allocate layers deliberately
 
