@@ -23,7 +23,7 @@ const controllerPinLabels = Object.fromEntries(
 
 export default () => (
   <board
-    width="18mm"
+    width="20mm"
     height="12mm"
     layers={6}
     defaultTraceWidth="0.1mm"
@@ -36,9 +36,10 @@ export default () => (
   >
     <breakout
       name="CONTROLLER_FANOUT"
-      width="14mm"
-      height="9mm"
-      fanoutBoundaryPadding={{ right: "1.5mm" }}
+      autorouter="fanout"
+      pcbX={-4}
+      width="12mm"
+      height="8mm"
       fanoutRoutingLayers={["top", "inner2"]}
       busFanoutDirections={{
         DDR_BYTE0: "rightside_center",
@@ -49,65 +50,64 @@ export default () => (
         footprint="bga16_grid4x4_p0.8mm_pad0.35mm_circularpads"
         pinLabels={controllerPinLabels}
       />
-
-      <chip
-        name="CHANNEL"
-        pcbX={5}
-        pinLabels={Object.fromEntries(
-          laneSignals.map((signal, index) => [
-            "pin" + (index + 1),
-            signal,
-          ]),
-        )}
-        footprint={
-          <footprint>
-            {fanoutExitYs.map((pcbY, index) => (
-              <smtpad
-                key={index}
-                portHints={["pin" + (index + 1)]}
-                pcbX={0}
-                pcbY={pcbY}
-                width="0.4mm"
-                height="0.1mm"
-                shape="rect"
-              />
-            ))}
-          </footprint>
-        }
-      />
-
-      <bus
-        name="DDR_BYTE0"
-        connections={laneSignals}
-        preferredLayers={["top", "inner2"]}
-        maxLengthSkew="0.5mm"
-      />
-      <differentialpair
-        name="DDR_DQS0_PAIR"
-        positiveConnection="DQS0_t"
-        negativeConnection="DQS0_c"
-        maxLengthSkew="0.1mm"
-      />
-
-      {laneSignals.map((signal) => (
-        <trace
-          key={signal}
-          name={signal}
-          from={"U_CONTROLLER." + signal}
-          to={"CHANNEL." + signal}
-        />
-      ))}
     </breakout>
+
+    <chip
+      name="CHANNEL"
+      pcbX={6}
+      pinLabels={Object.fromEntries(
+        laneSignals.map((signal, index) => [
+          "pin" + (index + 1),
+          signal,
+        ]),
+      )}
+      footprint={
+        <footprint>
+          {fanoutExitYs.map((pcbY, index) => (
+            <smtpad
+              key={index}
+              portHints={["pin" + (index + 1)]}
+              pcbX={0}
+              pcbY={pcbY}
+              width="0.4mm"
+              height="0.1mm"
+              shape="rect"
+            />
+          ))}
+        </footprint>
+      }
+    />
+
+    <bus
+      name="DDR_BYTE0"
+      connections={laneSignals}
+      preferredLayers={["top", "inner2"]}
+      maxLengthSkew="0.5mm"
+    />
+    <differentialpair
+      name="DDR_DQS0_PAIR"
+      positiveConnection="DQS0_t"
+      negativeConnection="DQS0_c"
+      maxLengthSkew="0.1mm"
+    />
+
+    {laneSignals.map((signal) => (
+      <trace
+        key={signal}
+        name={signal}
+        from={"U_CONTROLLER." + signal}
+        to={"CHANNEL." + signal}
+      />
+    ))}
   </board>
 )`
 
 export const memoryByteLaneFanoutCode = controllerByteLaneFanoutCode
   .replace('name="CONTROLLER_FANOUT"', 'name="MEMORY_FANOUT"')
-  .replace('name="U_CONTROLLER"', 'name="U_MEMORY"')
-  .replaceAll("U_CONTROLLER.", "U_MEMORY.")
-  .replace('right: "1.5mm"', 'left: "1.5mm"')
+  .replaceAll("U_CONTROLLER", "U_MEMORY")
   .replace("rightside_center", "leftside_center")
-  .replace("pcbX={5}", "pcbX={-5}")
+  .replace("pcbX={-4}", "pcbX={4}")
+  .replace("pcbX={6}", "pcbX={-6}")
 
 DDR routing is a board-level timing and signal-integrity problem, not only a
 shortest-path problem. Use the memory and processor data sheets to establish
@@ -179,6 +179,9 @@ region. Directions use board coordinates and do not rotate with the component.
 
 The first preview isolates a controller byte-lane fanout. The small pads on the
 right stand in for the global channel so the local escape is easy to inspect.
+They are outside the breakout. Because each trace crosses the breakout
+boundary, tscircuit creates the breakout points automatically and the winding
+solver distributes them along the requested side in bus order.
 
 <CircuitPreview
   verticalStack
