@@ -17,6 +17,9 @@ A bus does not electrically connect its members. It groups existing
 connections so the autorouter can apply shared constraints such as layer
 selection, trace width, and maximum length skew.
 
+For recommendations on dividing DDR signals into buses and fanning them out of
+opposing packages, see [Routing DDR](../guides/routing-ddr.mdx).
+
 ## Constrain Fanout Layers
 
 Use `preferredLayer` for one layer and `preferredLayers` for additional layers.
