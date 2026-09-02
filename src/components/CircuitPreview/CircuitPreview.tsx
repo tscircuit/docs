@@ -148,6 +148,7 @@ export default function CircuitPreview({
   defaultSimulationExperimentName,
   verticalStack = false,
   showCourtyards = false,
+  showDebugObjects = false,
 }: {
   code?: string
   showTabs?: boolean
@@ -171,6 +172,7 @@ export default function CircuitPreview({
   defaultSimulationExperimentName?: string
   verticalStack?: boolean
   showCourtyards?: boolean
+  showDebugObjects?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -244,12 +246,15 @@ export default function CircuitPreview({
 
   const pcbUrl = useMemo(() => {
     const basePcbUrl = addMainComponentPath(createSvgUrl(fsMapOrCode, "pcb"))
+    const flags: string[] = []
 
-    if (!showCourtyards) return basePcbUrl
+    if (showCourtyards) flags.push("show_courtyards=true")
+    if (showDebugObjects) flags.push("show_debug_objects=true")
+    if (flags.length === 0) return basePcbUrl
 
     const separator = basePcbUrl.includes("?") ? "&" : "?"
-    return `${basePcbUrl}${separator}show_courtyards=true`
-  }, [fsMapOrCode, mainComponentPath, showCourtyards])
+    return `${basePcbUrl}${separator}${flags.join("&")}`
+  }, [fsMapOrCode, mainComponentPath, showCourtyards, showDebugObjects])
   const schUrl = useMemo(() => {
     const baseUrl = addMainComponentPath(
       createSvgUrl(
