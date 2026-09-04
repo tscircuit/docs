@@ -32,7 +32,6 @@ grouped below by purpose.
 | `partsEngine` | `PartsEngine` | Finds purchasable parts that match component specifications. |
 | `autorouter` | `AutorouterProp` | Selects or configures the autorouter used by the platform. |
 | `autorouterMap` | `Record<string, AutorouterDefinition>` | Registers named custom autorouters. Each definition creates an autorouter instance from Simple Route JSON. |
-| `allowLegacyAutorouters` | `boolean` | Enables the deprecated `sequential_trace` and `auto_cloud` autorouter presets. Defaults to `false`; enable this only temporarily while migrating projects. |
 | `cloudAutorouterUrl` | `string` | Sets the cloud autorouter endpoint. The default tscircuit platform uses a tscircuit cloud service. |
 | `defaultSpiceEngine` | `"spicey" \| "ngspice" \| string` | Selects the default SPICE simulation engine. Custom engine names can refer to entries in `spiceEngineMap`. |
 | `spiceEngineMap` | `Record<string, SpiceEngine>` | Registers named SPICE engines. Each engine accepts a SPICE netlist and returns simulation-result Circuit JSON. |

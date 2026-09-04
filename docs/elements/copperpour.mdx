@@ -96,6 +96,36 @@ or dedicated power planes.
 Use vias tied to the same net to stitch pours between layers and further reduce
 impedance.
 
+## Relationship to Automatic Pours and Autorouting
+
+[`automaticPoursEnabled`](./board.mdx#generating-automatic-copper-pours) is a
+board-level convenience that generates implicit pours for nets marked or
+recognized as power or ground. Those pours are generated after PCB traces have
+been routed, and the feature is skipped when PCB routing is disabled. They do
+not cause the autorouter to skip power-net traces or treat an entire layer as a
+dedicated plane.
+
+Use `<copperpour />` instead when you need to choose the exact net, layer,
+outline, or clearance. Avoid defining an explicit pour over a region that is
+also filled by an automatic pour unless the overlap is intentional.
+
+To make source-only power connections—traces with one component endpoint and
+one net endpoint—from a dense package terminate on an inner plane, combine
+explicit pours with a fanout routing phase:
+
+```tsx
+<autoroutingphase
+  autorouter="fanout"
+  fanoutRoutingLayers={["top", "bottom"]}
+  fanoutPourNetMap={{ inner1: "GND", inner2: "V3_3" }}
+/>
+<copperpour connectsTo="net.GND" layer="inner1" />
+<copperpour connectsTo="net.V3_3" layer="inner2" />
+```
+
+See [`<autoroutingphase />`](./autoroutingphase.mdx#terminate-power-connections-on-copper-planes)
+for details.
+
 ## Tips for Effective Groundplanes
 
 - Keep sensitive signal traces short and route them over solid groundplane
