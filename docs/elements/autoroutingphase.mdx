@@ -234,6 +234,45 @@ For custom phase autorouters with `algorithmFn`, see
 For package-level fanout followed by a global DDR channel route, see
 [Routing DDR](../guides/routing-ddr.mdx).
 
+## Terminate Power Connections on Copper Planes
+
+Use `autorouter="fanout"` with `fanoutPourNetMap` when source-only power
+connections (traces with one component endpoint and one net endpoint) from a
+dense package should terminate on dedicated copper planes. The map associates
+each plane layer with the net poured on that layer.
+
+```tsx
+<board width="30mm" height="20mm" layers={4}>
+  <autoroutingphase
+    autorouter="fanout"
+    fanoutRoutingLayers={["top", "bottom"]}
+    fanoutPourNetMap={{
+      inner1: "GND",
+      inner2: "V3_3",
+    }}
+  />
+
+  <net name="GND" isGroundNet />
+  <net name="V3_3" isPowerNet />
+  <chip name="U1" footprint="qfn32" />
+  <trace name="U1_GND" from=".U1 > .pin1" to="net.GND" />
+  <trace name="U1_V3_3" from=".U1 > .pin2" to="net.V3_3" />
+  <copperpour connectsTo="net.GND" layer="inner1" />
+  <copperpour connectsTo="net.V3_3" layer="inner2" />
+</board>
+```
+
+Only source-only traces whose net names match `fanoutPourNetMap` receive plane
+terminations. `fanoutRoutingLayers` controls the layers available to the other
+fanout connections; keep those signal-routing layers separate from dedicated
+planes.
+
+`automaticPoursEnabled` is not a substitute for this mapping. It generates
+implicit copper after routing but does not tell the autorouter that a package
+pin should terminate on a plane. See
+[`<board />`](./board.mdx#generating-automatic-copper-pours) and
+[`<copperpour />`](./copperpour.mdx#relationship-to-automatic-pours-and-autorouting).
+
 ## Reroute Existing Traces
 
 The `reroute` API is for changing routes produced by an earlier pass. Most
@@ -295,5 +334,8 @@ Use `connections` to target more than one previously routed connection:
 | `connection` | `string` | Port selector for one connection to route in this phase. With `reroute`, selects one previously routed connection instead. |
 | `connections` | `string[]` | Port selectors for multiple connections to route in this phase. With `reroute`, selects previously routed connections instead. |
 | `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
+| `fanoutRoutingLayers` | `LayerRef[]` | Layers available to boundary-terminated fanout connections. |
+| `fanoutPourNetMap` | `Record<LayerRef, string \| string[]>` | Maps dedicated plane layers to the power or ground nets that should terminate on them during fanout. |
+| `busFanoutDirections` | `Record<string, BusFanoutDirection>` | Controls the boundary exit direction for each named bus during fanout. |
 | `reroute` | `boolean` | Reroutes traces produced by earlier phases instead of routing newly assigned traces. Requires `region`, `connection`, or `connections`. |
 | `region` | `{ shape?: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reconsider in a reroute phase. |

@@ -33,7 +33,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
 | `layers` | `1 \| 2 \| 4 \| 6 \| 8 \| 10` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
 | `allowBlindAndBuriedVias` | `boolean` | Allow partial-stack autorouter vias. Defaults to `false` (full-stack vias); confirm manufacturer support before enabling. |
-| `autorouter` | `'auto' \| 'sequential-trace' \| 'auto-local' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
+| `autorouter` | `'auto' \| 'auto-local' \| 'fanout' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
 | `autorouterVersion` | `'beta_pipeline1' \| 'beta_pipeline3' \| 'beta_pipeline4' \| 'beta_pipeline5' \| 'beta_pipeline7' \| 'beta_pipeline9' \| 'latest'` | Pin routing to a known autorouter implementation when comparing routing behavior across versions. Unknown values fall back to `latest` with a warning. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
@@ -68,7 +68,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `minViaHoleDiameter` | `string \| number` | Smallest via drill diameter the router may use. |
 | `minViaPadDiameter` | `string \| number` | Smallest via pad diameter the router may use. |
 | `isViaInPadAllowed` | `boolean` | Allow intentional vias inside PCB pads to pass DRC. Defaults to `false`. |
-| `automaticPoursEnabled` | `boolean` | Generate implicit pours for eligible power nets when routing is enabled. Defaults to `false`; use `<copperpour />` for explicit control. |
+| `automaticPoursEnabled` | `boolean` | After routing, generate implicit copper pours for nets marked or recognized as power or ground. Defaults to `false`; use `<copperpour />` when layer, net, outline, or clearance must be explicit. |
 | `partsEngine` | `object` | Override the parts lookup engine used to resolve bill of materials. |
 | `circuitJson` | `any[]` | Provide precompiled circuit JSON to embed or reuse as the board contents. |
 | `pcbStyle` | `object` | Style configuration object for PCB elements. See [Global Silkscreen Text Size](#global-silkscreen-text-size-adjustment) below. |
@@ -270,9 +270,9 @@ used to route any traces within them.
 
 Usually you'll want to use an autorouter preset:
 
-- `autorouter="auto"` - Uses the [platform configuration](../guides/running-tscircuit/platform-configuration.md). For tscircuit.com this defaults to `sequential-trace`.
-- `autorouter="sequential-trace"` - Iterate over each trace and use tscircuit's fast built-in autorouter. This method is fast and deterministic but often fails with over 50 traces.
+- `autorouter="auto"` - Uses the recommended router from the [platform configuration](../guides/running-tscircuit/platform-configuration.md).
 - `autorouter="auto-local"` - Use the platform configuration, but only route locally (do not make API calls)
+- `autorouter="fanout"` - Escape dense packages before routing the remaining connections. Use it with [`fanoutPourNetMap`](./autoroutingphase.mdx#terminate-power-connections-on-copper-planes) when package power pins should terminate on dedicated copper planes.
 - `autorouter="laser_prefab"` - Reserve prefabricated vias that can be reassigned during routing. Ideal for rapid-turn PCBs produced with laser ablation and mechanical drilling templates. See the [ViaGrid / Prefabricated Vias guide](../guides/tscircuit-essentials/using-viagrid-prefabricated-vias-with-autorouter.mdx) for a complete walkthrough.
 - `autorouter="auto_jumper"` - Route single-layer boards by inserting jumper wires when traces would otherwise cross. See the [Single Layer Jumper Autorouting guide](../guides/tscircuit-essentials/single-layer-jumper-autorouting.mdx) for a complete walkthrough.
 
@@ -298,6 +298,62 @@ or final route attempts.
   <trace from=".U1 > .pin1" to=".U2 > .pin1" />
 </board>
 ```
+
+### Generating Automatic Copper Pours
+
+Set `automaticPoursEnabled` when you want tscircuit to add copper coverage for
+power and ground nets without declaring each region manually. A net qualifies
+when it is marked with `isPowerNet` or `isGroundNet`, or when its name matches
+tscircuit's built-in power or ground naming rules.
+
+```tsx
+<board width="30mm" height="20mm" layers={4} automaticPoursEnabled>
+  <net name="GND" isGroundNet />
+  <net name="V3_3" isPowerNet />
+
+  <chip name="U1" footprint="qfn32" />
+  <trace from=".U1 > .pin1" to="net.GND" />
+  <trace from=".U1 > .pin2" to="net.V3_3" />
+</board>
+```
+
+The option defaults to `false` and is skipped when PCB routing is disabled.
+When enabled, tscircuit chooses the pour regions and layers after PCB traces
+have been routed and before the final PCB design-rule checks. The pours flow
+around existing pads, traces, cutouts, and keepouts. Enabling the option does
+not reserve a layer for a net, suppress that net's traces, or tell the
+autorouter that a pin should terminate on a plane.
+
+Use an explicit [`<copperpour />`](./copperpour.mdx) when the poured layer, net,
+outline, or clearance must be predictable. Avoid overlapping an automatic pour
+with an explicit pour for the same region unless the overlap is intentional.
+
+For a dense package whose power pins should drop directly onto dedicated inner
+planes, use a fanout routing phase with `fanoutPourNetMap` and explicit pours:
+
+```tsx
+<board width="30mm" height="20mm" layers={4}>
+  <autoroutingphase
+    autorouter="fanout"
+    fanoutRoutingLayers={["top", "bottom"]}
+    fanoutPourNetMap={{
+      inner1: "GND",
+      inner2: "V3_3",
+    }}
+  />
+
+  <net name="GND" isGroundNet />
+  <net name="V3_3" isPowerNet />
+  <chip name="U1" footprint="qfn32" />
+  <trace name="U1_GND" from=".U1 > .pin1" to="net.GND" />
+  <trace name="U1_V3_3" from=".U1 > .pin2" to="net.V3_3" />
+  <copperpour connectsTo="net.GND" layer="inner1" />
+  <copperpour connectsTo="net.V3_3" layer="inner2" />
+</board>
+```
+
+See [`<autoroutingphase />`](./autoroutingphase.mdx#terminate-power-connections-on-copper-planes)
+for the complete plane-termination behavior.
 
 You can also specify a custom autorouter object to use your own autorouter.
 
