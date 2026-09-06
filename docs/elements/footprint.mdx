@@ -94,6 +94,19 @@ export default () => (
 `} />
 
 
+## Insertion direction
+
+Set `insertionDirection` on a connector footprint to describe the side from
+which its cable or mating part approaches. Use `"from_above"` for vertical
+access above the PCB and `"from_below"` for access below it. `"from_top"` and
+`"from_bottom"` mean +Y and −Y in the 2D footprint, respectively.
+
+The value uses the footprint's own unrotated coordinates; core transforms it
+with the component's rotation and layer flip. See [PCB mating direction](./connector.mdx#pcb-mating-direction)
+for all values, imported-component guidance, and troubleshooting connector
+accessibility warnings.
+
+
 ## Reference Designator 
 
 You can use `{NAME}`, `{REF}`, or `{REFERENCE}` in the `text` property of a [`<silkscreentext />`](../footprints/silkscreentext.mdx) element within a footprint. When the PCB is rendered, these variables are automatically replaced with the name (reference designator) of the component.

@@ -151,6 +151,63 @@ When a connector footprint is rendered, tscircuit computes `pcb_component.cable_
 
 In the linked test, the computed cable insertion center is validated and then visualized as a small PCB note rectangle.
 
+## PCB mating direction
+
+Set `insertionDirection` on the connector's `<footprint>` to describe the side
+from which the cable or mating part approaches. For a connector that mates
+vertically from above the PCB, use `insertionDirection="from_above"`.
+
+| `insertionDirection` | Side in the footprint's own coordinates |
+| --- | --- |
+| `"from_left"` | −X |
+| `"from_right"` | +X |
+| `"from_top"` | +Y, in the PCB plane |
+| `"from_bottom"` | −Y, in the PCB plane |
+| `"from_above"` | +Z, above the PCB |
+| `"from_below"` | −Z, below the PCB |
+
+`from_top` and `from_bottom` refer to the top and bottom of the 2D footprint,
+not vertical access. The direction names the side a plug comes from, not the
+direction it moves while being inserted.
+
+Author this metadata in the footprint's unrotated frame, alongside its pads.
+Core applies the component's rotation and layer flip, then writes
+`pcb_component.insertion_direction` in board coordinates. For example, a
+footprint with `from_above` mounted on the bottom of the board faces
+`from_below` after flipping.
+
+For an imported JSX component, edit the root `<footprint>` in its generated
+source file. Keep all its existing pads, holes, silkscreen, and other geometry.
+For example, in `imports/BM03B_SRSS_TB_LF__SN_.tsx`, a vertical-entry JST
+connector's `footprint` prop should start like this:
+
+```tsx
+footprint={
+  <footprint insertionDirection="from_above">
+    {/* Existing imported footprint geometry stays here. */}
+  </footprint>
+}
+```
+
+Use `from_below` instead if the unrotated footprint mates from below. This
+metadata also works when an imported connector is represented by `<chip>`.
+A schematic `facingDirection` prop does not set the PCB mating direction.
+
+### Resolving an accessible-orientation warning
+
+The `pcb_connector_not_in_accessible_orientation_warning` compares a
+connector's access direction with its nearest board edge. Explicit
+`insertionDirection` takes precedence over the direction inferred from
+`cable_insertion_center`. A connector with `from_above` or `from_below` is
+excluded from this board-edge check because it mates vertically.
+
+If a warning says a vertical connector is facing `y-` but should face `x-`,
+verify its mating direction against the part's drawing and add the appropriate
+`insertionDirection` to its footprint. For a side-entry connector, check its
+metadata and use `pcbRotation` to orient the opening toward the intended board
+edge. Rebuild to verify the warning is resolved; do not mark a side-entry
+connector as `from_above` just to suppress the warning.
+
 ## Properties
 
 The TypeScript interface for `<connector />` is defined in [`@tscircuit/props`](https://github.com/tscircuit/props/blob/main/lib/components/connector.ts):
