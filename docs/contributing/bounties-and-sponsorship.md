@@ -32,17 +32,22 @@ deliver meaningful improvements over time.
 
 ## How sponsorship amounts are calculated
 
-Sponsorship payouts are based on the last four weeks of star ratings captured by
-the tracker. The algorithm takes the median, minimum, and maximum weekly star
-counts to decide on a base amount—ranging from $15 for occasional stars up to
-$500 for consistently high-impact weeks—with a $5 safety net for anyone whose
-historical high score stays above 3. You can read the current logic directly in
-[`getSponsorshipAmount.ts`](https://github.com/tscircuit/contribution-tracker/blob/main/lib/scoring/getSponsorshipAmount.ts)
-for the exact thresholds.
+Monthly sponsorships use the completed contribution weeks whose end dates fall
+in the target month. The tracker calculates the minimum, median, and maximum
+weekly star counts, plus the highest raw weekly score from those weeks.
 
-Maintainers receive an additional fixed monthly sponsorship on top of the weekly
-calculation so their support stays stable. Those maintainer bonuses are defined
-alongside the algorithm in the tracker codebase.
+The first matching tier determines the base amount. Current star-based tiers
+range from $30 to $700. If no star-based tier applies, a highest weekly score of
+at least 3 qualifies for the $10 base tier. These are calculation rules, not a
+guarantee that an individual contribution will receive payment.
+
+Maintainers receive an additional monthly amount based on their maintainer
+level. For the current thresholds and examples, see the
+[sponsorship calculation explanation](https://github.com/tscircuit/contribution-tracker/blob/main/docs/sponsorship-calculation-explanation.md).
+The source of truth is
+[`getSponsorshipAmount.ts`](https://github.com/tscircuit/contribution-tracker/blob/main/lib/scoring/getSponsorshipAmount.ts);
+[`generate-sponsorship-csv.ts`](https://github.com/tscircuit/contribution-tracker/blob/main/scripts/generate-sponsorship-csv.ts)
+selects the weeks and prepares the monthly payout data.
 
 To be eligible for Github Sponsorship, you must be in a supported country and
 have Github Sponsors enabled on your Github profile.
