@@ -74,7 +74,22 @@ about the following resistor characteristics:
 | `pulldownFor` | The pin or net this resistor is pulling down. | `".U1 > .GPIO1"` |
 | `pulldownTo` | The net this resistor is pulling down to. | `"net.GND"` |
 | `schOrientation` | The orientation of the resistor on the schematic. | `"vertical"`, `"horizontal"` |
-| `schSize` | The size of the schematic symbol. | `"normal"` |
+| `schSize` | Schematic symbol size. `"sm"` and `"xs"` select compact premade symbols (`boxresistor_sm` / `boxresistor_xs`, or `resistor_sm` / `resistor_xs` when `symbolName="resistor"`). `"default"`, `"md"`, and numeric distances are accepted by the props type but currently keep the standard symbol. | `"sm"`, `"xs"` |
+
+Compact `"sm"` and `"xs"` symbols shorten the pin-to-pin span (about `0.5` and `0.35` schematic units). They are only applied when the symbol is the default box resistor or the US-style `resistor` symbol.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="20mm" height="10mm">
+    <resistor name="R_DEFAULT" resistance="1k" schX={0} schY={0} />
+    <resistor name="R_SM" resistance="1k" schSize="sm" schX={3} schY={0} />
+    <resistor name="R_XS" resistance="1k" schSize="xs" schX={6} schY={0} />
+  </board>
+)
+`}
+/>
 
 ## Automatic Part Selection
 

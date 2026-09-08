@@ -71,10 +71,31 @@ schematic alongside the example code.
 | Property | Description | Example |
 | -------- | ----------- | ------- |
 | `net` | Name of the net that the label represents | `"VCC"` |
-| `connection` | [Port selector](../guides/tscircuit-essentials/port-and-net-selectors.md) of the point the label attaches to | `"U1.VCC"` |
-| `anchorSide` | Which side of the connection to place the label. One of `"top"`, `"bottom"`, `"left"`, or `"right"` | `"top"` |
-| `schX`, `schY` | Position of the label on the schematic | `0`, `-1` |
-| `text` | Custom text for the label (defaults to the net name) | `"V3_3"` |
+| `connectsTo` | One or more [port selectors](../guides/tscircuit-essentials/port-and-net-selectors.md) the label attaches to | `"U1.VCC"`, `["U1.VCC", "U2.VCC"]` |
+| `connection` | Singular port selector the label attaches to | `"U1.VCC"` |
+| `inline` | Places the net name automatically along its schematic trace. `schX`, `schY`, `schRotation`, and `anchorSide` are ignored while this is set. If a trace placement cannot be found, core falls back to an anchored label. | `true` |
+| `anchorSide` | Which side of the connection to place an anchored label. One of `"top"`, `"bottom"`, `"left"`, or `"right"` | `"top"` |
+| `schX`, `schY` | Position of an anchored label on the schematic. Ignored when `inline` is active. | `0`, `-1` |
+| `schRotation` | Rotation of an anchored label. Ignored when `inline` is active. | `90` |
 
 Use `<netlabel />` to clearly mark nets in your schematic, especially for
 power rails or when multiple wires join at a single connection point.
+
+`<netlabel inline />` is the compact form for a net that already has a
+schematic trace: the name is drawn on the wire instead of as a separate
+anchored box.
+
+<CircuitPreview
+  leftView="code"
+  rightView="schematic"
+  code={`
+    export default () => (
+      <board width="20mm" height="10mm" schMaxTraceDistance={10}>
+        <resistor name="R1" resistance="1k" footprint="0603" schX={-3} />
+        <resistor name="R2" resistance="1k" footprint="0603" schX={3} />
+        <netlabel net="SIGNAL" connectsTo="R1.pin2" inline />
+        <trace from="R2.pin1" to="net.SIGNAL" />
+      </board>
+    )
+  `}
+/>
