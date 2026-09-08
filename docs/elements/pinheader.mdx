@@ -40,19 +40,19 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | pinCount | number | (required) | Number of pins in the header |
 | pitch | number \| string | "2.54mm" | Distance between pins |
 | schFacingDirection | "up" \| "down" \| "left" \| "right" | "right" | Direction the header faces in schematic view |
-| gender | "male" \| "female" | "male" | Whether the header is male or female |
+| gender | "male" \| "female" \| "unpopulated" | "male" | Whether the header is male, female, or left unpopulated |
+| connectsFromAbove | boolean | omitted (`false`) | Alias for `layer="top"`, describing a mating connector that approaches from above. |
+| connectsFromBelow | boolean | omitted (`false`) | Alias for `layer="bottom"`, describing a mating connector that approaches from below. |
 | showSilkscreenPinLabels | boolean | false | Whether to show pin labels in silkscreen |
 | doubleRow | boolean | false | Whether the header has two rows of pins |
 | holeDiameter | number \| string | "1mm" | Diameter of the through-hole for each pin |
 | platedDiameter | number \| string | "1.7mm" | Diameter of the plated area around each hole |
-| pinLabels | string[] | undefined | Labels for each pin |
+| pinLabels | `Record<string, string>` \| `string[]` | undefined | Labels for each pin, supplied as a pin-keyed map or an ordered array |
 | facingDirection | "left" \| "right" | "right" | Direction the header is facing |
 | pcbX | number | 0 | X position of the component |
 | pcbY | number | 0 | Y position of the component |
 | rotation | number | 0 | Rotation of the component in degrees |
 | id | string | auto-generated | Unique identifier for the component |
 
-
-
-
-
+The two mating-side aliases are mutually exclusive, and an explicit `layer`
+takes precedence.
