@@ -9,13 +9,16 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<bus />` element tells the autorouter that two or more connections belong
+The `<bus />` element tells the autorouter that one or more connections belong
 to the same group. Each entry in `connections` can be a named [`<trace />`](./trace.mdx)
 or a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
 
 A bus does not electrically connect its members. It groups existing
 connections so the autorouter can apply shared constraints such as layer
 selection, trace width, and maximum length skew.
+
+A singleton bus can apply layer, width, or fanout constraints to one control
+signal.
 
 For recommendations on dividing DDR signals into buses and fanning them out of
 opposing packages, see [Routing DDR](../guides/routing-ddr.mdx).
@@ -62,7 +65,7 @@ export default () => (
   >
     <autoroutingphase
       autorouter="fanout"
-      busFanoutDirections={{ DATA: { direction: "center_right" } }}
+      busFanoutDirections={{ DATA: { direction: "rightside_center" } }}
       fanoutBoundaryPadding={{ right: "1.2mm" }}
     />
 
@@ -111,7 +114,7 @@ least one layer remains.
 
 | Property | Description | Example |
 | -------- | ----------- | ------- |
-| `connections` | Two or more trace names or port selectors in the bus. | `["D0", "D1"]` |
+| `connections` | One or more trace names or port selectors in the bus. | `["D0", "D1"]` |
 | `name` | Optional bus name. Name the bus when referring to it from `busFanoutDirections`. | `"DATA"` |
 | `routingPhaseIndex` | Assigns every member of the bus to an autorouting phase. | `0` |
 | `maxLengthSkew` | Maximum routed-length difference between members. Raw numbers are millimeters. | `"0.2mm"` |
@@ -120,3 +123,30 @@ least one layer remains.
 | `pcbAllowedLayers` | Layers on which the bus may be routed. | `["inner2", "bottom"]` |
 | `preferredLayer` | First-choice PCB layer. With the fanout solver, this becomes part of its hard allowed-layer set. | `"inner2"` |
 | `preferredLayers` | Additional PCB layers in priority order. With the fanout solver, these become part of its hard allowed-layer set. | `["bottom"]` |
+
+## Singleton control net
+
+A singleton bus can set `pcbTraceWidth` on one named RESET trace.
+
+<CircuitPreview verticalStack defaultView="pcb" code={`
+export default () => (
+  <board width="12mm" height="8mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pcbX={-3}
+      pinLabels={{ pin1: "RESET" }}
+    />
+    <trace
+      name="RESET"
+      from=".U1 > .RESET"
+      to="net.RESET"
+    />
+    <bus
+      name="RESET"
+      connections={["RESET"]}
+      pcbTraceWidth="0.2mm"
+    />
+  </board>
+)
+`} />
