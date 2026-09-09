@@ -5,7 +5,8 @@ description: Store and reuse pre-generated fanout wire and via routes with pcbTr
 
 # Reusing saved fanout trace paths
 
-Use `pcbTracePaths` on `<fanout>` or `<breakout>` when you already have
+Use `pcbTracePaths` on [`<fanout />`](../elements/fanout.mdx) or
+[`<breakout />`](../elements/breakout.mdx) when you already have
 pre-generated routes from component ports to fanout exits. The routes can live
 in a TypeScript module or JSON file. Core preserves their geometry and routes
 the rest of the board from their exits.
