@@ -1,0 +1,78 @@
+---
+title: <fanout />
+description: Route component connections to fanout exits automatically or reuse pre-generated wire and via paths.
+---
+
+## Overview
+
+`<fanout />` groups components for escape routing: tscircuit routes their
+connections to exits, then connects those exits to the rest of the board.
+It is an alias of [`<breakout />`](./breakout.mdx) and accepts the same props.
+Like a breakout, it does not create a subcircuit, selector scope, or private net
+scope. Components inside it remain accessible through selectors such as `R1.1`.
+
+## Automatic fanout
+
+Place the components to escape inside `<fanout />` and define their electrical
+connections with [`<trace />`](./trace.mdx). The default fanout autorouter
+generates exits for connections leaving the region. Use `padding` to give those
+routes room around the component pads.
+
+```tsx
+export default () => (
+  <board width="20mm" height="16mm">
+    <fanout name="R1_FANOUT" padding="2mm">
+      <resistor name="R1" resistance="1k" footprint="0402" pcbX={0} pcbY={0} />
+    </fanout>
+    <resistor name="R2" resistance="1k" footprint="0402" pcbX={7} pcbY={0} />
+    <trace name="SIGNAL" from="R1.1" to="R2.1" />
+  </board>
+)
+```
+
+For explicit exit locations, place a `<fanoutpoint />` inside the fanout.
+It is an alias of [`<breakoutpoint />`](./breakoutpoint.mdx), with the same
+`connection`, `pcbX`, and `pcbY` props.
+
+## Reuse saved routes
+
+Pass `pcbTracePaths` to reuse pre-generated wire and via routes instead of
+automatically routing the fanout. Each entry identifies a component port with
+`connection` and supplies its port-to-exit `route`:
+
+```tsx
+<fanout name="SAVED_FANOUT" pcbTracePaths={savedPaths}>
+  <resistor name="R1" resistance="1k" footprint="0402" />
+</fanout>
+```
+
+Saved coordinates use the fanout's local PCB frame. Core creates an exit at
+the end of each path and preserves the supplied copper during global routing.
+Keep the electrical `<trace />` connections and supply paths for every routing
+connection in the fanout. Do not add an explicit exit for a port already covered
+by a saved path.
+
+Routes may start or end with vias. A via at the starting pad requires
+`allowViaInPad: true` in the board or fanout autorouter configuration.
+See [Reusing saved fanout trace paths](../guides/reusing-saved-fanout-trace-paths.mdx)
+for a complete example, JSON imports, version requirements, and validation rules.
+
+## Properties
+
+`<fanout />` accepts the layout props of [`<group />`](./group.mdx), plus the
+routing props shared with `<breakout />`:
+
+| Property | Description |
+| --- | --- |
+| `padding` | Space around the fanout region. |
+| `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Set padding on individual sides. |
+| `autorouter` | Escape router or configuration. Defaults to `fanout`. |
+| `pcbTracePaths` | Saved port-to-exit wire/via routes covering all routing connections in the fanout. |
+| `busFanoutDirections` | Maps named buses to preferred escape directions. |
+| `fanoutBoundaryPadding` | Padding between source pads and the shared boundary where fanout traces terminate. |
+| `fanoutRoutingLayers` | Copper layers available to boundary-terminated fanout buses. |
+| `fanoutPourNetMap` | Maps plane layers to nets for source-only escapes; inferred from matching copper pours when omitted. |
+
+For bus direction and power-plane examples, see the
+[breakout reference](./breakout.mdx). For a larger workflow with layer planning
+and skew constraints, see [Routing DDR](../guides/routing-ddr.mdx).
