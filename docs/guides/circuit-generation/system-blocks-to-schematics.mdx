@@ -1,0 +1,230 @@
+---
+title: Generate Schematics from System Blocks
+sidebar_position: 2
+description: Turn a system block designer's blocks and connections into a unified TSX circuit using the tscircuit TI library.
+---
+
+import CodeBlock from "@theme/CodeBlock"
+import useBaseUrl from "@docusaurus/useBaseUrl"
+
+## What is tscircuit?
+
+tscircuit is an open-source electronics toolchain that describes circuits with
+TypeScript and React. TSX is the syntax used to assemble components and their
+connections. tscircuit compiles that description into Circuit JSON, which can be
+rendered as a schematic.
+
+A system block designer already has two useful inputs: **blocks** and
+**connections**. Its exporter can turn each block into an imported circuit module
+and each connection into a `<trace />`, all inside one `<board>`.
+
+The [TI library](../importing-modules-and-chips/using-tscircuit-ti-library.mdx)
+contains both individual chips and functional modules. Use functional modules
+when a block should include the chip's supporting components, such as capacitors,
+resistors, and connectors.
+
+## See the same design in three forms
+
+This example connects the MSP430 Bluetooth audio host to the TAS2505 amplifier
+over I²C. The imported modules contain the detailed circuitry; the generated file
+only describes their composition.
+
+<div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "flex-start" }}>
+  <div style={{ flex: "1 1 140px", minWidth: 140 }}>
+    <strong>1. System blocks</strong>
+    <img src={useBaseUrl("/img/guides/system-blocks-to-schematics/blocks.svg")} alt="Host MCU MSP430 connected to amplifier TAS2505 through I²C SCL and SDA" style={{ width: "100%" }} />
+  </div>
+  <div style={{ flex: "2 1 310px", minWidth: 0 }}>
+    <strong>2. Unified TSX</strong>
+    <CodeBlock language="tsx">{`import {
+  BluetoothAudioHost_MSP430F5229 as Host,
+  AudioAmplifier_TAS2505 as Amp,
+} from '@tsci/tscircuit.ti'
+
+export default () => (
+  <board>
+    <Host name="host" schY={8} />
+    <Amp name="amp" schY={-8} />
+    <trace from=".host > .U10 > .I2C_SCL"
+      to=".amp > .U1 > .SCL" />
+    <trace from=".host > .U10 > .I2C_SDA"
+      to=".amp > .U1 > .SDA" />
+  </board>
+)`}</CodeBlock>
+  </div>
+  <div style={{ flex: "2 1 260px", minWidth: 0 }}>
+    <strong>3. Generated schematic</strong>
+    <a href={useBaseUrl("/img/guides/system-blocks-to-schematics/schematic.svg")}>
+      <img src={useBaseUrl("/img/guides/system-blocks-to-schematics/schematic.svg")} alt="Generated detailed MSP430 host schematic above the TAS2505 amplifier schematic, with labeled sections" style={{ width: "100%" }} />
+    </a>
+  </div>
+</div>
+
+Open the schematic to zoom in. Its rendering copy adds section labels and extra
+spacing; the TSX shown here stays focused on imports and connections.
+
+This is the I²C control portion of a larger design. A complete speaker also needs
+power, ground, reset, and audio connections. See the TI library's
+[Bluetooth speaker example](https://tscircuit.com/tscircuit/ti/blob/examples/BluetoothSpeaker_CC2564C_TAS2505.circuit.tsx)
+for the full five-module circuit.
+
+## Start with one imported block
+
+In an existing tscircuit project, install the library:
+
+```bash
+tsci add tscircuit/ti
+```
+
+For a new project, first follow the [CLI quickstart](../../intro/quickstart-cli.md).
+
+```tsx
+import { AudioAmplifier_TAS2505 } from "@tsci/tscircuit.ti"
+
+export default () => (
+  <board>
+    <AudioAmplifier_TAS2505 name="amp" />
+  </board>
+)
+```
+
+`<board>` is the circuit container. `<AudioAmplifier_TAS2505>` instantiates a
+reusable module. Its `name` identifies this instance for connections. `schX` and
+`schY` can position instances in the schematic without changing their wiring.
+
+## Map blocks and ports to library exports
+
+Keep a catalog in the system designer. Each block type needs an import name and
+a mapping from logical ports to the module's actual pin selectors:
+
+| Block type | TI export | Logical port | Selector within the module |
+| --- | --- | --- | --- |
+| Host | `BluetoothAudioHost_MSP430F5229` | `SCL` | `.U10 > .I2C_SCL` |
+| Host | `BluetoothAudioHost_MSP430F5229` | `SDA` | `.U10 > .I2C_SDA` |
+| Amplifier | `AudioAmplifier_TAS2505` | `SCL` | `.U1 > .SCL` |
+| Amplifier | `AudioAmplifier_TAS2505` | `SDA` | `.U1 > .SDA` |
+
+For example, `.host > .U10 > .I2C_SCL` selects the `host` instance, then its `U10`
+component, then the `I2C_SCL` pin. The system designer can show friendly port names
+while keeping these implementation details in the catalog.
+
+These selectors come from the TI speaker example. They depend on module internals,
+so pin the library version in your project and recheck the catalog when upgrading.
+The schematic above was rendered with `@tsci/tscircuit.ti` 1.0.102 and tscircuit
+0.0.2465.
+
+## Generate one TSX file
+
+The exporter needs to deduplicate imports, create named instances, and expand
+interfaces into individual traces. Here is a small exporter for the two blocks
+above. It accepts explicit SCL and SDA edges after the designer has expanded the
+I²C interface.
+
+```ts
+const catalog = {
+  host: {
+    exportName: "BluetoothAudioHost_MSP430F5229",
+    ports: { SCL: ".U10 > .I2C_SCL", SDA: ".U10 > .I2C_SDA" },
+  },
+  amplifier: {
+    exportName: "AudioAmplifier_TAS2505",
+    ports: { SCL: ".U1 > .SCL", SDA: ".U1 > .SDA" },
+  },
+} as const
+
+type Block = { id: string; kind: keyof typeof catalog; schY: number }
+type Endpoint = { block: string; port: "SCL" | "SDA" }
+type Edge = { from: Endpoint; to: Endpoint }
+
+function exportTsx(blocks: Block[], edges: Edge[]) {
+  const byId = new Map(blocks.map((block) => [block.id, block]))
+  if (byId.size !== blocks.length) throw new Error("Duplicate block IDs")
+  for (const block of blocks) {
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(block.id)) {
+      throw new Error(`Invalid block ID: ${block.id}`)
+    }
+    if (!catalog[block.kind] || !Number.isFinite(block.schY)) {
+      throw new Error(`Invalid block: ${block.id}`)
+    }
+  }
+
+  function selector(endpoint: Endpoint) {
+    const block = byId.get(endpoint.block)
+    if (!block) throw new Error(`Unknown block: ${endpoint.block}`)
+    const pin = catalog[block.kind].ports[endpoint.port]
+    if (!pin) throw new Error(`Unknown port: ${endpoint.port}`)
+    return `.${block.id} > ${pin}`
+  }
+
+  const imports = [...new Set(blocks.map((b) => catalog[b.kind].exportName))]
+  const instances = blocks.map((b) =>
+    `    <${catalog[b.kind].exportName} name={${JSON.stringify(b.id)}} schY={${b.schY}} />`
+  )
+  const traces = edges.map((edge) =>
+    `    <trace from={${JSON.stringify(selector(edge.from))}} to={${JSON.stringify(selector(edge.to))}} />`
+  )
+  return [
+    `import { ${imports.join(", ")} } from "@tsci/tscircuit.ti"`,
+    "",
+    "export default () => (",
+    "  <board>",
+    ...instances,
+    ...traces,
+    "  </board>",
+    ")",
+  ].join("\n")
+}
+
+const tsx = exportTsx(
+  [
+    { id: "host", kind: "host", schY: 8 },
+    { id: "amp", kind: "amplifier", schY: -8 },
+  ],
+  [
+    { from: { block: "host", port: "SCL" }, to: { block: "amp", port: "SCL" } },
+    { from: { block: "host", port: "SDA" }, to: { block: "amp", port: "SDA" } },
+  ],
+)
+```
+
+Save `tsx` as `host-amplifier.tsx`. This emits the same circuit as the shorter
+aliased imports above. The module implementations remain in the library.
+
+Keep import names and pin selectors in the trusted catalog. Validate incoming
+block data at the application boundary; TypeScript types alone do not validate
+JSON. For more complex exporters, use a TypeScript AST printer to emit code.
+
+## Build and display the schematic
+
+```bash
+tsci build host-amplifier.tsx --disable-pcb --schematic-png
+```
+
+The CLI writes the compiled circuit and requested schematic image under `dist`.
+For an integration that runs inside a service or browser, see
+[Programmatically Building Circuits](../running-tscircuit/programmatically-building-circuits.md)
+and [Displaying Circuit JSON](../running-tscircuit/displaying-circuit-json-on-a-webpage.mdx).
+The same generated TSX can feed that pipeline.
+
+Inspect the resulting schematic and build diagnostics. A successful render does
+not establish that all required power rails and interfaces are connected. Add
+those edges to the system model and validate them against the chosen modules.
+
+## Keep larger schematics readable
+
+Treat presentation layout as a separate exporter concern. A renderer can add
+[`<schematicsection />`](../../elements/schematicsection.mdx) declarations and
+assign `schSectionName` to the components in each region. The preview above uses
+this in its rendering copy to label the host and amplifier without adding layout
+scaffolding to the main example.
+
+A section needs actual member components: setting `schSectionName` only on an
+imported module's outer subcircuit does not automatically assign its internals.
+Apply membership inside modules you control, or use a rendering adapter that
+assigns it to their components.
+
+For larger systems, use [`<schematicsheet />`](../../elements/schematicsheet.mdx)
+and a module's `schSheetName` to place blocks on separate sheets while keeping
+one TSX file and one connected circuit. The full TI Bluetooth speaker example
+uses this approach for its charger, power supply, Bluetooth controller, host,
+and amplifier.
