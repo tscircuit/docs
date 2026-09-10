@@ -16,25 +16,36 @@ either directly or through a nested subpanel.
 
 ## Example
 
-This two-column grid repeats the same board four times. Each board keeps its
-own components and connections.
+This two-column grid repeats a power-indicator board four times. Each board
+has a two-pin power header, a current-limiting resistor, a red LED, and a bypass
+capacitor. Connect 3.3V to J1 pin 1 and ground to pin 2. The local autorouter
+routes the connections independently on each board.
 
 <CircuitPreview
   defaultView="pcb"
   hideSchematicTab
   code={`
-const SmallBoard = () => (
-  <board width="20mm" height="15mm">
-    <resistor name="R1" resistance="1k" footprint="0402" />
+const IndicatorBoard = ({ width = "20mm", height = "15mm" }) => (
+  <board width={width} height={height} autorouter="auto-local">
+    <pinheader name="J1" pinCount={2} pitch="2.54mm" pcbX={-6} pcbY={0} />
+    <resistor name="R1" resistance="1k" footprint="0603" pcbX={0} pcbY={3} />
+    <led name="LED1" color="red" footprint="0603" pcbX={5} pcbY={0} />
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={0} pcbY={-3} />
+
+    <trace from=".J1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace from=".LED1 > .cathode" to=".J1 > .pin2" />
+    <trace from=".J1 > .pin1" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".J1 > .pin2" />
   </board>
 )
 
 export default () => (
   <panel layoutMode="grid" col={2} boardGap="3mm" edgePadding="5mm">
-    <SmallBoard />
-    <SmallBoard />
-    <SmallBoard />
-    <SmallBoard />
+    <IndicatorBoard />
+    <IndicatorBoard />
+    <IndicatorBoard />
+    <IndicatorBoard />
   </panel>
 )
 `}

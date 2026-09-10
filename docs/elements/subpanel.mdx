@@ -15,13 +15,31 @@ elements, and must contain at least one board, directly or through nesting.
 
 ## Example
 
-This panel places a two-board subpanel beside a larger board. The subpanel has
-explicit dimensions so the parent grid reserves space for the entire group.
+This panel places two routed power-indicator boards in a subpanel beside a
+larger version of the same circuit. Each board has a power header, resistor,
+LED, and bypass capacitor; J1 pin 1 is the 3.3V input and pin 2 is ground.
+The subpanel has explicit dimensions so the parent grid reserves space for
+the entire group.
 
 <CircuitPreview
   defaultView="pcb"
   hideSchematicTab
   code={`
+const IndicatorBoard = ({ width = "20mm", height = "15mm" }) => (
+  <board width={width} height={height} autorouter="auto-local">
+    <pinheader name="J1" pinCount={2} pitch="2.54mm" pcbX={-6} pcbY={0} />
+    <resistor name="R1" resistance="1k" footprint="0603" pcbX={0} pcbY={3} />
+    <led name="LED1" color="red" footprint="0603" pcbX={5} pcbY={0} />
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={0} pcbY={-3} />
+
+    <trace from=".J1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace from=".LED1 > .cathode" to=".J1 > .pin2" />
+    <trace from=".J1 > .pin1" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".J1 > .pin2" />
+  </board>
+)
+
 export default () => (
   <panel layoutMode="grid" col={2} boardGap="5mm" edgePadding="5mm">
     <subpanel
@@ -32,16 +50,10 @@ export default () => (
       boardGap="2mm"
       edgePadding="3mm"
     >
-      <board width="20mm" height="15mm">
-        <resistor name="R1" resistance="1k" footprint="0402" />
-      </board>
-      <board width="20mm" height="15mm">
-        <resistor name="R2" resistance="10k" footprint="0402" />
-      </board>
+      <IndicatorBoard />
+      <IndicatorBoard />
     </subpanel>
-    <board width="30mm" height="25mm">
-      <capacitor name="C1" capacitance="100nF" footprint="0402" />
-    </board>
+    <IndicatorBoard width="30mm" height="25mm" />
   </panel>
 )
 `}
