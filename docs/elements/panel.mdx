@@ -1,0 +1,90 @@
+---
+title: <panel />
+description: Arrange multiple PCBs in a manufacturing panel with grid layout and tab routing.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+The `<panel />` element arranges multiple [`<board />`](./board.mdx) elements
+in one manufacturing panel. It must be the root element, and only one panel
+is allowed per circuit. Use [`<subpanel />`](./subpanel.mdx) for nested groups
+of boards.
+
+Panels can contain only boards and subpanels. Place components and traces
+inside a board. Every panel or subpanel must contain at least one board,
+either directly or through a nested subpanel.
+
+## Example
+
+This two-column grid repeats the same board four times. Each board keeps its
+own components and connections.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+const SmallBoard = () => (
+  <board width="20mm" height="15mm">
+    <resistor name="R1" resistance="1k" footprint="0402" />
+  </board>
+)
+
+export default () => (
+  <panel layoutMode="grid" col={2} boardGap="3mm" edgePadding="5mm">
+    <SmallBoard />
+    <SmallBoard />
+    <SmallBoard />
+    <SmallBoard />
+  </panel>
+)
+`}
+/>
+
+The panel automatically sizes to 53mm × 43mm: two boards per axis, one 3mm
+gap, and 5mm padding on each edge.
+
+## Properties
+
+Distances accept numbers in millimeters or strings such as `"5mm"`.
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `width`, `height` | `string \| number` | Panel dimensions. In grid mode, omitted dimensions are calculated from the grid bounds plus edge padding. |
+| `pcbX`, `pcbY` | `string \| number` | Position of the panel. |
+| `layoutMode` | `"grid" \| "pack" \| "none"` | Defaults to `"none"` for manual placement. Use `"grid"` for automatic placement. `"pack"` is accepted by the props but does not currently perform automatic panel packing. |
+| `row`, `col` | `number` | Number of grid rows or columns. If one is provided, the other is calculated from the number of children. |
+| `cellWidth`, `cellHeight` | `string \| number` | Minimum grid cell dimensions. Larger boards can expand their row or column. |
+| `boardGap` | `string \| number` | Spacing between grid cells and gap used for tab routing. Defaults to `tabWidth` (2mm). |
+| `edgePadding` | `string \| number` | Panel margin used for grid sizing. Defaults to 5mm. |
+| `edgePaddingLeft`, `edgePaddingRight`, `edgePaddingTop`, `edgePaddingBottom` | `string \| number` | Override `edgePadding` for an individual edge. |
+| `panelizationMethod` | `"tab-routing" \| "none"` | Generate tab-routing cutouts and optional mouse bites. Defaults to `"none"`. |
+| `tabWidth` | `string \| number` | Width used for routed cutouts. Defaults to 2mm. |
+| `tabLength` | `string \| number` | Length of the uncut bridges between routed sections. Defaults to 5mm. |
+| `mouseBites` | `boolean` | Add perforation holes when tab routing is enabled. Defaults to `true`. |
+| `noSolderMask` | `boolean` | Prevent solder mask from being applied to the panel. Defaults to `false`. |
+
+## Layout
+
+With `layoutMode="grid"`, the panel positions its child boards and subpanels.
+Manual `pcbX`/`pcbY` positions on child boards are ignored and produce a warning.
+Component positions inside each board remain local to that board.
+
+Without `row` or `col`, the grid uses the available space when both panel
+dimensions are provided; otherwise it chooses a roughly square grid. When
+setting both `row` and `col`, provide enough cells for all children.
+
+For manual placement, use `layoutMode="none"`, provide panel dimensions,
+and position each child with `pcbX` and `pcbY`. Multiple unpositioned children
+produce a placement error. See the
+[manual placement example](../guides/tscircuit-essentials/panelization.mdx#basic-panel-with-explicit-positions).
+
+## Tab routing
+
+Set `panelizationMethod="tab-routing"` to generate routed cutouts with
+connecting tabs between boards. Set `mouseBites={false}` to keep the tabs
+without perforation holes. Tab routing is disabled by default.
+
+The generator may reduce tab dimensions for small boards.
+
+See the [Panelization guide](../guides/tscircuit-essentials/panelization.mdx)
+for complete examples of tab routing, manual placement, and nested panels.

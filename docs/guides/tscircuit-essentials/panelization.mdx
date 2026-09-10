@@ -7,8 +7,8 @@ description: >-
 
 # Panelization
 
-Use `<panel>` to create a manufacturing panel that contains multiple boards.
-Use `<subpanel>` to group boards inside a panel for nested layout and
+Use [`<panel />`](../../elements/panel.mdx) to create a manufacturing panel that contains multiple boards.
+Use [`<subpanel />`](../../elements/subpanel.mdx) to group boards inside a panel for nested layout and
 panelization controls.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
@@ -18,7 +18,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 - `<panel>` must be the root element if present
 - Only one `<panel>` is allowed per circuit
 - `<panel>` and `<subpanel>` can only contain `<board>` or `<subpanel>`
-- Each panel/subpanel must contain at least one `<board>`
+- Each panel/subpanel must contain at least one `<board>`, directly or through nesting
 
 ## Basic panel with explicit positions
 
@@ -28,7 +28,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   hide3DTab
   code={`
 export default () => (
-  <panel width="100mm" height="100mm" pcbX="0mm" pcbY="0mm">
+  <panel layoutMode="none" width="100mm" height="100mm" pcbX="0mm" pcbY="0mm">
     <board width="20mm" height="20mm" pcbX="-20mm" pcbY="0mm">
       <resistor name="R1" resistance="1k" footprint="0402" pcbX={-4} />
       <capacitor name="C1" capacitance="1uF" footprint="0402" pcbX={4} />
@@ -82,7 +82,7 @@ provided, the panel is auto-sized using the grid bounds plus edge padding.
 Grid options:
 
 - `row`, `col` to force a specific row/column count
-- `cellWidth`, `cellHeight` to fix grid cell sizes
+- `cellWidth`, `cellHeight` to set minimum grid cell sizes
 - `boardGap` to control spacing between boards
 - `edgePadding`, `edgePaddingLeft`, `edgePaddingRight`, `edgePaddingTop`,
   `edgePaddingBottom` to control panel margins
@@ -150,4 +150,5 @@ between boards. Customize with:
 - `mouseBites` (default true)
 - `boardGap` (defaults to `tabWidth` if not set)
 
-Set `panelizationMethod="none"` to disable tabs and mouse bites.
+Tab routing is disabled by default (`panelizationMethod="none"`). Set
+`mouseBites={false}` to generate tabs without perforation holes.

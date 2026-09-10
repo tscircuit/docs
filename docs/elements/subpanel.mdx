@@ -1,0 +1,55 @@
+---
+title: <subpanel />
+description: Group boards inside a manufacturing panel with independent layout settings.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+The `<subpanel />` element groups boards inside a [`<panel />`](./panel.mdx)
+or another subpanel. Each subpanel has its own layout, spacing, and panelization
+settings. It accepts the same props as `<panel />`; see the
+[panel properties](./panel.mdx#properties).
+
+A subpanel can contain only [`<board />`](./board.mdx) and `<subpanel />`
+elements, and must contain at least one board, directly or through nesting.
+
+## Example
+
+This panel places a two-board subpanel beside a larger board. The subpanel has
+explicit dimensions so the parent grid reserves space for the entire group.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+export default () => (
+  <panel layoutMode="grid" col={2} boardGap="5mm" edgePadding="5mm">
+    <subpanel
+      width="48mm"
+      height="21mm"
+      layoutMode="grid"
+      col={2}
+      boardGap="2mm"
+      edgePadding="3mm"
+    >
+      <board width="20mm" height="15mm">
+        <resistor name="R1" resistance="1k" footprint="0402" />
+      </board>
+      <board width="20mm" height="15mm">
+        <resistor name="R2" resistance="10k" footprint="0402" />
+      </board>
+    </subpanel>
+    <board width="30mm" height="25mm">
+      <capacitor name="C1" capacitance="100nF" footprint="0402" />
+    </board>
+  </panel>
+)
+`}
+/>
+
+The outer grid positions the subpanel as one item. The inner grid positions
+its two boards with a separate 2mm gap. For manual placement, set the parent
+to `layoutMode="none"` and position the subpanel with `pcbX` and `pcbY`.
+
+See the [Panelization guide](../guides/tscircuit-essentials/panelization.mdx#subpanels)
+for another nested layout example.
