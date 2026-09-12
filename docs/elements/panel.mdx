@@ -1,0 +1,101 @@
+---
+title: <panel />
+description: Arrange multiple PCBs in a manufacturing panel with grid layout and tab routing.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+The `<panel />` element arranges multiple [`<board />`](./board.mdx) elements
+in one manufacturing panel. It must be the root element, and only one panel
+is allowed per circuit. Use [`<subpanel />`](./subpanel.mdx) for nested groups
+of boards.
+
+Panels can contain only boards and subpanels. Place components and traces
+inside a board. Every panel or subpanel must contain at least one board,
+either directly or through a nested subpanel.
+
+## Example
+
+This two-column grid repeats a power-indicator board four times. Each board
+has a two-pin power header, a current-limiting resistor, a red LED, and a bypass
+capacitor. Connect 3.3V to J1 pin 1 and ground to pin 2. The local autorouter
+routes the connections independently on each board.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+const IndicatorBoard = ({ width = "20mm", height = "15mm" }) => (
+  <board width={width} height={height} autorouter="auto-local">
+    <pinheader name="J1" pinCount={2} pitch="2.54mm" pcbX={-6} pcbY={0} />
+    <resistor name="R1" resistance="1k" footprint="0603" pcbX={0} pcbY={3} />
+    <led name="LED1" color="red" footprint="0603" pcbX={5} pcbY={0} />
+    <capacitor name="C1" capacitance="100nF" footprint="0603" pcbX={0} pcbY={-3} />
+
+    <trace from=".J1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace from=".LED1 > .cathode" to=".J1 > .pin2" />
+    <trace from=".J1 > .pin1" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".J1 > .pin2" />
+  </board>
+)
+
+export default () => (
+  <panel layoutMode="grid" col={2} boardGap="3mm" edgePadding="5mm">
+    <IndicatorBoard />
+    <IndicatorBoard />
+    <IndicatorBoard />
+    <IndicatorBoard />
+  </panel>
+)
+`}
+/>
+
+The panel automatically sizes to 53mm × 43mm: two boards per axis, one 3mm
+gap, and 5mm padding on each edge.
+
+## Properties
+
+Distances accept numbers in millimeters or strings such as `"5mm"`.
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `width`, `height` | `string \| number` | Panel dimensions. In grid mode, omitted dimensions are calculated from the grid bounds plus edge padding. |
+| `pcbX`, `pcbY` | `string \| number` | Position of the panel. |
+| `layoutMode` | `"grid" \| "pack" \| "none"` | Defaults to `"none"` for manual placement. Use `"grid"` for automatic placement. `"pack"` is accepted by the props but does not currently perform automatic panel packing. |
+| `row`, `col` | `number` | Number of grid rows or columns. If one is provided, the other is calculated from the number of children. |
+| `cellWidth`, `cellHeight` | `string \| number` | Minimum grid cell dimensions. Larger boards can expand their row or column. |
+| `boardGap` | `string \| number` | Spacing between grid cells and gap used for tab routing. Defaults to `tabWidth` (2mm). |
+| `edgePadding` | `string \| number` | Panel margin used for grid sizing. Defaults to 5mm. |
+| `edgePaddingLeft`, `edgePaddingRight`, `edgePaddingTop`, `edgePaddingBottom` | `string \| number` | Override `edgePadding` for an individual edge. |
+| `panelizationMethod` | `"tab-routing" \| "none"` | Generate tab-routing cutouts and optional mouse bites. Defaults to `"none"`. |
+| `tabWidth` | `string \| number` | Width used for routed cutouts. Defaults to 2mm. |
+| `tabLength` | `string \| number` | Length of the uncut bridges between routed sections. Defaults to 5mm. |
+| `mouseBites` | `boolean` | Add perforation holes when tab routing is enabled. Defaults to `true`. |
+| `noSolderMask` | `boolean` | Prevent solder mask from being applied to the panel. Defaults to `false`. |
+
+## Layout
+
+With `layoutMode="grid"`, the panel positions its child boards and subpanels.
+Manual `pcbX`/`pcbY` positions on child boards are ignored and produce a warning.
+Component positions inside each board remain local to that board.
+
+Without `row` or `col`, the grid uses the available space when both panel
+dimensions are provided; otherwise it chooses a roughly square grid. When
+setting both `row` and `col`, provide enough cells for all children.
+
+For manual placement, use `layoutMode="none"`, provide panel dimensions,
+and position each child with `pcbX` and `pcbY`. Multiple unpositioned children
+produce a placement error. See the
+[manual placement example](../guides/tscircuit-essentials/panelization.mdx#basic-panel-with-explicit-positions).
+
+## Tab routing
+
+Set `panelizationMethod="tab-routing"` to generate routed cutouts with
+connecting tabs between boards. Set `mouseBites={false}` to keep the tabs
+without perforation holes. Tab routing is disabled by default.
+
+The generator may reduce tab dimensions for small boards.
+
+See the [Panelization guide](../guides/tscircuit-essentials/panelization.mdx)
+for complete examples of tab routing, manual placement, and nested panels.
