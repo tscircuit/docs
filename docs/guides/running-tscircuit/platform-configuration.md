@@ -32,6 +32,7 @@ grouped below by purpose.
 | `partsEngine` | `PartsEngine` | Finds purchasable parts that match component specifications. |
 | `autorouter` | `AutorouterProp` | Selects or configures the autorouter used by the platform. |
 | `autorouterMap` | `Record<string, AutorouterDefinition>` | Registers named custom autorouters. Each definition creates an autorouter instance from Simple Route JSON. |
+| `useCloudAutorouter` | `boolean` | Enables cloud parallelism for eligible Pipeline9 routing without changing autorouter outputs. Omitted or `false` keeps local routing. See [Cloud autorouting](#cloud-autorouting). |
 | `cloudAutorouterUrl` | `string` | Sets the cloud autorouter endpoint. The default tscircuit platform uses a tscircuit cloud service. |
 | `defaultSpiceEngine` | `"spicey" \| "ngspice" \| string` | Selects the default SPICE simulation engine. Custom engine names can refer to entries in `spiceEngineMap`. |
 | `spiceEngineMap` | `Record<string, SpiceEngine>` | Registers named SPICE engines. Each engine accepts a SPICE netlist and returns simulation-result Circuit JSON. |
@@ -151,6 +152,39 @@ export default {
   )`,
   }}
 />
+
+### Cloud autorouting
+
+Set `platformConfig.useCloudAutorouter` to `true` in `tscircuit.config.ts` to
+enable cloud parallelism for autorouting. This runs eligible routing work in
+parallel in the cloud without changing the autorouter outputs for the same
+routing input and settings.
+
+```ts title="tscircuit.config.ts"
+export default {
+  platformConfig: {
+    useCloudAutorouter: true,
+  },
+}
+```
+
+The option applies to Pipeline9 (including `autorouterVersion="latest"` and
+`"beta_pipeline9"`) at the default effort level, `"1x"`. Explicit alternative
+pipelines and higher effort levels retain their local solver. Omitting the
+option or setting it to `false` keeps local routing.
+
+When creating a `RootCircuit` programmatically, pass the same option in
+`platform`:
+
+```ts
+import { RootCircuit } from "@tscircuit/core"
+
+const circuit = new RootCircuit({
+  platform: {
+    useCloudAutorouter: true,
+  },
+})
+```
 
 ### Provide a platform programmatically
 
