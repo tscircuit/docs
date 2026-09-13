@@ -1,0 +1,1085 @@
+---
+title: Building an LED Letter Sign
+description: >-
+  Build a spelled-out letter sign: LEDs are placed along the strokes of any
+  capital letter and each one is driven from power through its own resistor
+  with tscircuit.
+---
+
+## Overview
+
+This tutorial builds a light-up letter - a sign made of individual LEDs placed along the
+strokes of a capital letter, with one series resistor per LED, all generated from a single
+component. You type which letter you want, and tscircuit lays out, wires, and routes the
+whole sign for you.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="pcb" code={`
+export type LedLetterProps = {
+  letter: string
+  power?: string
+  gnd?: string
+  pcbX?: number
+  pcbY?: number
+  scale?: number
+  ledSpacing?: number
+  resistorOhms?: number
+  ledFootprint?: string
+  resistorFootprint?: string
+}
+
+const LINE_LETTERS = {
+  "A": [[[0.01807,0.05103],[0.29018,0.729],[0.58399,0.05103]],[[0.1553,0.31548],[0.43355,0.31548]]],
+  "B": [[[0.06396,0.05103],[0.06396,0.72105],[0.20936,0.729],[0.34249,0.70561],[0.43218,0.62708],[0.41822,0.51227],[0.31269,0.45083],[0.08473,0.42447],[0.30638,0.41057],[0.46888,0.35254],[0.53809,0.26334],[0.5324,0.14798],[0.50125,0.09702],[0.42355,0.0556],[0.06396,0.05103]]],
+  "C": [[[0.52905,0.58015],[0.49843,0.6548],[0.44224,0.70766],[0.33583,0.74219],[0.2572,0.73164],[0.18791,0.69625],[0.12024,0.61457],[0.073,0.40016],[0.11007,0.18461],[0.16538,0.09782],[0.22288,0.0572],[0.3349,0.03879],[0.43253,0.06232],[0.50482,0.131],[0.52905,0.22793]]],
+  "D": [[[0.06445,0.05103],[0.07184,0.71492],[0.17122,0.729],[0.24735,0.72737],[0.37101,0.69392],[0.46246,0.6217],[0.51475,0.52445],[0.53559,0.42361],[0.5376,0.34769],[0.52807,0.28262],[0.50856,0.22758],[0.44595,0.14431],[0.36236,0.09129],[0.2252,0.05414],[0.06445,0.05103]]],
+  "E": [[[0.08008,0.729],[0.08008,0.05103],[0.52197,0.05103]],[[0.08008,0.729],[0.52197,0.729]],[[0.08008,0.39002],[0.38941,0.39002]]],
+  "F": [[[0.08643,0.729],[0.08643,0.05103]],[[0.0913,0.72439],[0.51563,0.72439]],[[0.0913,0.39232],[0.44734,0.39232]]],
+  "G": [[[0.49803,0.71506],[0.37462,0.74219],[0.24422,0.73135],[0.16058,0.688],[0.09456,0.60188],[0.0564,0.41596],[0.07675,0.21447],[0.12087,0.1418],[0.18895,0.08327],[0.27101,0.04641],[0.35707,0.03879],[0.43715,0.06795],[0.50126,0.14146],[0.54566,0.35139],[0.3296,0.35187]]],
+  "H": [[[0.06689,0.729],[0.06689,0.05103]],[[0.06689,0.40434],[0.53001,0.40434]],[[0.53516,0.729],[0.53516,0.05103]]],
+  "I": [[[0.30103,0.729],[0.30103,0.05103]]],
+  "J": [[[0.50684,0.729],[0.50781,0.21781],[0.49847,0.15383],[0.48073,0.11921],[0.45586,0.09168],[0.4261,0.07059],[0.36075,0.04519],[0.30251,0.03786],[0.22357,0.04636],[0.16538,0.06969],[0.13707,0.09228],[0.11643,0.11969],[0.10282,0.15118],[0.09563,0.18605],[0.09424,0.22359]]],
+  "K": [[[0.0354,0.729],[0.0354,0.05103]],[[0.50226,0.68381],[0.0354,0.31218]],[[0.21248,0.41764],[0.56665,0.0661]]],
+  "L": [[[0.07544,0.729],[0.07544,0.05103],[0.52661,0.05103]]],
+  "M": [[[0.04248,0.05103],[0.04248,0.729],[0.30103,0.28751],[0.55957,0.729],[0.55957,0.05103]]],
+  "N": [[[0.06787,0.05103],[0.06787,0.729],[0.53418,0.05103],[0.52503,0.729]]],
+  "O": [[[0.28729,0.03879],[0.19843,0.06643],[0.1172,0.15055],[0.05713,0.43605],[0.11435,0.64975],[0.18455,0.71061],[0.3061,0.74219],[0.42054,0.70428],[0.48754,0.635],[0.54492,0.37471],[0.51637,0.21038],[0.46548,0.1154],[0.37508,0.05071],[0.28729,0.03879]]],
+  "P": [[[0.07056,0.05103],[0.07056,0.71621],[0.20704,0.729],[0.32913,0.72101],[0.40853,0.69949],[0.44402,0.68209],[0.50064,0.63107],[0.5258,0.57627],[0.5315,0.49616],[0.50893,0.4458],[0.47372,0.41796],[0.41758,0.39563],[0.33637,0.37963],[0.22601,0.37073],[0.08237,0.36974]]],
+  "Q": [[[0.28243,-0.05081],[0.19545,-0.01965],[0.11593,0.07518],[0.05713,0.39706],[0.11314,0.63797],[0.18186,0.70658],[0.30084,0.74219],[0.41287,0.69945],[0.47846,0.62134],[0.53463,0.3279],[0.50667,0.14263],[0.45686,0.03556],[0.36837,-0.03737],[0.28243,-0.05081]],[[0.34123,0.18444],[0.54492,-0.07065]]],
+  "R": [[[0.03491,0.05589],[0.03491,0.71144],[0.22713,0.729],[0.36204,0.72313],[0.44342,0.70509],[0.47764,0.69039],[0.50581,0.67124],[0.52662,0.64718],[0.54496,0.58194],[0.54324,0.52408],[0.52446,0.48218],[0.49076,0.45348],[0.44427,0.4352],[0.35519,0.42126],[0.04765,0.41037]],[[0.30305,0.38269],[0.56714,0.05103]]],
+  "S": [[[0.48304,0.63567],[0.40761,0.73252],[0.22883,0.74219],[0.12862,0.67244],[0.08771,0.54446],[0.10466,0.48127],[0.16805,0.42669],[0.41928,0.38268],[0.5038,0.33066],[0.53516,0.24068],[0.49385,0.09994],[0.36767,0.03879],[0.20544,0.04334],[0.11671,0.09296],[0.06689,0.20967]]],
+  "T": [[[0.02295,0.729],[0.5791,0.729]],[[0.30928,0.729],[0.30928,0.05103]]],
+  "U": [[[0.07202,0.729],[0.07308,0.35113],[0.08037,0.24833],[0.09902,0.17219],[0.13479,0.11427],[0.18157,0.07598],[0.25146,0.04832],[0.33965,0.03786],[0.40155,0.04833],[0.45232,0.07591],[0.4827,0.10823],[0.49574,0.12947],[0.5157,0.18363],[0.52501,0.25537],[0.53003,0.72798]]],
+  "V": [[[0.02783,0.729],[0.32008,0.05103],[0.57422,0.729]]],
+  "W": [[[0,0.729],[0.0798,0.05962],[0.2852,0.52712],[0.50526,0.05103],[0.60205,0.729]]],
+  "X": [[[0.00903,0.729],[0.58681,0.05103]],[[0.59302,0.729],[0.01525,0.05103]]],
+  "Y": [[[0.01807,0.729],[0.29313,0.42587]],[[0.58399,0.72804],[0.29495,0.42394],[0.30528,0.05103]]],
+  "Z": [[[0.05371,0.729],[0.54834,0.729],[0.05371,0.05103],[0.54834,0.05103]]]
+}
+
+/*
+ * Draws a capital letter (A-Z) with LEDs placed along the letter's strokes.
+ *
+ * Stroke polylines come from @tscircuit/alphabet's lineAlphabet (inlined
+ * above as LINE_LETTERS so the snippet is dependency-free). Each polyline is
+ * resampled so consecutive LEDs sit ledSpacing mm apart; every LED is driven
+ * from the power net through its own series resistor (straight row of parts
+ * below the letter on the PCB so the character silhouette stays readable),
+ * and every LED cathode ties to the ground net.
+ */
+export const LedLetter = ({
+  letter,
+  power = "net.power",
+  gnd = "net.gnd",
+  pcbX = 0,
+  pcbY = 0,
+  scale = 24,
+  ledSpacing = 3,
+  resistorOhms = 330,
+  ledFootprint = "0603",
+  resistorFootprint = "0603",
+}: LedLetterProps) => {
+  const glyph = letter.toUpperCase()
+  const strokes = LINE_LETTERS[glyph]
+  if (!strokes) {
+    throw new Error(
+      'LedLetter: no glyph for "' + letter + '". Capital A-Z are available.',
+    )
+  }
+
+  type LedPoint = { x: number; y: number }
+  const points: LedPoint[] = []
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+
+  for (const poly of strokes) {
+    // cumulative distance (in units) at each polyline vertex
+    const cum: number[] = [0]
+    for (let i = 0; i < poly.length - 1; i++) {
+      cum.push(cum[i] + Math.hypot(poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]))
+    }
+    const lenU = cum[cum.length - 1]
+    const ledCount = Math.max(2, Math.round(lenU * scale / ledSpacing) + 1)
+    // walk the polyline placing ledCount points evenly along its length
+    for (let i = 0; i < ledCount; i++) {
+      const target = (lenU * i) / (ledCount - 1)
+      // binary search for the segment containing the target distance
+      let lo = 0
+      let hi = cum.length - 1
+      while (lo + 1 < hi) {
+        const mid = (lo + hi) >> 1
+        if (cum[mid] < target) lo = mid
+        else hi = mid
+      }
+      const segU = cum[hi] - cum[lo]
+      const t = segU === 0 ? 0 : (target - cum[lo]) / segU
+      points.push({
+        x: poly[lo][0] + (poly[hi][0] - poly[lo][0]) * t,
+        y: poly[lo][1] + (poly[hi][1] - poly[lo][1]) * t,
+      })
+    }
+  }
+  if (points.length === 0) {
+    throw new Error("LedLetter: glyph produced no LED positions")
+  }
+
+  for (const p of points) {
+    if (p.x < minX) minX = p.x
+    if (p.x > maxX) maxX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.y > maxY) maxY = p.y
+  }
+  const cx = (minX + maxX) / 2
+  const cy = (minY + maxY) / 2
+  const resistorRowGap = 5
+
+  // switch to centered mm-space and discard near-duplicate positions where
+  // strokes meet, then relax pairs so 0603 courtyards (about 2.9 x 1.4mm)
+  // never collide: separation is checked per-axis, matching the rectangular
+  // courtyard shape
+  const mmPoints: LedPoint[] = points.map((p) => ({
+    x: (p.x - cx) * scale,
+    y: (p.y - cy) * scale,
+  }))
+  const kept: LedPoint[] = []
+  for (const p of mmPoints) {
+    if (!kept.some((q) => Math.hypot(p.x - q.x, p.y - q.y) < 0.8)) kept.push(p)
+  }
+  const ledClearX = 3.0
+  const ledClearY = 1.6
+  for (let pass = 0; pass < 200; pass++) {
+    let moved = false
+    for (let a = 0; a < kept.length; a++) {
+      for (let b = a + 1; b < kept.length; b++) {
+        const dx = kept[b].x - kept[a].x
+        const dy = kept[b].y - kept[a].y
+        const adx = Math.abs(dx)
+        const ady = Math.abs(dy)
+        if (adx >= ledClearX || ady >= ledClearY) continue
+        if (ledClearX - adx <= ledClearY - ady) {
+          const dir = dx === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dx)
+          const shift = ((ledClearX - adx) / 2) * dir
+          kept[a].x -= shift
+          kept[b].x += shift
+        } else {
+          const dir = dy === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dy)
+          const shift = ((ledClearY - ady) / 2) * dir
+          kept[a].y -= shift
+          kept[b].y += shift
+        }
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+
+  let mmMinY = Infinity
+  for (const p of kept) {
+    if (p.y < mmMinY) mmMinY = p.y
+  }
+
+  const pointsPerRowResistors = 8
+  const resSpacing = 3.4
+  const resRowYStep = 3.4
+
+  const schPerRow = 8
+  const schSpacingX = 2.5
+  const schSpacingY = 4
+
+  return (
+    <>
+      {kept.map((p, i) => {
+        const row = Math.floor(i / schPerRow)
+        const col = i % schPerRow
+        const rowSize = Math.min(schPerRow, kept.length - row * schPerRow)
+        const schX = (col - (rowSize - 1) / 2) * schSpacingX
+        const schY = -row * schSpacingY
+
+        const ledPcbX = p.x + pcbX
+        const ledPcbY = p.y + pcbY
+
+        const resistorPcbX = pcbX
+        const resistorPcbY = mmMinY - resistorRowGap + pcbY
+
+        return (
+          <>
+            <led
+              name={"LED" + (i + 1)}
+              footprint={ledFootprint}
+              schX={schX}
+              schY={schY}
+              pcbX={ledPcbX}
+              pcbY={ledPcbY}
+            />
+            <resistor
+              name={"R" + (i + 1)}
+              resistance={resistorOhms}
+              footprint={resistorFootprint}
+              schX={schX}
+              schY={schY + 2}
+              pcbX={
+                resistorPcbX +
+                ((i % pointsPerRowResistors) -
+                  (Math.min(pointsPerRowResistors, kept.length - Math.floor(i / pointsPerRowResistors) * pointsPerRowResistors) - 1) / 2) *
+                  resSpacing
+              }
+              pcbY={resistorPcbY - Math.floor(i / pointsPerRowResistors) * resRowYStep}
+            />
+            <trace from={".R" + (i + 1) + " .1"} to={power} />
+            <trace from={".R" + (i + 1) + " .2"} to={".LED" + (i + 1) + " .anode"} />
+            <trace from={".LED" + (i + 1) + " .cathode"} to={gnd} />
+          </>
+        )
+      })}
+    </>
+  )
+}
+
+export const LedLetterBoard = () => (
+  <board width="44mm" height="40mm">
+    <LedLetter letter="A" scale={24} ledSpacing={3} />
+  </board>
+)
+
+export default LedLetterBoard
+`} />
+
+## What You Will Learn
+
+- How to represent a letter as data - a set of strokes - and turn those strokes into LED positions
+- How to resample a polyline so parts land an exact distance apart (cumulative distance + binary search)
+- How to wire every LED from power through a series resistor
+- How to keep parts from colliding when strokes meet, so the board passes DRC checks
+
+## The Letter as Data
+
+A letter is just a small table of strokes. Each stroke is a polyline: a list of points
+connected by straight lines. The stroke data below comes from
+[`@tscircuit/alphabet`](https://github.com/tscircuit/alphabet) (MIT), a library that
+normalizes every glyph into a 1x1 unit square. One unit is later multiplied by a
+`scale` prop to get millimeters on the PCB.
+
+For example, the letter `A` is two strokes - the two diagonals - plus a crossbar:
+
+```ts
+"A": [
+  [[0.018, 0.051], [0.290, 0.729], [0.584, 0.051]],
+  [[0.155, 0.315], [0.434, 0.315]],
+]
+```
+
+Most letters are a handful of polylines. Curved letters like `O` or `B` are approximated
+with many short segments, which is fine: more LED positions just means a smoother arc.
+One fun detail - the tail of the `Q` dips below y = 0, which is allowed; the glyph table
+simply makes the letter slightly taller than the rest.
+
+The component looks up the requested glyph in a `LINE_LETTERS` table and throws a helpful
+error for anything outside A-Z.
+
+## Placing LEDs on the Strokes
+
+The core trick is **resampling**: walk each polyline and put an LED every `ledSpacing`
+millimeters along it. The naive walk (step vertex-to-vertex, interpolate) has a subtle
+failure mode: on the last segment the math can extrapolate *past the end of the stroke*,
+pushing LEDs outside the letter (and off the board).
+
+The robust approach keeps a **cumulative distance array** - the distance travelled at each
+vertex - then, for each wanted LED at distance `target`, **binary-searches** for the
+segment that contains it and interpolates only inside that segment:
+
+```ts
+const cum: number[] = [0]
+for (let i = 0; i < poly.length - 1; i++) {
+  cum.push(cum[i] + Math.hypot(poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]))
+}
+const target = (lenU * i) / (ledCount - 1)
+// binary search for the segment containing the target distance
+let lo = 0
+let hi = cum.length - 1
+while (lo + 1 < hi) {
+  const mid = (lo + hi) >> 1
+  if (cum[mid] < target) lo = mid
+  else hi = mid
+}
+const t = (target - cum[lo]) / (cum[hi] - cum[lo])
+```
+
+The number of LEDs on a stroke scales with its physical length:
+
+```ts
+const ledCount = Math.max(2, Math.round((lenU * scale) / ledSpacing) + 1)
+```
+
+Long strokes get many LEDs, the shortest strokes still get two. Where two strokes meet,
+near-duplicate positions (closer than 0.8mm) are merged so the junction has a single LED
+instead of two overlapping ones. The full component below places the LEDs and adds one
+resistor per LED in a straight row underneath the letter, keeping the character silhouette
+readable on both the schematic and the PCB:
+
+<CircuitPreview defaultView="pcb" code={`
+export type LedLetterProps = {
+  letter: string
+  power?: string
+  gnd?: string
+  pcbX?: number
+  pcbY?: number
+  scale?: number
+  ledSpacing?: number
+  resistorOhms?: number
+  ledFootprint?: string
+  resistorFootprint?: string
+}
+
+const LINE_LETTERS = {
+  "A": [[[0.01807,0.05103],[0.29018,0.729],[0.58399,0.05103]],[[0.1553,0.31548],[0.43355,0.31548]]],
+  "B": [[[0.06396,0.05103],[0.06396,0.72105],[0.20936,0.729],[0.34249,0.70561],[0.43218,0.62708],[0.41822,0.51227],[0.31269,0.45083],[0.08473,0.42447],[0.30638,0.41057],[0.46888,0.35254],[0.53809,0.26334],[0.5324,0.14798],[0.50125,0.09702],[0.42355,0.0556],[0.06396,0.05103]]],
+  "C": [[[0.52905,0.58015],[0.49843,0.6548],[0.44224,0.70766],[0.33583,0.74219],[0.2572,0.73164],[0.18791,0.69625],[0.12024,0.61457],[0.073,0.40016],[0.11007,0.18461],[0.16538,0.09782],[0.22288,0.0572],[0.3349,0.03879],[0.43253,0.06232],[0.50482,0.131],[0.52905,0.22793]]],
+  "D": [[[0.06445,0.05103],[0.07184,0.71492],[0.17122,0.729],[0.24735,0.72737],[0.37101,0.69392],[0.46246,0.6217],[0.51475,0.52445],[0.53559,0.42361],[0.5376,0.34769],[0.52807,0.28262],[0.50856,0.22758],[0.44595,0.14431],[0.36236,0.09129],[0.2252,0.05414],[0.06445,0.05103]]],
+  "E": [[[0.08008,0.729],[0.08008,0.05103],[0.52197,0.05103]],[[0.08008,0.729],[0.52197,0.729]],[[0.08008,0.39002],[0.38941,0.39002]]],
+  "F": [[[0.08643,0.729],[0.08643,0.05103]],[[0.0913,0.72439],[0.51563,0.72439]],[[0.0913,0.39232],[0.44734,0.39232]]],
+  "G": [[[0.49803,0.71506],[0.37462,0.74219],[0.24422,0.73135],[0.16058,0.688],[0.09456,0.60188],[0.0564,0.41596],[0.07675,0.21447],[0.12087,0.1418],[0.18895,0.08327],[0.27101,0.04641],[0.35707,0.03879],[0.43715,0.06795],[0.50126,0.14146],[0.54566,0.35139],[0.3296,0.35187]]],
+  "H": [[[0.06689,0.729],[0.06689,0.05103]],[[0.06689,0.40434],[0.53001,0.40434]],[[0.53516,0.729],[0.53516,0.05103]]],
+  "I": [[[0.30103,0.729],[0.30103,0.05103]]],
+  "J": [[[0.50684,0.729],[0.50781,0.21781],[0.49847,0.15383],[0.48073,0.11921],[0.45586,0.09168],[0.4261,0.07059],[0.36075,0.04519],[0.30251,0.03786],[0.22357,0.04636],[0.16538,0.06969],[0.13707,0.09228],[0.11643,0.11969],[0.10282,0.15118],[0.09563,0.18605],[0.09424,0.22359]]],
+  "K": [[[0.0354,0.729],[0.0354,0.05103]],[[0.50226,0.68381],[0.0354,0.31218]],[[0.21248,0.41764],[0.56665,0.0661]]],
+  "L": [[[0.07544,0.729],[0.07544,0.05103],[0.52661,0.05103]]],
+  "M": [[[0.04248,0.05103],[0.04248,0.729],[0.30103,0.28751],[0.55957,0.729],[0.55957,0.05103]]],
+  "N": [[[0.06787,0.05103],[0.06787,0.729],[0.53418,0.05103],[0.52503,0.729]]],
+  "O": [[[0.28729,0.03879],[0.19843,0.06643],[0.1172,0.15055],[0.05713,0.43605],[0.11435,0.64975],[0.18455,0.71061],[0.3061,0.74219],[0.42054,0.70428],[0.48754,0.635],[0.54492,0.37471],[0.51637,0.21038],[0.46548,0.1154],[0.37508,0.05071],[0.28729,0.03879]]],
+  "P": [[[0.07056,0.05103],[0.07056,0.71621],[0.20704,0.729],[0.32913,0.72101],[0.40853,0.69949],[0.44402,0.68209],[0.50064,0.63107],[0.5258,0.57627],[0.5315,0.49616],[0.50893,0.4458],[0.47372,0.41796],[0.41758,0.39563],[0.33637,0.37963],[0.22601,0.37073],[0.08237,0.36974]]],
+  "Q": [[[0.28243,-0.05081],[0.19545,-0.01965],[0.11593,0.07518],[0.05713,0.39706],[0.11314,0.63797],[0.18186,0.70658],[0.30084,0.74219],[0.41287,0.69945],[0.47846,0.62134],[0.53463,0.3279],[0.50667,0.14263],[0.45686,0.03556],[0.36837,-0.03737],[0.28243,-0.05081]],[[0.34123,0.18444],[0.54492,-0.07065]]],
+  "R": [[[0.03491,0.05589],[0.03491,0.71144],[0.22713,0.729],[0.36204,0.72313],[0.44342,0.70509],[0.47764,0.69039],[0.50581,0.67124],[0.52662,0.64718],[0.54496,0.58194],[0.54324,0.52408],[0.52446,0.48218],[0.49076,0.45348],[0.44427,0.4352],[0.35519,0.42126],[0.04765,0.41037]],[[0.30305,0.38269],[0.56714,0.05103]]],
+  "S": [[[0.48304,0.63567],[0.40761,0.73252],[0.22883,0.74219],[0.12862,0.67244],[0.08771,0.54446],[0.10466,0.48127],[0.16805,0.42669],[0.41928,0.38268],[0.5038,0.33066],[0.53516,0.24068],[0.49385,0.09994],[0.36767,0.03879],[0.20544,0.04334],[0.11671,0.09296],[0.06689,0.20967]]],
+  "T": [[[0.02295,0.729],[0.5791,0.729]],[[0.30928,0.729],[0.30928,0.05103]]],
+  "U": [[[0.07202,0.729],[0.07308,0.35113],[0.08037,0.24833],[0.09902,0.17219],[0.13479,0.11427],[0.18157,0.07598],[0.25146,0.04832],[0.33965,0.03786],[0.40155,0.04833],[0.45232,0.07591],[0.4827,0.10823],[0.49574,0.12947],[0.5157,0.18363],[0.52501,0.25537],[0.53003,0.72798]]],
+  "V": [[[0.02783,0.729],[0.32008,0.05103],[0.57422,0.729]]],
+  "W": [[[0,0.729],[0.0798,0.05962],[0.2852,0.52712],[0.50526,0.05103],[0.60205,0.729]]],
+  "X": [[[0.00903,0.729],[0.58681,0.05103]],[[0.59302,0.729],[0.01525,0.05103]]],
+  "Y": [[[0.01807,0.729],[0.29313,0.42587]],[[0.58399,0.72804],[0.29495,0.42394],[0.30528,0.05103]]],
+  "Z": [[[0.05371,0.729],[0.54834,0.729],[0.05371,0.05103],[0.54834,0.05103]]]
+}
+
+/*
+ * Draws a capital letter (A-Z) with LEDs placed along the letter's strokes.
+ *
+ * Stroke polylines come from @tscircuit/alphabet's lineAlphabet (inlined
+ * above as LINE_LETTERS so the snippet is dependency-free). Each polyline is
+ * resampled so consecutive LEDs sit ledSpacing mm apart; every LED is driven
+ * from the power net through its own series resistor (straight row of parts
+ * below the letter on the PCB so the character silhouette stays readable),
+ * and every LED cathode ties to the ground net.
+ */
+export const LedLetter = ({
+  letter,
+  power = "net.power",
+  gnd = "net.gnd",
+  pcbX = 0,
+  pcbY = 0,
+  scale = 24,
+  ledSpacing = 3,
+  resistorOhms = 330,
+  ledFootprint = "0603",
+  resistorFootprint = "0603",
+}: LedLetterProps) => {
+  const glyph = letter.toUpperCase()
+  const strokes = LINE_LETTERS[glyph]
+  if (!strokes) {
+    throw new Error(
+      'LedLetter: no glyph for "' + letter + '". Capital A-Z are available.',
+    )
+  }
+
+  type LedPoint = { x: number; y: number }
+  const points: LedPoint[] = []
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+
+  for (const poly of strokes) {
+    // cumulative distance (in units) at each polyline vertex
+    const cum: number[] = [0]
+    for (let i = 0; i < poly.length - 1; i++) {
+      cum.push(cum[i] + Math.hypot(poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]))
+    }
+    const lenU = cum[cum.length - 1]
+    const ledCount = Math.max(2, Math.round(lenU * scale / ledSpacing) + 1)
+    // walk the polyline placing ledCount points evenly along its length
+    for (let i = 0; i < ledCount; i++) {
+      const target = (lenU * i) / (ledCount - 1)
+      // binary search for the segment containing the target distance
+      let lo = 0
+      let hi = cum.length - 1
+      while (lo + 1 < hi) {
+        const mid = (lo + hi) >> 1
+        if (cum[mid] < target) lo = mid
+        else hi = mid
+      }
+      const segU = cum[hi] - cum[lo]
+      const t = segU === 0 ? 0 : (target - cum[lo]) / segU
+      points.push({
+        x: poly[lo][0] + (poly[hi][0] - poly[lo][0]) * t,
+        y: poly[lo][1] + (poly[hi][1] - poly[lo][1]) * t,
+      })
+    }
+  }
+  if (points.length === 0) {
+    throw new Error("LedLetter: glyph produced no LED positions")
+  }
+
+  for (const p of points) {
+    if (p.x < minX) minX = p.x
+    if (p.x > maxX) maxX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.y > maxY) maxY = p.y
+  }
+  const cx = (minX + maxX) / 2
+  const cy = (minY + maxY) / 2
+  const resistorRowGap = 5
+
+  // switch to centered mm-space and discard near-duplicate positions where
+  // strokes meet, then relax pairs so 0603 courtyards (about 2.9 x 1.4mm)
+  // never collide: separation is checked per-axis, matching the rectangular
+  // courtyard shape
+  const mmPoints: LedPoint[] = points.map((p) => ({
+    x: (p.x - cx) * scale,
+    y: (p.y - cy) * scale,
+  }))
+  const kept: LedPoint[] = []
+  for (const p of mmPoints) {
+    if (!kept.some((q) => Math.hypot(p.x - q.x, p.y - q.y) < 0.8)) kept.push(p)
+  }
+  const ledClearX = 3.0
+  const ledClearY = 1.6
+  for (let pass = 0; pass < 200; pass++) {
+    let moved = false
+    for (let a = 0; a < kept.length; a++) {
+      for (let b = a + 1; b < kept.length; b++) {
+        const dx = kept[b].x - kept[a].x
+        const dy = kept[b].y - kept[a].y
+        const adx = Math.abs(dx)
+        const ady = Math.abs(dy)
+        if (adx >= ledClearX || ady >= ledClearY) continue
+        if (ledClearX - adx <= ledClearY - ady) {
+          const dir = dx === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dx)
+          const shift = ((ledClearX - adx) / 2) * dir
+          kept[a].x -= shift
+          kept[b].x += shift
+        } else {
+          const dir = dy === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dy)
+          const shift = ((ledClearY - ady) / 2) * dir
+          kept[a].y -= shift
+          kept[b].y += shift
+        }
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+
+  let mmMinY = Infinity
+  for (const p of kept) {
+    if (p.y < mmMinY) mmMinY = p.y
+  }
+
+  const pointsPerRowResistors = 8
+  const resSpacing = 3.4
+  const resRowYStep = 3.4
+
+  const schPerRow = 8
+  const schSpacingX = 2.5
+  const schSpacingY = 4
+
+  return (
+    <>
+      {kept.map((p, i) => {
+        const row = Math.floor(i / schPerRow)
+        const col = i % schPerRow
+        const rowSize = Math.min(schPerRow, kept.length - row * schPerRow)
+        const schX = (col - (rowSize - 1) / 2) * schSpacingX
+        const schY = -row * schSpacingY
+
+        const ledPcbX = p.x + pcbX
+        const ledPcbY = p.y + pcbY
+
+        const resistorPcbX = pcbX
+        const resistorPcbY = mmMinY - resistorRowGap + pcbY
+
+        return (
+          <>
+            <led
+              name={"LED" + (i + 1)}
+              footprint={ledFootprint}
+              schX={schX}
+              schY={schY}
+              pcbX={ledPcbX}
+              pcbY={ledPcbY}
+            />
+            <resistor
+              name={"R" + (i + 1)}
+              resistance={resistorOhms}
+              footprint={resistorFootprint}
+              schX={schX}
+              schY={schY + 2}
+              pcbX={
+                resistorPcbX +
+                ((i % pointsPerRowResistors) -
+                  (Math.min(pointsPerRowResistors, kept.length - Math.floor(i / pointsPerRowResistors) * pointsPerRowResistors) - 1) / 2) *
+                  resSpacing
+              }
+              pcbY={resistorPcbY - Math.floor(i / pointsPerRowResistors) * resRowYStep}
+            />
+            <trace from={".R" + (i + 1) + " .1"} to={power} />
+            <trace from={".R" + (i + 1) + " .2"} to={".LED" + (i + 1) + " .anode"} />
+            <trace from={".LED" + (i + 1) + " .cathode"} to={gnd} />
+          </>
+        )
+      })}
+    </>
+  )
+}
+
+export const LedLetterBoard = () => (
+  <board width="44mm" height="40mm">
+    <LedLetter letter="A" scale={24} ledSpacing={3} />
+  </board>
+)
+
+export default LedLetterBoard
+`} />
+
+## Wiring: One Resistor per LED
+
+Signs are wired one way: every LED gets its own current-limiting resistor, then all paths
+share power and ground. In the component, each LED index `i` contributes three traces,
+built with string concatenation so the trace selectors are plain strings:
+
+```tsx
+<trace from={".R" + (i + 1) + " .1"} to={power} />
+<trace from={".R" + (i + 1) + " .2"} to={".LED" + (i + 1) + " .anode"} />
+<trace from={".LED" + (i + 1) + " .cathode"} to={gnd} />
+```
+
+- `power` and `gnd` default to `"net.power"` and `"net.gnd"`
+- LED pins are named `.anode` / `.cathode`; resistor pins are `.1` / `.2`
+- Trace selectors use the space format `".R1 .1"` (component name, space, pin name)
+
+The schematic ends up as a tidy ladder - each column is one resistor/LED pair, and the
+power and ground nets fan out to every row:
+
+<CircuitPreview defaultView="schematic" code={`
+export type LedLetterProps = {
+  letter: string
+  power?: string
+  gnd?: string
+  pcbX?: number
+  pcbY?: number
+  scale?: number
+  ledSpacing?: number
+  resistorOhms?: number
+  ledFootprint?: string
+  resistorFootprint?: string
+}
+
+const LINE_LETTERS = {
+  "A": [[[0.01807,0.05103],[0.29018,0.729],[0.58399,0.05103]],[[0.1553,0.31548],[0.43355,0.31548]]],
+  "B": [[[0.06396,0.05103],[0.06396,0.72105],[0.20936,0.729],[0.34249,0.70561],[0.43218,0.62708],[0.41822,0.51227],[0.31269,0.45083],[0.08473,0.42447],[0.30638,0.41057],[0.46888,0.35254],[0.53809,0.26334],[0.5324,0.14798],[0.50125,0.09702],[0.42355,0.0556],[0.06396,0.05103]]],
+  "C": [[[0.52905,0.58015],[0.49843,0.6548],[0.44224,0.70766],[0.33583,0.74219],[0.2572,0.73164],[0.18791,0.69625],[0.12024,0.61457],[0.073,0.40016],[0.11007,0.18461],[0.16538,0.09782],[0.22288,0.0572],[0.3349,0.03879],[0.43253,0.06232],[0.50482,0.131],[0.52905,0.22793]]],
+  "D": [[[0.06445,0.05103],[0.07184,0.71492],[0.17122,0.729],[0.24735,0.72737],[0.37101,0.69392],[0.46246,0.6217],[0.51475,0.52445],[0.53559,0.42361],[0.5376,0.34769],[0.52807,0.28262],[0.50856,0.22758],[0.44595,0.14431],[0.36236,0.09129],[0.2252,0.05414],[0.06445,0.05103]]],
+  "E": [[[0.08008,0.729],[0.08008,0.05103],[0.52197,0.05103]],[[0.08008,0.729],[0.52197,0.729]],[[0.08008,0.39002],[0.38941,0.39002]]],
+  "F": [[[0.08643,0.729],[0.08643,0.05103]],[[0.0913,0.72439],[0.51563,0.72439]],[[0.0913,0.39232],[0.44734,0.39232]]],
+  "G": [[[0.49803,0.71506],[0.37462,0.74219],[0.24422,0.73135],[0.16058,0.688],[0.09456,0.60188],[0.0564,0.41596],[0.07675,0.21447],[0.12087,0.1418],[0.18895,0.08327],[0.27101,0.04641],[0.35707,0.03879],[0.43715,0.06795],[0.50126,0.14146],[0.54566,0.35139],[0.3296,0.35187]]],
+  "H": [[[0.06689,0.729],[0.06689,0.05103]],[[0.06689,0.40434],[0.53001,0.40434]],[[0.53516,0.729],[0.53516,0.05103]]],
+  "I": [[[0.30103,0.729],[0.30103,0.05103]]],
+  "J": [[[0.50684,0.729],[0.50781,0.21781],[0.49847,0.15383],[0.48073,0.11921],[0.45586,0.09168],[0.4261,0.07059],[0.36075,0.04519],[0.30251,0.03786],[0.22357,0.04636],[0.16538,0.06969],[0.13707,0.09228],[0.11643,0.11969],[0.10282,0.15118],[0.09563,0.18605],[0.09424,0.22359]]],
+  "K": [[[0.0354,0.729],[0.0354,0.05103]],[[0.50226,0.68381],[0.0354,0.31218]],[[0.21248,0.41764],[0.56665,0.0661]]],
+  "L": [[[0.07544,0.729],[0.07544,0.05103],[0.52661,0.05103]]],
+  "M": [[[0.04248,0.05103],[0.04248,0.729],[0.30103,0.28751],[0.55957,0.729],[0.55957,0.05103]]],
+  "N": [[[0.06787,0.05103],[0.06787,0.729],[0.53418,0.05103],[0.52503,0.729]]],
+  "O": [[[0.28729,0.03879],[0.19843,0.06643],[0.1172,0.15055],[0.05713,0.43605],[0.11435,0.64975],[0.18455,0.71061],[0.3061,0.74219],[0.42054,0.70428],[0.48754,0.635],[0.54492,0.37471],[0.51637,0.21038],[0.46548,0.1154],[0.37508,0.05071],[0.28729,0.03879]]],
+  "P": [[[0.07056,0.05103],[0.07056,0.71621],[0.20704,0.729],[0.32913,0.72101],[0.40853,0.69949],[0.44402,0.68209],[0.50064,0.63107],[0.5258,0.57627],[0.5315,0.49616],[0.50893,0.4458],[0.47372,0.41796],[0.41758,0.39563],[0.33637,0.37963],[0.22601,0.37073],[0.08237,0.36974]]],
+  "Q": [[[0.28243,-0.05081],[0.19545,-0.01965],[0.11593,0.07518],[0.05713,0.39706],[0.11314,0.63797],[0.18186,0.70658],[0.30084,0.74219],[0.41287,0.69945],[0.47846,0.62134],[0.53463,0.3279],[0.50667,0.14263],[0.45686,0.03556],[0.36837,-0.03737],[0.28243,-0.05081]],[[0.34123,0.18444],[0.54492,-0.07065]]],
+  "R": [[[0.03491,0.05589],[0.03491,0.71144],[0.22713,0.729],[0.36204,0.72313],[0.44342,0.70509],[0.47764,0.69039],[0.50581,0.67124],[0.52662,0.64718],[0.54496,0.58194],[0.54324,0.52408],[0.52446,0.48218],[0.49076,0.45348],[0.44427,0.4352],[0.35519,0.42126],[0.04765,0.41037]],[[0.30305,0.38269],[0.56714,0.05103]]],
+  "S": [[[0.48304,0.63567],[0.40761,0.73252],[0.22883,0.74219],[0.12862,0.67244],[0.08771,0.54446],[0.10466,0.48127],[0.16805,0.42669],[0.41928,0.38268],[0.5038,0.33066],[0.53516,0.24068],[0.49385,0.09994],[0.36767,0.03879],[0.20544,0.04334],[0.11671,0.09296],[0.06689,0.20967]]],
+  "T": [[[0.02295,0.729],[0.5791,0.729]],[[0.30928,0.729],[0.30928,0.05103]]],
+  "U": [[[0.07202,0.729],[0.07308,0.35113],[0.08037,0.24833],[0.09902,0.17219],[0.13479,0.11427],[0.18157,0.07598],[0.25146,0.04832],[0.33965,0.03786],[0.40155,0.04833],[0.45232,0.07591],[0.4827,0.10823],[0.49574,0.12947],[0.5157,0.18363],[0.52501,0.25537],[0.53003,0.72798]]],
+  "V": [[[0.02783,0.729],[0.32008,0.05103],[0.57422,0.729]]],
+  "W": [[[0,0.729],[0.0798,0.05962],[0.2852,0.52712],[0.50526,0.05103],[0.60205,0.729]]],
+  "X": [[[0.00903,0.729],[0.58681,0.05103]],[[0.59302,0.729],[0.01525,0.05103]]],
+  "Y": [[[0.01807,0.729],[0.29313,0.42587]],[[0.58399,0.72804],[0.29495,0.42394],[0.30528,0.05103]]],
+  "Z": [[[0.05371,0.729],[0.54834,0.729],[0.05371,0.05103],[0.54834,0.05103]]]
+}
+
+/*
+ * Draws a capital letter (A-Z) with LEDs placed along the letter's strokes.
+ *
+ * Stroke polylines come from @tscircuit/alphabet's lineAlphabet (inlined
+ * above as LINE_LETTERS so the snippet is dependency-free). Each polyline is
+ * resampled so consecutive LEDs sit ledSpacing mm apart; every LED is driven
+ * from the power net through its own series resistor (straight row of parts
+ * below the letter on the PCB so the character silhouette stays readable),
+ * and every LED cathode ties to the ground net.
+ */
+export const LedLetter = ({
+  letter,
+  power = "net.power",
+  gnd = "net.gnd",
+  pcbX = 0,
+  pcbY = 0,
+  scale = 24,
+  ledSpacing = 3,
+  resistorOhms = 330,
+  ledFootprint = "0603",
+  resistorFootprint = "0603",
+}: LedLetterProps) => {
+  const glyph = letter.toUpperCase()
+  const strokes = LINE_LETTERS[glyph]
+  if (!strokes) {
+    throw new Error(
+      'LedLetter: no glyph for "' + letter + '". Capital A-Z are available.',
+    )
+  }
+
+  type LedPoint = { x: number; y: number }
+  const points: LedPoint[] = []
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+
+  for (const poly of strokes) {
+    // cumulative distance (in units) at each polyline vertex
+    const cum: number[] = [0]
+    for (let i = 0; i < poly.length - 1; i++) {
+      cum.push(cum[i] + Math.hypot(poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]))
+    }
+    const lenU = cum[cum.length - 1]
+    const ledCount = Math.max(2, Math.round(lenU * scale / ledSpacing) + 1)
+    // walk the polyline placing ledCount points evenly along its length
+    for (let i = 0; i < ledCount; i++) {
+      const target = (lenU * i) / (ledCount - 1)
+      // binary search for the segment containing the target distance
+      let lo = 0
+      let hi = cum.length - 1
+      while (lo + 1 < hi) {
+        const mid = (lo + hi) >> 1
+        if (cum[mid] < target) lo = mid
+        else hi = mid
+      }
+      const segU = cum[hi] - cum[lo]
+      const t = segU === 0 ? 0 : (target - cum[lo]) / segU
+      points.push({
+        x: poly[lo][0] + (poly[hi][0] - poly[lo][0]) * t,
+        y: poly[lo][1] + (poly[hi][1] - poly[lo][1]) * t,
+      })
+    }
+  }
+  if (points.length === 0) {
+    throw new Error("LedLetter: glyph produced no LED positions")
+  }
+
+  for (const p of points) {
+    if (p.x < minX) minX = p.x
+    if (p.x > maxX) maxX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.y > maxY) maxY = p.y
+  }
+  const cx = (minX + maxX) / 2
+  const cy = (minY + maxY) / 2
+  const resistorRowGap = 5
+
+  // switch to centered mm-space and discard near-duplicate positions where
+  // strokes meet, then relax pairs so 0603 courtyards (about 2.9 x 1.4mm)
+  // never collide: separation is checked per-axis, matching the rectangular
+  // courtyard shape
+  const mmPoints: LedPoint[] = points.map((p) => ({
+    x: (p.x - cx) * scale,
+    y: (p.y - cy) * scale,
+  }))
+  const kept: LedPoint[] = []
+  for (const p of mmPoints) {
+    if (!kept.some((q) => Math.hypot(p.x - q.x, p.y - q.y) < 0.8)) kept.push(p)
+  }
+  const ledClearX = 3.0
+  const ledClearY = 1.6
+  for (let pass = 0; pass < 200; pass++) {
+    let moved = false
+    for (let a = 0; a < kept.length; a++) {
+      for (let b = a + 1; b < kept.length; b++) {
+        const dx = kept[b].x - kept[a].x
+        const dy = kept[b].y - kept[a].y
+        const adx = Math.abs(dx)
+        const ady = Math.abs(dy)
+        if (adx >= ledClearX || ady >= ledClearY) continue
+        if (ledClearX - adx <= ledClearY - ady) {
+          const dir = dx === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dx)
+          const shift = ((ledClearX - adx) / 2) * dir
+          kept[a].x -= shift
+          kept[b].x += shift
+        } else {
+          const dir = dy === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dy)
+          const shift = ((ledClearY - ady) / 2) * dir
+          kept[a].y -= shift
+          kept[b].y += shift
+        }
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+
+  let mmMinY = Infinity
+  for (const p of kept) {
+    if (p.y < mmMinY) mmMinY = p.y
+  }
+
+  const pointsPerRowResistors = 8
+  const resSpacing = 3.4
+  const resRowYStep = 3.4
+
+  const schPerRow = 8
+  const schSpacingX = 2.5
+  const schSpacingY = 4
+
+  return (
+    <>
+      {kept.map((p, i) => {
+        const row = Math.floor(i / schPerRow)
+        const col = i % schPerRow
+        const rowSize = Math.min(schPerRow, kept.length - row * schPerRow)
+        const schX = (col - (rowSize - 1) / 2) * schSpacingX
+        const schY = -row * schSpacingY
+
+        const ledPcbX = p.x + pcbX
+        const ledPcbY = p.y + pcbY
+
+        const resistorPcbX = pcbX
+        const resistorPcbY = mmMinY - resistorRowGap + pcbY
+
+        return (
+          <>
+            <led
+              name={"LED" + (i + 1)}
+              footprint={ledFootprint}
+              schX={schX}
+              schY={schY}
+              pcbX={ledPcbX}
+              pcbY={ledPcbY}
+            />
+            <resistor
+              name={"R" + (i + 1)}
+              resistance={resistorOhms}
+              footprint={resistorFootprint}
+              schX={schX}
+              schY={schY + 2}
+              pcbX={
+                resistorPcbX +
+                ((i % pointsPerRowResistors) -
+                  (Math.min(pointsPerRowResistors, kept.length - Math.floor(i / pointsPerRowResistors) * pointsPerRowResistors) - 1) / 2) *
+                  resSpacing
+              }
+              pcbY={resistorPcbY - Math.floor(i / pointsPerRowResistors) * resRowYStep}
+            />
+            <trace from={".R" + (i + 1) + " .1"} to={power} />
+            <trace from={".R" + (i + 1) + " .2"} to={".LED" + (i + 1) + " .anode"} />
+            <trace from={".LED" + (i + 1) + " .cathode"} to={gnd} />
+          </>
+        )
+      })}
+    </>
+  )
+}
+
+export const LedLetterBoard = () => (
+  <board width="44mm" height="40mm">
+    <LedLetter letter="A" scale={24} ledSpacing={3} />
+  </board>
+)
+
+export default LedLetterBoard
+`} />
+
+## Keeping Parts From Colliding
+
+LEDs placed evenly along strokes will eventually land too close together - especially at
+sharp corners and junctions, where two strokes converge on the same point. DRC will flag
+these as courtyard overlaps.
+
+Two fixes are applied inside the component:
+
+1. **Dedupe** - positions closer than `0.8mm` are merged into one LED (this is why
+   junction points keep only one part).
+2. **Relaxation** - any two LEDs closer than a 0603 courtyard can tolerate are pushed
+   apart along the axis that gives the most relief, up to 200 passes until nothing moves.
+
+```ts
+const ledClearX = 3.0
+const ledClearY = 1.6
+if (ledClearX - adx <= ledClearY - ady) { /* push apart in x */ }
+else { /* push apart in y */ }
+```
+
+The resistors never relax - they keep an even grid below the letter, which is what keeps
+the sign looking like a deliberate design instead of noise.
+
+## Changing the Letter
+
+The whole point of the component: swap one prop, get a different sign. Here is the same
+build rendering `O` - note the LED count follows the stroke length automatically (and
+`O`'s closed loop keeps a single junction LED where its polyline meets itself):
+
+<CircuitPreview defaultView="pcb" code={`
+export type LedLetterProps = {
+  letter: string
+  power?: string
+  gnd?: string
+  pcbX?: number
+  pcbY?: number
+  scale?: number
+  ledSpacing?: number
+  resistorOhms?: number
+  ledFootprint?: string
+  resistorFootprint?: string
+}
+
+const LINE_LETTERS = {
+  "A": [[[0.01807,0.05103],[0.29018,0.729],[0.58399,0.05103]],[[0.1553,0.31548],[0.43355,0.31548]]],
+  "B": [[[0.06396,0.05103],[0.06396,0.72105],[0.20936,0.729],[0.34249,0.70561],[0.43218,0.62708],[0.41822,0.51227],[0.31269,0.45083],[0.08473,0.42447],[0.30638,0.41057],[0.46888,0.35254],[0.53809,0.26334],[0.5324,0.14798],[0.50125,0.09702],[0.42355,0.0556],[0.06396,0.05103]]],
+  "C": [[[0.52905,0.58015],[0.49843,0.6548],[0.44224,0.70766],[0.33583,0.74219],[0.2572,0.73164],[0.18791,0.69625],[0.12024,0.61457],[0.073,0.40016],[0.11007,0.18461],[0.16538,0.09782],[0.22288,0.0572],[0.3349,0.03879],[0.43253,0.06232],[0.50482,0.131],[0.52905,0.22793]]],
+  "D": [[[0.06445,0.05103],[0.07184,0.71492],[0.17122,0.729],[0.24735,0.72737],[0.37101,0.69392],[0.46246,0.6217],[0.51475,0.52445],[0.53559,0.42361],[0.5376,0.34769],[0.52807,0.28262],[0.50856,0.22758],[0.44595,0.14431],[0.36236,0.09129],[0.2252,0.05414],[0.06445,0.05103]]],
+  "E": [[[0.08008,0.729],[0.08008,0.05103],[0.52197,0.05103]],[[0.08008,0.729],[0.52197,0.729]],[[0.08008,0.39002],[0.38941,0.39002]]],
+  "F": [[[0.08643,0.729],[0.08643,0.05103]],[[0.0913,0.72439],[0.51563,0.72439]],[[0.0913,0.39232],[0.44734,0.39232]]],
+  "G": [[[0.49803,0.71506],[0.37462,0.74219],[0.24422,0.73135],[0.16058,0.688],[0.09456,0.60188],[0.0564,0.41596],[0.07675,0.21447],[0.12087,0.1418],[0.18895,0.08327],[0.27101,0.04641],[0.35707,0.03879],[0.43715,0.06795],[0.50126,0.14146],[0.54566,0.35139],[0.3296,0.35187]]],
+  "H": [[[0.06689,0.729],[0.06689,0.05103]],[[0.06689,0.40434],[0.53001,0.40434]],[[0.53516,0.729],[0.53516,0.05103]]],
+  "I": [[[0.30103,0.729],[0.30103,0.05103]]],
+  "J": [[[0.50684,0.729],[0.50781,0.21781],[0.49847,0.15383],[0.48073,0.11921],[0.45586,0.09168],[0.4261,0.07059],[0.36075,0.04519],[0.30251,0.03786],[0.22357,0.04636],[0.16538,0.06969],[0.13707,0.09228],[0.11643,0.11969],[0.10282,0.15118],[0.09563,0.18605],[0.09424,0.22359]]],
+  "K": [[[0.0354,0.729],[0.0354,0.05103]],[[0.50226,0.68381],[0.0354,0.31218]],[[0.21248,0.41764],[0.56665,0.0661]]],
+  "L": [[[0.07544,0.729],[0.07544,0.05103],[0.52661,0.05103]]],
+  "M": [[[0.04248,0.05103],[0.04248,0.729],[0.30103,0.28751],[0.55957,0.729],[0.55957,0.05103]]],
+  "N": [[[0.06787,0.05103],[0.06787,0.729],[0.53418,0.05103],[0.52503,0.729]]],
+  "O": [[[0.28729,0.03879],[0.19843,0.06643],[0.1172,0.15055],[0.05713,0.43605],[0.11435,0.64975],[0.18455,0.71061],[0.3061,0.74219],[0.42054,0.70428],[0.48754,0.635],[0.54492,0.37471],[0.51637,0.21038],[0.46548,0.1154],[0.37508,0.05071],[0.28729,0.03879]]],
+  "P": [[[0.07056,0.05103],[0.07056,0.71621],[0.20704,0.729],[0.32913,0.72101],[0.40853,0.69949],[0.44402,0.68209],[0.50064,0.63107],[0.5258,0.57627],[0.5315,0.49616],[0.50893,0.4458],[0.47372,0.41796],[0.41758,0.39563],[0.33637,0.37963],[0.22601,0.37073],[0.08237,0.36974]]],
+  "Q": [[[0.28243,-0.05081],[0.19545,-0.01965],[0.11593,0.07518],[0.05713,0.39706],[0.11314,0.63797],[0.18186,0.70658],[0.30084,0.74219],[0.41287,0.69945],[0.47846,0.62134],[0.53463,0.3279],[0.50667,0.14263],[0.45686,0.03556],[0.36837,-0.03737],[0.28243,-0.05081]],[[0.34123,0.18444],[0.54492,-0.07065]]],
+  "R": [[[0.03491,0.05589],[0.03491,0.71144],[0.22713,0.729],[0.36204,0.72313],[0.44342,0.70509],[0.47764,0.69039],[0.50581,0.67124],[0.52662,0.64718],[0.54496,0.58194],[0.54324,0.52408],[0.52446,0.48218],[0.49076,0.45348],[0.44427,0.4352],[0.35519,0.42126],[0.04765,0.41037]],[[0.30305,0.38269],[0.56714,0.05103]]],
+  "S": [[[0.48304,0.63567],[0.40761,0.73252],[0.22883,0.74219],[0.12862,0.67244],[0.08771,0.54446],[0.10466,0.48127],[0.16805,0.42669],[0.41928,0.38268],[0.5038,0.33066],[0.53516,0.24068],[0.49385,0.09994],[0.36767,0.03879],[0.20544,0.04334],[0.11671,0.09296],[0.06689,0.20967]]],
+  "T": [[[0.02295,0.729],[0.5791,0.729]],[[0.30928,0.729],[0.30928,0.05103]]],
+  "U": [[[0.07202,0.729],[0.07308,0.35113],[0.08037,0.24833],[0.09902,0.17219],[0.13479,0.11427],[0.18157,0.07598],[0.25146,0.04832],[0.33965,0.03786],[0.40155,0.04833],[0.45232,0.07591],[0.4827,0.10823],[0.49574,0.12947],[0.5157,0.18363],[0.52501,0.25537],[0.53003,0.72798]]],
+  "V": [[[0.02783,0.729],[0.32008,0.05103],[0.57422,0.729]]],
+  "W": [[[0,0.729],[0.0798,0.05962],[0.2852,0.52712],[0.50526,0.05103],[0.60205,0.729]]],
+  "X": [[[0.00903,0.729],[0.58681,0.05103]],[[0.59302,0.729],[0.01525,0.05103]]],
+  "Y": [[[0.01807,0.729],[0.29313,0.42587]],[[0.58399,0.72804],[0.29495,0.42394],[0.30528,0.05103]]],
+  "Z": [[[0.05371,0.729],[0.54834,0.729],[0.05371,0.05103],[0.54834,0.05103]]]
+}
+
+/*
+ * Draws a capital letter (A-Z) with LEDs placed along the letter's strokes.
+ *
+ * Stroke polylines come from @tscircuit/alphabet's lineAlphabet (inlined
+ * above as LINE_LETTERS so the snippet is dependency-free). Each polyline is
+ * resampled so consecutive LEDs sit ledSpacing mm apart; every LED is driven
+ * from the power net through its own series resistor (straight row of parts
+ * below the letter on the PCB so the character silhouette stays readable),
+ * and every LED cathode ties to the ground net.
+ */
+export const LedLetter = ({
+  letter,
+  power = "net.power",
+  gnd = "net.gnd",
+  pcbX = 0,
+  pcbY = 0,
+  scale = 24,
+  ledSpacing = 3,
+  resistorOhms = 330,
+  ledFootprint = "0603",
+  resistorFootprint = "0603",
+}: LedLetterProps) => {
+  const glyph = letter.toUpperCase()
+  const strokes = LINE_LETTERS[glyph]
+  if (!strokes) {
+    throw new Error(
+      'LedLetter: no glyph for "' + letter + '". Capital A-Z are available.',
+    )
+  }
+
+  type LedPoint = { x: number; y: number }
+  const points: LedPoint[] = []
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+
+  for (const poly of strokes) {
+    // cumulative distance (in units) at each polyline vertex
+    const cum: number[] = [0]
+    for (let i = 0; i < poly.length - 1; i++) {
+      cum.push(cum[i] + Math.hypot(poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]))
+    }
+    const lenU = cum[cum.length - 1]
+    const ledCount = Math.max(2, Math.round(lenU * scale / ledSpacing) + 1)
+    // walk the polyline placing ledCount points evenly along its length
+    for (let i = 0; i < ledCount; i++) {
+      const target = (lenU * i) / (ledCount - 1)
+      // binary search for the segment containing the target distance
+      let lo = 0
+      let hi = cum.length - 1
+      while (lo + 1 < hi) {
+        const mid = (lo + hi) >> 1
+        if (cum[mid] < target) lo = mid
+        else hi = mid
+      }
+      const segU = cum[hi] - cum[lo]
+      const t = segU === 0 ? 0 : (target - cum[lo]) / segU
+      points.push({
+        x: poly[lo][0] + (poly[hi][0] - poly[lo][0]) * t,
+        y: poly[lo][1] + (poly[hi][1] - poly[lo][1]) * t,
+      })
+    }
+  }
+  if (points.length === 0) {
+    throw new Error("LedLetter: glyph produced no LED positions")
+  }
+
+  for (const p of points) {
+    if (p.x < minX) minX = p.x
+    if (p.x > maxX) maxX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.y > maxY) maxY = p.y
+  }
+  const cx = (minX + maxX) / 2
+  const cy = (minY + maxY) / 2
+  const resistorRowGap = 5
+
+  // switch to centered mm-space and discard near-duplicate positions where
+  // strokes meet, then relax pairs so 0603 courtyards (about 2.9 x 1.4mm)
+  // never collide: separation is checked per-axis, matching the rectangular
+  // courtyard shape
+  const mmPoints: LedPoint[] = points.map((p) => ({
+    x: (p.x - cx) * scale,
+    y: (p.y - cy) * scale,
+  }))
+  const kept: LedPoint[] = []
+  for (const p of mmPoints) {
+    if (!kept.some((q) => Math.hypot(p.x - q.x, p.y - q.y) < 0.8)) kept.push(p)
+  }
+  const ledClearX = 3.0
+  const ledClearY = 1.6
+  for (let pass = 0; pass < 200; pass++) {
+    let moved = false
+    for (let a = 0; a < kept.length; a++) {
+      for (let b = a + 1; b < kept.length; b++) {
+        const dx = kept[b].x - kept[a].x
+        const dy = kept[b].y - kept[a].y
+        const adx = Math.abs(dx)
+        const ady = Math.abs(dy)
+        if (adx >= ledClearX || ady >= ledClearY) continue
+        if (ledClearX - adx <= ledClearY - ady) {
+          const dir = dx === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dx)
+          const shift = ((ledClearX - adx) / 2) * dir
+          kept[a].x -= shift
+          kept[b].x += shift
+        } else {
+          const dir = dy === 0 ? (a % 2 === 0 ? -1 : 1) : Math.sign(dy)
+          const shift = ((ledClearY - ady) / 2) * dir
+          kept[a].y -= shift
+          kept[b].y += shift
+        }
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+
+  let mmMinY = Infinity
+  for (const p of kept) {
+    if (p.y < mmMinY) mmMinY = p.y
+  }
+
+  const pointsPerRowResistors = 8
+  const resSpacing = 3.4
+  const resRowYStep = 3.4
+
+  const schPerRow = 8
+  const schSpacingX = 2.5
+  const schSpacingY = 4
+
+  return (
+    <>
+      {kept.map((p, i) => {
+        const row = Math.floor(i / schPerRow)
+        const col = i % schPerRow
+        const rowSize = Math.min(schPerRow, kept.length - row * schPerRow)
+        const schX = (col - (rowSize - 1) / 2) * schSpacingX
+        const schY = -row * schSpacingY
+
+        const ledPcbX = p.x + pcbX
+        const ledPcbY = p.y + pcbY
+
+        const resistorPcbX = pcbX
+        const resistorPcbY = mmMinY - resistorRowGap + pcbY
+
+        return (
+          <>
+            <led
+              name={"LED" + (i + 1)}
+              footprint={ledFootprint}
+              schX={schX}
+              schY={schY}
+              pcbX={ledPcbX}
+              pcbY={ledPcbY}
+            />
+            <resistor
+              name={"R" + (i + 1)}
+              resistance={resistorOhms}
+              footprint={resistorFootprint}
+              schX={schX}
+              schY={schY + 2}
+              pcbX={
+                resistorPcbX +
+                ((i % pointsPerRowResistors) -
+                  (Math.min(pointsPerRowResistors, kept.length - Math.floor(i / pointsPerRowResistors) * pointsPerRowResistors) - 1) / 2) *
+                  resSpacing
+              }
+              pcbY={resistorPcbY - Math.floor(i / pointsPerRowResistors) * resRowYStep}
+            />
+            <trace from={".R" + (i + 1) + " .1"} to={power} />
+            <trace from={".R" + (i + 1) + " .2"} to={".LED" + (i + 1) + " .anode"} />
+            <trace from={".LED" + (i + 1) + " .cathode"} to={gnd} />
+          </>
+        )
+      })}
+    </>
+  )
+}
+
+
+export default () => (
+  <board width="60mm" height="50mm">
+    <LedLetter letter="O" scale={24} ledSpacing={3} />
+  </board>
+)
+`} />
+
+Useful props when composing a sign:
+
+| Prop | Default | What it does |
+|------|---------|--------------|
+| `letter` | (required) | Capital A-Z to draw |
+| `scale` | `24` | Glyph unit size in mm (letter height is roughly `scale`) |
+| `ledSpacing` | `3` | Distance between LEDs along a stroke, in mm |
+| `resistorOhms` | `330` | Series resistor value for every LED |
+| `power` / `gnd` | `net.power` / `net.gnd` | Net names each LED chain ties to |
+| `pcbX` / `pcbY` | `0` | Where the letter sits on the board |
+| `ledFootprint` / `resistorFootprint` | `0603` / `0603` | Footprints for both part rows |
+
+To spell a whole word, place several `<LedLetter ... />` instances side by side and give
+each a `pcbX` offset.
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading them to
+JLCPCB. Follow the instructions from
+[here](/building-electronics/ordering-prototypes).
