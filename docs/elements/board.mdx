@@ -277,11 +277,6 @@ Usually you'll want to use an autorouter preset:
 - `autorouter="laser_prefab"` - Reserve prefabricated vias that can be reassigned during routing. Ideal for rapid-turn PCBs produced with laser ablation and mechanical drilling templates. See the [ViaGrid / Prefabricated Vias guide](../guides/tscircuit-essentials/using-viagrid-prefabricated-vias-with-autorouter.mdx) for a complete walkthrough.
 - `autorouter="auto_jumper"` - Route single-layer boards by inserting jumper wires when traces would otherwise cross. See the [Single Layer Jumper Autorouting guide](../guides/tscircuit-essentials/single-layer-jumper-autorouting.mdx) for a complete walkthrough.
 
-To enable cloud parallelism without changing autorouter outputs, set
-[`platformConfig.useCloudAutorouter`](../guides/running-tscircuit/platform-configuration.md#cloud-autorouting)
-in your project configuration. This platform option applies to eligible
-Pipeline9 routing at the default `"1x"` effort level.
-
 ### Tuning Router Work with `autorouterEffortLevel`
 
 `autorouterEffortLevel` lets you request more routing work from supported
