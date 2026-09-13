@@ -1,0 +1,197 @@
+---
+title: ESP32 PCB Layout and Routing
+description: >-
+  Design a minimal ESP32-C3 development board with tscircuit: place the radio
+  module, add strapping buttons and a status LED, and let the autorouter wire
+  the whole board.
+---
+
+## Overview
+
+This tutorial builds a minimal ESP32 development board — the kind you would
+order from JLCPCB and actually flash with firmware. It covers the three layers
+of every microcontroller design: the radio module, the glue components
+(strapping buttons, decoupling capacitor, status LED), and the routing that
+connects them.
+
+You will place a real ESP32-C3-WROOM-02 module, wire the boot and enable
+strapping buttons, attach an indicator LED through a series resistor, then
+route the board with tscircuit's built-in autorouter.
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+## What You Will Learn
+
+- Placing an ESP32 module fetched from the tscircuit registry
+- The strapping pins (EN, IO0) every ESP32 bootloader needs
+- Why decoupling capacitors have a placement rule (and how tscircuit enforces it)
+- Choosing effort levels for hard autoroutes
+- Reading the preview to confirm every net is routed
+
+## The Module
+
+The heart of the board is the module. Instead of hand-drawing an ESP32
+footprint, pull one from the registry — `ESP32_C3_WROOM_02_N4` ships with
+correct pads, castellated edges, the antenna keep-out, and named pins
+(`3V3`, `EN`, `IO0`–`IO9`, `GND`, and more):
+
+<TscircuitIframe defaultView="pcb" code={`
+import { ESP32_C3_WROOM_02_N4 } from "@tscircuit/esp32_c3_wroom_02_n4"
+
+export default () => (
+  <board width="34mm" height="24mm">
+    <ESP32_C3_WROOM_02_N4 name="U1" pcbX={0} pcbY={3} />
+  </board>
+)`} />
+
+The antenna keep-out (marked on the module's silkscreen) must stay clear of
+copper — one more reason to use the registry module instead of a generic chip.
+
+## The Strapping Buttons
+
+Two pins decide how an ESP32 boots:
+
+- **EN** — system enable. Pull it low to reset the chip.
+- **IO0** — bootloader strap. Hold it low while releasing EN and the chip
+  enters the serial bootloader.
+
+Both are just tactile buttons wired to ground:
+
+<TscircuitIframe defaultView="schematic" code={`
+import { ESP32_C3_WROOM_02_N4 } from "@tscircuit/esp32_c3_wroom_02_n4"
+
+export default () => (
+  <board width="34mm" height="24mm">
+    <ESP32_C3_WROOM_02_N4 name="U1" pcbX={0} pcbY={3} />
+    <pushbutton name="SW1" footprint="pushbutton" schX={-4} schY={-2} />
+    <pushbutton name="SW2" footprint="pushbutton" schX={-2} schY={-2} />
+
+    <trace from=".U1 > .EN" to=".SW1 > .pin1" />
+    <trace from=".SW1 > .pin2" to=".U1 > .GND" />
+    <trace from=".U1 > .IO0" to=".SW2 > .pin1" />
+    <trace from=".SW2 > .pin2" to=".U1 > .GND" />
+  </board>
+)`} />
+
+SW1 is "reset", SW2 is "boot". On a real board you would also add 10k
+pull-ups on EN and IO0 so the module boots normally without buttons pressed.
+
+## The Status LED
+
+A classic debug heartbeat: a GPIO driving an LED through a current-limiting
+resistor. IO9 doubles as a boot-strap pin on the C3, which makes it the usual
+heartbeat choice:
+
+<TscircuitIframe defaultView="pcb" code={`
+import { ESP32_C3_WROOM_02_N4 } from "@tscircuit/esp32_c3_wroom_02_n4"
+
+export default () => (
+  <board width="34mm" height="24mm">
+    <ESP32_C3_WROOM_02_N4 name="U1" pcbX={0} pcbY={3} />
+    <led name="D1" footprint="0603" pcbX={12} pcbY={-8} />
+    <resistor name="R1" resistance="1k" footprint="0603" pcbX={12} pcbY={-3} />
+
+    <trace from=".U1 > .IO9" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".D1 > .pin1" />
+    <trace from=".D1 > .pin2" to=".U1 > .GND" />
+  </board>
+)`} />
+
+## The Decoupling Capacitor Rule
+
+Every ESP32 module needs a bulk capacitor between 3V3 and GND. tscircuit
+enforces a real design rule here: when a capacitor sits in a power-to-ground
+topology, it inherits a **1 mm maximum trace length** (a decoupling cap must
+sit next to the pins it decouples — a cap 20 mm away is decoration, not
+decoupling).
+
+The placement error tells you when a route cannot satisfy that length. You
+fix it by moving the capacitor close, or by relaxing the rule for a bulk cap
+that intentionally sits farther away:
+
+<TscircuitIframe defaultView="pcb" code={`
+import { ESP32_C3_WROOM_02_N4 } from "@tscircuit/esp32_c3_wroom_02_n4"
+
+export default () => (
+  <board width="34mm" height="24mm">
+    <ESP32_C3_WROOM_02_N4 name="U1" pcbX={0} pcbY={3} />
+    <capacitor
+      name="C1"
+      capacitance="22uF"
+      footprint="0603"
+      pcbX={-13}
+      pcbY={8}
+      maxDecouplingTraceLength={20}
+    />
+
+    <trace from=".U1 > .3V3" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".U1 > .GND" />
+  </board>
+)`} />
+
+For a tight decoupling cap, delete the `maxDecouplingTraceLength` prop and
+place the capacitor within 1 mm of the 3V3 pin.
+
+## The Whole Board
+
+Everything together — module, two strapping buttons, LED with resistor,
+bulk capacitor — routed automatically:
+
+<TscircuitIframe defaultView="pcb" code={`
+import { ESP32_C3_WROOM_02_N4 } from "@tscircuit/esp32_c3_wroom_02_n4"
+
+export default () => (
+  <board
+    width="44mm"
+    height="32mm"
+    autorouter="auto"
+    autorouterEffortLevel="10x"
+  >
+    <ESP32_C3_WROOM_02_N4 name="U1" pcbX={0} pcbY={6} />
+    <pushbutton name="SW1" footprint="pushbutton" pcbX={-14} pcbY={-11} />
+    <pushbutton name="SW2" footprint="pushbutton" pcbX={-4} pcbY={-11} />
+    <pushbutton name="SW3" footprint="pushbutton" pcbX={6} pcbY={-11} />
+    <led name="D1" footprint="0603" pcbX={15} pcbY={-11} />
+    <resistor name="R1" resistance="1k" footprint="0603" pcbX={15} pcbY={-5} />
+    <capacitor
+      name="C1"
+      capacitance="22uF"
+      footprint="0603"
+      pcbX={-12.5}
+      pcbY={8}
+      maxDecouplingTraceLength={20}
+    />
+    <trace from=".U1 > .EN" to=".SW1 > .pin1" />
+    <trace from=".SW1 > .pin2" to=".U1 > .GND" />
+    <trace from=".U1 > .IO0" to=".SW2 > .pin1" />
+    <trace from=".SW2 > .pin2" to=".U1 > .GND" />
+    <trace from=".U1 > .IO9" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".D1 > .pin1" />
+    <trace from=".D1 > .pin2" to=".U1 > .GND" />
+    <trace from=".U1 > .3V3" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".U1 > .GND" />
+  </board>
+)`} />
+
+Notice `autorouterEffortLevel="10x"` on the board: the module brings 27 pads
+onto a small board and the router needs the extra compute to finish every
+net. Use `1x` while iterating on placement, then raise the effort for the
+final route.
+
+## What You Learned
+
+- ESP32 modules come from the registry with correct footprints and named pins —
+  never draw a module footprint by hand.
+- EN and IO0 are the strapping pins your bootloader buttons attach to.
+- Decoupling capacitors carry a 1 mm placement rule that tscircuit enforces as
+  a design rule; relax it explicitly (or move the cap) when it is a bulk cap.
+- `autorouterEffortLevel` trades compute time for route completeness on dense
+  boards.
+- Zero render errors + every net in the connectivity map = a board ready for
+  the ordering step.
+
+## Ordering the PCB
+
+Press the tscircuit "One-click order PCB" flow in the editor, or export
+gerbers for JLCPCB. The ESP32-C3-WROOM-02 module solders to the castellated
+pads by hand or with a stencil — no hot air required for a two-layer build.
