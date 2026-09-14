@@ -230,6 +230,17 @@ Explicit exit regions also prevent multiple buses from choosing the same
 crowded strip. Keep related lanes adjacent, but reserve different regions for
 lanes that would otherwise cross.
 
+## Connect the fanouts with bus lanes
+
+Use [`autorouter="bus_lanes"`](../elements/autoroutingphase.mdx#route-bus-lanes-without-layer-changes)
+on an `<autoroutingphase />` to connect compatible controller and memory fanout
+exits without adding vias. Select the DDR endpoint ports with `connections` and
+set `maxLengthSkew` and `pcbTraceWidth` on each `<bus />`. Leave other connections
+for the subsequent global router. The phase preserves existing fanout copper and
+includes its planar lengths when matching each bus. Layer mismatches or impossible
+planar routes produce errors; adjust the fanouts rather than expecting a layer
+change inside the bus route.
+
 ## Verify the complete channel
 
 A successful local fanout is not proof that the complete DDR channel meets its
