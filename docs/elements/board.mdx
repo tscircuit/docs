@@ -38,6 +38,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
 | `autorouterVersion` | `'beta_pipeline1' \| 'beta_pipeline3' \| 'beta_pipeline4' \| 'beta_pipeline5' \| 'beta_pipeline7' \| 'beta_pipeline9' \| 'latest'` | Pin routing to a known autorouter implementation when comparing routing behavior across versions. Unknown values fall back to `latest` with a warning. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
+| `routeRemaining` | `boolean` | Set to `false` to skip implicit routing of remaining connections while keeping explicit routing phases and breakouts. Unrouted connections still produce DRC errors. `true` or omission keeps normal remaining routing; nested subcircuits inherit the setting. |
 | `bomDisabled` | `boolean` | Skip bill-of-material generation for this board. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
 | `schAutoLayoutEnabled` | `boolean` | Enable automatic schematic layout for supported grouped circuits. |
