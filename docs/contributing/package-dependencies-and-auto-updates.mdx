@@ -50,12 +50,23 @@ flowchart TD
     %% CLI to Tscircuit
     cli --> tscircuit[tscircuit/tscircuit]
 
+    %% PnP converter supplies the CLI development dependency and tscircuit runtime dependency
+    pnp[circuit-json-to-pnp-csv] --> cli
+    pnp --> tscircuit
+
     %% Tscircuit to web services
     tscircuit --> svg[tscircuit/svg.tscircuit.com]
     tscircuit --> usercode[tscircuit/usercode.tscircuit.com]
 ```
 
 ## Workflow Implementation
+
+`circuit-json-to-pnp-csv` releases dispatch updates to both `tscircuit/cli` and
+`tscircuit/tscircuit`. The CLI uses the converter as a development dependency and
+leaves it external in its build; the `tscircuit` package supplies it at runtime.
+When the CLI adopts a new converter API, publish the corresponding `tscircuit`
+dependency update before merging the CLI change. Updating only the CLI's
+development dependency does not update the converter in an installed CLI.
 
 The auto-update system consists of coordinated workflows across multiple repositories. Here's how it works in detail:
 
