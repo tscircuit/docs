@@ -1426,3 +1426,14 @@ article,
 button[aria-label="Scroll back to top"] {
   transform: rotate(-90deg);
 }
+
+.ai-start {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-left: 3px solid var(--ifm-color-primary);
+  border-radius: 6px;
+  background: var(--ifm-background-surface-color);
+  font-size: 0.95rem;
+}
+.ai-start p { margin: 0.5rem 0 0; }

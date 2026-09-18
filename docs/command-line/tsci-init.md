@@ -4,6 +4,10 @@ sidebar_position: 0
 description: Initialize a new TSCircuit project
 ---
 
+import Terminal from "@site/src/components/terminal"
+import initTranscript from "@site/src/data/terminals/init.json"
+
+
 `tsci init` bootstraps a fresh project in the current directory. It creates the
 basic files needed to start developing a board, including:
 
@@ -39,14 +43,7 @@ my-circuit/
 └─ tscircuit.config.json
 ```
 
-import tsciInitImage from "../../static/img/tsci-init.png";
-import ImageWithCaption from "../../src/components/ImageWithCaption";
-
-<ImageWithCaption
-  src={tsciInitImage}
-  alt="tsci init output"
-  caption="Terminal output from a successful tsci init"
-/>
+<Terminal {...initTranscript} />
 
 Next, run `tsci dev` to start the development server and view your circuit in the
 browser.

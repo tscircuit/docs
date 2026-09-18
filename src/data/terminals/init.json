@@ -1,0 +1,10 @@
+{
+  "title": "Create a project",
+  "sessions": [
+    {
+      "command": "tsci init",
+      "output": "Created: ./index.tsx\nCreated: ./.npmrc\nCreated: ./package.json\nCreated: ./tsconfig.json\nCreated: ./.gitignore\nInitializing project in ./...\nUpdated package.json to remove unnecessary fields.\nInstalling dependencies...\n\nadded 38 packages, and audited 39 packages in 26s\n\n3 packages are looking for funding\n  run `npm fund` for details\n\nfound \u001b[32m0\u001b[0m vulnerabilities\nDependencies installed successfully.\n\ud83c\udf89 Initialization complete! Run \"tsci dev\" to start developing."
+    }
+  ],
+  "caption": "Example output; paths, versions, and timings vary."
+}
