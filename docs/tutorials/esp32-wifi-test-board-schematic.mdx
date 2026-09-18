@@ -1,0 +1,388 @@
+---
+title: "ESP32 WiFi Test Board Schematic"
+description: "Design a custom ESP32-WROOM-32E development board schematic using tscircuit — featuring USB-C, LDO power regulation, USB-UART bridge, auto-program circuit, and JLCPCB-stockable parts."
+---
+
+## Overview
+
+In this tutorial you will design a **custom ESP32 development board** schematic
+from scratch using tscircuit. The design follows the same architecture found in
+popular ESP32 dev boards (ESP32-DevKitC, NodeMCU-32S) and mirrors the approach
+taught in
+[The Hardware Academy's ESP32 PCB course](https://thehardwareacademy.com/courses/tutorial-full-length-how-to-design-a-custom-esp32-pcb/).
+
+Every component uses a **JLCPCB-stockable part number** so the board can be
+directly manufactured.
+
+## Circuit Blocks
+
+The design is split into six functional blocks:
+
+| Block | Components | Purpose |
+| --- | --- | --- |
+| **USB-C Connector** | J1, R1, R2 | Power input & data, CC pull-downs for host detection |
+| **3.3 V LDO** | U1, C1–C3, LED1, R3 | Regulates 5 V VBUS → 3.3 V, power indicator LED |
+| **USB-UART Bridge** | U2, C4 | CP2102N converts USB to UART for programming & debug |
+| **Auto-Program** | Q1, Q2 | Cross-coupled NPN transistors toggle EN/IO0 from DTR/RTS |
+| **ESP32 Module** | U3, C5–C7, R4–R5, SW1–SW2 | ESP32-WROOM-32E with strapping, reset & boot buttons |
+| **GPIO Peripherals** | LED2, R6–R8 | User LED on IO2, strapping pull-ups on IO5 & IO15 |
+
+## Interactive Schematic
+
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultActiveTab="schematic" code={`
+export default () => (
+  <board width="80mm" height="60mm">
+    {/* ── USB-C Connector ─────────────────────────────── */}
+    <chip
+      name="J1"
+      manufacturerPartNumber="USB4125-GF-A-0190"
+      pinLabels={{
+        pin1: ["VBUS"],
+        pin2: ["D_N"],
+        pin3: ["D_P"],
+        pin4: ["CC1"],
+        pin5: ["CC2"],
+        pin6: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VBUS", "D_P", "D_N"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["CC1", "CC2", "GND"],
+          direction: "top-to-bottom",
+        },
+      }}
+      footprint="soic8"
+      schX={-15}
+      schY={0}
+      pcbX={-30}
+      pcbY={-20}
+    />
+
+    {/* CC pull-down resistors for USB-C host detection */}
+    <resistor name="R1" resistance="5.1k" footprint="0402" pcbX={-20} pcbY={-25} />
+    <resistor name="R2" resistance="5.1k" footprint="0402" pcbX={-20} pcbY={-15} />
+    <trace from=".J1 .CC1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to="net.GND" />
+    <trace from=".J1 .CC2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to="net.GND" />
+    <trace from=".J1 .GND" to="net.GND" />
+    <trace from=".J1 .VBUS" to="net.VBUS" />
+
+    {/* ── Power: AMS1117-3.3 LDO ──────────────────────── */}
+    <chip
+      name="U1"
+      manufacturerPartNumber="AMS1117-3.3"
+      pinLabels={{
+        pin1: ["GND_TAB"],
+        pin2: ["VOUT"],
+        pin3: ["VIN"],
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["VIN"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["GND_TAB"], direction: "left-to-right" },
+        rightSide: { pins: ["VOUT"], direction: "top-to-bottom" },
+      }}
+      footprint="sot223"
+      schX={-5}
+      schY={-8}
+      pcbX={-10}
+      pcbY={-20}
+    />
+
+    {/* Input decoupling capacitor */}
+    <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={-15} pcbY={-20} />
+    {/* Output decoupling capacitor */}
+    <capacitor name="C2" capacitance="22uF" footprint="0805" pcbX={-5} pcbY={-20} />
+    {/* Additional 100nF bypass on 3V3 rail */}
+    <capacitor name="C3" capacitance="100nF" footprint="0402" pcbX={0} pcbY={-20} />
+
+    <trace from="net.VBUS" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin1" to=".U1 .VIN" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from=".U1 .GND_TAB" to="net.GND" />
+    <trace from=".U1 .VOUT" to="net.V3_3" />
+    <trace from=".U1 .VOUT" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to="net.GND" />
+    <trace from="net.V3_3" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin2" to="net.GND" />
+
+    {/* Power LED on 3V3 rail */}
+    <led name="LED1" color="green" footprint="0603" pcbX={5} pcbY={-20} />
+    <resistor name="R3" resistance="1k" footprint="0402" pcbX={5} pcbY={-25} />
+    <trace from="net.V3_3" to=".R3 > .pin1" />
+    <trace from=".R3 > .pin2" to=".LED1 .pos" />
+    <trace from=".LED1 .neg" to="net.GND" />
+
+    {/* ── USB-UART Bridge: CP2102N ────────────────────── */}
+    <chip
+      name="U2"
+      manufacturerPartNumber="CP2102N-A02-GQFN24"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["RXD"],
+        pin3: ["TXD"],
+        pin4: ["DSR"],
+        pin5: ["DTR"],
+        pin6: ["RTS"],
+        pin7: ["CTS"],
+        pin8: ["D_P"],
+        pin9: ["D_N"],
+        pin10: ["GND"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "D_P", "D_N", "GND"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["TXD", "RXD", "DTR", "RTS", "DSR", "CTS"],
+          direction: "top-to-bottom",
+        },
+      }}
+      footprint="qfn24"
+      schX={-5}
+      schY={5}
+      pcbX={-10}
+      pcbY={0}
+    />
+
+    {/* CP2102N bypass cap */}
+    <capacitor name="C4" capacitance="100nF" footprint="0402" pcbX={-15} pcbY={0} />
+
+    <trace from=".J1 .D_P" to=".U2 .D_P" />
+    <trace from=".J1 .D_N" to=".U2 .D_N" />
+    <trace from="net.VBUS" to=".U2 .VDD" />
+    <trace from=".U2 .VDD" to=".C4 > .pin1" />
+    <trace from=".C4 > .pin2" to="net.GND" />
+    <trace from=".U2 .GND" to="net.GND" />
+
+    {/* ── Auto-Program Circuit (DTR/RTS → EN/IO0) ──────── */}
+    {/* Q1: NPN - DTR drives base, collector → EN */}
+    <chip
+      name="Q1"
+      manufacturerPartNumber="SS8050-G"
+      footprint="sot23"
+      pinLabels={{ pin1: ["B"], pin2: ["E"], pin3: ["C"] }}
+      schPortArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
+      }}
+      schX={8}
+      schY={2}
+      pcbX={0}
+      pcbY={5}
+    />
+    {/* Q2: NPN - RTS drives base, collector → IO0 */}
+    <chip
+      name="Q2"
+      manufacturerPartNumber="SS8050-G"
+      footprint="sot23"
+      pinLabels={{ pin1: ["B"], pin2: ["E"], pin3: ["C"] }}
+      schPortArrangement={{
+        leftSide: { pins: ["B"], direction: "top-to-bottom" },
+        rightSide: { pins: ["C", "E"], direction: "top-to-bottom" },
+      }}
+      schX={8}
+      schY={10}
+      pcbX={0}
+      pcbY={15}
+    />
+
+    {/* Cross-coupled DTR/RTS auto-program */}
+    <trace from=".U2 .DTR" to=".Q1 .B" />
+    <trace from=".Q1 .C" to="net.EN" />
+    <trace from=".Q1 .E" to="net.RTS_CROSS" />
+    <trace from=".U2 .RTS" to="net.RTS_CROSS" />
+
+    <trace from=".U2 .RTS" to=".Q2 .B" />
+    <trace from=".Q2 .C" to="net.IO0" />
+    <trace from=".Q2 .E" to="net.DTR_CROSS" />
+    <trace from=".U2 .DTR" to="net.DTR_CROSS" />
+
+    {/* ── ESP32-WROOM-32E Module ──────────────────────── */}
+    <chip
+      name="U3"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      pinLabels={{
+        pin1: ["GND1"], pin2: ["V3_3"], pin3: ["EN"],
+        pin4: ["IO36"], pin5: ["IO39"], pin6: ["IO34"],
+        pin7: ["IO35"], pin8: ["IO32"], pin9: ["IO33"],
+        pin10: ["IO25"], pin11: ["IO26"], pin12: ["IO27"],
+        pin13: ["IO14"], pin14: ["IO12"], pin15: ["IO13"],
+        pin16: ["GND2"], pin17: ["IO15"], pin18: ["IO2"],
+        pin19: ["IO0"], pin20: ["IO4"], pin21: ["IO16"],
+        pin22: ["IO17"], pin23: ["IO5"], pin24: ["IO18"],
+        pin25: ["IO19"], pin26: ["IO21"], pin27: ["RXD0"],
+        pin28: ["TXD0"], pin29: ["IO22"], pin30: ["IO23"],
+        pin31: ["GND3"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["V3_3","EN","IO36","IO39","IO34","IO35","IO32","IO33","IO25","IO26","IO27","IO14","IO12","IO13"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["GND1","IO15","IO2","IO0","IO4","IO16","IO17","IO5","IO18","IO19","IO21","RXD0","TXD0","IO22","IO23"],
+          direction: "top-to-bottom",
+        },
+        bottomSide: {
+          pins: ["GND2", "GND3"],
+          direction: "left-to-right",
+        },
+      }}
+      footprint="bga39"
+      schX={22}
+      schY={5}
+      pcbX={15}
+      pcbY={0}
+    />
+
+    {/* ESP32 power & ground */}
+    <trace from="net.V3_3" to=".U3 .V3_3" />
+    <trace from=".U3 .GND1" to="net.GND" />
+    <trace from=".U3 .GND2" to="net.GND" />
+    <trace from=".U3 .GND3" to="net.GND" />
+
+    {/* ESP32 bulk decoupling */}
+    <capacitor name="C5" capacitance="10uF" footprint="0805" pcbX={25} pcbY={-10} />
+    <capacitor name="C6" capacitance="100nF" footprint="0402" pcbX={25} pcbY={-5} />
+    <trace from="net.V3_3" to=".C5 > .pin1" />
+    <trace from=".C5 > .pin2" to="net.GND" />
+    <trace from="net.V3_3" to=".C6 > .pin1" />
+    <trace from=".C6 > .pin2" to="net.GND" />
+
+    {/* ── EN (Reset) Strapping ────────────────────────── */}
+    <resistor name="R4" resistance="10k" footprint="0402" pcbX={10} pcbY={-15} />
+    <capacitor name="C7" capacitance="1uF" footprint="0402" pcbX={15} pcbY={-15} />
+    <trace from="net.V3_3" to=".R4 > .pin1" />
+    <trace from=".R4 > .pin2" to="net.EN" />
+    <trace from="net.EN" to=".U3 .EN" />
+    <trace from="net.EN" to=".C7 > .pin1" />
+    <trace from=".C7 > .pin2" to="net.GND" />
+
+    {/* RESET button */}
+    <pushbutton name="SW1" footprint="pushbutton" layer="top"
+      connections={{ pin1: "net.EN", pin2: "net.GND" }}
+      pcbX={20} pcbY={-15} />
+
+    {/* ── IO0 (Boot) Strapping ────────────────────────── */}
+    <resistor name="R5" resistance="10k" footprint="0402" pcbX={25} pcbY={10} />
+    <trace from="net.V3_3" to=".R5 > .pin1" />
+    <trace from=".R5 > .pin2" to="net.IO0" />
+    <trace from="net.IO0" to=".U3 .IO0" />
+
+    {/* BOOT button */}
+    <pushbutton name="SW2" footprint="pushbutton" layer="top"
+      connections={{ pin1: "net.IO0", pin2: "net.GND" }}
+      pcbX={30} pcbY={10} />
+
+    {/* ── UART Connections (crossed TXD/RXD) ──────────── */}
+    <trace from=".U2 .TXD" to=".U3 .RXD0" />
+    <trace from=".U2 .RXD" to=".U3 .TXD0" />
+
+    {/* ── User LED on IO2 ─────────────────────────────── */}
+    <led name="LED2" color="blue" footprint="0603" pcbX={30} pcbY={0} />
+    <resistor name="R6" resistance="1k" footprint="0402" pcbX={30} pcbY={5} />
+    <trace from=".U3 .IO2" to=".R6 > .pin1" />
+    <trace from=".R6 > .pin2" to=".LED2 .pos" />
+    <trace from=".LED2 .neg" to="net.GND" />
+
+    {/* ── IO15 / IO5 Strapping Pull-ups ───────────────── */}
+    <resistor name="R7" resistance="10k" footprint="0402" pcbX={30} pcbY={15} />
+    <trace from="net.V3_3" to=".R7 > .pin1" />
+    <trace from=".R7 > .pin2" to=".U3 .IO15" />
+    <resistor name="R8" resistance="10k" footprint="0402" pcbX={30} pcbY={20} />
+    <trace from="net.V3_3" to=".R8 > .pin1" />
+    <trace from=".R8 > .pin2" to=".U3 .IO5" />
+  </board>
+)
+`} />
+
+## Block-by-Block Walkthrough
+
+### 1. USB-C Connector (J1)
+
+A USB Type-C receptacle provides 5 V power (VBUS) and data lines (D+/D−).
+Two **5.1 kΩ pull-down resistors** on CC1 and CC2 are required by the USB-C
+specification — they tell the upstream host that this device draws up to 500 mA
+at 5 V (default USB power).
+
+### 2. 3.3 V LDO Regulator (U1 — AMS1117-3.3)
+
+The ESP32 runs at 3.3 V, so an **AMS1117-3.3** linear regulator steps VBUS
+(5 V) down to 3.3 V. Key passives:
+
+- **C1 (10 µF)** — Input decoupling, stabilises the regulator input.
+- **C2 (22 µF)** — Output decoupling, required by the AMS1117 datasheet for
+  stability.
+- **C3 (100 nF)** — High-frequency bypass on the 3.3 V rail.
+- **LED1 + R3** — Green power indicator (≈ 1.6 mA).
+
+### 3. USB-UART Bridge (U2 — CP2102N)
+
+The **CP2102N** converts USB to UART so you can program the ESP32 and read
+serial output from a laptop. D+ and D− connect directly from the USB-C
+connector. The UART side exposes TXD, RXD, DTR, and RTS.
+
+### 4. Auto-Program Circuit (Q1, Q2)
+
+Two **SS8050-G NPN transistors** form a cross-coupled latch that lets tools
+like `esptool.py` automatically toggle **EN** (reset) and **IO0** (boot mode
+select) using the DTR and RTS serial control signals — no manual button
+pressing needed during firmware upload.
+
+| Signal Flow | Effect |
+| --- | --- |
+| DTR low → Q1 on → EN pulled low | ESP32 resets |
+| RTS low → Q2 on → IO0 pulled low | ESP32 enters download mode |
+
+### 5. ESP32-WROOM-32E (U3)
+
+The main module exposes all 31 pins of the ESP32 with proper strapping:
+
+- **EN**: 10 kΩ pull-up (R4) + 1 µF power-on reset delay cap (C7) + RESET
+  button (SW1).
+- **IO0**: 10 kΩ pull-up (R5) + BOOT button (SW2). High = normal boot,
+  low = download mode.
+- **IO5 / IO15**: 10 kΩ pull-ups (R7, R8) for correct boot log behaviour
+  (SDIO slave timing / debug output).
+- **C5 (10 µF) + C6 (100 nF)**: Bulk + HF bypass on the 3.3 V supply close to
+  the module.
+
+### 6. User LED (LED2)
+
+A blue LED on **IO2** with a 1 kΩ current-limiting resistor. GPIO2 is also an
+SDIO strapping pin but is safely pulled low by the LED circuit at boot.
+
+## Bill of Materials
+
+| Ref | Value | Package | JLCPCB Part | Qty |
+| --- | --- | --- | --- | --- |
+| J1 | USB-C Receptacle | — | USB4125-GF-A-0190 | 1 |
+| U1 | AMS1117-3.3 | SOT-223 | AMS1117-3.3 | 1 |
+| U2 | CP2102N | QFN-24 | CP2102N-A02-GQFN24 | 1 |
+| U3 | ESP32-WROOM-32E | Module | ESP32-WROOM-32E | 1 |
+| Q1, Q2 | SS8050-G NPN | SOT-23 | SS8050-G | 2 |
+| R1, R2 | 5.1 kΩ | 0402 | — | 2 |
+| R3, R6 | 1 kΩ | 0402 | — | 2 |
+| R4, R5, R7, R8 | 10 kΩ | 0402 | — | 4 |
+| C1, C5 | 10 µF | 0805 | — | 2 |
+| C2 | 22 µF | 0805 | — | 1 |
+| C3, C4, C6 | 100 nF | 0402 | — | 3 |
+| C7 | 1 µF | 0402 | — | 1 |
+| LED1 | Green LED | 0603 | — | 1 |
+| LED2 | Blue LED | 0603 | — | 1 |
+| SW1 | Reset Button | — | — | 1 |
+| SW2 | Boot Button | — | — | 1 |
+
+## Next Steps
+
+- Add an **antenna keep-out zone** around the ESP32 module.
+- Route the PCB for 2-layer manufacturing.
+- Add **ESD protection** diodes on the USB data lines.
+- Break out remaining GPIOs to **pin headers** for prototyping.
