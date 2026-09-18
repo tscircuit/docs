@@ -1,0 +1,9 @@
+{
+  "title": "Start the development server",
+  "sessions": [
+    {
+      "command": "tsci dev",
+      "output": "Found entrypoint at: ./index.tsx\nInstalling types for imported snippets... \u001b[32mdone\u001b[0m\n\n  \u001b[32m@tscircuit/cli@0.1.79\u001b[0m ready in 444ms\n\n  ➜ Local:   \u001b[36mhttp://localhost:3020\u001b[0m\n\nWatching ./ for changes..."
+    }
+  ]
+}

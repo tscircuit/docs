@@ -4,6 +4,10 @@ sidebar_position: 4
 description: Install KiCad footprint libraries from GitHub and use them in your tscircuit projects with full TypeScript support.
 ---
 
+import Terminal from "@site/src/components/terminal"
+import installKicadTranscript from "@site/src/data/terminals/install-kicad.json"
+
+
 ## Overview
 
 You can install KiCad footprint libraries directly from GitHub using the `tsci add` or `tsci install` command. This is the easiest way to use existing KiCad footprints in your tscircuit projects, with automatic TypeScript type generation for full IDE support.
@@ -12,11 +16,7 @@ You can install KiCad footprint libraries directly from GitHub using the `tsci a
 
 To install a KiCad library from GitHub, use the `tsci add` command with the repository URL:
 
-```bash
-tsci add https://github.com/espressif/kicad-libraries
-```
-
-![Installing KiCad library from GitHub](/img/guides/installing-kicad-library/install-lib.png)
+<Terminal {...installKicadTranscript} />
 
 :::tip
 `tsci install` is an alias for `tsci add` - both commands work identically.

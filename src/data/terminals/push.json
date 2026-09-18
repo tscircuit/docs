@@ -1,0 +1,9 @@
+{
+  "title": "Publish to the registry",
+  "sessions": [
+    {
+      "command": "tsci push",
+      "output": "Detected entrypoint: \"index.tsx\"\nUpdated tscircuit.config.json with detected entrypoint\nPackage author does not match the logged in GitHub username\n\u001b[32m✔\u001b[0m Package \"@tsci/dhvll.testProject\" does not exist. Create it? … yes\n\u001b[32m✔\u001b[0m Package Visibility: › Public\n\u001b[32m✔\u001b[0m Snippet Type: › Board\nPackage created\n\n↑ index.tsx\n↑ package-lock.json\n↑ package.json\n↑ tscircuit.config.json\n↑ tsconfig.json\n\u001b[32m\"@tsci/dhvll.testProject@1.0.0\" published!\u001b[0m\nhttps://tscircuit.com/dhvll/testProject"
+    }
+  ]
+}

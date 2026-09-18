@@ -1,0 +1,9 @@
+{
+  "title": "Install a KiCad library",
+  "sessions": [
+    {
+      "command": "tsci add https://github.com/espressif/kicad-libraries",
+      "output": "\u001b[36mAdding https://github.com/espressif/kicad-libraries...\u001b[0m\n> bun add https://github.com/espressif/kicad-libraries\nbun add v1.3.3 (274e01c7)\n\n\u001b[32minstalled\u001b[0m kicad-libraries@github:espressif/kicad-libraries#93d7c10\n\n1 package installed [14.56s]\n\u001b[32m√ Added https://github.com/espressif/kicad-libraries successfully\u001b[0m\n\u001b[36mDetected 47 KiCad footprint file(s)\u001b[0m, generating types...\n\u001b[32m√ Generated types at types/kicad-libraries.d.ts\n√ Updated tsconfig.json with types directory\u001b[0m\nInitializing project in ./...\nInstalling dependencies...\nbun add v1.3.3 (274e01c7)\n\n\u001b[32minstalled\u001b[0m @types/react@19.2.7\n\u001b[32minstalled\u001b[0m tscircuit@0.0.1010 with binaries:\n - tsci\n - tscircuit\n\n[1065.00ms] done\nDependencies installed successfully.\n\u001b[32m√ Generated types for KiCad library: kicad-libraries\u001b[0m"
+    }
+  ]
+}

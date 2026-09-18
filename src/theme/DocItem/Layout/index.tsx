@@ -14,6 +14,8 @@ import ContentVisibility from "@theme/ContentVisibility"
 import type { Props } from "@theme/DocItem/Layout"
 import CopyPageButton from "@site/src/components/CopyPageButton"
 
+import AiStart from "@site/src/components/ai-start"
+
 import styles from "./styles.module.css"
 
 /**
@@ -58,6 +60,7 @@ export default function DocItemLayout({ children }: Props): ReactNode {
                 <div className={styles.contentHeader}>
                   <CopyPageButton />
                 </div>
+                <AiStart />
                 {children}
               </DocItemContent>
             </div>
