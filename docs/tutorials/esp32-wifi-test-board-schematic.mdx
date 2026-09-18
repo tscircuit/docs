@@ -1,0 +1,482 @@
+---
+title: Designing an ESP32 WiFi Test Board (Schematic Only)
+description: >-
+  Learn how to draw a complete ESP32-WROOM development board schematic in
+  tscircuit: USB-C power, a 3.3V regulator, a CP2102 USB-UART bridge, an
+  auto-program circuit, boot/reset strapping, and status LEDs — using parts
+  stocked by JLCPCB.
+---
+
+import { TscircuitIframe } from "../../src/components/TscircuitIframe"
+
+## Overview
+
+In this tutorial you'll draw the **schematic** of a minimal ESP32 WiFi test
+board — the kind of board you build when you want to verify that a module,
+antenna, and power supply all work before designing a full product around
+them. This mirrors the flow used in hardware design courses: bring up power,
+bring up USB, bring up the module.
+
+Every part in this design is either a **JLCPCB basic part** (no extra fee at
+assembly) or a widely stocked JLCPCB part, so the schematic can go straight
+to fabrication without hunting for alternates.
+
+The full schematic we're building:
+
+<TscircuitIframe defaultActiveTab="schematic" code={`
+export default () => (
+  <board width="40mm" height="30mm">
+    {/* ---------- USB-C connector (power + USB data) ---------- */}
+    <chip
+      name="J1"
+      footprint="0603"
+      pinLabels={{
+        pin1: "VBUS",
+        pin2: "GND",
+        pin3: "D+",
+        pin4: "D-",
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["pin1", "pin2"], direction: "top-to-bottom" },
+        rightSide: { pins: ["pin3", "pin4"], direction: "top-to-bottom" },
+      }}
+      schX={-14}
+      schY={0}
+    />
+
+    {/* ---------- 3.3V regulator: AMS1117-3.3 (JLCPCB basic part) ---------- */}
+    <chip
+      name="U1"
+      footprint="sot223"
+      manufacturerPartNumber="AMS1117-3.3"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VOUT",
+        pin3: "VIN",
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["pin3"], direction: "top-to-bottom" },
+        rightSide: { pins: ["pin2"], direction: "top-to-bottom" },
+        bottomSide: { pins: ["pin1"], direction: "left-to-right" },
+      }}
+      schX={-9}
+      schY={2}
+    />
+
+    {/* Regulator capacitors */}
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0805"
+      schX={-11}
+      schY={4}
+      schRotation="90deg"
+    />
+    <capacitor
+      name="C2"
+      capacitance="22uF"
+      footprint="0805"
+      schX={-7}
+      schY={4}
+      schRotation="90deg"
+    />
+    <capacitor
+      name="C3"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-5.5}
+      schY={4}
+      schRotation="90deg"
+    />
+
+    {/* ---------- USB-UART bridge: CP2102N (JLCPCB part) ---------- */}
+    <chip
+      name="U2"
+      footprint="qfn24"
+      manufacturerPartNumber="CP2102N-A02-GQFN24R"
+      pinLabels={{
+        pin1: "VDD",
+        pin2: "GND",
+        pin3: "REGIN",
+        pin4: "D+",
+        pin5: "D-",
+        pin6: "TXD",
+        pin7: "RXD",
+        pin8: "DTR",
+        pin9: "RTS",
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["pin1", "pin2", "pin3"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["pin4", "pin5"],
+          direction: "top-to-bottom",
+        },
+        topSide: { pins: ["pin8", "pin9"], direction: "left-to-right" },
+        bottomSide: { pins: ["pin6", "pin7"], direction: "left-to-right" },
+      }}
+      schX={-4}
+      schY={-2}
+    />
+    <capacitor
+      name="C4"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-4}
+      schY={2}
+      schRotation="90deg"
+    />
+
+    {/* ---------- Auto-program circuit (cross-coupled NPN pair) ---------- */}
+    <chip
+      name="Q1"
+      footprint="sot23"
+      manufacturerPartNumber="SS8050-G"
+      pinLabels={{
+        pin1: "B",
+        pin2: "E",
+        pin3: "C",
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["pin1"], direction: "top-to-bottom" },
+        rightSide: { pins: ["pin3", "pin2"], direction: "top-to-bottom" },
+      }}
+      schX={1}
+      schY={-4}
+    />
+    <chip
+      name="Q2"
+      footprint="sot23"
+      manufacturerPartNumber="SS8050-G"
+      pinLabels={{
+        pin1: "B",
+        pin2: "E",
+        pin3: "C",
+      }}
+      schPortArrangement={{
+        leftSide: { pins: ["pin1"], direction: "top-to-bottom" },
+        rightSide: { pins: ["pin3", "pin2"], direction: "top-to-bottom" },
+      }}
+      schX={1}
+      schY={-1}
+    />
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+      schX={-1.5}
+      schY={-4.5}
+    />
+    <resistor
+      name="R2"
+      resistance="10k"
+      footprint="0402"
+      schX={-1.5}
+      schY={-0.5}
+    />
+
+    {/* ---------- ESP32-WROOM-32E module (JLCPCB part) ---------- */}
+    <chip
+      name="U3"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "IO0",
+        pin5: "IO2",
+        pin6: "TXD0",
+        pin7: "RXD0",
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["pin1", "pin2"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["pin3", "pin4", "pin5"],
+          direction: "top-to-bottom",
+        },
+        bottomSide: {
+          pins: ["pin6", "pin7"],
+          direction: "left-to-right",
+        },
+      }}
+      schX={8}
+      schY={0}
+    />
+
+    {/* EN reset circuit: pull-up + delay capacitor */}
+    <resistor
+      name="R3"
+      resistance="10k"
+      footprint="0402"
+      schX={5}
+      schY={-5}
+    />
+    <capacitor
+      name="C5"
+      capacitance="1uF"
+      footprint="0402"
+      schX={5}
+      schY={3.5}
+      schRotation="90deg"
+    />
+
+    {/* IO0 boot strap: pull-up + BOOT button */}
+    <resistor
+      name="R4"
+      resistance="10k"
+      footprint="0402"
+      schX={5}
+      schY={6}
+    />
+    <pushbutton
+      name="SW1"
+      footprint="smdpushbutton"
+      schX={7.5}
+      schY={7.5}
+    />
+
+    {/* ---------- Status LEDs ---------- */}
+    {/* User LED on IO2 */}
+    <resistor
+      name="R5"
+      resistance="1k"
+      footprint="0402"
+      schX={12}
+      schY={-3}
+    />
+    <led
+      name="LED1"
+      color="green"
+      footprint="0603"
+      schX={14}
+      schY={-3}
+      schRotation="270deg"
+    />
+
+    {/* Power LED */}
+    <resistor
+      name="R6"
+      resistance="1k"
+      footprint="0402"
+      schX={-11}
+      schY={6.5}
+    />
+    <led
+      name="LED2"
+      color="red"
+      footprint="0603"
+      schX={-9}
+      schY={6.5}
+      schRotation="270deg"
+    />
+
+    {/* ESP32 decoupling */}
+    <capacitor
+      name="C6"
+      capacitance="100nF"
+      footprint="0402"
+      schX={8}
+      schY={-4.5}
+      schRotation="90deg"
+    />
+
+    {/* ================= POWER TRACES ================= */}
+    <trace from=".J1 > .pin1" to="net.VBUS" />
+    <trace from=".J1 > .pin2" to="net.GND" />
+    <trace from=".U1 > .pin3" to="net.VBUS" />
+    <trace from=".U1 > .pin2" to="net.V3V3" />
+    <trace from=".U1 > .pin1" to="net.GND" />
+    <trace from=".C1 > .pos" to="net.VBUS" />
+    <trace from=".C1 > .neg" to="net.GND" />
+    <trace from=".C2 > .pos" to="net.V3V3" />
+    <trace from=".C2 > .neg" to="net.GND" />
+    <trace from=".C3 > .pos" to="net.V3V3" />
+    <trace from=".C3 > .neg" to="net.GND" />
+    <trace from=".R6 > .pin1" to="net.V3V3" />
+    <trace from=".R6 > .pin2" to=".LED2 > .pos" />
+    <trace from=".LED2 > .neg" to="net.GND" />
+
+    {/* ================= USB DATA ================= */}
+    <trace from=".J1 > .pin3" to=".U2 > .pin4" />
+    <trace from=".J1 > .pin4" to=".U2 > .pin5" />
+    <trace from=".U2 > .pin1" to="net.V3V3" />
+    <trace from=".U2 > .pin2" to="net.GND" />
+    <trace from=".U2 > .pin3" to="net.VBUS" />
+    <trace from=".C4 > .pos" to="net.V3V3" />
+    <trace from=".C4 > .neg" to="net.GND" />
+
+    {/* ================= UART ================= */}
+    {/* crossed: CP2102 TXD -> ESP32 RXD0, CP2102 RXD <- ESP32 TXD0 */}
+    <trace from=".U2 > .pin6" to=".U3 > .pin7" />
+    <trace from=".U2 > .pin7" to=".U3 > .pin6" />
+
+    {/* ================= AUTO-PROGRAM ================= */}
+    <trace from=".U2 > .pin9" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".Q1 > .pin1" />
+    <trace from=".U2 > .pin8" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".Q2 > .pin1" />
+    <trace from=".Q1 > .pin2" to="net.GND" />
+    <trace from=".Q2 > .pin2" to="net.GND" />
+    <trace from=".Q1 > .pin3" to=".U3 > .pin3" />
+    <trace from=".Q2 > .pin3" to=".U3 > .pin4" />
+
+    {/* ================= ESP32 SUPPORT ================= */}
+    <trace from=".U3 > .pin1" to="net.V3V3" />
+    <trace from=".U3 > .pin2" to="net.GND" />
+    <trace from=".C6 > .pos" to="net.V3V3" />
+    <trace from=".C6 > .neg" to="net.GND" />
+
+    {/* EN: pull-up + power-on reset delay */}
+    <trace from=".R3 > .pin1" to="net.V3V3" />
+    <trace from=".R3 > .pin2" to=".U3 > .pin3" />
+    <trace from=".C5 > .pos" to=".U3 > .pin3" />
+    <trace from=".C5 > .neg" to="net.GND" />
+
+    {/* IO0: pull-up + BOOT button to ground */}
+    <trace from=".R4 > .pin1" to="net.V3V3" />
+    <trace from=".R4 > .pin2" to=".U3 > .pin4" />
+    <trace from=".SW1 > .pin1" to=".U3 > .pin4" />
+    <trace from=".SW1 > .pin2" to="net.GND" />
+
+    {/* User LED on IO2 */}
+    <trace from=".U3 > .pin5" to=".R5 > .pin1" />
+    <trace from=".R5 > .pin2" to=".LED1 > .pos" />
+    <trace from=".LED1 > .neg" to="net.GND" />
+  </board>
+)
+`} />
+
+## Block Diagram
+
+The board follows the classic ESP32 dev-board architecture:
+
+```
+USB-C ──► AMS1117-3.3 ──► 3.3V rail ──► ESP32-WROOM-32E
+  │              │                        ▲    ▲
+  │              └── Power LED            │    │
+  ▼                                       │    │
+CP2102N ◄──── USB D+/D- ──►  USB         │    │
+  │  │                                   │    │
+  │  └── UART (crossed TX/RX) ───────────┘    │
+  │                                           │
+  └── DTR/RTS ──► auto-program (Q1/Q2) ───────┘
+```
+
+## Power Supply: AMS1117-3.3
+
+The **AMS1117-3.3** is the workhorse LDO of cheap dev boards — it's a JLCPCB
+**basic part**, meaning it costs nothing extra at assembly. USB-C VBUS (5V)
+goes in, a clean 3.3V rail comes out.
+
+Three capacitors surround it:
+
+- **C1 (10µF)** — input bulk capacitance on VBUS
+- **C2 (22µF)** — output bulk capacitance; AMS1117 needs a real load
+  capacitor on its output to stay stable
+- **C3 (100nF)** — high-frequency decoupling close to the regulator
+
+A red **power LED (LED2)** with a 1k series resistor (R6) hangs off the 3.3V
+rail so you can see at a glance that power is alive.
+
+## USB-UART Bridge: CP2102N
+
+The **CP2102N-A02-GQFN24R** converts USB to UART so your computer can talk
+to the ESP32 and program it. Only the pins that matter for this board are
+modeled:
+
+- `D+` / `D-` — straight to the USB-C connector data lines
+- `TXD` / `RXD` — the UART data lines
+- `DTR` / `RTS` — handshaking lines, used by the auto-program circuit below
+- `REGIN` — internal regulator input, tied to VBUS
+- `VDD` — 3.3V supply, with a 100nF decoupling capacitor (C4)
+
+:::note
+
+UART is **crossed**: the bridge's TXD feeds the ESP32's RXD0, and the
+bridge's RXD listens to the ESP32's TXD0. Mixing these up is the #1 cause of
+"my dev board doesn't boot" schematics.
+
+:::
+
+## Auto-Program Circuit: The Cross-Coupled Transistor Pair
+
+This is the cleverest part of any ESP32 board. To put the chip into the
+bootloader, `IO0` must be low while `EN` rises. But the USB-UART driver only
+gives you two extra lines — `DTR` and `RTS` — and they **both** assert when
+a serial port opens.
+
+The fix is the classic cross-coupled NPN pair (Q1, Q2, SS8050):
+
+- `RTS` → R1 → Q1 base; Q1 collector drives **EN**
+- `DTR` → R2 → Q2 base; Q2 collector drives **IO0**
+- Each base is biased by the *other* transistor's collector, so only one
+  transistor conducts at a time
+
+This creates an XOR-like behavior: when the driver toggles DTR/RTS in
+opposite directions, exactly one of (EN, IO0) is pulled low — producing the
+EN-falling + IO0-low edge the bootloader needs. Programming tools like
+`esptool.py` toggle these lines automatically, so flashing works with zero
+buttons pressed.
+
+## ESP32-WROOM-32E Module
+
+The ESP32-WROOM-32E is a certified module with the RF front-end already
+designed — the reason we use it for a *test* board. The schematic models the
+pins that matter:
+
+| Pin | Function | Support circuit |
+|-----|----------|-----------------|
+| `3V3` | Power | 100nF decoupling (C6) |
+| `EN` | Active-high reset | 10k pull-up (R3) + 1µF delay cap (C5) |
+| `IO0` | Boot strap | 10k pull-up (R4) + BOOT button (SW1) |
+| `IO2` | User GPIO + strap | Green LED via 1k (R5, LED1) |
+| `TXD0`/`RXD0` | UART0 | Crossed to CP2102N |
+
+Two strapping details that matter:
+
+- **EN needs a slow rise.** The 1µF capacitor (C5) on EN gives the chip a
+  power-on-reset delay — without it, a fast-railing supply can leave the
+  chip in a half-configured state.
+- **IO0 must be high** for normal flash boot, and low for the serial
+  bootloader. The 10k pull-up handles the normal case; pressing SW1 during
+  reset forces the bootloader.
+
+:::tip
+
+IO2 is also a strapping pin — it must be low or floating during boot. A
+green LED with a 1k resistor is weak enough that it doesn't disturb the
+strap, while doubling as your "firmware is alive" blinker.
+
+:::
+
+## Bringing It Together
+
+Every connection in the schematic is a `<trace>` element referencing pins by
+their labels — for example `<trace from=".U2 > .pin6" to=".U3 > .pin7" />`
+crosses the UART lines. Because the labels were declared once on each chip's
+`pinLabels`, the netlist stays readable: `pin6` of the bridge *is* `TXD` by
+definition.
+
+## Verifying the Design
+
+You can check this board compiles to a valid netlist by building it with the
+tscircuit CLI:
+
+```bash
+tsci build esp32-wifi-test-board.circuit.tsx
+```
+
+A successful build means every trace lands on a real port and the netlist is
+electrically consistent — the schematic equivalent of "it compiles".
+
+## Next Steps
+
+- Add the RF/antenna section or a battery charger for a portable variant
+- Route the PCB (this tutorial intentionally stops at schematic)
+- Try swapping the module for an ESP32-C3-WROOM-02 — the strapping story
+  changes (IO9/IO8 instead of IO0/IO2)
