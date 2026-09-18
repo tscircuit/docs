@@ -1,5 +1,5 @@
 import Anser from "anser"
-import React, { useState, type CSSProperties } from "react"
+import React, { type CSSProperties } from "react"
 import styles from "./styles.module.css"
 
 export interface TerminalSession {
@@ -10,7 +10,6 @@ export interface TerminalSession {
 export interface TerminalProps {
   title?: string
   sessions: TerminalSession[]
-  caption?: string
 }
 
 // Logs are text, never HTML. Remove OSC metadata (including hyperlink targets).
@@ -55,35 +54,9 @@ export function AnsiText({ children }: { children: string }) {
 export default function Terminal({
   title = "Terminal",
   sessions,
-  caption,
 }: TerminalProps) {
-  const [copyStatus, setCopyStatus] = useState("")
-  async function copyCommands() {
-    try {
-      await navigator.clipboard.writeText(
-        sessions
-          .map(({ command }) => Anser.ansiToText(terminalText(command)))
-          .join("\n"),
-      )
-      setCopyStatus("Copied!")
-    } catch {
-      setCopyStatus("Select the command text to copy it.")
-    }
-  }
   return (
-    <figure className={styles.terminal}>
-      <div className={styles.header}>
-        <span className={styles.title}>
-          <span aria-hidden="true">❯_ </span>
-          {title}
-        </span>
-        <button type="button" onClick={copyCommands}>
-          Copy commands
-        </button>
-        <span className={styles.status} role="status">
-          {copyStatus}
-        </span>
-      </div>
+    <div className={styles.terminal}>
       <pre
         className={styles.screen}
         tabIndex={0}
@@ -109,7 +82,6 @@ export default function Terminal({
           ))}
         </code>
       </pre>
-      {caption && <figcaption className={styles.caption}>{caption}</figcaption>}
-    </figure>
+    </div>
   )
 }
