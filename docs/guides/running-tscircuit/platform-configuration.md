@@ -32,7 +32,7 @@ grouped below by purpose.
 | `partsEngine` | `PartsEngine` | Finds purchasable parts that match component specifications. |
 | `autorouter` | `AutorouterProp` | Selects or configures the autorouter used by the platform. |
 | `autorouterMap` | `Record<string, AutorouterDefinition>` | Registers named custom autorouters. Each definition creates an autorouter instance from Simple Route JSON. |
-| `useCloudAutorouter` | `boolean` | Enables cloud parallelism for Pipeline9 routing at the default effort level without changing autorouter outputs. Omitted or `false` keeps local routing. For CLI projects, set [`useCloudAutorouting` in `tscircuit.config.json`](../tscircuit-essentials/tscircuit-config.mdx#usecloudautorouting). |
+| `useCloudAutorouter` | `boolean` | Enables cloud parallelism for Pipeline9 routing at the default effort level without changing autorouter outputs. Omitted or `false` keeps local routing. |
 | `cloudAutorouterUrl` | `string` | Sets the cloud autorouter endpoint. The default tscircuit platform uses a tscircuit cloud service. |
 | `defaultSpiceEngine` | `"spicey" \| "ngspice" \| string` | Selects the default SPICE simulation engine. Custom engine names can refer to entries in `spiceEngineMap`. |
 | `spiceEngineMap` | `Record<string, SpiceEngine>` | Registers named SPICE engines. Each engine accepts a SPICE netlist and returns simulation-result Circuit JSON. |

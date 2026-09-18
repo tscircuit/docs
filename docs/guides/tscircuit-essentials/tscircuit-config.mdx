@@ -38,7 +38,7 @@ The `tscircuit.config.json` file is a project-level configuration file that allo
 | `kicadLibraryEntrypointPath` | [Entry file for KiCad footprint library generation.](#kicadlibraryentrypointpath) |
 | `kicadLibraryName` | [Name for the generated KiCad library.](#kicadlibraryname) |
 | `alwaysUseLatestTscircuitOnCloud` | [Force latest tscircuit version in cloud builds.](#alwaysuselatesttscircuitoncloud) |
-| `useCloudAutorouting` | [Enable cloud autorouting for CLI builds, exports, and snapshots.](#usecloudautorouting) |
+| `useCloudAutorouting` | Enable cloud autorouting for CLI builds, exports, and snapshots. |
 | `build` | [Build output toggles for CLI builds.](#build) |
 | `pcbSnapshotSettings` | [Rendering options for PCB snapshots and preview images.](#pcbsnapshotsettings) |
 
@@ -330,26 +330,6 @@ Force cloud builds to use the latest tscircuit version instead of the project-pi
   "alwaysUseLatestTscircuitOnCloud": true
 }
 ```
-
-### useCloudAutorouting
-
-**Type:** `boolean` (optional)
-
-Enables cloud parallelism for Pipeline9 autorouting when running `tsci build`, `tsci export`, or `tsci snapshot`, including builds that use workers.
-
-**Example:**
-
-```json
-{
-  "useCloudAutorouting": true
-}
-```
-
-**How It Works:**
-
-- When omitted or set to `false`, routing stays local.
-- Cloud autorouting applies to Pipeline9 at the default `1x` effort level. Explicit alternative pipelines and other effort levels retain their local solver.
-- The CLI maps this setting to [`platformConfig.useCloudAutorouter`](../running-tscircuit/platform-configuration.md#engines-and-routing). An explicit `platformConfig.useCloudAutorouter` in `tscircuit.config.ts` or `tscircuit.config.js` takes precedence.
 
 ### build
 
