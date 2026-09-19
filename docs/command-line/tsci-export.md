@@ -29,7 +29,10 @@ tsci export <file> [options]
 - `-f, --format <format>`: Output format (defaults to "json")
 - `-o, --output <path>`: Custom output file path
 - `--disable-parts-engine`: Disable the parts engine during circuit evaluation
-- `--show-courtyards`: Show courtyard outlines in PCB SVG output
+- `--show-courtyards`: Show courtyard outlines in PCB images
+- `--layer <layer>`: Choose `top` or `bottom`; during X-Ray, this layer is drawn in front
+- `--x-ray-net <name-or-id>`: X-Ray a connected PCB net; repeat to select multiple nets
+- `--hidden-layer-opacity <opacity>`: Opacity of other copper during X-Ray, from `0` to `1` (default: `0.2`)
 
 ## Supported Formats
 
@@ -41,6 +44,7 @@ The following export formats are supported:
 | `circuit-json`| Circuit JSON format |
 | `schematic-svg` | Schematic view as SVG |
 | `pcb-svg` | PCB layout as SVG |
+| `pcb-png` | PCB layout as PNG |
 | `assembly-svg` | Assembly view as SVG |
 | `gerbers` | Gerber fabrication files (zipped) |
 | `readable-netlist` | Human-readable netlist |
@@ -86,6 +90,12 @@ tsci export circuit.tsx -f pcb-svg --show-courtyards
 Export to Specctra DSN format:
 ```bash
 tsci export circuit.tsx -f specctra-dsn
+```
+
+Export selected nets across all copper layers (PCB SVG or PNG only):
+
+```bash
+tsci export board.tsx -f pcb-png --x-ray-net GND --x-ray-net VCC --hidden-layer-opacity 0.2 -o power.png
 ```
 
 ## Exporting 3D models
