@@ -29,7 +29,10 @@ tsci export <file> [options]
 - `-f, --format <format>`: Output format (defaults to "json")
 - `-o, --output <path>`: Custom output file path
 - `--disable-parts-engine`: Disable the parts engine during circuit evaluation
-- `--show-courtyards`: Show courtyard outlines in PCB SVG output
+- `--show-courtyards`: Show courtyard outlines in PCB images
+- `--layer <layer>`: Choose `top` or `bottom`; during X-Ray, this layer is drawn in front
+- `--x-ray-net <name-or-id>`: X-Ray a connected PCB net; repeat to select multiple nets
+- `--hidden-layer-opacity <opacity>`: Opacity of other copper during X-Ray, from `0` to `1` (default: `0.2`)
 
 ## Supported Formats
 
@@ -41,6 +44,7 @@ The following export formats are supported:
 | `circuit-json`| Circuit JSON format |
 | `schematic-svg` | Schematic view as SVG |
 | `pcb-svg` | PCB layout as SVG |
+| `pcb-png` | PCB layout as PNG |
 | `assembly-svg` | Assembly view as SVG |
 | `gerbers` | Gerber fabrication files (zipped) |
 | `readable-netlist` | Human-readable netlist |
@@ -87,6 +91,38 @@ Export to Specctra DSN format:
 ```bash
 tsci export circuit.tsx -f specctra-dsn
 ```
+
+## X-Ray PCB nets
+
+Use X-Ray to inspect selected nets across all copper layers in a PCB SVG or PNG.
+Selected pads, traces, vias, plated holes, copper pours, and copper text render at
+full opacity, including the selected net's via and plated-hole drills. Other
+copper uses `--hidden-layer-opacity`; board outlines, silkscreen, other non-copper
+layers, and unrelated drills are hidden.
+
+```bash
+# Inspect one net as SVG with 20% background copper
+tsci export board.tsx -f pcb-svg --x-ray-net GND --hidden-layer-opacity 0.2 -o ground.svg
+
+# Inspect two nets as PNG, with bottom copper drawn in front
+tsci export board.circuit.json -f pcb-png --x-ray-net GND --x-ray-net VCC --layer bottom -o power.png
+```
+
+Selectors accept an exact source net name, source trace name, trace display name,
+or connected Circuit JSON element ID. Quote names containing spaces, such as
+`--x-ray-net "U1.1 to U2.2"`. An element ID selects its entire connected net.
+Unknown names, ambiguous names, and selections without PCB copper produce errors;
+use an element ID to distinguish nets with the same name.
+
+Repeat `--x-ray-net` to select more nets. During X-Ray, `--layer top` or
+`--layer bottom` chooses the frontmost layer without hiding the selected net's
+copper on other layers. `--hidden-layer-opacity 0.05` makes unselected copper 5%
+visible; `0` hides it and `1` makes it fully opaque. The default is `0.2`.
+X-Ray options require `pcb-svg` or `pcb-png` output.
+
+For reusable defaults, configure
+[`pcbSnapshotSettings`](../guides/tscircuit-essentials/tscircuit-config.mdx#pcbsnapshotsettings).
+For regression images, use [X-Ray snapshots](./tsci-snapshot.md#x-ray-snapshots).
 
 ## Exporting 3D models
 
