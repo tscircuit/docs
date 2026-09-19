@@ -50,32 +50,14 @@ If `--3d` is specified, a `-3d.snap.png` is also produced.
 
 Running without `--update` verifies that the generated output matches the existing snapshots. Differences cause a non-zero exit code.
 
-## X-Ray snapshots
-
-Use the same [net selectors and rendering options as PCB exports](./tsci-export.md#x-ray-pcb-nets):
+For a PCB-only X-Ray snapshot, use the same selectors as [PCB exports](./tsci-export.md):
 
 ```bash
-# Save an X-Ray snapshot of one net
-tsci snapshot board.circuit.tsx --x-ray-net GND --hidden-layer-opacity 0.2 --update
-
-# Save two selected nets, with bottom copper drawn in front
-tsci snapshot board.circuit.tsx --x-ray-net GND --x-ray-net VCC --layer bottom --update
-
-# Compare against the saved two-net snapshot
-tsci snapshot board.circuit.tsx --x-ray-net GND --x-ray-net VCC --layer bottom --test
+tsci snapshot board.tsx --x-ray-net GND --hidden-layer-opacity 0.2 --update
 ```
 
-`--x-ray-net` implies PCB-only output and cannot be combined with
-`--schematic-only`, `--simulation-only`, `--3d`, or `--camera-preset`.
-Selected copper and its drills remain opaque across layers; other copper defaults
-to 20% opacity and non-copper layers are hidden.
-
-X-Ray snapshots use a separate suffix so they do not replace ordinary PCB images:
-
-- `board.circuit-pcb-xray.snap.svg` without `--layer`
-- `board.circuit-top-xray.snap.svg` with `--layer top`
-- `board.circuit-bottom-xray.snap.svg` with `--layer bottom`
-
-These files are stored in the source file's `__snapshots__` directory. Net names
-are not part of the filename: changing the selected nets reuses the same X-Ray
-snapshot path. Use the same selectors and options when comparing to a baseline.
+Repeat `--x-ray-net` for multiple nets; it cannot be combined with schematic-only,
+simulation-only, 3D, or camera-preset options. X-Ray filenames end in
+`-pcb-xray.snap.svg`, or `-top-xray.snap.svg` / `-bottom-xray.snap.svg` with
+`--layer`. Net names are not in the filename, so keep selections consistent when
+comparing baselines with `--test`.

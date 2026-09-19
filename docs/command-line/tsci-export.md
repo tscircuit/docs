@@ -92,37 +92,17 @@ Export to Specctra DSN format:
 tsci export circuit.tsx -f specctra-dsn
 ```
 
-## X-Ray PCB nets
-
-Use X-Ray to inspect selected nets across all copper layers in a PCB SVG or PNG.
-Selected pads, traces, vias, plated holes, copper pours, and copper text render at
-full opacity, including the selected net's via and plated-hole drills. Other
-copper uses `--hidden-layer-opacity`; board outlines, silkscreen, other non-copper
-layers, and unrelated drills are hidden.
+Export selected nets across all copper layers (PCB SVG or PNG only):
 
 ```bash
-# Inspect one net as SVG with 20% background copper
-tsci export board.tsx -f pcb-svg --x-ray-net GND --hidden-layer-opacity 0.2 -o ground.svg
-
-# Inspect two nets as PNG, with bottom copper drawn in front
-tsci export board.circuit.json -f pcb-png --x-ray-net GND --x-ray-net VCC --layer bottom -o power.png
+tsci export board.tsx -f pcb-png --x-ray-net GND --x-ray-net VCC --hidden-layer-opacity 0.2 -o power.png
 ```
 
-Selectors accept an exact source net name, source trace name, trace display name,
-or connected Circuit JSON element ID. Quote names containing spaces, such as
-`--x-ray-net "U1.1 to U2.2"`. An element ID selects its entire connected net.
-Unknown names, ambiguous names, and selections without PCB copper produce errors;
-use an element ID to distinguish nets with the same name.
-
-Repeat `--x-ray-net` to select more nets. During X-Ray, `--layer top` or
-`--layer bottom` chooses the frontmost layer without hiding the selected net's
-copper on other layers. `--hidden-layer-opacity 0.05` makes unselected copper 5%
-visible; `0` hides it and `1` makes it fully opaque. The default is `0.2`.
-X-Ray options require `pcb-svg` or `pcb-png` output.
-
-For reusable defaults, configure
-[`pcbSnapshotSettings`](../guides/tscircuit-essentials/tscircuit-config.mdx#pcbsnapshotsettings).
-For regression images, use [X-Ray snapshots](./tsci-snapshot.md#x-ray-snapshots).
+Selectors accept exact net/trace names, trace display names, or connected Circuit
+JSON element IDs. Quote names containing spaces; use IDs for ambiguous names.
+Selected copper and its drills stay opaque; other copper defaults to 20% opacity.
+Non-copper layers and unrelated drills are hidden. `--layer top` or `--layer bottom`
+chooses the frontmost layer while keeping selected copper visible across layers.
 
 ## Exporting 3D models
 
