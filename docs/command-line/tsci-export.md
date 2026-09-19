@@ -98,12 +98,6 @@ Export selected nets across all copper layers (PCB SVG or PNG only):
 tsci export board.tsx -f pcb-png --x-ray-net GND --x-ray-net VCC --hidden-layer-opacity 0.2 -o power.png
 ```
 
-Selectors accept exact net/trace names, trace display names, or connected Circuit
-JSON element IDs. Quote names containing spaces; use IDs for ambiguous names.
-Selected copper and its drills stay opaque; other copper defaults to 20% opacity.
-Non-copper layers and unrelated drills are hidden. `--layer top` or `--layer bottom`
-chooses the frontmost layer while keeping selected copper visible across layers.
-
 ## Exporting 3D models
 
 Use the `gltf`, `glb`, or `step` formats when you want a 3D representation of your board for use in CAD tools, AR viewers, or when embedding on the web.

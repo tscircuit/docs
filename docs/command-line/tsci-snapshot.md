@@ -18,9 +18,7 @@ tsci snapshot [options] [path]
 - `--pcb-only` – generate only PCB snapshots.
 - `--schematic-only` – generate only schematic snapshots.
 - `--simulation-only` – generate only simulation snapshots.
-- `--layer <layer>` – generate a PCB snapshot for `top` or `bottom`; during X-Ray, choose the frontmost layer.
-- `--x-ray-net <name-or-id>` – X-Ray a connected PCB net (repeatable); implies `--pcb-only`.
-- `--hidden-layer-opacity <opacity>` – opacity of other copper during X-Ray, from `0` to `1` (default: `0.2`).
+- `--layer <layer>` – generate a PCB snapshot for a single layer, either `top` or `bottom`.
 - `--disable-parts-engine` – disable the parts engine while rendering snapshots.
 - `--show-courtyards` – show courtyard outlines in PCB snapshots.
 - `--camera-preset <preset>` – choose the camera angle preset for 3D snapshots. This also implies `--3d`.
@@ -49,15 +47,3 @@ __snapshots__/test.board-schematic.snap.svg
 If `--3d` is specified, a `-3d.snap.png` is also produced.
 
 Running without `--update` verifies that the generated output matches the existing snapshots. Differences cause a non-zero exit code.
-
-For a PCB-only X-Ray snapshot, use the same selectors as [PCB exports](./tsci-export.md):
-
-```bash
-tsci snapshot board.tsx --x-ray-net GND --hidden-layer-opacity 0.2 --update
-```
-
-Repeat `--x-ray-net` for multiple nets; it cannot be combined with schematic-only,
-simulation-only, 3D, or camera-preset options. X-Ray filenames end in
-`-pcb-xray.snap.svg`, or `-top-xray.snap.svg` / `-bottom-xray.snap.svg` with
-`--layer`. Net names are not in the filename, so keep selections consistent when
-comparing baselines with `--test`.
