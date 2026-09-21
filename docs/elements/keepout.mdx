@@ -67,3 +67,12 @@ layers.
 | `height` | Height of a rectangular keepout. Required when `shape` is `"rect"`. | `"8mm"` |
 | `radius` | Radius of a circular keepout. Required when `shape` is `"circle"`. | `"4mm"` |
 | `layers` | PCB layers where the keepout applies. Defaults to `["top"]`. | `["top", "bottom"]` |
+| `warningOnly` | Allow routing and placement, reporting prohibited overlaps as warnings instead of errors. | `true` |
+| `allowTraces` | Allow trace crossings without keepout errors or warnings. | `true` |
+| `allowPlacements` | Allow components and their pads/plated holes without keepout errors or warnings. | `true` |
+| `excludeRefs` | Component selectors exempt from keepout diagnostics. | `[".ANT1"]` |
+
+The three boolean props default to `false`. `allowTraces` and `allowPlacements`
+are independent and can be combined; allowed overlaps do not warn even with
+`warningOnly`. Neither permission exempts vias. Copper pours still avoid the
+keepout with any of these props enabled.
