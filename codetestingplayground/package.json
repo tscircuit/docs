@@ -10,6 +10,7 @@
     "build": "tsci build",
     "snapshot": "tsci snapshot",
     "snapshot:update": "tsci snapshot --update",
+    "test": "bun test",
     "start": "tsci dev"
   },
   "devDependencies": {
@@ -17,6 +18,7 @@
     "tscircuit": "0.0.2562"
   },
   "dependencies": {
+    "@tsci/seveibar.smd-usb-c": "0.0.2",
     "@tscircuit/common": "^0.0.33"
   }
 }
