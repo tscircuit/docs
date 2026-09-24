@@ -83,7 +83,9 @@ const ledPinLabels = {
 const DeterministicTrace = (props: { from: string; to: string }) => (
   <trace
     {...props}
-    name={`trace_${props.from}_${props.to}`.replace(/[^a-zA-Z0-9_]/g, "_")}
+    name={["trace", props.from, props.to]
+      .join("_")
+      .replace(/[^a-zA-Z0-9_]/g, "_")}
   />
 )
 

@@ -111,7 +111,7 @@ const ledPinLabels = {
 const DeterministicTrace = (props: { from: string; to: string }) => (
   <trace
     {...props}
-    name={`trace_${props.from}_${props.to}`.replace(/[^a-zA-Z0-9_]/g, "_")}
+    name={["trace", props.from, props.to].join("_").replace(/[^a-zA-Z0-9_]/g, "_")}
   />
 )
 
@@ -127,14 +127,12 @@ export default () => (
       schX={-25}
       schY={8}
       noConnect={["SBU1", "SBU2"]}
-      pinAttributes={
-        {
-          VBUS1: { requiresPower: true },
-          VBUS2: { requiresPower: true },
-          GND1: { requiresGround: true },
-          GND2: { requiresGround: true },
-        } as any
-      }
+      pinAttributes={{
+        VBUS1: { requiresPower: true },
+        VBUS2: { requiresPower: true },
+        GND1: { requiresGround: true },
+        GND2: { requiresGround: true },
+      }}
     />
     <resistor
       name="R1"
