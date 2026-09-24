@@ -15,6 +15,8 @@ test("uses a real USB-C sink with independent CC pull-downs", () => {
   expect(source).toContain('from "@tsci/seveibar.smd-usb-c"')
   expect(source).toContain("CC1")
   expect(source).toContain("CC2")
+  expect(source).toContain('pin11: "SUSPENDb"')
+  expect(source).toContain('pin12: "SUSPEND"')
   expect((source.match(/resistance="5\.1k"/g) ?? []).length).toBe(2)
   expect(source).toContain("C165948")
   expect(source).toContain("C25905")
@@ -23,11 +25,13 @@ test("uses a real USB-C sink with independent CC pull-downs", () => {
 
 test("uses the Espressif cross-coupled DTR/RTS topology", () => {
   expect(source).toContain('from=".U2 > .DTR" to="net.DTR"')
-  expect(source).toContain('from="net.DTR" to=".Q2 > .collector"')
+  expect(source).toContain('from="net.DTR" to=".Q2 > .emitter"')
+  expect(source).not.toContain('from="net.DTR" to=".Q2 > .collector"')
   expect(source).toContain('from=".U2 > .RTS" to="net.RTS"')
   expect(source).toContain('from="net.RTS" to=".Q1 > .emitter"')
   expect(source).toContain('from=".Q1 > .collector" to=".U3 > .EN"')
-  expect(source).toContain('from=".Q2 > .emitter" to=".U3 > .IO0"')
+  expect(source).toContain('from=".Q2 > .collector" to=".U3 > .IO0"')
+  expect(source).not.toContain('from=".Q2 > .emitter" to=".U3 > .IO0"')
   expect((source.match(/<transistor/g) ?? []).length).toBe(2)
   expect((source.match(/type="npn"/g) ?? []).length).toBe(2)
   expect((source.match(/footprint="jlcpcb:C381091"/g) ?? []).length).toBe(2)
@@ -60,7 +64,7 @@ test("keeps the generated netlist aligned with the source topology", () => {
     ".U2 > .DTR to net.DTR",
     ".U2 > .RTS to net.RTS",
     ".Q1 > .collector to .U3 > .EN",
-    ".Q2 > .emitter to .U3 > .IO0",
+    ".Q2 > .collector to .U3 > .IO0",
   ]) {
     expect(traceNames.has(expected)).toBe(true)
   }

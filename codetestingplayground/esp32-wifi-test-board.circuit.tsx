@@ -11,7 +11,7 @@ const cp2102PinLabels = {
   pin8: "VBUS",
   pin9: "RST",
   pin10: "NC1",
-  pin11: "SUSPEND",
+  pin11: "SUSPENDb",
   pin12: "SUSPEND",
   pin13: "NC2",
   pin14: "NC3",
@@ -76,17 +76,23 @@ const esp32PinLabels = {
 const jlc = (part: string) => ({ jlcpcb: [part] })
 
 export default () => (
-  <board width="60mm" height="40mm">
+  <board width="100mm" height="80mm">
     <schematicsheet name="Main" displayName="Main" sheetIndex={0} />
     <SmdUsbC
       name="J1"
       supplierPartNumbers={jlc("C165948")}
-      pcbX={-24}
-      pcbY={13}
-      pcbRotation={180}
+      pcbX={-42}
+      pcbY={28}
+      pcbRotation={270}
       schX={-25}
       schY={8}
       noConnect={["SBU1", "SBU2"]}
+      pinAttributes={{
+        VBUS1: { requiresPower: true },
+        VBUS2: { requiresPower: true },
+        GND1: { requiresGround: true },
+        GND2: { requiresGround: true },
+      }}
     />
 
     <resistor
@@ -95,8 +101,8 @@ export default () => (
       footprint="jlcpcb:C25905"
       supplierPartNumbers={jlc("C25905")}
       manufacturerPartNumber="0402WGF5101TCE"
-      pcbX={-20}
-      pcbY={7}
+      pcbX={-32}
+      pcbY={20}
       schX={-20}
       schY={4}
     />
@@ -106,8 +112,8 @@ export default () => (
       footprint="jlcpcb:C25905"
       supplierPartNumbers={jlc("C25905")}
       manufacturerPartNumber="0402WGF5101TCE"
-      pcbX={-14}
-      pcbY={7}
+      pcbX={-25}
+      pcbY={20}
       schX={-14}
       schY={4}
     />
@@ -123,13 +129,18 @@ export default () => (
         pin3: "VIN",
         pin4: "VOUT",
       }}
+      pinAttributes={{
+        VIN: { requiresPower: true },
+        VOUT: { providesPower: true },
+        GND: { requiresGround: true },
+      }}
       schPinArrangement={{
         leftSide: { pins: ["VIN"], direction: "top-to-bottom" },
         rightSide: { pins: ["VOUT"], direction: "top-to-bottom" },
         bottomSide: { pins: ["GND"], direction: "left-to-right" },
       }}
-      pcbX={-13}
-      pcbY={14}
+      pcbX={-27}
+      pcbY={30}
       schX={-13}
       schY={8}
     />
@@ -140,8 +151,8 @@ export default () => (
       footprint="jlcpcb:C15850"
       supplierPartNumbers={jlc("C15850")}
       manufacturerPartNumber="CL21A106KAYNNNE"
-      pcbX={-18}
-      pcbY={17}
+      pcbX={-38}
+      pcbY={35}
       schX={-19}
       schY={12}
     />
@@ -151,8 +162,8 @@ export default () => (
       footprint="jlcpcb:C45783"
       supplierPartNumbers={jlc("C45783")}
       manufacturerPartNumber="CL21A226MAQNNNE"
-      pcbX={-9}
-      pcbY={17}
+      pcbX={-15}
+      pcbY={35}
       schX={-10}
       schY={12}
     />
@@ -162,8 +173,8 @@ export default () => (
       footprint="jlcpcb:C1525"
       supplierPartNumbers={jlc("C1525")}
       manufacturerPartNumber="CL05B104KO5NNNC"
-      pcbX={-6}
-      pcbY={14}
+      pcbX={-8}
+      pcbY={30}
       schX={-6}
       schY={12}
     />
@@ -174,11 +185,19 @@ export default () => (
       supplierPartNumbers={jlc("C964632")}
       manufacturerPartNumber="CP2102N-A02-GQFN28R"
       pinLabels={cp2102PinLabels}
+      pinAttributes={{
+        VDD: { requiresPower: true },
+        GND: { requiresGround: true },
+        PGND: { requiresGround: true },
+        REGIN: { requiresPower: true },
+        VBUS: { requiresPower: true },
+      }}
       noConnect={[
         "DCD",
         "RI",
         "RST",
         "NC1",
+        "SUSPENDb",
         "SUSPEND",
         "NC2",
         "NC3",
@@ -206,7 +225,7 @@ export default () => (
         bottomSide: { pins: ["RXD", "TXD"], direction: "left-to-right" },
       }}
       pcbX={-2}
-      pcbY={5}
+      pcbY={20}
       schX={-4}
       schY={3}
     />
@@ -216,8 +235,8 @@ export default () => (
       footprint="jlcpcb:C1525"
       supplierPartNumbers={jlc("C1525")}
       manufacturerPartNumber="CL05B104KO5NNNC"
-      pcbX={2}
-      pcbY={5}
+      pcbX={6}
+      pcbY={20}
       schX={-1}
       schY={9}
     />
@@ -228,8 +247,8 @@ export default () => (
       footprint="jlcpcb:C2150"
       supplierPartNumbers={jlc("C2150")}
       manufacturerPartNumber="SS8050"
-      pcbX={7}
-      pcbY={1}
+      pcbX={13}
+      pcbY={22}
       schX={6}
       schY={1}
     />
@@ -239,8 +258,8 @@ export default () => (
       footprint="jlcpcb:C2150"
       supplierPartNumbers={jlc("C2150")}
       manufacturerPartNumber="SS8050"
-      pcbX={7}
-      pcbY={-3}
+      pcbX={13}
+      pcbY={14}
       schX={6}
       schY={-2}
     />
@@ -250,8 +269,8 @@ export default () => (
       footprint="jlcpcb:C25744"
       supplierPartNumbers={jlc("C25744")}
       manufacturerPartNumber="0402WGF1002TCE"
-      pcbX={2}
-      pcbY={1}
+      pcbX={6}
+      pcbY={26}
       schX={1}
       schY={1}
     />
@@ -261,8 +280,8 @@ export default () => (
       footprint="jlcpcb:C25744"
       supplierPartNumbers={jlc("C25744")}
       manufacturerPartNumber="0402WGF1002TCE"
-      pcbX={2}
-      pcbY={-3}
+      pcbX={6}
+      pcbY={16}
       schX={1}
       schY={-2}
     />
@@ -273,6 +292,12 @@ export default () => (
       supplierPartNumbers={jlc("C701341")}
       manufacturerPartNumber="ESP32-WROOM-32E-N4"
       pinLabels={esp32PinLabels}
+      pinAttributes={{
+        "3V3": { requiresPower: true },
+        GND: { requiresGround: true },
+        EN: { mustBeConnected: true },
+        IO0: { mustBeConnected: true },
+      }}
       noConnect={[
         "SENSOR_VP",
         "SENSOR_VN",
@@ -312,8 +337,8 @@ export default () => (
         rightSide: { pins: ["TXD0", "RXD0"], direction: "top-to-bottom" },
         bottomSide: { pins: ["GND"], direction: "left-to-right" },
       }}
-      pcbX={17}
-      pcbY={-1}
+      pcbX={25}
+      pcbY={0}
       pcbRotation={90}
       schX={15}
       schY={0}
@@ -325,8 +350,8 @@ export default () => (
       footprint="jlcpcb:C25744"
       supplierPartNumbers={jlc("C25744")}
       manufacturerPartNumber="0402WGF1002TCE"
-      pcbX={12}
-      pcbY={-7}
+      pcbX={5}
+      pcbY={-15}
       schX={10}
       schY={-6}
     />
@@ -336,8 +361,8 @@ export default () => (
       footprint="jlcpcb:C52923"
       supplierPartNumbers={jlc("C52923")}
       manufacturerPartNumber="CL05A105KA5NQNC"
-      pcbX={15}
-      pcbY={-7}
+      pcbX={9}
+      pcbY={-15}
       schX={14}
       schY={-6}
     />
@@ -347,8 +372,8 @@ export default () => (
       footprint="jlcpcb:C25744"
       supplierPartNumbers={jlc("C25744")}
       manufacturerPartNumber="0402WGF1002TCE"
-      pcbX={18}
-      pcbY={-7}
+      pcbX={13}
+      pcbY={-15}
       schX={17}
       schY={-6}
     />
@@ -358,8 +383,8 @@ export default () => (
       supplierPartNumbers={jlc("C381091")}
       manufacturerPartNumber="XKB5858-W-TP"
       noConnect={["pin3", "pin4"]}
-      pcbX={21}
-      pcbY={-7}
+      pcbX={37}
+      pcbY={-25}
       schX={20}
       schY={-6}
     />
@@ -369,8 +394,8 @@ export default () => (
       supplierPartNumbers={jlc("C381091")}
       manufacturerPartNumber="XKB5858-W-TP"
       noConnect={["pin3", "pin4"]}
-      pcbX={24}
-      pcbY={-7}
+      pcbX={46}
+      pcbY={-25}
       schX={23}
       schY={-6}
     />
@@ -381,8 +406,8 @@ export default () => (
       footprint="jlcpcb:C11702"
       supplierPartNumbers={jlc("C11702")}
       manufacturerPartNumber="0402WGF1001TCE"
-      pcbX={24}
-      pcbY={4}
+      pcbX={40}
+      pcbY={6}
       schX={22}
       schY={4}
     />
@@ -392,8 +417,8 @@ export default () => (
       footprint="jlcpcb:C965804"
       supplierPartNumbers={jlc("C965804")}
       manufacturerPartNumber="XL-1608UGC-04"
-      pcbX={27}
-      pcbY={4}
+      pcbX={45}
+      pcbY={6}
       schX={25}
       schY={4}
     />
@@ -403,8 +428,8 @@ export default () => (
       footprint="jlcpcb:C11702"
       supplierPartNumbers={jlc("C11702")}
       manufacturerPartNumber="0402WGF1001TCE"
-      pcbX={-18}
-      pcbY={-7}
+      pcbX={-40}
+      pcbY={-15}
       schX={-20}
       schY={-6}
     />
@@ -414,8 +439,8 @@ export default () => (
       footprint="jlcpcb:C2286"
       supplierPartNumbers={jlc("C2286")}
       manufacturerPartNumber="KT-0603R"
-      pcbX={-15}
-      pcbY={-7}
+      pcbX={-35}
+      pcbY={-15}
       schX={-17}
       schY={-6}
     />
@@ -425,8 +450,8 @@ export default () => (
       footprint="jlcpcb:C1525"
       supplierPartNumbers={jlc("C1525")}
       manufacturerPartNumber="CL05B104KO5NNNC"
-      pcbX={10}
-      pcbY={-7}
+      pcbX={5}
+      pcbY={-27}
       schX={7}
       schY={-10}
     />
@@ -437,7 +462,7 @@ export default () => (
       supplierPartNumbers={jlc("C15850")}
       manufacturerPartNumber="CL21A106KAYNNNE"
       pcbX={13}
-      pcbY={-10}
+      pcbY={-27}
       schX={11}
       schY={-10}
     />
@@ -486,12 +511,12 @@ export default () => (
     <trace from=".U2 > .RTS" to="net.RTS" />
     <trace from="net.DTR" to=".R3 > .pin1" />
     <trace from=".R3 > .pin2" to=".Q1 > .base" />
-    <trace from="net.DTR" to=".Q2 > .collector" />
+    <trace from="net.DTR" to=".Q2 > .emitter" />
     <trace from="net.RTS" to=".R4 > .pin1" />
     <trace from=".R4 > .pin2" to=".Q2 > .base" />
     <trace from="net.RTS" to=".Q1 > .emitter" />
     <trace from=".Q1 > .collector" to=".U3 > .EN" />
-    <trace from=".Q2 > .emitter" to=".U3 > .IO0" />
+    <trace from=".Q2 > .collector" to=".U3 > .IO0" />
 
     <trace from=".U3 > .pin1" to="net.GND" />
     <trace from=".U3 > .pin15" to="net.GND" />
