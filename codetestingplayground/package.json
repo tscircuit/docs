@@ -10,12 +10,16 @@
     "build": "bun run run-tsci.ts build --disable-pcb --schematic-only --disable-parts-engine",
     "snapshot": "bun run run-tsci.ts snapshot --schematic-only --disable-parts-engine",
     "snapshot:update": "bun run run-tsci.ts snapshot --schematic-only --disable-parts-engine --update",
+    "postinstall": "bun run patch-circuit-to-svg.ts",
+    "audit:variation": "bun run audit-schematic-variation.ts",
     "verify:repeatable": "bun run verify-repeatable-schematic.ts",
     "test": "bun run build && bun test",
     "start": "tsci dev"
   },
   "devDependencies": {
+    "@types/node": "^22.20.4",
     "@types/react": "^19.2.8",
+    "bun-types": "^1.4.2",
     "tscircuit": "0.0.2562"
   },
   "dependencies": {

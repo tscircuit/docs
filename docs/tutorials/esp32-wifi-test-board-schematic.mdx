@@ -103,6 +103,18 @@ const esp32PinLabels = {
 
 const jlc = (part: string) => ({ jlcpcb: [part] })
 
+const ledPinLabels = {
+  pin1: ["anode", "pos"],
+  pin2: ["cathode", "neg"],
+}
+
+const DeterministicTrace = (props: { from: string; to: string }) => (
+  <trace
+    {...props}
+    name={`trace_${props.from}_${props.to}`.replace(/[^a-zA-Z0-9_]/g, "_")}
+  />
+)
+
 export default () => (
   <board width="100mm" height="80mm">
     <schematicsheet name="Main" displayName="Main" sheetIndex={0} />
@@ -115,12 +127,14 @@ export default () => (
       schX={-25}
       schY={8}
       noConnect={["SBU1", "SBU2"]}
-      pinAttributes={{
-        VBUS1: { requiresPower: true },
-        VBUS2: { requiresPower: true },
-        GND1: { requiresGround: true },
-        GND2: { requiresGround: true },
-      }}
+      pinAttributes={
+        {
+          VBUS1: { requiresPower: true },
+          VBUS2: { requiresPower: true },
+          GND1: { requiresGround: true },
+          GND2: { requiresGround: true },
+        } as any
+      }
     />
     <resistor
       name="R1"
@@ -423,6 +437,7 @@ export default () => (
     <led
       name="LED1"
       color="green"
+      pinLabels={ledPinLabels}
       footprint="jlcpcb:C965804"
       supplierPartNumbers={jlc("C965804")}
       manufacturerPartNumber="XL-1608UGC-04"
@@ -445,6 +460,7 @@ export default () => (
     <led
       name="LED2"
       color="red"
+      pinLabels={ledPinLabels}
       footprint="jlcpcb:C2286"
       supplierPartNumbers={jlc("C2286")}
       manufacturerPartNumber="KT-0603R"
@@ -475,77 +491,77 @@ export default () => (
       schX={11}
       schY={-10}
     />
-    <trace from=".J1 > .VBUS1" to="net.VBUS" />
-    <trace from=".J1 > .VBUS2" to="net.VBUS" />
-    <trace from=".J1 > .GND1" to="net.GND" />
-    <trace from=".J1 > .GND2" to="net.GND" />
-    <trace from=".J1 > .CC1" to=".R1 > .pin1" />
-    <trace from=".J1 > .CC2" to=".R2 > .pin1" />
-    <trace from=".R1 > .pin2" to="net.GND" />
-    <trace from=".R2 > .pin2" to="net.GND" />
-    <trace from=".J1 > .DP1" to="net.USB_DP" />
-    <trace from=".J1 > .DP2" to="net.USB_DP" />
-    <trace from=".J1 > .DM1" to="net.USB_DM" />
-    <trace from=".J1 > .DM2" to="net.USB_DM" />
-    <trace from=".J1 > .VBUS1" to=".U1 > .VIN" />
-    <trace from=".J1 > .VBUS2" to=".U1 > .VIN" />
-    <trace from=".U1 > .VIN" to="net.VBUS" />
-    <trace from=".U1 > .VOUT" to="net.V3V3" />
-    <trace from=".U1 > .pin4" to="net.V3V3" />
-    <trace from=".U1 > .GND" to="net.GND" />
-    <trace from=".C1 > .pin1" to="net.VBUS" />
-    <trace from=".C1 > .pin2" to="net.GND" />
-    <trace from=".C2 > .pin1" to="net.V3V3" />
-    <trace from=".C2 > .pin2" to="net.GND" />
-    <trace from=".C3 > .pin1" to="net.V3V3" />
-    <trace from=".C3 > .pin2" to="net.GND" />
-    <trace from=".J1 > .DP1" to=".U2 > .D_PLUS" />
-    <trace from=".J1 > .DP2" to=".U2 > .D_PLUS" />
-    <trace from=".J1 > .DM1" to=".U2 > .D_MINUS" />
-    <trace from=".J1 > .DM2" to=".U2 > .D_MINUS" />
-    <trace from=".U2 > .VDD" to="net.V3V3" />
-    <trace from=".U2 > .GND" to="net.GND" />
-    <trace from=".U2 > .PGND" to="net.GND" />
-    <trace from=".U2 > .REGIN" to="net.VBUS" />
-    <trace from=".U2 > .VBUS" to="net.VBUS" />
-    <trace from=".C4 > .pin1" to="net.V3V3" />
-    <trace from=".C4 > .pin2" to="net.GND" />
-    <trace from=".U2 > .TXD" to=".U3 > .RXD0" />
-    <trace from=".U2 > .RXD" to=".U3 > .TXD0" />
-    <trace from=".U2 > .DTR" to="net.DTR" />
-    <trace from=".U2 > .RTS" to="net.RTS" />
-    <trace from="net.DTR" to=".R3 > .pin1" />
-    <trace from=".R3 > .pin2" to=".Q1 > .base" />
-    <trace from="net.DTR" to=".Q2 > .emitter" />
-    <trace from="net.RTS" to=".R4 > .pin1" />
-    <trace from=".R4 > .pin2" to=".Q2 > .base" />
-    <trace from="net.RTS" to=".Q1 > .emitter" />
-    <trace from=".Q1 > .collector" to=".U3 > .EN" />
-    <trace from=".Q2 > .collector" to=".U3 > .IO0" />
-    <trace from=".U3 > .pin1" to="net.GND" />
-    <trace from=".U3 > .pin15" to="net.GND" />
-    <trace from=".U3 > .pin38" to="net.GND" />
-    <trace from=".U3 > .3V3" to="net.V3V3" />
-    <trace from=".C6 > .pin1" to="net.V3V3" />
-    <trace from=".C6 > .pin2" to="net.GND" />
-    <trace from=".C7 > .pin1" to="net.V3V3" />
-    <trace from=".C7 > .pin2" to="net.GND" />
-    <trace from=".R5 > .pin1" to="net.V3V3" />
-    <trace from=".R5 > .pin2" to=".U3 > .EN" />
-    <trace from=".C5 > .pin1" to=".U3 > .EN" />
-    <trace from=".C5 > .pin2" to="net.GND" />
-    <trace from=".R6 > .pin1" to="net.V3V3" />
-    <trace from=".R6 > .pin2" to=".U3 > .IO0" />
-    <trace from=".SW1 > .pin1" to=".U3 > .IO0" />
-    <trace from=".SW1 > .pin2" to="net.GND" />
-    <trace from=".SW2 > .pin1" to=".U3 > .EN" />
-    <trace from=".SW2 > .pin2" to="net.GND" />
-    <trace from=".U3 > .IO4" to=".R7 > .pin1" />
-    <trace from=".R7 > .pin2" to=".LED1 > .pos" />
-    <trace from=".LED1 > .neg" to="net.GND" />
-    <trace from=".R8 > .pin1" to="net.V3V3" />
-    <trace from=".R8 > .pin2" to=".LED2 > .pos" />
-    <trace from=".LED2 > .neg" to="net.GND" />
+    <DeterministicTrace from=".J1 > .VBUS1" to="net.VBUS" />
+    <DeterministicTrace from=".J1 > .VBUS2" to="net.VBUS" />
+    <DeterministicTrace from=".J1 > .GND1" to="net.GND" />
+    <DeterministicTrace from=".J1 > .GND2" to="net.GND" />
+    <DeterministicTrace from=".J1 > .CC1" to=".R1 > .pin1" />
+    <DeterministicTrace from=".J1 > .CC2" to=".R2 > .pin1" />
+    <DeterministicTrace from=".R1 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".R2 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".J1 > .DP1" to="net.USB_DP" />
+    <DeterministicTrace from=".J1 > .DP2" to="net.USB_DP" />
+    <DeterministicTrace from=".J1 > .DM1" to="net.USB_DM" />
+    <DeterministicTrace from=".J1 > .DM2" to="net.USB_DM" />
+    <DeterministicTrace from=".J1 > .VBUS1" to=".U1 > .VIN" />
+    <DeterministicTrace from=".J1 > .VBUS2" to=".U1 > .VIN" />
+    <DeterministicTrace from=".U1 > .VIN" to="net.VBUS" />
+    <DeterministicTrace from=".U1 > .VOUT" to="net.V3V3" />
+    <DeterministicTrace from=".U1 > .pin4" to="net.V3V3" />
+    <DeterministicTrace from=".U1 > .GND" to="net.GND" />
+    <DeterministicTrace from=".C1 > .pin1" to="net.VBUS" />
+    <DeterministicTrace from=".C1 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".C2 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".C2 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".C3 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".C3 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".J1 > .DP1" to=".U2 > .D_PLUS" />
+    <DeterministicTrace from=".J1 > .DP2" to=".U2 > .D_PLUS" />
+    <DeterministicTrace from=".J1 > .DM1" to=".U2 > .D_MINUS" />
+    <DeterministicTrace from=".J1 > .DM2" to=".U2 > .D_MINUS" />
+    <DeterministicTrace from=".U2 > .VDD" to="net.V3V3" />
+    <DeterministicTrace from=".U2 > .GND" to="net.GND" />
+    <DeterministicTrace from=".U2 > .PGND" to="net.GND" />
+    <DeterministicTrace from=".U2 > .REGIN" to="net.VBUS" />
+    <DeterministicTrace from=".U2 > .VBUS" to="net.VBUS" />
+    <DeterministicTrace from=".C4 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".C4 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".U2 > .TXD" to=".U3 > .RXD0" />
+    <DeterministicTrace from=".U2 > .RXD" to=".U3 > .TXD0" />
+    <DeterministicTrace from=".U2 > .DTR" to="net.DTR" />
+    <DeterministicTrace from=".U2 > .RTS" to="net.RTS" />
+    <DeterministicTrace from="net.DTR" to=".R3 > .pin1" />
+    <DeterministicTrace from=".R3 > .pin2" to=".Q1 > .base" />
+    <DeterministicTrace from="net.DTR" to=".Q2 > .emitter" />
+    <DeterministicTrace from="net.RTS" to=".R4 > .pin1" />
+    <DeterministicTrace from=".R4 > .pin2" to=".Q2 > .base" />
+    <DeterministicTrace from="net.RTS" to=".Q1 > .emitter" />
+    <DeterministicTrace from=".Q1 > .collector" to=".U3 > .EN" />
+    <DeterministicTrace from=".Q2 > .collector" to=".U3 > .IO0" />
+    <DeterministicTrace from=".U3 > .pin1" to="net.GND" />
+    <DeterministicTrace from=".U3 > .pin15" to="net.GND" />
+    <DeterministicTrace from=".U3 > .pin38" to="net.GND" />
+    <DeterministicTrace from=".U3 > .3V3" to="net.V3V3" />
+    <DeterministicTrace from=".C6 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".C6 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".C7 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".C7 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".R5 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".R5 > .pin2" to=".U3 > .EN" />
+    <DeterministicTrace from=".C5 > .pin1" to=".U3 > .EN" />
+    <DeterministicTrace from=".C5 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".R6 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".R6 > .pin2" to=".U3 > .IO0" />
+    <DeterministicTrace from=".SW1 > .pin1" to=".U3 > .IO0" />
+    <DeterministicTrace from=".SW1 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".SW2 > .pin1" to=".U3 > .EN" />
+    <DeterministicTrace from=".SW2 > .pin2" to="net.GND" />
+    <DeterministicTrace from=".U3 > .IO4" to=".R7 > .pin1" />
+    <DeterministicTrace from=".R7 > .pin2" to=".LED1 > .pos" />
+    <DeterministicTrace from=".LED1 > .neg" to="net.GND" />
+    <DeterministicTrace from=".R8 > .pin1" to="net.V3V3" />
+    <DeterministicTrace from=".R8 > .pin2" to=".LED2 > .pos" />
+    <DeterministicTrace from=".LED2 > .neg" to="net.GND" />
   </board>
 )
 `} />
@@ -622,8 +638,10 @@ bun run test
 
 The build and snapshot scripts explicitly disable PCB output and the parts
 engine, so this tutorial does not claim or test autorouting, placement, or PCB
-DRC. The repeatable check runs ten clean schematic builds and ten snapshot
-comparisons, rejects trailing whitespace, and requires identical declared
+DRC. The source gives traces deterministic names, declares logical pin labels,
+and resolves the exact supplier footprint data locally. The repeatable check
+runs twenty clean schematic builds and twenty `snapshot --ci` comparisons,
+hashes the declared SVG, rejects trailing whitespace, and requires identical
 artifacts. Before creating a PCB, route and inspect it, verify the USB-C
 footprint and antenna keepout, and confirm the selected JLC parts are currently
 in stock.

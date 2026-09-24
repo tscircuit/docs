@@ -16,6 +16,14 @@ const packageJson = JSON.parse(
 const configJson = JSON.parse(
   readFileSync(join(projectRoot, "tscircuit.config.json"), "utf8"),
 ) as { includeBoardFiles?: string[]; mainEntrypoint?: string }
+const configSource = readFileSync(
+  join(projectRoot, "tscircuit.config.ts"),
+  "utf8",
+)
+const runTsciSource = readFileSync(join(projectRoot, "run-tsci.ts"), "utf8")
+const footprintData = JSON.parse(
+  readFileSync(join(projectRoot, "deterministic-footprints.json"), "utf8"),
+) as Record<string, unknown[]>
 
 const getComponentBlock = (name: string) =>
   source.match(
@@ -120,4 +128,33 @@ test("keeps the generated netlist aligned with the source topology", () => {
   ]) {
     expect(traceNames.has(expected)).toBe(true)
   }
+})
+
+test("normalizes source IDs, logical pins, and supplier footprint inputs", () => {
+  expect(source).toContain("DeterministicTrace")
+  expect(source).toContain("pinLabels={ledPinLabels}")
+  expect(source).not.toMatch(/Math\.random|Date\.now|performance\.now/)
+  expect(configSource).toContain("deterministic-footprints.json")
+  expect(configSource).toContain("footprintLibraryMap")
+  expect(runTsciSource).toContain("localTsci")
+  expect(packageJson.scripts?.postinstall).toContain("patch-circuit-to-svg")
+
+  const supplierParts = [
+    ...source.matchAll(/supplierPartNumbers=\{jlc\("([^"]+)"\)\}/g),
+  ].map((match) => match[1])
+  for (const part of supplierParts) {
+    expect(Object.prototype.hasOwnProperty.call(footprintData, part)).toBe(true)
+  }
+})
+
+test("keeps the declared SVG free of trailing whitespace", () => {
+  const snapshot = readFileSync(
+    join(
+      projectRoot,
+      "__snapshots__",
+      "esp32-wifi-test-board.circuit-schematic.snap.svg",
+    ),
+    "utf8",
+  )
+  expect(/[ \t]+\r?$/m.test(snapshot)).toBe(false)
 })
