@@ -9,7 +9,18 @@ const source = readFileSync(
 )
 const packageJson = JSON.parse(
   readFileSync(join(projectRoot, "package.json"), "utf8"),
-) as { dependencies?: Record<string, string> }
+) as {
+  dependencies?: Record<string, string>
+  scripts?: Record<string, string>
+}
+const configJson = JSON.parse(
+  readFileSync(join(projectRoot, "tscircuit.config.json"), "utf8"),
+) as { includeBoardFiles?: string[]; mainEntrypoint?: string }
+
+const getComponentBlock = (name: string) =>
+  source.match(
+    new RegExp(`<resistor\\s+[\\s\\S]*?name="${name}"[\\s\\S]*?/>`),
+  )?.[0] ?? ""
 
 test("uses a real USB-C sink with independent CC pull-downs", () => {
   expect(source).toContain('from "@tsci/seveibar.smd-usb-c"')
@@ -21,6 +32,47 @@ test("uses a real USB-C sink with independent CC pull-downs", () => {
   expect(source).toContain("C165948")
   expect(source).toContain("C25905")
   expect(packageJson.dependencies?.["@tsci/seveibar.smd-usb-c"]).toBe("0.0.2")
+})
+
+test("keeps exact resistor supplier footprints and assembly data", () => {
+  const expectedParts = {
+    R1: ["C25905", "0402WGF5101TCE"],
+    R2: ["C25905", "0402WGF5101TCE"],
+    R7: ["C11702", "0402WGF1001TCE"],
+    R8: ["C11702", "0402WGF1001TCE"],
+  }
+
+  for (const [name, [part, manufacturerPartNumber]] of Object.entries(
+    expectedParts,
+  )) {
+    const block = getComponentBlock(name)
+    expect(block).toContain(`footprint="jlcpcb:${part}"`)
+    expect(block).toContain(`supplierPartNumbers={jlc("${part}")}`)
+    expect(block).toContain(
+      `manufacturerPartNumber="${manufacturerPartNumber}"`,
+    )
+  }
+  expect(source).not.toContain('footprint="0402"')
+})
+
+test("keeps the declared project schematic-only", () => {
+  expect(
+    existsSync(
+      join(
+        projectRoot,
+        "__snapshots__",
+        "esp32-wifi-test-board.circuit-pcb.snap.svg",
+      ),
+    ),
+  ).toBe(false)
+  expect(packageJson.scripts?.build).toContain("--disable-pcb")
+  expect(packageJson.scripts?.build).toContain("--schematic-only")
+  expect(packageJson.scripts?.snapshot).toContain("--schematic-only")
+  expect(packageJson.scripts?.["snapshot:update"]).toContain("--schematic-only")
+  expect(configJson.mainEntrypoint).toBe("esp32-wifi-test-board.circuit.tsx")
+  expect(configJson.includeBoardFiles).toEqual([
+    "esp32-wifi-test-board.circuit.tsx",
+  ])
 })
 
 test("uses the Espressif cross-coupled DTR/RTS topology", () => {

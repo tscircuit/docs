@@ -10,12 +10,11 @@ import { TscircuitIframe } from "../../src/components/TscircuitIframe"
 
 ## Overview
 
-This tutorial builds a schematic-first ESP32 WiFi test board. It is a complete
+This tutorial builds a schematic-only ESP32 WiFi test board. It is a complete
 reference design for bringing up USB power, USB data, UART programming, and the
-ESP32 module. The source uses repository-supported tscircuit components and
-JLCPCB footprints, but the generated PCB preview is illustrative: review
-routing, courtyard, antenna keepout, and assembly details before treating it as
-a fabrication release.
+ESP32 module. The source uses repository-supported tscircuit components and exact
+JLCPCB assembly references, but it does not claim a routed PCB or fabrication
+release.
 
 The board is centered on an ESP32-WROOM-32E-N4 module (JLCPCB `C701341`), a
 CP2102N-A02-GQFN28R bridge (`C964632`), and a TYPE-C-31-M-12 USB-C receptacle
@@ -607,22 +606,24 @@ ground, EN, IO0, and UART0 are wired; unused module pins are explicitly marked
 no-connect. IO4 drives the green status LED through R7, avoiding a load on the
 IO2 strapping pin. The red power LED is driven from 3.3 V through R8.
 
-The source also includes the exact passive and button part numbers, placement
-coordinates, and all USB data nets. The checked-in schematic and PCB SVGs are
-generated from that source.
+The source also includes the exact passive and button part numbers, assembly
+references, placement coordinates, and all USB data nets. The checked-in schematic SVG is the only generated board artifact.
 
 ## Build and snapshot
 
 From `codetestingplayground`, run:
 
 ```bash
-bunx tsci build esp32-wifi-test-board.circuit.tsx
-bunx tsci snapshot esp32-wifi-test-board.circuit.tsx
-bun test esp32-wifi-test-board.test.ts
+bun run build
+bun run snapshot
+bun run verify:repeatable
+bun run test
 ```
 
-The build command runs the repository autorouter and fails on placement or
-routing errors; it does not suppress DRC. The snapshots are deterministic
-previews, not a fabrication sign-off. Before ordering, inspect the PCB, verify
-the USB-C footprint and antenna keepout, and confirm the selected JLC parts are
-currently in stock.
+The build and snapshot scripts explicitly disable PCB output and the parts
+engine, so this tutorial does not claim or test autorouting, placement, or PCB
+DRC. The repeatable check runs ten clean schematic builds and ten snapshot
+comparisons, rejects trailing whitespace, and requires identical declared
+artifacts. Before creating a PCB, route and inspect it, verify the USB-C
+footprint and antenna keepout, and confirm the selected JLC parts are currently
+in stock.
