@@ -7,6 +7,16 @@ const source = readFileSync(
   join(projectRoot, "esp32-wifi-test-board.circuit.tsx"),
   "utf8",
 )
+const docsSource = readFileSync(
+  join(
+    projectRoot,
+    "..",
+    "docs",
+    "tutorials",
+    "esp32-wifi-test-board-schematic.mdx",
+  ),
+  "utf8",
+)
 const packageJson = JSON.parse(
   readFileSync(join(projectRoot, "package.json"), "utf8"),
 ) as {
@@ -28,6 +38,11 @@ const footprintData = JSON.parse(
 const getComponentBlock = (name: string) =>
   source.match(
     new RegExp(`<resistor\\s+[\\s\\S]*?name="${name}"[\\s\\S]*?/>`),
+  )?.[0] ?? ""
+
+const getTransistorBlock = (name: string) =>
+  source.match(
+    new RegExp(`<transistor\\s+[\\s\\S]*?name="${name}"[\\s\\S]*?/>`),
   )?.[0] ?? ""
 
 test("uses a real USB-C sink with independent CC pull-downs", () => {
@@ -61,6 +76,17 @@ test("keeps exact resistor supplier footprints and assembly data", () => {
     )
   }
   expect(source).not.toContain('footprint="0402"')
+})
+
+test("keeps the exact C2150 transistor supplier MPNs", () => {
+  const expectedPartNumber = "SS8050(RANGE:200-350)"
+  for (const name of ["Q1", "Q2"]) {
+    const block = getTransistorBlock(name)
+    expect(block).toContain(`manufacturerPartNumber="${expectedPartNumber}"`)
+  }
+  expect(source).not.toContain('manufacturerPartNumber="SS8050"')
+  expect(docsSource).not.toContain('manufacturerPartNumber="SS8050"')
+  expect(docsSource).toContain(`manufacturerPartNumber="${expectedPartNumber}"`)
 })
 
 test("keeps the declared project schematic-only", () => {

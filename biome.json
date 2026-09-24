@@ -16,6 +16,8 @@
     "ignore": [
       "cosmos-export",
       "dist",
+      "build",
+      ".docusaurus",
       "package.json",
       "!./codetestingplayground"
     ]

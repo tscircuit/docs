@@ -85,6 +85,7 @@ if (existsSync(pcbSnapshotPath)) {
 }
 
 const buildReference = { value: "" }
+const circuitReference = { value: "" }
 const snapshotReference = { value: "" }
 for (let index = 0; index < runs; index += 1) {
   cleanGeneratedFiles()
@@ -103,6 +104,7 @@ for (let index = 0; index < runs; index += 1) {
     throw new Error("Schematic-only build produced a PCB artifact")
   }
   const buildHash = assertStable(schematicPath, buildReference)
+  const circuitHash = assertStable(circuitPath, circuitReference)
   run([
     "run",
     "run-tsci.ts",
@@ -114,8 +116,10 @@ for (let index = 0; index < runs; index += 1) {
   assertNoTrailingWhitespace(snapshotPath)
   const snapshotHash = assertStable(snapshotPath, snapshotReference)
   console.log(
-    `run=${String(index + 1).padStart(2, "0")} build=${buildHash} snapshot=${snapshotHash}`,
+    `run=${String(index + 1).padStart(2, "0")} build=${buildHash} circuit=${circuitHash} snapshot=${snapshotHash}`,
   )
 }
 
-console.log(`${runs} clean builds produced byte-identical declared SVG output`)
+console.log(
+  `${runs} clean builds produced byte-identical declared SVG and circuit.json output`,
+)
