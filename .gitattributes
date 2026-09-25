@@ -1,0 +1,9 @@
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.mdx text eol=lf
+*.json text eol=lf
+*.svg text eol=lf
+bun.lock text eol=lf

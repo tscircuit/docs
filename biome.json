@@ -16,6 +16,8 @@
     "ignore": [
       "cosmos-export",
       "dist",
+      "build",
+      ".docusaurus",
       "package.json",
       "!./codetestingplayground"
     ]
@@ -31,6 +33,14 @@
       "bracketSameLine": false
     }
   },
+  "overrides": [
+    {
+      "include": ["codetestingplayground/deterministic-footprints.json"],
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ],
   "linter": {
     "enabled": true,
     "rules": {

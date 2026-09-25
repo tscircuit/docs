@@ -1,4 +1,5 @@
 {
   "$schema": "https://cdn.jsdelivr.net/npm/@tscircuit/cli/types/tscircuit.config.schema.json",
-  "mainEntrypoint": "index.tsx"
+  "mainEntrypoint": "esp32-wifi-test-board.circuit.tsx",
+  "includeBoardFiles": ["esp32-wifi-test-board.circuit.tsx"]
 }
