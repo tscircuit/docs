@@ -71,10 +71,9 @@ by your team members.
 
 In this phase we create a layout of the circuit on a PCB.
 
-tscircuit automatically autoroutes the circuit for you, but you may still need
-to "drag'n'drop" components in the PCB viewer to the locations you want them to
-be in. Use [manual editing](../guides/tscircuit-essentials/manual-edits.mdx) to drag'n'drop
-components on the PCB.
+tscircuit automatically autoroutes the circuit for you. Specify component
+locations in your circuit with [layout properties](../guides/tscircuit-essentials/layout-properties.mdx),
+such as `pcbX`, `pcbY`, and `pcbRotation`.
 
 ## Ordering
 

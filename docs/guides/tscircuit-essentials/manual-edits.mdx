@@ -1,110 +1,54 @@
 ---
 title: Manual Edits
 description: >-
-  Learn how to capture drag-and-drop adjustments in `manual-edits.json`, use
-  the schematic and PCB editors to create them, and troubleshoot when changes
-  don't apply.
+  Apply existing or generated `manual-edits.json` data to a board or
+  subcircuit.
 ---
-import YouTubeEmbed from "../../../src/components/YouTubeEmbed"
 
-It can be cumbersome to programmatically define the locations of every component
-on the PCB and schematic, but [automatic layout](./automatic-pcb-layout.mdx) can
-be too uncontrolled. Manual edits allow you to use a schematic or PCB viewer
-to drag and drop components.
+`manual-edits.json` is a data format that can apply serialized PCB placement,
+PCB trace-hint, and schematic-placement edits to a circuit.
 
-:::info
-Are you trying to programmatically define the locations of components? Check out
-[using layout properties](./layout-properties.mdx) instead.
+:::warning
+The standard viewers in [tscircuit.com](https://tscircuit.com) and `tsci dev`
+currently do not expose GUI controls for creating manual edits. In particular,
+the schematic pencil button and the PCB **Edit Trace** and **Move Components**
+controls described in earlier versions of this guide are no longer available.
 :::
 
-Every time you drag a component, a file conventionally called `manual-edits.json`
-is edited with your edits. This manual edits file is imported and can be given
-as the `manualEdits` prop to a `<board />` or `<subcircuit />`
+For new circuit layouts, use [layout properties](./layout-properties.mdx), such
+as `pcbX`, `pcbY`, `schX`, and `schY`, instead.
 
-## Creating Manual Edits with a GUI
+## Applying an Existing Manual Edits File
 
-Each GUI features an "edit button" to turn on an editing mode. After you turn
-on the editing mode, you can drag and drop components and your edits will
-automatically edit the `manual-edits.json` file.
-
-### Creating Manual Edits in the Schematic Viewer
-
-In the top-right corner there is a pencil edit button. This turns on the edit
-mode.
-
-<YouTubeEmbed youtubeId="I4nH7D4K86I" />
-
-### Creating Manual Edits in the PCB Viewer
-
-The PCB Viewer features two edits modes:
-
-- Edit Trace Mode
-- Move Components Mode
-
-You can find both of them by hovering over the PCB viewer.
-
-<YouTubeEmbed youtubeId="KxLBWpUWB2M"/>
-
-### Troubleshooting manual edits not being applied
-
-Usually if manual edits aren't being applied, it's because you haven't imported
-the `manual-edits.json` file. On the [tscircuit.com editor](https://tscircuit.com),
-you'll get a warning that automatically edits your code to insert the import.
-
-If you're editing locally, add the following lines:
+You can import an existing or externally generated `manual-edits.json` file and
+pass it to the `manualEdits` prop of a `<board />` or `<subcircuit />`:
 
 ```tsx
 import manualEdits from "./manual-edits.json"
 
 export default () => (
-  //                                VVVV add this prop!
   <board width="10mm" height="10mm" manualEdits={manualEdits}>
     {/* ... */}
   </board>
 )
 ```
 
-If you're still not seeing your manual edits, select the `manual-edits.json`
-file from the tscircuit editor or find the file on your filesystem. Make sure
-that it changes when you drag'n'drop components.
+## Manual Edits Format
 
+The format is defined in [the manual-edits type](https://github.com/tscircuit/props/blob/main/lib/manual-edits/manual_edits_file.ts).
+It contains three kinds of edits:
 
-## The Manual Edits Format
+- `pcb_placements` for component positions on the PCB
+- `manual_trace_hints` for PCB trace-routing hints
+- `schematic_placements` for component positions on the schematic
 
-
-The manual edits file's format is defined in [this typescript file](https://github.com/tscircuit/props/blob/main/lib/manual-edits/manual_edits_file.ts), it contains 3 main types of edits:
-
-- **pcb_placements** - Component positions on the PCB
-- **manual_trace_hints** - "Hints" indicating where PCB traces should go
-- **schematic_placements** - Component positions on the schematic
-
-Here's an example of a manual edits file:
+An empty manual-edits file is valid JSON and can be used as a starting point
+for a tool that generates edits:
 
 ```json
 {
-  pcb_placements: [
-    {
-      "selector": "R1",
-      "center": {
-        "x": 0,
-        "y": 6.869495369849336
-      },
-      "relative_to": "group_center",
-      "_edit_event_id": "0.037205222437411756"
-    }
-  ]
-  manual_trace_hints: []
-  schematic_placements: [
-    {
-      selector: "R1",
-      center: { x: 5, y: 5 },
-      relative_to: "group_center",
-    },
-    {
-      selector: "C1",
-      center: { x: -5, y: -5 },
-      relative_to: "group_center",
-    },
-  ]
+  "pcb_placements": [],
+  "manual_trace_hints": [],
+  "schematic_placements": []
 }
 ```

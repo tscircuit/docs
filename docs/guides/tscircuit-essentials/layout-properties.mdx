@@ -1,18 +1,16 @@
 ---
 title: Using Layout Properties
 description: >-
-    There are many ways to layout your schematic and PCB with tscircuit including
-    automatic layout and manual edits. In this
-    article we'll discuss how to programmatically lay out a board using layout properties like
-    `schX`/`schY` and `pcbX` and `pcbY`
+    Programmatically lay out a board with layout properties like `schX`/`schY`
+    and `pcbX` and `pcbY`
 ---
 
 ## Overview
 
-There are many ways to layout your schematic and PCB with tscircuit including
-[automatic layout](./automatic-pcb-layout.mdx) and [manual edits](./manual-edits.mdx). In this
-article we'll discuss how to programmatically lay out a board using layout properties like
-`schX`/`schY` and `pcbX` and `pcbY`
+Use layout properties to programmatically control your schematic and PCB.
+For automatic PCB placement, see [automatic layout](./automatic-pcb-layout.mdx).
+The properties covered here, including `schX`, `schY`, `pcbX`, and `pcbY`, are
+the recommended way to specify positions in a new circuit.
 
 All position properties default to `mm` but you can pass a string with any distance
 unit. For example, `pcbX="0.1in"` is the same as `pcbX="2.54mm"`.
