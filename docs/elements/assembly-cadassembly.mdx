@@ -10,7 +10,7 @@ import { assembly } from "@tscircuit/core"
 
 export default () => (
   <assembly.device name="product">
-    <assembly.cadassembly name="housing" cadModel={{ glbUrl: "/housing.glb" }}>
+    <assembly.cadassembly name="housing" modelUrl="/housing.glb">
       <cadmodel modelUrl="/cover.glb" pcbZ={2} />
     </assembly.cadassembly>
   </assembly.device>

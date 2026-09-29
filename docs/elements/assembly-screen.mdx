@@ -28,13 +28,26 @@ export default () => (
 )
 ```
 
-Without a `cadModel`, both `width` and `height` are required to generate a default FlexScreen model. If either dimension is supplied, supply both; they must be positive. For more control over the generated display, use a modelprinter string such as `cadModel="flexscreen_w26.7mm_h19.26mm"`. The current screen props accept a string, not a URL object or JSX model. Use [`assembly.subassembly`](./assembly-subassembly.mdx) for imported model files.
+Without `modelUrl` or `cadModel`, both `width` and `height` are required to generate a default FlexScreen model. If either dimension is supplied, supply both; they must be positive. For more control over the generated display, use a modelprinter string such as `cadModel="flexscreen_w26.7mm_h19.26mm"`. To import a display model, replace the dimensions with `modelUrl="/screen.glb"`. The URL model uses the same connector-relative placement as the generated screen. Its model origin should be authored at the attachment point.
+
+```tsx
+<assembly.screen
+  name="SCREEN"
+  connectsTo=".B1 .J1"
+  modelUrl="/screen.glb"
+/>
+```
+
+Use your own accessible model URL. Supported formats are GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML; a URL without an extension can specify `#ext=glb`. Relative URLs resolve using the platform's `projectBaseUrl`.
+
+`modelUrl` and `cadModel` are mutually exclusive. Supplying `modelUrl` skips the default FlexScreen model, so dimensions are optional. If you do supply dimensions, both must be positive; they do not resize the imported model.
 
 | Property | Description |
 |----------|-------------|
 | `name` | Required, non-empty name. |
 | `connectsTo` | Required selector for a PCB component, another screen, or a named assembly container. |
-| `width`, `height` | Display dimensions; required when `cadModel` is omitted. |
+| `width`, `height` | Display dimensions; required when neither `modelUrl` nor `cadModel` is supplied. |
+| `modelUrl` | Imported display model URL; mutually exclusive with `cadModel`. |
 | `cadModel` | Non-empty modelprinter string, used instead of the dimension-derived model. |
 
 ## Attachment placement

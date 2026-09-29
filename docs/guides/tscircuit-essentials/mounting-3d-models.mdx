@@ -34,14 +34,13 @@ export default () => (
     </board>
     <assembly.subassembly name="hardware">
       {mounts.map(({ name, x, y }) => (
-        <assembly.subassembly
+        <cadmodel
           key={name}
-          name={`screw-${name}`}
-          cadModel={{
-            glbUrl: screwModelUrl,
-            modelUnitToMmScale: 1,
-            positionOffset: { x, y, z: boardThickness / 2 },
-          }}
+          modelUrl={screwModelUrl}
+          modelUnitToMmScale={1}
+          pcbX={x}
+          pcbY={y}
+          pcbZ={boardThickness / 2}
         />
       ))}
     </assembly.subassembly>
@@ -55,7 +54,9 @@ Replace the model URL with your asset and open the circuit's 3D view to inspect 
 
 ## Add brackets, washers, or a housing
 
-Use another named subassembly with `cadModel={{ glbUrl: "/models/bracket.glb", positionOffset: { x: 0, y: 0, z: 0.8 } }}` to import a bracket with its own reference point. Match its mounting coordinates to the same holes. For a washer of thickness `t` above the board, position its bottom at the board surface and raise the screw's seating plane to `boardThickness / 2 + t`.
+To import a housing at the assembly origin, use `<assembly.subassembly name="housing" modelUrl="/models/housing.glb" />`. You can also put `modelUrl` on `assembly.device` itself. Use CAD children for individually positioned parts, as in the screws above.
+
+For advanced model configuration, use another named subassembly with `cadModel={{ glbUrl: "/models/bracket.glb", positionOffset: { x: 0, y: 0, z: 0.8 } }}` to import a bracket with its own reference point. Match its mounting coordinates to the same holes. For a washer of thickness `t` above the board, position its bottom at the board surface and raise the screw's seating plane to `boardThickness / 2 + t`.
 
 You can group multiple `<cadmodel>` children inside a subassembly and place them with `pcbX`, `pcbY`, and `pcbZ`. Nested subassemblies inherit the assembly frame, but offsets on a container's `cadModel` move only that model, not its children. Apply the required placement to every model.
 
