@@ -1,0 +1,46 @@
+---
+title: <assembly.screen />
+description: Place a display model relative to a PCB connector or named assembly.
+---
+
+`assembly.screen` places display geometry at an attachment target. It does not create a PCB footprint or schematic symbol for the display.
+
+```tsx
+import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="display-device">
+    <board name="B1" width="44mm" height="36mm" thickness="1.6mm" routingDisabled>
+      <connector
+        name="J1"
+        pcbY={-13}
+        pinCount={30}
+        footprint="fpc30_p0.5mm_pw0.3mm_pl1.25mm_mpx17.58mm_mpy2.325mm_mpw2mm_mpl3mm_mounttop"
+      />
+    </board>
+    <assembly.screen
+      name="SCREEN"
+      connectsTo=".B1 .J1"
+      width="26.7mm"
+      height="19.26mm"
+    />
+  </assembly.device>
+)
+```
+
+Without a `cadModel`, both `width` and `height` are required to generate a default FlexScreen model. If either dimension is supplied, supply both; they must be positive. For more control over the generated display, use a modelprinter string such as `cadModel="flexscreen_w26.7mm_h19.26mm"`. The current screen props accept a string, not a URL object or JSX model. Use [`assembly.subassembly`](./assembly-subassembly.mdx) for imported model files.
+
+| Property | Description |
+|----------|-------------|
+| `name` | Required, non-empty name. |
+| `connectsTo` | Required selector for a PCB component, another screen, or a named assembly container. |
+| `width`, `height` | Display dimensions; required when `cadModel` is omitted. |
+| `cadModel` | Non-empty modelprinter string, used instead of the dimension-derived model. |
+
+## Attachment placement
+
+For a PCB connector, the screen origin is its cable insertion center, falling back to the component center. Z starts at the board surface. Orientation follows the connector's insertion direction when available, otherwise its inferred cable direction or PCB rotation. Bottom-layer targets also flip the model to the underside.
+
+A screen targeting another screen or subassembly inherits that target's assembly frame, not the offset of its individual CAD model. Targets can be declared before or after the screen. Resolution stays within the nearest `assembly.device`; missing or ambiguous targets and attachment cycles produce errors.
+
+`connectsTo` controls mechanical placement; it does not create electrical traces. Use [`trace`](./trace.mdx) for board wiring and [`assembly.subassembly`](./assembly-subassembly.mdx) for general mechanical hardware.
