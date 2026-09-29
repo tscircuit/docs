@@ -41,7 +41,55 @@ Here's a simple example connecting two components:
 | `width` | Width of the trace (optional) | `"0.2mm"` |
 | `thickness` | Same as `width`; sets the copper width for the trace (optional) | `"0.2mm"` |
 | `pcbPath` | Array of points defining a manual PCB path relative to an anchor port | `[{ x: 1, y: 0 }, { x: 1, y: 1 }]` |
+| `pcbTeardrops` | Enable automatic PCB teardrops | `true` |
+| `pcbTeardropStart` | Teardrop at the start (from) of trace | `true` |
+| `pcbTeardropEnd` | Teardrop at the end (to) of trace | `false` |
 | `pcbPathRelativeTo` | Port selector that `pcbPath` coordinates are relative to (defaults to the `from` port) | `".R1 > .pin2"` |
+
+## PCB teardrops
+
+Teardrops widen a trace as it meets a pad or via. Set `pcbTeardrops` to add
+teardrops automatically after routing. The routed centerline stays in place,
+and copper pours are generated afterward.
+
+| Property | Description |
+| --- | --- |
+| `pcbTeardrops` | Enable automatic teardrops at supported pad and via contacts. Defaults to disabled. |
+| `pcbTeardropStart` | Teardrop at the start (from) of trace. |
+| `pcbTeardropEnd` | Teardrop at the end (to) of trace. |
+
+Start and end refer to the logical `from` and `to` connections, even if the
+stored route runs in reverse. When omitted, either endpoint setting inherits
+`pcbTeardrops`. An explicit `true` or `false` overrides that setting for the
+endpoint. For example, this enables teardrops but disables them at C1:
+
+```tsx
+export default () => (
+  <board width="16mm" height="10mm">
+    <resistor name="R1" resistance="100" footprint="0603" pcbX={-3} />
+    <capacitor name="C1" capacitance="10nF" footprint="0603" pcbX={3} />
+    <trace
+      from="R1.2"
+      to="C1.1"
+      thickness="0.2mm"
+      pcbPath={[]}
+      pcbTeardrops
+      pcbTeardropEnd={false}
+    />
+  </board>
+)
+```
+
+To enable only the `from` endpoint, set `pcbTeardropStart` without
+`pcbTeardrops`. To enable via teardrops while disabling both endpoints, use
+`pcbTeardrops` with `pcbTeardropStart={false}` and `pcbTeardropEnd={false}`.
+
+Automatic teardrops depend on the contact geometry and available straight
+trace length. Unsupported pad shapes and segments too short for a taper are
+skipped. These controls do not choose a curve or set custom dimensions.
+For explicit widths and interpolation, use
+[saved `pcbTracePaths`](../guides/reusing-saved-fanout-trace-paths.mdx#tapered-wire-segments).
+Explicit tapers in saved paths are preserved by automatic teardrop generation.
 
 ## Connecting to Nets
 
