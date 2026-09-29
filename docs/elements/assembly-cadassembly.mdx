@@ -1,0 +1,20 @@
+---
+title: <assembly.cadassembly />
+description: An alias for assembly.subassembly for grouping mechanical models.
+---
+
+`assembly.cadassembly` is an alias for [`assembly.subassembly`](./assembly-subassembly.mdx). It has the same props, placement rules, and CAD-only behavior.
+
+```tsx
+import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="product">
+    <assembly.cadassembly name="housing" cadModel={{ glbUrl: "/housing.glb" }}>
+      <cadmodel modelUrl="/cover.glb" pcbZ={2} />
+    </assembly.cadassembly>
+  </assembly.device>
+)
+```
+
+Supply your own model URLs. The unnamespaced [`<cadassembly>`](./cadassembly.mdx) remains available for grouping models inside a component's `cadModel`. Use the namespaced element for device-level mechanical parts alongside a board.

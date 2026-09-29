@@ -1,0 +1,36 @@
+---
+title: <assembly.device />
+description: Group boards and mechanical parts into a complete device.
+---
+
+Import the `assembly` namespace from `@tscircuit/core` to describe a device containing boards, displays, and mechanical parts.
+
+```tsx
+import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="product">
+    <board name="B1" width="40mm" height="30mm" />
+    <assembly.subassembly name="housing" cadModel={{ glbUrl: "/housing.glb" }} />
+  </assembly.device>
+)
+```
+
+Replace `/housing.glb` with your own model URL, accessible to the viewer. Relative asset URLs are resolved using the platform's `projectBaseUrl`.
+
+`assembly.device` is a transparent container: it does not create geometry, PCB pads, or schematic symbols. Boards and other children keep their own rendering behavior. Devices can be nested; `assembly.screen` attachment selectors are scoped to their nearest device.
+
+| Property | Description |
+|----------|-------------|
+| `name` | Optional device name. |
+| `children` | Boards, subassemblies, screens, or nested devices. |
+
+## Assembly elements
+
+| Element | Purpose |
+|---------|---------|
+| [`assembly.subassembly`](./assembly-subassembly.mdx) | Group imported mechanical models and CAD children. |
+| [`assembly.cadassembly`](./assembly-cadassembly.mdx) | Alias for `assembly.subassembly`. |
+| [`assembly.screen`](./assembly-screen.mdx) | Place a display relative to a connector or another assembly. |
+
+See [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx) for a board with mounting holes and imported screws.

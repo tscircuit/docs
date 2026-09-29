@@ -1,0 +1,57 @@
+---
+title: <assembly.subassembly />
+description: Import and group mechanical 3D models alongside a board.
+---
+
+`assembly.subassembly` groups mechanical parts such as housings, brackets, and screws. Import `assembly` from `@tscircuit/core` and place the subassembly inside an [`assembly.device`](./assembly-device.mdx), alongside the board.
+
+```tsx
+import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="product">
+    <board width="40mm" height="30mm" thickness="1.6mm" />
+    <assembly.subassembly
+      name="bracket"
+      cadModel={{
+        glbUrl: "/bracket.glb",
+        positionOffset: { x: 10, y: 0, z: 0.8 },
+        rotationOffset: { x: 0, y: 0, z: 90 },
+        modelUnitToMmScale: 1,
+      }}
+    />
+  </assembly.device>
+)
+```
+
+Supply your own `/bracket.glb` asset. This example places its reference point on the top surface of a 1.6 mm board centered at the origin.
+
+| Property | Description |
+|----------|-------------|
+| `name` | Required, non-empty name. |
+| `displayName` | Optional display label. |
+| `cadModel` | Modelprinter string, model URL object, JSCAD model, JSX CAD subtree, or `null`. |
+| `children` | CAD models and nested subassemblies. Can coexist with `cadModel`. |
+
+URL objects support `glbUrl`, `gltfUrl`, `stlUrl`, `objUrl` (with optional `mtlUrl`), `stepUrl`, and `wrlUrl`. Relative URLs use the platform's `projectBaseUrl`; the viewer must be able to fetch the assets. See [`cadmodel`](./cadmodel.mdx) for model options.
+
+## Coordinates and nesting
+
+A top-level subassembly starts at the world origin. Coordinates are in millimetres: +X right, +Y toward the top of the board, and +Z above the board. The board's mid-plane is Z = 0, so its top surface is at half its thickness.
+
+Nested subassemblies inherit the enclosing assembly frame. A `cadModel.positionOffset` moves only that model; it does **not** move children or establish a new origin for nested containers. Set offsets on each model that needs them.
+
+You can also use CAD children:
+
+```tsx
+<assembly.subassembly name="hardware">
+  <cadmodel modelUrl="/screw.glb" pcbX={10} pcbY={5} pcbZ={0.8} />
+  <assembly.subassembly name="cover" cadModel={{ glbUrl: "/cover.glb" }} />
+</assembly.subassembly>
+```
+
+Child `pcbX`, `pcbY`, and `pcbZ` specify local model offsets. If you provide `positionOffset`, it takes precedence over these coordinates. `rotationOffset` uses degrees; `modelUnitToMmScale` converts the model's units to millimetres, and `modelOriginPosition` selects its reference point.
+
+Subassemblies do not accept `connectsTo`. Use nesting for grouping and explicit model offsets for placement. These elements add CAD geometry without creating PCB components, pads, holes, or schematic symbols. An omitted or `null` model adds no geometry of its own.
+
+For a complete example, see [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx).
