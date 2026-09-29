@@ -48,22 +48,13 @@ Here's a simple example connecting two components:
 
 ## PCB teardrops
 
-Teardrops widen a trace as it meets a pad or via. Set `pcbTeardrops` to add
-teardrops automatically after routing. The routed centerline stays in place,
-and copper pours are generated afterward.
+Set `pcbTeardrops` to widen traces at pad and via contacts after routing.
+Use `pcbTeardropStart` and `pcbTeardropEnd` to override the `from` and `to`
+endpoints. Omitted endpoint settings inherit `pcbTeardrops`.
 
-| Property | Description |
-| --- | --- |
-| `pcbTeardrops` | Enable automatic teardrops at supported pad and via contacts. Defaults to disabled. |
-| `pcbTeardropStart` | Teardrop at the start (from) of trace. |
-| `pcbTeardropEnd` | Teardrop at the end (to) of trace. |
+This example adds a teardrop at R1 while leaving the C1 end unchanged:
 
-Start and end refer to the logical `from` and `to` connections, even if the
-stored route runs in reverse. When omitted, either endpoint setting inherits
-`pcbTeardrops`. An explicit `true` or `false` overrides that setting for the
-endpoint. For example, this enables teardrops but disables them at C1:
-
-```tsx
+<CircuitPreview defaultView="pcb" code={`
 export default () => (
   <board width="16mm" height="10mm">
     <resistor name="R1" resistance="100" footprint="0603" pcbX={-3} />
@@ -78,18 +69,7 @@ export default () => (
     />
   </board>
 )
-```
-
-To enable only the `from` endpoint, set `pcbTeardropStart` without
-`pcbTeardrops`. To enable via teardrops while disabling both endpoints, use
-`pcbTeardrops` with `pcbTeardropStart={false}` and `pcbTeardropEnd={false}`.
-
-Automatic teardrops depend on the contact geometry and available straight
-trace length. Unsupported pad shapes and segments too short for a taper are
-skipped. These controls do not choose a curve or set custom dimensions.
-For explicit widths and interpolation, use
-[saved `pcbTracePaths`](../guides/reusing-saved-fanout-trace-paths.mdx#tapered-wire-segments).
-Explicit tapers in saved paths are preserved by automatic teardrop generation.
+`} />
 
 ## Connecting to Nets
 

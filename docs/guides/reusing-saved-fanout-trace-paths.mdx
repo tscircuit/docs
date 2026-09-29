@@ -96,7 +96,7 @@ Each route contains at least two points:
 
 | Point | Required fields | Optional fields |
 | --- | --- | --- |
-| Wire | `route_type: "wire"`, `x`, `y`, `width`, `layer` | `width_interpolation_mode` |
+| Wire | `route_type: "wire"`, `x`, `y`, `width`, `layer` | — |
 | Via | `route_type: "via"`, `x`, `y`, `from_layer`, `to_layer` | `via_diameter`, `via_hole_diameter` |
 
 Only wire and via points are supported. Wire widths and specified via diameters
@@ -109,61 +109,6 @@ the fanout's configuration. An explicit fanout setting overrides the board,
 including `false`. A trailing via creates its exit on `to_layer`.
 Core emits coincident wire contacts around endpoint vias for Circuit JSON
 connectivity; those contacts do not move the via or alter the saved copper.
-
-## Tapered wire segments
-
-Set `width_interpolation_mode` on a wire point to interpolate from its `width`
-to the next wire point's `width`. Use `"linear"` for a straight-sided taper or
-`"quadratic"` for a curved teardrop profile. The mode applies to the outgoing
-segment only. Without it, that segment keeps its starting width even if the
-next point has a different width.
-
-This example narrows from the left pad of a 0402 resistor to a 0.15 mm trace,
-then continues to a fanout exit. The pad center is `(-0.51, 0)` in the fanout's
-local frame.
-
-```tsx
-import type { FanoutTracePath } from "@tscircuit/props"
-
-const savedPaths: FanoutTracePath[] = [
-  {
-    connection: "R1.1",
-    route: [
-      {
-        route_type: "wire",
-        x: -0.51,
-        y: 0,
-        width: 0.5,
-        layer: "top",
-        width_interpolation_mode: "quadratic",
-      },
-      { route_type: "wire", x: -1.5, y: 0, width: 0.15, layer: "top" },
-      { route_type: "wire", x: -2.5, y: 1, width: 0.15, layer: "top" },
-      { route_type: "wire", x: -3.5, y: 1, width: 0.15, layer: "top" },
-    ],
-  },
-]
-
-export default () => (
-  <board width="20mm" height="12mm">
-    <fanout pcbTracePaths={savedPaths}>
-      <resistor name="R1" resistance="1k" footprint="0402" />
-    </fanout>
-    <resistor name="R2" resistance="1k" footprint="0402" pcbX={-6} pcbY={1} />
-    <trace from="R1.1" to="R2.2" thickness="0.15mm" />
-  </board>
-)
-```
-
-Interpolation requires a next wire point on the same layer at a different
-position. Do not set it on the last point, or directly before a via. To taper
-into a via, insert a wire point at the via's coordinates first; that point's
-width is the taper's ending width.
-
-The same point format works in `pcbTracePaths` on
-[`<autoroutingphase />`](../elements/autoroutingphase.mdx). For automatically
-sized pad and via teardrops, use the
-[`<trace />` teardrop controls](../elements/trace.mdx#pcb-teardrops).
 
 ## Coverage and validation
 
