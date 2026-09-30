@@ -3,23 +3,30 @@ title: Mounting 3D models to a board
 description: Import screws and other mechanical models and align them with PCB mounting holes.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview1 from "@site/src/data/assembly-previews/mounting-3d-models-1.json"
+
 Use the `assembly` namespace from `@tscircuit/core` to show a complete device in 3D: a board, housing, brackets, and mounting hardware. To make a screw look “screwed into” the board, align its model with a mounting hole and place the underside of its head on the board surface.
 
 This is explicit geometric placement. Assembly elements do not solve screw threads, collisions, or mechanical mating constraints. Create the actual PCB holes separately with [`hole`](../../elements/hole.mdx).
 
 ## Prepare a screw model
 
-Export a screw as GLB (or another supported CAD format) and make it available at a URL the viewer can fetch. The example uses `/models/m3-screw.glb` as a placeholder for your asset; relative URLs resolve using the platform's `projectBaseUrl`.
+Export a screw as GLB, STL, or another supported CAD format and make it available at a URL the viewer can fetch. The preview below uses a bundled, simplified GLB screw model without threads. Replace its URL with your own asset; relative URLs resolve using the platform's `projectBaseUrl`.
 
-For this example, prepare the model in millimetres with the origin at the center of the underside of the screw head, and the shaft pointing along -Z. That makes the head's seating plane easy to align with the board. If your model has a different origin, orientation, or units, adjust `modelOriginPosition`, `rotationOffset`, and `modelUnitToMmScale` on its CAD model.
+The demo model is prepared in millimetres with the origin at the center of the underside of the screw head, and the shaft pointing along -Z. Use the same reference point for your own model, or adjust its CAD options. That makes the head's seating plane easy to align with the board. If your model has a different origin, orientation, or units, adjust `modelOriginPosition`, `rotationOffset`, and `modelUnitToMmScale` on its CAD model.
 
 ## Align screws with mounting holes
 
-```tsx
-import { assembly } from "@tscircuit/core"
+<CircuitPreview
+  circuitJson={preview1}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
 
 const boardThickness = 1.6
-const screwModelUrl = "/models/m3-screw.glb"
+const screwModelUrl = "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb"
 const mounts = [
   { name: "left", x: -15, y: 0 },
   { name: "right", x: 15, y: 0 },
@@ -45,12 +52,12 @@ export default () => (
       ))}
     </assembly.subassembly>
   </assembly.device>
-)
-```
+)`}
+/>
 
 The shared `mounts` array keeps each screw centered on its hole. The board's mid-plane is Z = 0, so a 1.6 mm board has a top surface at Z = 0.8 mm. With the prepared model origin, each screw head rests at that surface and its shaft extends down through the hole. The 3.2 mm hole diameter is an example; choose the clearance for your hardware.
 
-Replace the model URL with your asset and open the circuit's 3D view to inspect the placement. The screw geometry appears only in CAD; the `<hole>` elements define the board cutouts.
+The preview opens in 3D so you can inspect the placement. Replace the model URL to try your own asset. The screw geometry appears only in CAD; the `<hole>` elements define the board cutouts.
 
 ## Add brackets, washers, or a housing
 

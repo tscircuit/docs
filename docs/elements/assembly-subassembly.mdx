@@ -3,31 +3,55 @@ title: <assembly.subassembly />
 description: Import and group mechanical 3D models alongside a board.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview1 from "@site/src/data/assembly-previews/assembly-subassembly-1.json"
+import preview2 from "@site/src/data/assembly-previews/assembly-subassembly-2.json"
+import preview3 from "@site/src/data/assembly-previews/assembly-subassembly-3.json"
+import preview4 from "@site/src/data/assembly-previews/assembly-subassembly-4.json"
+
 `assembly.subassembly` groups mechanical parts such as housings, brackets, and screws. Import `assembly` from `@tscircuit/core` and place the subassembly inside an [`assembly.device`](./assembly-device.mdx), alongside the board.
 
-```tsx
-import { assembly } from "@tscircuit/core"
+<CircuitPreview
+  circuitJson={preview1}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="product">
+    <board width="40mm" height="30mm" thickness="1.6mm">
+      <hole diameter="3.2mm" pcbX={-15} />
+      <hole diameter="3.2mm" pcbX={15} />
+    </board>
+    <assembly.subassembly name="hardware">
+      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb" pcbX={-15} pcbZ={0.8} />
+      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb" pcbX={15} pcbZ={0.8} />
+    </assembly.subassembly>
+  </assembly.device>
+)`}
+/>
+
+The preview imports simplified screw models with no threads. The example groups two models with their reference points on the top surface of a 1.6 mm board centered at the origin.
+
+For a group with its own imported model, use `modelUrl` directly:
+
+<CircuitPreview
+  circuitJson={preview2}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
 
 export default () => (
   <assembly.device name="product">
     <board width="40mm" height="30mm" thickness="1.6mm" />
-    <assembly.subassembly name="hardware">
-      <cadmodel modelUrl="/screw.glb" pcbX={-15} pcbZ={0.8} />
-      <cadmodel modelUrl="/screw.glb" pcbX={15} pcbZ={0.8} />
+    <assembly.subassembly name="housing" modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/housing.glb">
+      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/cover.glb" pcbZ={4} />
     </assembly.subassembly>
   </assembly.device>
-)
-```
-
-Supply your own `/screw.glb` asset. The example groups two models with their reference points on the top surface of a 1.6 mm board centered at the origin.
-
-For a group with its own imported model, use `modelUrl` directly:
-
-```tsx
-<assembly.subassembly name="housing" modelUrl="/housing.glb">
-  <cadmodel modelUrl="/cover.glb" pcbZ={2} />
-</assembly.subassembly>
-```
+)`}
+/>
 
 The imported housing and its children share the assembly frame. `modelUrl` supports GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML, just like `<cadmodel>`. Use `#ext=glb` when a URL has no file extension.
 
@@ -41,16 +65,27 @@ The imported housing and its children share the assembly frame. `modelUrl` suppo
 
 Use `cadModel` instead of `modelUrl` when you need offsets, rotation, scale, or other advanced model options. For example:
 
-```tsx
-<assembly.subassembly
-  name="bracket"
-  cadModel={{
-    glbUrl: "/bracket.glb",
-    positionOffset: { x: 10, y: 0, z: 0.8 },
-    rotationOffset: { x: 0, y: 0, z: 90 },
-  }}
+<CircuitPreview
+  circuitJson={preview3}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="product">
+    <board width="40mm" height="30mm" thickness="1.6mm" />
+    <assembly.subassembly
+      name="bracket"
+      cadModel={{
+        glbUrl: "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/bracket.glb",
+        positionOffset: { x: 10, y: 0, z: 0.8 },
+        rotationOffset: { x: 0, y: 0, z: 90 },
+      }}
+    />
+  </assembly.device>
+)`}
 />
-```
 
 URL objects support `glbUrl`, `gltfUrl`, `stlUrl`, `objUrl` (with optional `mtlUrl`), `stepUrl`, and `wrlUrl`. Relative URLs use the platform's `projectBaseUrl`; the viewer must be able to fetch the assets. See [`cadmodel`](./cadmodel.mdx) for model options.
 
@@ -62,12 +97,23 @@ Nested subassemblies inherit the enclosing assembly frame. A `cadModel.positionO
 
 You can also use CAD children:
 
-```tsx
-<assembly.subassembly name="hardware">
-  <cadmodel modelUrl="/screw.glb" pcbX={10} pcbY={5} pcbZ={0.8} />
-  <assembly.subassembly name="cover" cadModel={{ glbUrl: "/cover.glb" }} />
-</assembly.subassembly>
-```
+<CircuitPreview
+  circuitJson={preview4}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="product">
+    <board width="40mm" height="30mm" thickness="1.6mm" />
+    <assembly.subassembly name="hardware">
+      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb" pcbX={10} pcbY={5} pcbZ={0.8} />
+      <assembly.subassembly name="cover" cadModel={{ glbUrl: "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/cover.glb", positionOffset: { x: 0, y: 0, z: 4 } }} />
+    </assembly.subassembly>
+  </assembly.device>
+)`}
+/>
 
 Child `pcbX`, `pcbY`, and `pcbZ` specify local model offsets. If you provide `positionOffset`, it takes precedence over these coordinates. `rotationOffset` uses degrees; `modelUnitToMmScale` converts the model's units to millimetres, and `modelOriginPosition` selects its reference point.
 
