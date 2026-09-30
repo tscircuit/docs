@@ -25,6 +25,7 @@
 ## Documentation Standards
 
 - Keep documentation concise and example-focused
+- Almost always prefer to have CircuitPreview over a code snippet
 - Use `<CircuitPreview />` for runnable circuit code examples; use `fsMap` for
   examples that import JSON or other files.
 - Keep explanations concise and avoid separate guides that duplicate element references.
