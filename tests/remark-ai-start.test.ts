@@ -24,7 +24,7 @@ test("AI callout follows opening prose, skipping imports, headings and images", 
       paragraph("More details."),
     ],
   }
-  remarkAiStart()(tree)
+  remarkAiStart()(tree, { data: { frontMatter: { ai_start: true } } })
   assert.equal(tree.children[3], opening)
   assert.equal(tree.children[4].type, "mdxJsxFlowElement")
   assert.equal(
@@ -38,6 +38,37 @@ test("nested paragraphs and pages without opening prose do not get a leading cal
   const tree = {
     children: [{ type: "blockquote", children: [paragraph("Quote")] }],
   }
-  remarkAiStart()(tree)
+  remarkAiStart()(tree, { data: { frontMatter: { ai_start: true } } })
   assert.equal(tree.children.length, 1)
+})
+
+test("regular docs do not get an AI callout unless they explicitly opt in", () => {
+  for (const file of [
+    undefined,
+    {},
+    { data: {} },
+    { data: { frontMatter: {} } },
+    { data: { frontMatter: { ai_start: false } } },
+    { data: { frontMatter: { ai_start: "true" } } },
+  ]) {
+    const opening = paragraph(
+      "After you've designed your device, order prototypes.",
+    )
+    const tree = { children: [opening] }
+    remarkAiStart()(tree, file)
+    assert.deepEqual(tree.children, [opening])
+  }
+})
+
+test("plugin configuration selects the front matter opt-in key", () => {
+  const tree = { children: [paragraph("Getting started.")] }
+  remarkAiStart({ frontMatterKey: "show_ai_start" })(tree, {
+    data: { frontMatter: { show_ai_start: true } },
+  })
+  assert.deepEqual(tree.children[1], {
+    type: "mdxJsxFlowElement",
+    name: "AiStart",
+    attributes: [],
+    children: [],
+  })
 })
