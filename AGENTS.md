@@ -28,6 +28,11 @@
 - Include working code examples where possible
 - Use proper heading hierarchy (h1 → h2 → h3)
 - Images should include descriptive alt text
+- When sharing a docs PR or completed documentation change, always include direct
+  links to each added or changed page on the PR preview deployment. Resolve the
+  preview URL from the deployment check or bot comment, verify the page routes,
+  and link the pages themselves rather than only the PR or preview homepage.
+  If the preview is not ready, say so and provide the page links once it is available.
 
 ## Testing tscircuit TSX Code
 
