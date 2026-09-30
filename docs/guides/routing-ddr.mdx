@@ -4,6 +4,8 @@ description: Model DDR buses, fan out controller and memory packages, and verify
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import am3352Files from "@site/src/data/am3352-ram/files.json"
+import am3352PowerFiles from "@site/src/data/am3352-ram/power-files.json"
 
 export const routedByteLaneCode = `const laneSignals = [
   "DQ0",
@@ -240,6 +242,128 @@ for the subsequent global router. The phase preserves existing fanout copper and
 includes its planar lengths when matching each bus. Layer mismatches or impossible
 planar routes produce errors; adjust the fanouts rather than expecting a layer
 change inside the bus route.
+
+## Route AM3352 to DDR3 with `bus_lanes` {#am3352-bus-lanes}
+
+For a direct package-to-package connection, you can skip boundary fanouts. A
+`bus_lanes` phase adds short local dogbones where an unrouted pad must reach a
+signal layer, then routes each interconnect without intermediate vias. It also
+length-matches buses and couples declared differential pairs. You do not need
+an `algorithmFn`, saved routes, or board-specific route guides.
+
+```tsx
+<autoroutingphase
+  name="DDR_BUS_LANES"
+  phaseIndex={1}
+  autorouter="bus_lanes"
+/>
+<trace name="DDR_D0" from="U1.M3" to="U3.E3" routingPhaseIndex={1} />
+<bus
+  name="DDR_BYTE0"
+  connections={[
+    "DDR_D0", "DDR_D1", "DDR_D2", "DDR_D3",
+    "DDR_D4", "DDR_D5", "DDR_D6", "DDR_D7",
+    "DDR_DQM0", "DDR_DQS0", "DDR_DQSn0",
+  ]}
+  maxLengthSkew={0.635}
+/>
+<differentialpair
+  name="DDR_DQS_PAIR0"
+  positiveConnection="DDR_DQS0"
+  negativeConnection="DDR_DQSn0"
+  maxLengthSkew={0.127}
+  pcbTraceGap={0.12}
+/>
+```
+
+Use the complete pin mapping below rather than copying this abbreviated lane.
+The example connects an AM3352 ZCZ to W631GG6MB DDR3 RAM, with all 47 shared
+signals declared as traces. Its two byte lanes have a 0.635 mm length-skew limit;
+the DQS pairs and clock pair have a 0.127 mm limit and 0.12 mm requested gap.
+The controller is at `(0, 0)` and RAM at `(0, -27)` mm. The four-layer board uses
+0.1 mm traces and clearance, 0.3 mm via pads, and 0.15 mm drills.
+
+The solver chooses signal layers automatically. To constrain a bus to a reviewed
+layer, set `pcbAllowedLayers={["inner1"]}` on that bus. `preferredLayers` also
+restricts the allowed set in this routing flow. Keep corresponding fanout exits
+on a common permitted layer if you supply fanouts yourself.
+
+The completed reference has 47/47 connected signals, two local vias per signal,
+and no interconnect vias. It passes core's native DRC, skew, pair-gap, corner,
+and route-detour checks. These are routing-test values, not a complete AM3352
+board or a substitute for its timing and power design.
+
+### Full source and completed routes
+
+The files below are the core regression fixture, including the actual chip
+footprints, ball map, buses, and differential pairs. `routeRemaining={false}`
+keeps unrelated CPU pins out of this signal-only example.
+
+<CircuitPreview
+  fsMap={am3352Files}
+  entrypoint="index.tsx"
+  mainComponentPath="index.tsx"
+  pcbPreviewUrl="/img/am3352-bus-lanes/inner1.svg"
+  defaultView="pcb"
+  verticalStack
+  hideSchematicTab
+  hide3DTab
+/>
+
+The rendered layers below were generated from the complete solve; they are
+preview artifacts, never inputs to the algorithm.
+
+| inner1 | inner2 | bottom |
+| --- | --- | --- |
+| ![Completed AM3352 DDR3 routes on inner1](/img/am3352-bus-lanes/inner1.svg) | ![Completed AM3352 DDR3 routes on inner2](/img/am3352-bus-lanes/inner2.svg) | ![Completed AM3352 DDR3 routes on bottom](/img/am3352-bus-lanes/bottom.svg) |
+
+Integrated dogbones require the core integration in
+[core #4232](https://github.com/tscircuit/core/pull/4232). The portability fix uses
+bus-lanes-solver 0.0.3 or later. The hosted evaluator may lag these APIs; use a
+core build containing that integration to reproduce the full example locally.
+
+### VCC and GND dogbones
+
+Power escapes need explicit net connections too. `bus_lanes` routes the selected
+signal connections; it does not infer every supply ball or create reference
+planes. Keep AM3352 voltage domains separate: the DDR supply is `VDDS_DDR`, not
+all of the processor's `VDD*` pins.
+
+This **separate power-escape study** connects both packages' VSS pins to `GND`
+and their DDR supply pins to `DDR_1V5`, then adds 89 local dogbones with
+`<fanout autorouter="dogbone" />`. The RAM footprint uses its nominal 0.8 mm grid;
+the rounded coordinates in the imported DDR fixture currently fail the dogbone
+router's strict 0/45-degree escape check. The study passes native DRC.
+
+<CircuitPreview
+  fsMap={am3352PowerFiles}
+  entrypoint="index.tsx"
+  mainComponentPath="index.tsx"
+  pcbPreviewUrl="/img/am3352-bus-lanes/power.svg"
+  verticalStack
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+/>
+
+These are pad-to-via escapes only. `routeRemaining={false}` deliberately stops
+before joining the power nets, and no copper planes are included. Do not treat
+this study as a powered DDR board or simply overlay its vias on the signal
+routes. Integrate the power nets and reviewed stackup before routing the final
+board, then rerun clearance and connectivity checks. For plane-terminated
+fanout configuration, see [Allocate layers deliberately](#allocate-layers-deliberately).
+
+### Rendering a dense board
+
+Solving this reference takes minutes, so avoid solving it again for every image
+or every layer. Build and validate the circuit once, then render its Circuit
+JSON for each view. The [image-generation API](../web-apis/image-generation-api.mdx)
+accepts precompiled circuit data. Cache that output by source and dependency
+version, and invalidate it when either changes.
+
+Keep the routing budget, grid resolution, matching tolerances, and clearance
+checks intact when optimizing. Faster image rendering is not evidence that a
+shorter or less constrained route search produces the same quality.
 
 ## Verify the complete channel
 

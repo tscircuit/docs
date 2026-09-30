@@ -129,6 +129,7 @@ const getPreferredFsMapSource = (
 export default function CircuitPreview({
   code,
   circuitJson,
+  pcbPreviewUrl,
   showTabs = true,
   defaultView = "pcb",
   splitView = true,
@@ -156,6 +157,8 @@ export default function CircuitPreview({
   code?: string
   /** Precompiled preview data for APIs newer than the hosted evaluator. */
   circuitJson?: Record<string, unknown>[]
+  /** Validated static PCB render for examples too costly to solve per request. */
+  pcbPreviewUrl?: string
   showTabs?: boolean
   defaultView?: CircuitPreviewView
   splitView?: boolean
@@ -261,6 +264,7 @@ export default function CircuitPreview({
   }
 
   const pcbUrl = useMemo(() => {
+    if (pcbPreviewUrl) return pcbPreviewUrl
     const basePcbUrl = configurePreviewUrl(createSvgUrl(fsMapOrCode, "pcb"))
     const flags: string[] = []
 
@@ -276,6 +280,7 @@ export default function CircuitPreview({
     showCourtyards,
     showDebugObjects,
     circuitJson,
+    pcbPreviewUrl,
   ])
   const schUrl = useMemo(() => {
     const baseUrl = configurePreviewUrl(
