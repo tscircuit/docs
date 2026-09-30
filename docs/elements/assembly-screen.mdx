@@ -6,7 +6,7 @@ description: Place a display model relative to a PCB connector or named assembly
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-screen-1.json"
 
-`assembly.screen` places a display at a connector or another assembly. `connectsTo` controls its position and orientation; it does not create electrical connections.
+`assembly.screen` places a display model relative to a PCB component or another assembly. `connectsTo` controls its position and orientation; it does not create electrical connections.
 
 <CircuitPreview
   wrapCode
@@ -43,13 +43,26 @@ export default () => (
 
 | Property | Description |
 |----------|-------------|
-| `name` | Required screen name. |
-| `connectsTo` | Selector for a PCB component, screen, or named assembly. |
+| `name` | Required, non-empty screen name. |
+| `connectsTo` | Required selector matching exactly one PCB component, `assembly.screen`, or `assembly.subassembly`. The nearest `assembly.device` scopes the search, or the circuit root if there is no device. |
 | `model` | Modelprinter string or HTTP(S) model URL. |
-| `modelUrl` | Imported display model URL. |
+| `modelUrl` | Imported model URL. |
 | `cadModel` | Modelprinter string. |
-| `width`, `height` | Required together when no model is supplied. |
+| `width`, `height` | Positive screen body dimensions, including the bezel but excluding the flex cable. Supply both together. |
 
-Choose one of `model`, `modelUrl`, or `cadModel`. Dimensions do not resize an explicit model.
+Provide one of `model`, `modelUrl`, or `cadModel`, **or** supply both `width` and `height` to generate a default FlexScreen model. Model sources are mutually exclusive. You can supply dimensions alongside an explicit model, but they do not resize it.
 
-For your own display file, place its origin at the connector attachment point. The screen follows the connector's placement, including the board's bottom layer.
+For example, this screen uses a generated `flexscreen_w40mm_h25mm` model:
+
+```tsx
+<assembly.screen
+  name="SCREEN"
+  connectsTo=".B1 .J1"
+  width="40mm"
+  height="25mm"
+/>
+```
+
+The screen anchors to the target PCB component's cable insertion center when it has one; otherwise it uses the component center. It follows the target's orientation and top or bottom layer. For an imported display model, place its origin at the attachment point.
+
+In circuit JSON, the screen creates a `source_component` and a `cad_component` with its resolved position, rotation, layer, and model reference. It does not create a `pcb_component` for the screen. The `connectsTo` selector is used during rendering rather than stored as an electrical connection.
