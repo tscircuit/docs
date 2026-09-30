@@ -3,18 +3,26 @@ title: <assembly.cadassembly />
 description: An alias for assembly.subassembly for grouping mechanical models.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview1 from "@site/src/data/assembly-previews/assembly-cadassembly-1.json"
+
 `assembly.cadassembly` is an alias for [`assembly.subassembly`](./assembly-subassembly.mdx). It has the same props, placement rules, and CAD-only behavior.
 
-```tsx
-import { assembly } from "@tscircuit/core"
+<CircuitPreview
+  circuitJson={preview1}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
 
 export default () => (
   <assembly.device name="product">
-    <assembly.cadassembly name="housing" cadModel={{ glbUrl: "/housing.glb" }}>
-      <cadmodel modelUrl="/cover.glb" pcbZ={2} />
+    <board width="40mm" height="30mm" thickness="1.6mm" />
+    <assembly.cadassembly name="housing" modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/housing.glb">
+      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/cover.glb" pcbZ={4} />
     </assembly.cadassembly>
   </assembly.device>
-)
-```
+)`}
+/>
 
-Supply your own model URLs. The unnamespaced [`<cadassembly>`](./cadassembly.mdx) remains available for grouping models inside a component's `cadModel`. Use the namespaced element for device-level mechanical parts alongside a board.
+The preview uses bundled demo housing and cover models. Replace their URLs with your own assets. The unnamespaced [`<cadassembly>`](./cadassembly.mdx) remains available for grouping models inside a component's `cadModel`. Use the namespaced element for device-level mechanical parts alongside a board.

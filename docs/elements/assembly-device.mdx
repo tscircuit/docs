@@ -3,26 +3,33 @@ title: <assembly.device />
 description: Group boards and mechanical parts into a complete device.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview1 from "@site/src/data/assembly-previews/assembly-device-1.json"
+
 Import the `assembly` namespace from `@tscircuit/core` to describe a device containing boards, displays, and mechanical parts.
 
-```tsx
-import { assembly } from "@tscircuit/core"
+<CircuitPreview
+  circuitJson={preview1}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
 
 export default () => (
-  <assembly.device name="product">
+  <assembly.device name="product" modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/housing.glb">
     <board name="B1" width="40mm" height="30mm" />
-    <assembly.subassembly name="housing" cadModel={{ glbUrl: "/housing.glb" }} />
   </assembly.device>
-)
-```
+)`}
+/>
 
-Replace `/housing.glb` with your own model URL, accessible to the viewer. Relative asset URLs are resolved using the platform's `projectBaseUrl`.
+The preview imports a simplified housing model. Replace its URL with your own model URL, accessible to the viewer. Relative asset URLs are resolved using the platform's `projectBaseUrl`.
 
-`assembly.device` is a transparent container: it does not create geometry, PCB pads, or schematic symbols. Boards and other children keep their own rendering behavior. Devices can be nested; `assembly.screen` attachment selectors are scoped to their nearest device.
+Without `modelUrl`, `assembly.device` is a transparent container. With `modelUrl`, it renders a CAD model at the world origin without creating PCB pads or schematic symbols. Boards and other children keep their own rendering behavior; the device model does not reposition them. Devices can be nested; `assembly.screen` attachment selectors are scoped to their nearest device.
 
 | Property | Description |
 |----------|-------------|
 | `name` | Optional device name. |
+| `modelUrl` | Optional imported CAD model URL, rendered at the world origin. |
 | `children` | Boards, subassemblies, screens, or nested devices. |
 
 ## Assembly elements
@@ -34,3 +41,5 @@ Replace `/housing.glb` with your own model URL, accessible to the viewer. Relati
 | [`assembly.screen`](./assembly-screen.mdx) | Place a display relative to a connector or another assembly. |
 
 See [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx) for a board with mounting holes and imported screws.
+
+`modelUrl` uses the same file formats as [`cadmodel`](./cadmodel.mdx): GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML. Use a `#ext=glb` suffix when the URL does not include the file extension. For model offsets or other advanced options, place a `cadmodel` inside an `assembly.subassembly`.

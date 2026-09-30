@@ -3,13 +3,20 @@ title: <assembly.screen />
 description: Place a display model relative to a PCB connector or named assembly.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview1 from "@site/src/data/assembly-previews/assembly-screen-1.json"
+
 `assembly.screen` places display geometry at an attachment target. It does not create a PCB footprint or schematic symbol for the display.
 
-```tsx
-import { assembly } from "@tscircuit/core"
+<CircuitPreview
+  circuitJson={preview1}
+  defaultView="3d"
+  hideSchematicTab
+  browser3dView={false}
+  code={`import { assembly } from "@tscircuit/core"
 
 export default () => (
-  <assembly.device name="display-device">
+  <assembly.device name="product">
     <board name="B1" width="44mm" height="36mm" thickness="1.6mm" routingDisabled>
       <connector
         name="J1"
@@ -21,20 +28,24 @@ export default () => (
     <assembly.screen
       name="SCREEN"
       connectsTo=".B1 .J1"
-      width="26.7mm"
-      height="19.26mm"
+      modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screen.glb"
     />
   </assembly.device>
-)
-```
+)`}
+/>
 
-Without a `cadModel`, both `width` and `height` are required to generate a default FlexScreen model. If either dimension is supplied, supply both; they must be positive. For more control over the generated display, use a modelprinter string such as `cadModel="flexscreen_w26.7mm_h19.26mm"`. The current screen props accept a string, not a URL object or JSX model. Use [`assembly.subassembly`](./assembly-subassembly.mdx) for imported model files.
+Without `modelUrl` or `cadModel`, both `width` and `height` are required to generate a default FlexScreen model. If either dimension is supplied, supply both; they must be positive. For more control over the generated display, use a modelprinter string such as `cadModel="flexscreen_w26.7mm_h19.26mm"`. To generate a screen from dimensions instead of importing a model, replace `modelUrl` in the preview with `width="26.7mm" height="19.26mm"`. The URL model uses the same connector-relative placement as the generated screen. Its model origin should be authored at the attachment point.
+
+The imported-screen preview uses a simplified GLB display model. Replace its URL with your own accessible model. Supported formats are GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML; a URL without an extension can specify `#ext=glb`. Relative URLs resolve using the platform's `projectBaseUrl`.
+
+`modelUrl` and `cadModel` are mutually exclusive. Supplying `modelUrl` skips the default FlexScreen model, so dimensions are optional. If you do supply dimensions, both must be positive; they do not resize the imported model.
 
 | Property | Description |
 |----------|-------------|
 | `name` | Required, non-empty name. |
 | `connectsTo` | Required selector for a PCB component, another screen, or a named assembly container. |
-| `width`, `height` | Display dimensions; required when `cadModel` is omitted. |
+| `width`, `height` | Display dimensions; required when neither `modelUrl` nor `cadModel` is supplied. |
+| `modelUrl` | Imported display model URL; mutually exclusive with `cadModel`. |
 | `cadModel` | Non-empty modelprinter string, used instead of the dimension-derived model. |
 
 ## Attachment placement
