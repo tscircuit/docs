@@ -152,6 +152,20 @@ The `<autoroutingphase />` element lets you split PCB autorouting into ordered
 passes. The common use case is to route important connections first so later
 connections route around them.
 
+## Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `phaseIndex` | `number` | The routing pass configured by this element. Lower numbered phases run first. |
+| `connection` | `string` | Port selector for one connection to route in this phase. With `reroute`, selects one previously routed connection instead. |
+| `connections` | `string[]` | Port selectors for multiple connections to route in this phase. With `reroute`, selects previously routed connections instead. |
+| `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
+| `fanoutRoutingLayers` | `LayerRef[]` | Layers available to boundary-terminated fanout connections. |
+| `fanoutPourNetMap` | `Record<LayerRef, string \| string[]>` | Maps dedicated plane layers to the power or ground nets that should terminate on them during fanout. |
+| `busFanoutDirections` | `Record<string, BusFanoutDirection>` | Controls the boundary exit direction for each named bus during fanout. |
+| `reroute` | `boolean` | Reroutes traces produced by earlier phases instead of routing newly assigned traces. Requires `region`, `connection`, or `connections`. |
+| `region` | `{ shape?: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reconsider in a reroute phase. |
+
 ## Route Specific Connections First
 
 Use `connection` for one connection or `connections` for several. Each value is
@@ -338,20 +352,6 @@ Use `connections` to target more than one previously routed connection:
   connections={["M1.pin1", "B1.pin1"]}
 />
 ```
-
-## Props
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `phaseIndex` | `number` | The routing pass configured by this element. Lower numbered phases run first. |
-| `connection` | `string` | Port selector for one connection to route in this phase. With `reroute`, selects one previously routed connection instead. |
-| `connections` | `string[]` | Port selectors for multiple connections to route in this phase. With `reroute`, selects previously routed connections instead. |
-| `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
-| `fanoutRoutingLayers` | `LayerRef[]` | Layers available to boundary-terminated fanout connections. |
-| `fanoutPourNetMap` | `Record<LayerRef, string \| string[]>` | Maps dedicated plane layers to the power or ground nets that should terminate on them during fanout. |
-| `busFanoutDirections` | `Record<string, BusFanoutDirection>` | Controls the boundary exit direction for each named bus during fanout. |
-| `reroute` | `boolean` | Reroutes traces produced by earlier phases instead of routing newly assigned traces. Requires `region`, `connection`, or `connections`. |
-| `region` | `{ shape?: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reconsider in a reroute phase. |
 
 ## Route bus lanes without layer changes
 
