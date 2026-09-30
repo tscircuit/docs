@@ -191,6 +191,19 @@ Here the clock connection routes first, the USB connections route second, and
 all remaining connections route last. Earlier routes are included as obstacles
 in each later pass.
 
+## Local dogbone phase
+
+Use `<autoroutingphase autorouter="dogbone" fanoutRoutingLayers={["bottom"]} />`
+as a board child to add local pad-to-via escapes before default routing. It is
+implemented in core 0.0.2026+, but the handoff is not reliable for all BGAs:
+a 36-pin footprinter BGA currently triggers a `TopologyMergingSolver` overlap
+error in the subsequent default-routing stage.
+
+The phase escapes the first physical pad in each selected connection, not both
+ends automatically. The destination layer must differ from the pad layer.
+For a tested 36-pin example with only connected pads escaped, see
+[component-scoped dogbone fanout](./fanout.mdx#local-dogbones).
+
 ## Route bus lanes without layer changes
 
 Use `autorouter="bus_lanes"` on `<autoroutingphase />` to route selected bus

@@ -66,6 +66,8 @@ export default () => (
 )
 `} />
 
+For an explicit routing pass, see [dogbone phase support and limitations](./autoroutingphase.mdx#local-dogbone-phase).
+
 Requires core 0.0.2026+ and props 0.0.672+. Use a two-dimensional SMT pad grid
 and an existing destination layer different from the pad layer.
 
@@ -73,8 +75,9 @@ and an existing destination layer different from the pad layer.
 
 Pass `pcbTracePaths` to preserve edited routes and continue board routing from
 their exits. Keep the electrical connections and supply every pad-to-exit path.
-See [capturing and editing fanout paths](../guides/reusing-saved-fanout-trace-paths.mdx)
-for a runnable JSON example.
+`tsci build` captures phase JSON in `.tscircuit/autorouting-artifacts/`. Copy it
+to your source tree before editing; use fanout-local coordinates and recheck DRC.
+Dogbone capture requires core 0.0.2027+.
 
 ## Properties
 
