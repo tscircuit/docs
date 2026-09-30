@@ -64,7 +64,7 @@ CLI for developing tscircuit packages
 #   registry                     Manage tscircuit registry resources
 #   search [options] <query...>  Search for footprints, CAD models, or packages
 #   import [options] <query...>  Search/import components from JLCPCB or registry
-#   convert [options] <file>     Convert .kicad_mod to a tscircuit component
+#   convert [options] <file>     Convert .kicad_mod to TSX, or discover a footprinter string with --footprinter
 #   simulate                     Run a simulation
 #   version [options]            Print CLI version
 #   help [command]               display help for command
