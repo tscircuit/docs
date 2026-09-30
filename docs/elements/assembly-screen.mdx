@@ -28,24 +28,27 @@ export default () => (
     <assembly.screen
       name="SCREEN"
       connectsTo=".B1 .J1"
-      modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screen.glb"
+      model="flexscreen_w26.7mm_h19.26mm_sitsflat"
     />
   </assembly.device>
 )`}
 />
 
-Without `modelUrl` or `cadModel`, both `width` and `height` are required to generate a default FlexScreen model. If either dimension is supplied, supply both; they must be positive. For more control over the generated display, use a modelprinter string such as `cadModel="flexscreen_w26.7mm_h19.26mm"`. To generate a screen from dimensions instead of importing a model, replace `modelUrl` in the preview with `width="26.7mm" height="19.26mm"`. The URL model uses the same connector-relative placement as the generated screen. Its model origin should be authored at the attachment point.
+The preview uses a modelprinter string to generate a flat display and flex cable. Change `model` to customize the generated geometry. To import your own display file instead, use `modelUrl="/screen.glb"`, with its origin at the connector attachment point.
 
-The imported-screen preview uses a simplified GLB display model. Replace its URL with your own accessible model. Supported formats are GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML; a URL without an extension can specify `#ext=glb`. Relative URLs resolve using the platform's `projectBaseUrl`.
+Without `model`, `modelUrl`, or `cadModel`, both `width` and `height` are required to generate the default FlexScreen. If either dimension is supplied, supply both; they must be positive. Dimensions do not resize an explicitly supplied model. The existing `cadModel="flexscreen_w26.7mm_h19.26mm"` spelling remains supported.
 
-`modelUrl` and `cadModel` are mutually exclusive. Supplying `modelUrl` skips the default FlexScreen model, so dimensions are optional. If you do supply dimensions, both must be positive; they do not resize the imported model.
+Supported URL formats are GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML; a URL without an extension can specify `#ext=glb`. Relative URLs resolve using the platform's `projectBaseUrl`.
+
+`model`, `modelUrl`, and `cadModel` are mutually exclusive. `model` or `modelUrl` replaces the dimension-derived model, so width and height are optional.
 
 | Property | Description |
 |----------|-------------|
 | `name` | Required, non-empty name. |
 | `connectsTo` | Required selector for a PCB component, another screen, or a named assembly container. |
-| `width`, `height` | Display dimensions; required when neither `modelUrl` nor `cadModel` is supplied. |
-| `modelUrl` | Imported display model URL; mutually exclusive with `cadModel`. |
+| `width`, `height` | Display dimensions; required when none of `model`, `modelUrl`, or `cadModel` is supplied. |
+| `model` | Non-empty modelprinter/footprinter string; surrounding whitespace is trimmed. |
+| `modelUrl` | Imported display model URL; mutually exclusive with `model` and `cadModel`. |
 | `cadModel` | Non-empty modelprinter string, used instead of the dimension-derived model. |
 
 ## Attachment placement
@@ -55,3 +58,9 @@ For a PCB connector, the screen origin is its cable insertion center, falling ba
 A screen targeting another screen or subassembly inherits that target's assembly frame, not the offset of its individual CAD model. Targets can be declared before or after the screen. Resolution stays within the nearest `assembly.device`; missing or ambiguous targets and attachment cycles produce errors.
 
 `connectsTo` controls mechanical placement; it does not create electrical traces. Use [`trace`](./trace.mdx) for board wiring and [`assembly.subassembly`](./assembly-subassembly.mdx) for general mechanical hardware.
+
+## Modelprinter and footprinter strings
+
+Use `model="soic8"`, `model="pinrow4"`, or another supported modelprinter/footprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
+
+Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.

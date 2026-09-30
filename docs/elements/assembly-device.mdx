@@ -4,6 +4,7 @@ description: Group boards and mechanical parts into a complete device.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview2 from "@site/src/data/assembly-previews/assembly-device-2.json"
 import preview1 from "@site/src/data/assembly-previews/assembly-device-1.json"
 
 Import the `assembly` namespace from `@tscircuit/core` to describe a device containing boards, displays, and mechanical parts.
@@ -24,12 +25,13 @@ export default () => (
 
 The preview imports a simplified housing model. Replace its URL with your own model URL, accessible to the viewer. Relative asset URLs are resolved using the platform's `projectBaseUrl`.
 
-Without `modelUrl`, `assembly.device` is a transparent container. With `modelUrl`, it renders a CAD model at the world origin without creating PCB pads or schematic symbols. Boards and other children keep their own rendering behavior; the device model does not reposition them. Devices can be nested; `assembly.screen` attachment selectors are scoped to their nearest device.
+Without `model` or `modelUrl`, `assembly.device` is a transparent container. With either model source, it renders a CAD model at the world origin without creating PCB pads or schematic symbols. Boards and other children keep their own rendering behavior; the device model does not reposition them. Devices can be nested; `assembly.screen` attachment selectors are scoped to their nearest device.
 
 | Property | Description |
 |----------|-------------|
 | `name` | Optional device name. |
-| `modelUrl` | Optional imported CAD model URL, rendered at the world origin. |
+| `model` | Non-empty modelprinter/footprinter string; surrounding whitespace is trimmed. |
+| `modelUrl` | Optional imported CAD model URL at the world origin; mutually exclusive with `model`. |
 | `children` | Boards, subassemblies, screens, or nested devices. |
 
 ## Assembly elements
@@ -43,3 +45,19 @@ Without `modelUrl`, `assembly.device` is a transparent container. With `modelUrl
 See [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx) for a board with mounting holes and imported screws.
 
 `modelUrl` uses the same file formats as [`cadmodel`](./cadmodel.mdx): GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML. Use a `#ext=glb` suffix when the URL does not include the file extension. For model offsets or other advanced options, place a `cadmodel` inside an `assembly.subassembly`.
+
+## Modelprinter and footprinter strings
+
+Use `model="soic8"`, `model="pinrow4"`, or another supported modelprinter/footprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
+
+Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.
+
+<CircuitPreview
+  circuitJson={preview2}
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  code={`import { assembly } from "@tscircuit/core"
+
+export default () => <assembly.device name="package-demo" model="soic8" />`}
+/>

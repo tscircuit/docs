@@ -2,7 +2,7 @@
   {
     "type": "source_project_metadata",
     "source_project_metadata_id": "source_project_metadata_0",
-    "software_used_string": "@tscircuit/core@0.0.2014"
+    "software_used_string": "@tscircuit/core@0.0.2018"
   },
   {
     "type": "source_group",
@@ -2561,7 +2561,7 @@
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_1",
-    "model_glb_url": "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screen.glb",
+    "model_glb_url": "https://modelcdn.tscircuit.com/jscad_models/flexscreen_w26.7mm_h19.26mm_sitsflat.glb",
     "position": {
       "x": 0,
       "y": -8.575,
