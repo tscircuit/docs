@@ -67,7 +67,7 @@
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_0",
-    "model_glb_url": "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/housing.glb",
+    "model_glb_url": "https://docs.tscircuit.com/models/assembly/housing.glb",
     "position": {
       "x": 0,
       "y": 0,

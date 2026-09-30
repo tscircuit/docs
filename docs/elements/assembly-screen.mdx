@@ -9,6 +9,7 @@ import preview1 from "@site/src/data/assembly-previews/assembly-screen-1.json"
 `assembly.screen` places display geometry at an attachment target. It does not create a PCB footprint or schematic symbol for the display.
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
@@ -17,18 +18,24 @@ import preview1 from "@site/src/data/assembly-previews/assembly-screen-1.json"
 
 export default () => (
   <assembly.device name="product">
-    <board name="B1" width="44mm" height="36mm" thickness="1.6mm" routingDisabled>
+    <board
+      name="B1"
+      width="44mm"
+      height="36mm"
+      thickness="1.6mm"
+      routingDisabled
+    >
       <connector
         name="J1"
         pcbY={-13}
         pinCount={30}
-        footprint="fpc30_p0.5mm_pw0.3mm_pl1.25mm_mpx17.58mm_mpy2.325mm_mpw2mm_mpl3mm_mounttop"
+        footprint="fpc30_p0.5mm"
       />
     </board>
     <assembly.screen
       name="SCREEN"
       connectsTo=".B1 .J1"
-      model="flexscreen_w26.7mm_h19.26mm_sitsflat"
+      model="flexscreen_w16_h10_flex5_sitsflat"
     />
   </assembly.device>
 )`}
@@ -63,6 +70,6 @@ A screen targeting another screen or subassembly inherits that target's assembly
 
 `model` also accepts direct HTTP(S) URLs, such as `model="https://example.com/housing.glb"`. URLs use the same file format detection and `#ext` hints as `modelUrl`; query strings are preserved.
 
-Use `model="flexscreen_w26.7mm_h19.26mm_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
+Use `model="flexscreen_w16_h10_flex5_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
 
 Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.

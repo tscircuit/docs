@@ -13,7 +13,7 @@
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_0",
-    "model_glb_url": "https://modelcdn.tscircuit.com/jscad_models/flexscreen_w26.7mm_h19.26mm_sitsflat.glb",
+    "model_glb_url": "https://modelcdn.tscircuit.com/jscad_models/flexscreen_w16_h10_flex5_sitsflat.glb",
     "position": {
       "x": 0,
       "y": 0,

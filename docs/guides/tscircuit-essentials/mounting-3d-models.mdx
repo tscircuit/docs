@@ -19,14 +19,18 @@ The demo model is prepared in millimetres with the origin at the center of the u
 ## Align screws with mounting holes
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
+const models =
+  "https://docs.tscircuit.com/models/assembly"
+
 const boardThickness = 1.6
-const screwModelUrl = "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb"
+const screwModelUrl = models + "/screw.glb"
 const mounts = [
   { name: "left", x: -15, y: 0 },
   { name: "right", x: 15, y: 0 },
@@ -34,9 +38,19 @@ const mounts = [
 
 export default () => (
   <assembly.device name="mounted-board">
-    <board name="B1" width="40mm" height="30mm" thickness={boardThickness}>
+    <board
+      name="B1"
+      width="40mm"
+      height="30mm"
+      thickness={boardThickness}
+    >
       {mounts.map(({ name, x, y }) => (
-        <hole key={name} diameter="3.2mm" pcbX={x} pcbY={y} />
+        <hole
+          key={name}
+          diameter="3.2mm"
+          pcbX={x}
+          pcbY={y}
+        />
       ))}
     </board>
     <assembly.subassembly name="hardware">

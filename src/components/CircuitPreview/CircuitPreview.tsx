@@ -14,6 +14,7 @@ import {
 import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "../TscircuitIframe"
+import styles from "./styles.module.css"
 
 type CircuitPreviewView =
   | "code"
@@ -150,6 +151,7 @@ export default function CircuitPreview({
   verticalStack = false,
   showCourtyards = false,
   showDebugObjects = false,
+  wrapCode = false,
 }: {
   code?: string
   /** Precompiled preview data for APIs newer than the hosted evaluator. */
@@ -176,6 +178,7 @@ export default function CircuitPreview({
   verticalStack?: boolean
   showCourtyards?: boolean
   showDebugObjects?: boolean
+  wrapCode?: boolean
 }) {
   const { isDarkTheme } = useColorMode()
   const windowSize = useWindowSize()
@@ -392,7 +395,9 @@ export default function CircuitPreview({
           }`,
         )}
       >
-        <div className={tw("relative w-full min-h-[320px]")}>
+        <div
+          className={`${tw("relative w-full min-h-[320px]")} ${wrapCode ? styles.wrapCode : ""}`}
+        >
           <CodeBlock
             className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
             language="tsx"

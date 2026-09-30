@@ -12,21 +12,37 @@ import preview4 from "@site/src/data/assembly-previews/assembly-subassembly-4.js
 `assembly.subassembly` groups mechanical parts such as housings, brackets, and screws. Import `assembly` from `@tscircuit/core` and place the subassembly inside an [`assembly.device`](./assembly-device.mdx), alongside the board.
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
+const models =
+  "https://docs.tscircuit.com/models/assembly"
+
 export default () => (
   <assembly.device name="product">
-    <board width="40mm" height="30mm" thickness="1.6mm">
+    <board
+      width="40mm"
+      height="30mm"
+      thickness="1.6mm"
+    >
       <hole diameter="3.2mm" pcbX={-15} />
       <hole diameter="3.2mm" pcbX={15} />
     </board>
     <assembly.subassembly name="hardware">
-      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb" pcbX={-15} pcbZ={0.8} />
-      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb" pcbX={15} pcbZ={0.8} />
+      <cadmodel
+        modelUrl={models + "/screw.glb"}
+        pcbX={-15}
+        pcbZ={0.8}
+      />
+      <cadmodel
+        modelUrl={models + "/screw.glb"}
+        pcbX={15}
+        pcbZ={0.8}
+      />
     </assembly.subassembly>
   </assembly.device>
 )`}
@@ -37,17 +53,31 @@ The preview imports simplified screw models with no threads. The example groups 
 For a group with its own imported model, use `modelUrl` directly:
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview2}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
+const models =
+  "https://docs.tscircuit.com/models/assembly"
+
 export default () => (
   <assembly.device name="product">
-    <board width="40mm" height="30mm" thickness="1.6mm" />
-    <assembly.subassembly name="housing" modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/housing.glb">
-      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/cover.glb" pcbZ={4} />
+    <board
+      width="40mm"
+      height="30mm"
+      thickness="1.6mm"
+    />
+    <assembly.subassembly
+      name="housing"
+      modelUrl={models + "/housing.glb"}
+    >
+      <cadmodel
+        modelUrl={models + "/cover.glb"}
+        pcbZ={4}
+      />
     </assembly.subassembly>
   </assembly.device>
 )`}
@@ -67,19 +97,27 @@ The imported housing and its children share the assembly frame. `modelUrl` suppo
 Use `cadModel` instead of `modelUrl` when you need offsets, rotation, scale, or other advanced model options. For example:
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview3}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
+const models =
+  "https://docs.tscircuit.com/models/assembly"
+
 export default () => (
   <assembly.device name="product">
-    <board width="40mm" height="30mm" thickness="1.6mm" />
+    <board
+      width="40mm"
+      height="30mm"
+      thickness="1.6mm"
+    />
     <assembly.subassembly
       name="bracket"
       cadModel={{
-        glbUrl: "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/bracket.glb",
+        glbUrl: models + "/bracket.glb",
         positionOffset: { x: 10, y: 0, z: 0.8 },
         rotationOffset: { x: 0, y: 0, z: 90 },
       }}
@@ -99,18 +137,37 @@ Nested subassemblies inherit the enclosing assembly frame. A `cadModel.positionO
 You can also use CAD children:
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview4}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
+const models =
+  "https://docs.tscircuit.com/models/assembly"
+
 export default () => (
   <assembly.device name="product">
-    <board width="40mm" height="30mm" thickness="1.6mm" />
+    <board
+      width="40mm"
+      height="30mm"
+      thickness="1.6mm"
+    />
     <assembly.subassembly name="hardware">
-      <cadmodel modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb" pcbX={10} pcbY={5} pcbZ={0.8} />
-      <assembly.subassembly name="cover" cadModel={{ glbUrl: "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/cover.glb", positionOffset: { x: 0, y: 0, z: 4 } }} />
+      <cadmodel
+        modelUrl={models + "/screw.glb"}
+        pcbX={10}
+        pcbY={5}
+        pcbZ={0.8}
+      />
+      <assembly.subassembly
+        name="cover"
+        cadModel={{
+          glbUrl: models + "/cover.glb",
+          positionOffset: { x: 0, y: 0, z: 4 },
+        }}
+      />
     </assembly.subassembly>
   </assembly.device>
 )`}
@@ -126,6 +183,6 @@ For a complete example, see [Mounting 3D models to a board](../guides/tscircuit-
 
 `model` also accepts direct HTTP(S) URLs, such as `model="https://example.com/housing.glb"`. URLs use the same file format detection and `#ext` hints as `modelUrl`; query strings are preserved.
 
-Use `model="flexscreen_w26.7mm_h19.26mm_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
+Use `model="flexscreen_w16_h10_flex5_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
 
 Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.

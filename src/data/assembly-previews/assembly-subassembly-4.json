@@ -71,7 +71,7 @@
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_0",
-    "model_glb_url": "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screw.glb",
+    "model_glb_url": "https://docs.tscircuit.com/models/assembly/screw.glb",
     "position": {
       "x": 10,
       "y": 5,
@@ -97,7 +97,7 @@
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_1",
-    "model_glb_url": "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/cover.glb",
+    "model_glb_url": "https://docs.tscircuit.com/models/assembly/cover.glb",
     "position": {
       "x": 0,
       "y": 0,
