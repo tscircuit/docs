@@ -2,18 +2,18 @@
   {
     "type": "source_project_metadata",
     "source_project_metadata_id": "source_project_metadata_0",
-    "software_used_string": "@tscircuit/core@0.0.2018"
+    "software_used_string": "@tscircuit/core@0.0.2019"
   },
   {
     "type": "source_component",
     "source_component_id": "source_component_0",
     "ftype": "simple_chip",
-    "name": "package-demo"
+    "name": "display-demo"
   },
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_0",
-    "model_glb_url": "https://modelcdn.tscircuit.com/jscad_models/soic8.glb",
+    "model_glb_url": "https://modelcdn.tscircuit.com/jscad_models/flexscreen_w26.7mm_h19.26mm_sitsflat.glb",
     "position": {
       "x": 0,
       "y": 0,

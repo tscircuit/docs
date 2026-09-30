@@ -30,7 +30,7 @@ Without `model` or `modelUrl`, `assembly.device` is a transparent container. Wit
 | Property | Description |
 |----------|-------------|
 | `name` | Optional device name. |
-| `model` | HTTP(S) model URL or non-empty modelprinter/footprinter string; surrounding whitespace is trimmed. |
+| `model` | HTTP(S) model URL or non-empty modelprinter string; surrounding whitespace is trimmed. |
 | `modelUrl` | Optional imported CAD model URL at the world origin; mutually exclusive with `model`. |
 | `children` | Boards, subassemblies, screens, or nested devices. |
 
@@ -46,11 +46,11 @@ See [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-m
 
 `modelUrl` uses the same file formats as [`cadmodel`](./cadmodel.mdx): GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML. Use a `#ext=glb` suffix when the URL does not include the file extension. For model offsets or other advanced options, place a `cadmodel` inside an `assembly.subassembly`.
 
-## Modelprinter and footprinter strings
+## Modelprinter strings
 
 `model` also accepts direct HTTP(S) URLs, such as `model="https://example.com/housing.glb"`. URLs use the same file format detection and `#ext` hints as `modelUrl`; query strings are preserved.
 
-Use `model="soic8"`, `model="pinrow4"`, or another supported modelprinter/footprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
+Use `model="flexscreen_w26.7mm_h19.26mm_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
 
 Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.
 
@@ -61,5 +61,5 @@ Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supporte
   hideSchematicTab
   code={`import { assembly } from "@tscircuit/core"
 
-export default () => <assembly.device name="package-demo" model="soic8" />`}
+export default () => <assembly.device name="display-demo" model="flexscreen_w26.7mm_h19.26mm_sitsflat" />`}
 />
