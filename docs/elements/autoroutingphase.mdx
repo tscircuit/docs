@@ -362,10 +362,11 @@ Use `<trace />` or component connections to declare connectivity.
 
 <CircuitPreview defaultView="pcb" code={`
 const footprint = "bga36_grid6x6_p1mm_w6mm_h6mm_pad0.5mm_circularpads"
-const lanes = Array.from({ length: 6 }, (_, i) => ({
+const pinPairs = [[5, 2], [10, 9], [17, 14], [22, 21], [29, 26], [34, 33]]
+const lanes = pinPairs.map(([sourcePin, targetPin], i) => ({
   name: "DATA" + i,
-  from: "U1.pin" + (6 + i * 6),
-  to: "U2.pin" + (1 + i * 6),
+  from: "U1.pin" + sourcePin,
+  to: "U2.pin" + targetPin,
 }))
 
 export default () => (
@@ -390,9 +391,10 @@ export default () => (
 )
 `} />
 
-Six facing edge pads on each 36-pin BGA form the bus; the other 30 pads on each
-chip remain unconnected. All six routes stay on the top layer without vias.
-The aligned pads already have equal route lengths, so no meanders are needed.
+Six pads spread across multiple rows and interior columns on each 36-pin BGA
+form the bus; the other 30 pads on each chip remain unconnected. Routes weave
+between unused pads and add meanders to match lengths within 0.05 mm. All stay
+on the top layer: `bus_lanes` does not automatically add dogbones or vias.
 The `<bus />` props supply the width and length-skew tolerance. The object form
 `autorouter={{ preset: "bus_lanes" }}` is also supported.
 
