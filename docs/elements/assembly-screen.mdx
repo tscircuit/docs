@@ -6,7 +6,7 @@ description: Place a display model relative to a PCB connector or named assembly
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-screen-1.json"
 
-`assembly.screen` places display geometry at an attachment target. It does not create a PCB footprint or schematic symbol for the display.
+`assembly.screen` places a display at a connector or another assembly. `connectsTo` controls its position and orientation; it does not create electrical connections.
 
 <CircuitPreview
   wrapCode
@@ -41,35 +41,15 @@ export default () => (
 )`}
 />
 
-The preview uses a modelprinter string to generate a flat display and flex cable. Change `model` to customize the generated geometry. To import your own display file instead, use `modelUrl="/screen.glb"`, with its origin at the connector attachment point.
-
-Without `model`, `modelUrl`, or `cadModel`, both `width` and `height` are required to generate the default FlexScreen. If either dimension is supplied, supply both; they must be positive. Dimensions do not resize an explicitly supplied model. The existing `cadModel="flexscreen_w26.7mm_h19.26mm"` spelling remains supported.
-
-Supported URL formats are GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML; a URL without an extension can specify `#ext=glb`. Relative URLs resolve using the platform's `projectBaseUrl`.
-
-`model`, `modelUrl`, and `cadModel` are mutually exclusive. `model` or `modelUrl` replaces the dimension-derived model, so width and height are optional.
-
 | Property | Description |
 |----------|-------------|
-| `name` | Required, non-empty name. |
-| `connectsTo` | Required selector for a PCB component, another screen, or a named assembly container. |
-| `width`, `height` | Display dimensions; required when none of `model`, `modelUrl`, or `cadModel` is supplied. |
-| `model` | HTTP(S) model URL or non-empty modelprinter string; surrounding whitespace is trimmed. |
-| `modelUrl` | Imported display model URL; mutually exclusive with `model` and `cadModel`. |
-| `cadModel` | Non-empty modelprinter string, used instead of the dimension-derived model. |
+| `name` | Required screen name. |
+| `connectsTo` | Selector for a PCB component, screen, or named assembly. |
+| `model` | Modelprinter string or HTTP(S) model URL. |
+| `modelUrl` | Imported display model URL. |
+| `cadModel` | Modelprinter string. |
+| `width`, `height` | Required together when no model is supplied. |
 
-## Attachment placement
+Choose one of `model`, `modelUrl`, or `cadModel`. Dimensions do not resize an explicit model.
 
-For a PCB connector, the screen origin is its cable insertion center, falling back to the component center. Z starts at the board surface. Orientation follows the connector's insertion direction when available, otherwise its inferred cable direction or PCB rotation. Bottom-layer targets also flip the model to the underside.
-
-A screen targeting another screen or subassembly inherits that target's assembly frame, not the offset of its individual CAD model. Targets can be declared before or after the screen. Resolution stays within the nearest `assembly.device`; missing or ambiguous targets and attachment cycles produce errors.
-
-`connectsTo` controls mechanical placement; it does not create electrical traces. Use [`trace`](./trace.mdx) for board wiring and [`assembly.subassembly`](./assembly-subassembly.mdx) for general mechanical hardware.
-
-## Modelprinter strings
-
-`model` also accepts direct HTTP(S) URLs, such as `model="https://example.com/housing.glb"`. URLs use the same file format detection and `#ext` hints as `modelUrl`; query strings are preserved.
-
-Use `model="flexscreen_w16_h10_flex5_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
-
-Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.
+For your own display file, place its origin at the connector attachment point. The screen follows the connector's placement, including the board's bottom layer.

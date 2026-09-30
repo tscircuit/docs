@@ -6,17 +6,9 @@ description: Import screws and other mechanical models and align them with PCB m
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/mounting-3d-models-1.json"
 
-Use the `assembly` namespace from `@tscircuit/core` to show a complete device in 3D: a board, housing, brackets, and mounting hardware. To make a screw look “screwed into” the board, align its model with a mounting hole and place the underside of its head on the board surface.
+To show a screw mounted in a board, align its model with a mounting hole and place the underside of its head on the board surface.
 
-This is explicit geometric placement. Assembly elements do not solve screw threads, collisions, or mechanical mating constraints. Create the actual PCB holes separately with [`hole`](../../elements/hole.mdx).
-
-## Prepare a screw model
-
-Export a screw as GLB, STL, or another supported CAD format and make it available at a URL the viewer can fetch. The preview below uses a bundled, simplified GLB screw model without threads. Replace its URL with your own asset; relative URLs resolve using the platform's `projectBaseUrl`.
-
-The demo model is prepared in millimetres with the origin at the center of the underside of the screw head, and the shaft pointing along -Z. Use the same reference point for your own model, or adjust its CAD options. That makes the head's seating plane easy to align with the board. If your model has a different origin, orientation, or units, adjust `modelOriginPosition`, `rotationOffset`, and `modelUnitToMmScale` on its CAD model.
-
-## Align screws with mounting holes
+This example uses a GLB model in millimetres, with its origin under the screw head and its shaft pointing down (−Z). Replace the URL with your own model, using the same origin or adjusting its [CAD options](../../elements/cadmodel.mdx).
 
 <CircuitPreview
   wrapCode
@@ -69,23 +61,8 @@ export default () => (
 )`}
 />
 
-The shared `mounts` array keeps each screw centered on its hole. The board's mid-plane is Z = 0, so a 1.6 mm board has a top surface at Z = 0.8 mm. With the prepared model origin, each screw head rests at that surface and its shaft extends down through the hole. The 3.2 mm hole diameter is an example; choose the clearance for your hardware.
+The shared `mounts` array keeps each screw centered on its hole. The board is centered at Z = 0, so `pcbZ={boardThickness / 2}` seats each head on its top surface.
 
-The preview opens in 3D so you can inspect the placement. Replace the model URL to try your own asset. The screw geometry appears only in CAD; the `<hole>` elements define the board cutouts.
+The model provides the 3D screw; `<hole>` creates the actual board cutout. Choose the hole diameter to match your hardware.
 
-## Add brackets, washers, or a housing
-
-To import a housing at the assembly origin, use `<assembly.subassembly name="housing" modelUrl="/models/housing.glb" />`. You can also put `modelUrl` on `assembly.device` itself. Use CAD children for individually positioned parts, as in the screws above.
-
-For advanced model configuration, use another named subassembly with `cadModel={{ glbUrl: "/models/bracket.glb", positionOffset: { x: 0, y: 0, z: 0.8 } }}` to import a bracket with its own reference point. Match its mounting coordinates to the same holes. For a washer of thickness `t` above the board, position its bottom at the board surface and raise the screw's seating plane to `boardThickness / 2 + t`.
-
-You can group multiple `<cadmodel>` children inside a subassembly and place them with `pcbX`, `pcbY`, and `pcbZ`. Nested subassemblies inherit the assembly frame, but offsets on a container's `cadModel` move only that model, not its children. Apply the required placement to every model.
-
-General subassemblies do not have `connectsTo` or an automatic screw-to-hole attachment. If the board or mounting layout moves, update the shared coordinates. For displays that follow a connector's position and insertion orientation, use [`assembly.screen`](../../elements/assembly-screen.mdx).
-
-## Reference
-
-- [`assembly.device`](../../elements/assembly-device.mdx): top-level device container.
-- [`assembly.subassembly`](../../elements/assembly-subassembly.mdx): mechanical models, formats, and placement options.
-- [`assembly.cadassembly`](../../elements/assembly-cadassembly.mdx): alias for subassembly.
-- [`cadmodel`](../../elements/cadmodel.mdx): model configuration.
+Use [`assembly.subassembly`](../../elements/assembly-subassembly.mdx) for other mechanical parts, or [`assembly.screen`](../../elements/assembly-screen.mdx) for a display attached to a connector.

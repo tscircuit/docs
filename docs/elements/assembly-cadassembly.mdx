@@ -6,7 +6,7 @@ description: An alias for assembly.subassembly for grouping mechanical models.
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-cadassembly-1.json"
 
-`assembly.cadassembly` is an alias for [`assembly.subassembly`](./assembly-subassembly.mdx). It has the same props, placement rules, and CAD-only behavior.
+`assembly.cadassembly` is an alias for [`assembly.subassembly`](./assembly-subassembly.mdx), with the same props and placement rules.
 
 <CircuitPreview
   wrapCode
@@ -38,7 +38,3 @@ export default () => (
   </assembly.device>
 )`}
 />
-
-The preview uses bundled demo housing and cover models. Replace their URLs with your own assets. The unnamespaced [`<cadassembly>`](./cadassembly.mdx) remains available for grouping models inside a component's `cadModel`. Use the namespaced element for device-level mechanical parts alongside a board.
-
-Like `assembly.subassembly`, this alias accepts `model="flexscreen_w16_h10_flex5_sitsflat"` or other modelprinter strings, resolved to GLB models on modelcdn. `model` also accepts direct HTTP(S) model URLs, with the same file format detection and `#ext` hints as `modelUrl`. Choose only one of `model`, `modelUrl`, and `cadModel`. See the [model string reference](./assembly-subassembly.mdx#modelprinter-strings).

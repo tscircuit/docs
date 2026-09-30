@@ -4,10 +4,10 @@ description: Group boards and mechanical parts into a complete device.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import preview2 from "@site/src/data/assembly-previews/assembly-device-2.json"
 import preview1 from "@site/src/data/assembly-previews/assembly-device-1.json"
+import preview2 from "@site/src/data/assembly-previews/assembly-device-2.json"
 
-Import the `assembly` namespace from `@tscircuit/core` to describe a device containing boards, displays, and mechanical parts.
+`assembly.device` groups boards and mechanical parts into a complete device. Add `model` or `modelUrl` to render a model at the world origin.
 
 <CircuitPreview
   wrapCode
@@ -30,38 +30,16 @@ export default () => (
 )`}
 />
 
-The preview imports a simplified housing model. Replace its URL with your own model URL, accessible to the viewer. Relative asset URLs are resolved using the platform's `projectBaseUrl`.
-
-Without `model` or `modelUrl`, `assembly.device` is a transparent container. With either model source, it renders a CAD model at the world origin without creating PCB pads or schematic symbols. Boards and other children keep their own rendering behavior; the device model does not reposition them. Devices can be nested; `assembly.screen` attachment selectors are scoped to their nearest device.
-
 | Property | Description |
 |----------|-------------|
 | `name` | Optional device name. |
-| `model` | HTTP(S) model URL or non-empty modelprinter string; surrounding whitespace is trimmed. |
-| `modelUrl` | Optional imported CAD model URL at the world origin; mutually exclusive with `model`. |
-| `children` | Boards, subassemblies, screens, or nested devices. |
-
-## Assembly elements
-
-| Element | Purpose |
-|---------|---------|
-| [`assembly.subassembly`](./assembly-subassembly.mdx) | Group imported mechanical models and CAD children. |
-| [`assembly.cadassembly`](./assembly-cadassembly.mdx) | Alias for `assembly.subassembly`. |
-| [`assembly.screen`](./assembly-screen.mdx) | Place a display relative to a connector or another assembly. |
-
-See [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx) for a board with mounting holes and imported screws.
-
-`modelUrl` uses the same file formats as [`cadmodel`](./cadmodel.mdx): GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML. Use a `#ext=glb` suffix when the URL does not include the file extension. For model offsets or other advanced options, place a `cadmodel` inside an `assembly.subassembly`.
+| `model` | Modelprinter string or HTTP(S) model URL. |
+| `modelUrl` | Imported CAD model URL. Use either `model` or `modelUrl`. |
+| `children` | Boards, subassemblies, and screens. |
 
 ## Modelprinter strings
 
-`model` also accepts direct HTTP(S) URLs, such as `model="https://example.com/housing.glb"`. URLs use the same file format detection and `#ext` hints as `modelUrl`; query strings are preserved.
-
-Use `model="flexscreen_w16_h10_flex5_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
-
-The example below uses a 16 × 10 mm display and an explicit 5 mm cable (`flex5`) to keep the whole model visible.
-
-Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.
+Use a modelprinter string to generate a model without supplying a file. This display is 16 × 10 mm with a 5 mm cable.
 
 <CircuitPreview
   wrapCode
@@ -78,3 +56,7 @@ export default () => (
   />
 )`}
 />
+
+Assembly models add 3D geometry without creating PCB footprints or electrical connections. For imported models, see [`cadmodel`](./cadmodel.mdx) for supported formats.
+
+Use [`assembly.subassembly`](./assembly-subassembly.mdx) to group mechanical parts, or [`assembly.screen`](./assembly-screen.mdx) to attach a display to a connector. See [Mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx) for screws aligned with board holes.

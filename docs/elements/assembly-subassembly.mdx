@@ -6,55 +6,12 @@ description: Import and group mechanical 3D models alongside a board.
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-subassembly-1.json"
 import preview2 from "@site/src/data/assembly-previews/assembly-subassembly-2.json"
-import preview3 from "@site/src/data/assembly-previews/assembly-subassembly-3.json"
-import preview4 from "@site/src/data/assembly-previews/assembly-subassembly-4.json"
 
-`assembly.subassembly` groups mechanical parts such as housings, brackets, and screws. Import `assembly` from `@tscircuit/core` and place the subassembly inside an [`assembly.device`](./assembly-device.mdx), alongside the board.
+`assembly.subassembly` groups mechanical models alongside a board. It can have its own model, CAD children, or both.
 
 <CircuitPreview
   wrapCode
   circuitJson={preview1}
-  defaultView="3d"
-  hideSchematicTab
-  browser3dView={false}
-  code={`import { assembly } from "@tscircuit/core"
-
-const models =
-  "https://docs.tscircuit.com/models/assembly"
-
-export default () => (
-  <assembly.device name="product">
-    <board
-      width="40mm"
-      height="30mm"
-      thickness="1.6mm"
-    >
-      <hole diameter="3.2mm" pcbX={-15} />
-      <hole diameter="3.2mm" pcbX={15} />
-    </board>
-    <assembly.subassembly name="hardware">
-      <cadmodel
-        modelUrl={models + "/screw.glb"}
-        pcbX={-15}
-        pcbZ={0.8}
-      />
-      <cadmodel
-        modelUrl={models + "/screw.glb"}
-        pcbX={15}
-        pcbZ={0.8}
-      />
-    </assembly.subassembly>
-  </assembly.device>
-)`}
-/>
-
-The preview imports simplified screw models with no threads. The example groups two models with their reference points on the top surface of a 1.6 mm board centered at the origin.
-
-For a group with its own imported model, use `modelUrl` directly:
-
-<CircuitPreview
-  wrapCode
-  circuitJson={preview2}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
@@ -83,22 +40,24 @@ export default () => (
 )`}
 />
 
-The imported housing and its children share the assembly frame. `modelUrl` supports GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML, just like `<cadmodel>`. Use `#ext=glb` when a URL has no file extension.
-
 | Property | Description |
 |----------|-------------|
-| `name` | Required, non-empty name. |
+| `name` | Required group name. |
 | `displayName` | Optional display label. |
-| `model` | HTTP(S) model URL or non-empty modelprinter string; surrounding whitespace is trimmed. |
-| `modelUrl` | Optional imported model URL. Mutually exclusive with `model` and `cadModel`, including `cadModel={null}`. |
-| `cadModel` | Modelprinter string, model URL object, JSCAD model, JSX CAD subtree, or `null`. |
-| `children` | CAD models and nested subassemblies. Can coexist with `cadModel`. |
+| `model` | Modelprinter string or HTTP(S) model URL. |
+| `modelUrl` | Imported CAD model URL. |
+| `cadModel` | Model with advanced options; see [`cadmodel`](./cadmodel.mdx). |
+| `children` | CAD models or nested subassemblies. |
 
-Use `cadModel` instead of `modelUrl` when you need offsets, rotation, scale, or other advanced model options. For example:
+Choose one of `model`, `modelUrl`, or `cadModel`. Omit all three for a group with no model of its own.
+
+## Positioning models
+
+Use `cadModel` for offsets and rotation:
 
 <CircuitPreview
   wrapCode
-  circuitJson={preview3}
+  circuitJson={preview2}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
@@ -126,63 +85,6 @@ export default () => (
 )`}
 />
 
-URL objects support `glbUrl`, `gltfUrl`, `stlUrl`, `objUrl` (with optional `mtlUrl`), `stepUrl`, and `wrlUrl`. Relative URLs use the platform's `projectBaseUrl`; the viewer must be able to fetch the assets. See [`cadmodel`](./cadmodel.mdx) for model options.
+Coordinates are in millimetres. The board's center is Z = 0, so the top of a 1.6 mm board is Z = 0.8 mm. A model's offset moves only that model, not its children; position CAD children with `pcbX`, `pcbY`, and `pcbZ`.
 
-## Coordinates and nesting
-
-A top-level subassembly starts at the world origin. Coordinates are in millimetres: +X right, +Y toward the top of the board, and +Z above the board. The board's mid-plane is Z = 0, so its top surface is at half its thickness.
-
-Nested subassemblies inherit the enclosing assembly frame. A `cadModel.positionOffset` moves only that model; it does **not** move children or establish a new origin for nested containers. Set offsets on each model that needs them.
-
-You can also use CAD children:
-
-<CircuitPreview
-  wrapCode
-  circuitJson={preview4}
-  defaultView="3d"
-  hideSchematicTab
-  browser3dView={false}
-  code={`import { assembly } from "@tscircuit/core"
-
-const models =
-  "https://docs.tscircuit.com/models/assembly"
-
-export default () => (
-  <assembly.device name="product">
-    <board
-      width="40mm"
-      height="30mm"
-      thickness="1.6mm"
-    />
-    <assembly.subassembly name="hardware">
-      <cadmodel
-        modelUrl={models + "/screw.glb"}
-        pcbX={10}
-        pcbY={5}
-        pcbZ={0.8}
-      />
-      <assembly.subassembly
-        name="cover"
-        cadModel={{
-          glbUrl: models + "/cover.glb",
-          positionOffset: { x: 0, y: 0, z: 4 },
-        }}
-      />
-    </assembly.subassembly>
-  </assembly.device>
-)`}
-/>
-
-Child `pcbX`, `pcbY`, and `pcbZ` specify local model offsets. If you provide `positionOffset`, it takes precedence over these coordinates. `rotationOffset` uses degrees; `modelUnitToMmScale` converts the model's units to millimetres, and `modelOriginPosition` selects its reference point.
-
-Subassemblies do not accept `connectsTo`. Use nesting for grouping and explicit model offsets for placement. These elements add CAD geometry without creating PCB components, pads, holes, or schematic symbols. An omitted or `null` model adds no geometry of its own.
-
-For a complete example, see [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx).
-
-## Modelprinter strings
-
-`model` also accepts direct HTTP(S) URLs, such as `model="https://example.com/housing.glb"`. URLs use the same file format detection and `#ext` hints as `modelUrl`; query strings are preserved.
-
-Use `model="flexscreen_w16_h10_flex5_sitsflat"` or another supported modelprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
-
-Choose only one model source: `model`, `modelUrl`, or `cadModel` (where supported). Existing `cadModel` strings continue to work. Use `cadModel` objects or CAD children when you need per-model offsets or other advanced configuration.
+See [Mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx) for screws aligned with holes, or [`assembly.screen`](./assembly-screen.mdx) for connector-relative placement.

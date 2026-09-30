@@ -20,7 +20,7 @@
     "type": "source_component",
     "source_component_id": "source_component_0",
     "ftype": "simple_chip",
-    "name": "hardware"
+    "name": "housing"
   },
   {
     "type": "schematic_group",
@@ -63,35 +63,13 @@
     "min_board_edge_clearance": 0.2
   },
   {
-    "type": "pcb_hole",
-    "pcb_hole_id": "pcb_hole_0",
-    "pcb_component_id": null,
-    "hole_shape": "circle",
-    "hole_diameter": 3.2,
-    "x": -15,
-    "y": 0,
-    "is_covered_with_solder_mask": false,
-    "subcircuit_id": "subcircuit_source_group_0"
-  },
-  {
-    "type": "pcb_hole",
-    "pcb_hole_id": "pcb_hole_1",
-    "pcb_component_id": null,
-    "hole_shape": "circle",
-    "hole_diameter": 3.2,
-    "x": 15,
-    "y": 0,
-    "is_covered_with_solder_mask": false,
-    "subcircuit_id": "subcircuit_source_group_0"
-  },
-  {
     "type": "cad_component",
     "cad_component_id": "cad_component_0",
-    "model_glb_url": "https://docs.tscircuit.com/models/assembly/screw.glb",
+    "model_glb_url": "https://docs.tscircuit.com/models/assembly/cover.glb",
     "position": {
-      "x": -15,
+      "x": 0,
       "y": 0,
-      "z": 0.8
+      "z": 4
     },
     "rotation": {
       "x": 0,
@@ -113,11 +91,11 @@
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_1",
-    "model_glb_url": "https://docs.tscircuit.com/models/assembly/screw.glb",
+    "model_glb_url": "https://docs.tscircuit.com/models/assembly/housing.glb",
     "position": {
-      "x": 15,
+      "x": 0,
       "y": 0,
-      "z": 0.8
+      "z": 0
     },
     "rotation": {
       "x": 0,
