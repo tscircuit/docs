@@ -34,6 +34,22 @@ For explicit exit locations, place a `<fanoutpoint />` inside the fanout.
 It is an alias of [`<breakoutpoint />`](./breakoutpoint.mdx), with the same
 `connection`, `pcbX`, and `pcbY` props.
 
+## Local dogbones
+
+Use `autorouter="dogbone"` to escape BGA pads to nearby vias without routing to
+the region boundary:
+
+```tsx
+<fanout autorouter="dogbone" fanoutRoutingLayers={["inner2"]}>
+  <AM3352 name="U1" />
+</fanout>
+```
+
+Import your BGA component and define its electrical connections. Connected
+signal, power and ground pads are eligible. The destination layer must exist on
+the board. See [Local BGA dogbone fanout](../guides/dogbone-fanout.mdx) for version
+requirements, board rules and downstream routing behavior.
+
 ## Reuse saved routes
 
 Pass `pcbTracePaths` to reuse pre-generated wire and via routes instead of

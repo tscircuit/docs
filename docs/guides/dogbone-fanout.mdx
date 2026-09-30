@@ -1,0 +1,57 @@
+---
+title: Local BGA dogbone fanout
+description: Escape BGA pads to nearby vias before routing the rest of the board.
+---
+
+# Local BGA dogbone fanout
+
+Use `<fanout autorouter="dogbone">` around a BGA component to create short
+pad-to-via escapes. The vias stay near the pads; this mode does not route to a
+fanout boundary. Subsequent routing starts from the via exits on the selected
+layer.
+
+Requires `@tscircuit/core` **0.0.2026 or newer** and `@tscircuit/props`
+**0.0.672 or newer**. When using `tscircuit`, check its resolved core and props
+versions as well.
+
+```tsx
+<board
+  width={30}
+  height={30}
+  layers={4}
+  minTraceWidth={0.1}
+  minViaPadDiameter={0.3}
+  minViaHoleDiameter={0.15}
+>
+  <fanout autorouter="dogbone" fanoutRoutingLayers={["inner2"]}>
+    <AM3352 name="U1" />
+  </fanout>
+  {/* Other components and electrical connections go here. */}
+</board>
+```
+
+Import `AM3352` from your component library. Its footprint must contain a
+two-dimensional grid of SMT pads. Define electrical connections for the pads
+you want to escape, including VCC and GND. Unconnected pads remain obstacles;
+they do not receive routes just because they belong to the footprint.
+
+`fanoutRoutingLayers` selects the destination layer. It must exist on the board
+and differ from the source pad layer. Use a single destination layer when you
+want all escapes on that layer. The solver checks space for the trace, via and
+hole against the board's routing rules. If no complete legal assignment exists,
+it reports a routing error.
+
+Dogbone fanout runs as an asynchronous routing phase and emits normal solver
+start, progress and end events. It uses `DogboneFanoutSolver` from
+[`@tscircuit/dogbone-solver`](https://github.com/tscircuit/dogbone-solver).
+No `algorithmFn` is needed.
+
+Use the default `<fanout>` router when you want escape traces routed to the
+region boundary. Dogbone mode provides local layer transitions; it does not
+perform bus length matching or create copper pours.
+
+## Inspect and edit the generated routes
+
+See [Reusing saved fanout trace paths](./reusing-saved-fanout-trace-paths.mdx)
+for importing editable wire/via paths with `pcbTracePaths`. Preserve the
+component connections and all pad-to-exit paths when replacing automatic fanout.
