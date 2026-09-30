@@ -7,10 +7,10 @@ function hasProse(node) {
   return node.children?.some(hasProse) ?? false
 }
 
-module.exports = function remarkAiStart() {
+module.exports = function remarkAiStart({ frontMatterKey = "ai_start" } = {}) {
   return (tree, file) => {
     // Only getting-started and intro guides should opt in with ai_start: true.
-    if (file?.data?.frontMatter?.ai_start !== true) return
+    if (file?.data?.frontMatter?.[frontMatterKey] !== true) return
 
     const opening = tree.children.findIndex(
       (node) => node.type === "paragraph" && hasProse(node),

@@ -40,7 +40,12 @@ const config: Config = {
       "classic",
       {
         docs: {
-          remarkPlugins: [require("./plugins/remark-ai-start")],
+          remarkPlugins: [
+            [
+              require("./plugins/remark-ai-start"),
+              { frontMatterKey: "ai_start" },
+            ],
+          ],
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/", // Serve docs at root
           editUrl: "https://github.com/tscircuit/docs/tree/main/",

@@ -59,3 +59,16 @@ test("regular docs do not get an AI callout unless they explicitly opt in", () =
     assert.deepEqual(tree.children, [opening])
   }
 })
+
+test("plugin configuration selects the front matter opt-in key", () => {
+  const tree = { children: [paragraph("Getting started.")] }
+  remarkAiStart({ frontMatterKey: "show_ai_start" })(tree, {
+    data: { frontMatter: { show_ai_start: true } },
+  })
+  assert.deepEqual(tree.children[1], {
+    type: "mdxJsxFlowElement",
+    name: "AiStart",
+    attributes: [],
+    children: [],
+  })
+})
