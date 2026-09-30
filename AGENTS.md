@@ -25,9 +25,17 @@
 ## Documentation Standards
 
 - Keep documentation concise and example-focused
-- Include working code examples where possible
+- Almost always prefer to have CircuitPreview over a code snippet
+- Use `<CircuitPreview />` for runnable circuit code examples; use `fsMap` for
+  examples that import JSON or other files.
+- Keep explanations concise and avoid separate guides that duplicate element references.
 - Use proper heading hierarchy (h1 → h2 → h3)
 - Images should include descriptive alt text
+- When sharing a docs PR or completed documentation change, always include direct
+  links to each added or changed page on the PR preview deployment. Resolve the
+  preview URL from the deployment check or bot comment, verify the page routes,
+  and link the pages themselves rather than only the PR or preview homepage.
+  If the preview is not ready, say so and provide the page links once it is available.
 
 ## Testing tscircuit TSX Code
 

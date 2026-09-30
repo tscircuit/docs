@@ -152,6 +152,20 @@ The `<autoroutingphase />` element lets you split PCB autorouting into ordered
 passes. The common use case is to route important connections first so later
 connections route around them.
 
+## Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `phaseIndex` | `number` | The routing pass configured by this element. Lower numbered phases run first. |
+| `connection` | `string` | Port selector for one connection to route in this phase. With `reroute`, selects one previously routed connection instead. |
+| `connections` | `string[]` | Port selectors for multiple connections to route in this phase. With `reroute`, selects previously routed connections instead. |
+| `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
+| `fanoutRoutingLayers` | `LayerRef[]` | Layers available to boundary-terminated fanout connections. |
+| `fanoutPourNetMap` | `Record<LayerRef, string \| string[]>` | Maps dedicated plane layers to the power or ground nets that should terminate on them during fanout. |
+| `busFanoutDirections` | `Record<string, BusFanoutDirection>` | Controls the boundary exit direction for each named bus during fanout. |
+| `reroute` | `boolean` | Reroutes traces produced by earlier phases instead of routing newly assigned traces. Requires `region`, `connection`, or `connections`. |
+| `region` | `{ shape?: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reconsider in a reroute phase. |
+
 ## Route Specific Connections First
 
 Use `connection` for one connection or `connections` for several. Each value is
@@ -191,64 +205,18 @@ Here the clock connection routes first, the USB connections route second, and
 all remaining connections route last. Earlier routes are included as obstacles
 in each later pass.
 
-## Route bus lanes without layer changes
+## Local dogbone phase
 
-Use `autorouter="bus_lanes"` on `<autoroutingphase />` to route selected bus
-connections on a fixed layer. Select connections by a port at either endpoint;
-`connections` chooses existing connections and does not create electrical traces.
-Use `<trace />` or component connections to declare connectivity.
+Use `<autoroutingphase autorouter="dogbone" fanoutRoutingLayers={["bottom"]} />`
+as a board child to add local pad-to-via escapes before default routing. It is
+implemented in core 0.0.2026+, but the handoff is not reliable for all BGAs:
+a 36-pin footprinter BGA currently triggers a `TopologyMergingSolver` overlap
+error in the subsequent default-routing stage.
 
-```tsx
-export default () => (
-  <board width={14} height={10}>
-    <resistor name="A0" resistance="1k" footprint="0402" pcbX={-4} pcbY={-2} />
-    <resistor name="B0" resistance="1k" footprint="0402" pcbX={4} pcbY={-2} />
-    <resistor name="A1" resistance="1k" footprint="0402" pcbX={-4} pcbY={2} />
-    <resistor name="B1" resistance="1k" footprint="0402" pcbX={3} pcbY={2} />
-    <trace name="DATA0" from=".A0 > .pin2" to=".B0 > .pin1" />
-    <trace name="DATA1" from=".A1 > .pin2" to=".B1 > .pin1" />
-    <autoroutingphase
-      name="DATA_LANES"
-      phaseIndex={0}
-      autorouter="bus_lanes"
-      connections={["A0.pin2", "A1.pin2"]}
-    />
-    <bus
-      name="DATA"
-      connections={["DATA0", "DATA1"]}
-      maxLengthSkew="0.05mm"
-      pcbTraceWidth="0.15mm"
-    />
-    <pcbnotetext
-      pcbX={0}
-      pcbY={-3.5}
-      fontSize={0.3}
-      text="A1-B1 gains a meander: both top routes match within 0.05mm, no vias."
-    />
-  </board>
-)
-```
-
-The shorter A1–B1 span receives a meander to match A0–B0. The existing `<bus />`
-props supply the width and length-skew tolerance. The object form
-`autorouter={{ preset: "bus_lanes" }}` is also supported.
-
-For controller-to-RAM routing, first create two non-overlapping fanouts with
-space between their exits. Corresponding exits must share a routing layer, and
-their winding order must permit a crossing-free connection. The bus-lanes phase
-preserves the exact fanout copper and routes the gaps between exits. Later global
-routing receives the completed bus traces as fixed copper; unassigned connections
-route afterward.
-
-The router adds no vias. Incompatible exit layers or an unsatisfiable planar
-route produce a routing error, with no fallback to a multilayer router. Fix the
-fanout layers, winding order, placement, or available routing space before retrying.
-
-Length matching includes the planar lengths of prior fanout traces and the new
-bus routes. Via depth and package delay are not included. Coupled differential-pair
-constraints are not currently supported by this solver. Check final connectivity,
-clearances, and end-to-end skew; a successful solve is not complete DDR timing
-verification.
+The phase escapes the first physical pad in each selected connection, not both
+ends automatically. The destination layer must differ from the pad layer.
+For a tested 36-pin example with only connected pads escaped, see
+[component-scoped dogbone fanout](./fanout.mdx#local-dogbones).
 
 ## Assign Traces and Nets Explicitly
 
@@ -385,16 +353,64 @@ Use `connections` to target more than one previously routed connection:
 />
 ```
 
-## Props
+## Route bus lanes without layer changes
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `phaseIndex` | `number` | The routing pass configured by this element. Lower numbered phases run first. |
-| `connection` | `string` | Port selector for one connection to route in this phase. With `reroute`, selects one previously routed connection instead. |
-| `connections` | `string[]` | Port selectors for multiple connections to route in this phase. With `reroute`, selects previously routed connections instead. |
-| `autorouter` | `string \| AutorouterConfig` | Optional autorouter preset or configuration for this phase. Omit it to use the parent board or subcircuit autorouter. |
-| `fanoutRoutingLayers` | `LayerRef[]` | Layers available to boundary-terminated fanout connections. |
-| `fanoutPourNetMap` | `Record<LayerRef, string \| string[]>` | Maps dedicated plane layers to the power or ground nets that should terminate on them during fanout. |
-| `busFanoutDirections` | `Record<string, BusFanoutDirection>` | Controls the boundary exit direction for each named bus during fanout. |
-| `reroute` | `boolean` | Reroutes traces produced by earlier phases instead of routing newly assigned traces. Requires `region`, `connection`, or `connections`. |
-| `region` | `{ shape?: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reconsider in a reroute phase. |
+Use `autorouter="bus_lanes"` on `<autoroutingphase />` to route selected bus
+connections on a fixed layer. Select connections by a port at either endpoint;
+`connections` chooses existing connections and does not create electrical traces.
+Use `<trace />` or component connections to declare connectivity.
+
+<CircuitPreview defaultView="pcb" code={`
+const footprint = "bga36_grid6x6_p1mm_w6mm_h6mm_pad0.5mm_circularpads"
+const pinPairs = [[5, 2], [10, 9], [17, 14], [22, 21], [29, 26], [34, 33]]
+const lanes = pinPairs.map(([sourcePin, targetPin], i) => ({
+  name: "DATA" + i,
+  from: "U1.pin" + sourcePin,
+  to: "U2.pin" + targetPin,
+}))
+
+export default () => (
+  <board width={24} height={14} minTraceWidth={0.15}>
+    <chip name="U1" footprint={footprint} pcbX={-6} />
+    <chip name="U2" footprint={footprint} pcbX={6} />
+    {lanes.map(({ name, from, to }) => (
+      <trace key={name} name={name} from={from} to={to} />
+    ))}
+    <autoroutingphase
+      name="DATA_LANES"
+      autorouter="bus_lanes"
+      connections={lanes.map(({ from }) => from)}
+    />
+    <bus
+      name="DATA"
+      connections={lanes.map(({ name }) => name)}
+      maxLengthSkew="0.05mm"
+      pcbTraceWidth="0.15mm"
+    />
+  </board>
+)
+`} />
+
+Six pads spread across multiple rows and interior columns on each 36-pin BGA
+form the bus; the other 30 pads on each chip remain unconnected. Routes weave
+between unused pads and add meanders to match lengths within 0.05 mm. All stay
+on the top layer: `bus_lanes` does not automatically add dogbones or vias.
+The `<bus />` props supply the width and length-skew tolerance. The object form
+`autorouter={{ preset: "bus_lanes" }}` is also supported.
+
+For controller-to-RAM routing, first create two non-overlapping fanouts with
+space between their exits. Corresponding exits must share a routing layer, and
+their winding order must permit a crossing-free connection. The bus-lanes phase
+preserves the exact fanout copper and routes the gaps between exits. Later global
+routing receives the completed bus traces as fixed copper; unassigned connections
+route afterward.
+
+The router adds no vias. Incompatible exit layers or an unsatisfiable planar
+route produce a routing error, with no fallback to a multilayer router. Fix the
+fanout layers, winding order, placement, or available routing space before retrying.
+
+Length matching includes the planar lengths of prior fanout traces and the new
+bus routes. Via depth and package delay are not included. Coupled differential-pair
+constraints are not currently supported by this solver. Check final connectivity,
+clearances, and end-to-end skew; a successful solve is not complete DDR timing
+verification.
