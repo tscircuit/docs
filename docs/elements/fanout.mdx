@@ -21,13 +21,17 @@ generates exits for connections leaving the region. Use `padding` to give those
 routes room around the component pads.
 
 <CircuitPreview verticalStack defaultView="pcb" code={`
+const footprint = "bga36_grid6x6_p1mm_w6mm_h6mm_pad0.5mm_circularpads"
+
 export default () => (
-  <board width="20mm" height="16mm">
-    <fanout name="R1_FANOUT" padding="2mm">
-      <resistor name="R1" resistance="1k" footprint="0402" pcbX={0} pcbY={0} />
+  <board width={24} height={14} minTraceWidth={0.1}>
+    <fanout padding={1}>
+      <chip name="U1" footprint={footprint} pcbX={-6} />
     </fanout>
-    <resistor name="R2" resistance="1k" footprint="0402" pcbX={7} pcbY={0} />
-    <trace name="SIGNAL" from="R1.1" to="R2.1" />
+    <chip name="U2" footprint={footprint} pcbX={6} />
+    <trace from="U1.6" to="U2.1" />
+    <trace from="U1.12" to="U2.7" />
+    <trace from="U1.18" to="U2.13" />
   </board>
 )
 `} />
@@ -42,21 +46,22 @@ It is an alias of [`<breakoutpoint />`](./breakoutpoint.mdx), with the same
 a boundary. Connected signal, VCC and GND pads are included. Remaining board
 routing continues from the vias; `fanoutRoutingLayers` chooses their destination.
 
+This 36-pad footprint connects eight pads. Only those eight receive dogbones;
+the other 28 remain untouched.
+
 <CircuitPreview verticalStack defaultView="pcb" code={`
 export default () => (
-  <board width={8} height={8} layers={4} routeRemaining={false}
+  <board width={10} height={10} layers={4} routeRemaining={false}
     minTraceWidth={0.1} minViaPadDiameter={0.4} minViaHoleDiameter={0.15}>
     <fanout autorouter="dogbone" fanoutRoutingLayers={["inner2"]}>
-      <chip name="U1"
-        connections={{pin1: "net.DATA", pin2: "net.VCC", pin3: "net.GND", pin4: "net.CLOCK"}}
-        footprint={<footprint>
-          <smtpad portHints={["1"]} shape="circle" radius={0.25} pcbX={0} pcbY={0} />
-          <smtpad portHints={["2"]} shape="circle" radius={0.25} pcbX={1} pcbY={0} />
-          <smtpad portHints={["3"]} shape="circle" radius={0.25} pcbX={0} pcbY={1} />
-          <smtpad portHints={["4"]} shape="circle" radius={0.25} pcbX={1} pcbY={1} />
-        </footprint>}
+      <chip name="U1" footprint="bga36_grid6x6_p1mm_w6mm_h6mm_pad0.5mm_circularpads"
+        connections={{
+          pin1: "net.DATA0", pin6: "net.DATA1", pin8: "net.VCC", pin15: "net.GND",
+          pin22: "net.CLOCK", pin29: "net.ENABLE", pin31: "net.DATA2", pin36: "net.DATA3",
+        }}
       />
     </fanout>
+    <pcbnotetext pcbY={4} text="8 connected pads; 28 untouched" fontSize={0.3} />
   </board>
 )
 `} />

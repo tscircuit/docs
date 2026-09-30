@@ -25,33 +25,38 @@ Diagnostic images and solver inputs are not replayable path arrays.
 
 ## JSON example
 
-The saved path leaves R1 through a nearby via. Its final via is the exit where
-board routing continues to R2.
+This 36-pad BGA has two connected pads. The JSON supplies their local escapes;
+the other 34 pads remain untouched.
 
 <CircuitPreview verticalStack defaultView="pcb" mainComponentPath="index.tsx" fsMap={{
   "index.tsx": `
 import savedPaths from "./saved-fanout.json"
 
 export default () => (
-  <board width={20} height={12}>
-    <fanout pcbTracePaths={savedPaths}>
-      <resistor name="R1" resistance="1k" footprint="0402" />
+  <board width={10} height={10} routeRemaining={false}
+    minTraceWidth={0.1} minViaPadDiameter={0.4} minViaHoleDiameter={0.15}>
+    <fanout autorouter="dogbone" pcbTracePaths={savedPaths}>
+      <chip name="U1" footprint="bga36_grid6x6_p1mm_w6mm_h6mm_pad0.5mm_circularpads"
+        connections={{pin1: "net.DATA", pin36: "net.GND"}} />
     </fanout>
-    <resistor name="R2" resistance="1k" footprint="0402" pcbX={7} pcbY={1} />
-    <trace from="R1.1" to="R2.1" />
   </board>
 )
 `,
   "saved-fanout.json": JSON.stringify([
     {
-      connection: "R1.1",
+      connection: "U1.1",
       route: [
-        { route_type: "wire", x: -0.51, y: 0, width: 0.2, layer: "top" },
-        { route_type: "wire", x: -1.5, y: 0, width: 0.2, layer: "top" },
-        { route_type: "via", x: -1.5, y: 0, from_layer: "top", to_layer: "bottom", via_diameter: 0.3, via_hole_diameter: 0.15 },
-        { route_type: "wire", x: -1.5, y: 0, width: 0.2, layer: "bottom" },
-        { route_type: "wire", x: 1, y: 1, width: 0.2, layer: "bottom" },
-        { route_type: "via", x: 3, y: 1, from_layer: "bottom", to_layer: "top", via_diameter: 0.6, via_hole_diameter: 0.3 },
+        { route_type: "wire", x: -2.5, y: -2.5, width: 0.1, layer: "top" },
+        { route_type: "wire", x: -3, y: -3, width: 0.1, layer: "top" },
+        { route_type: "via", x: -3, y: -3, from_layer: "top", to_layer: "bottom", via_diameter: 0.4, via_hole_diameter: 0.15 },
+      ],
+    },
+    {
+      connection: "U1.36",
+      route: [
+        { route_type: "wire", x: 2.5, y: 2.5, width: 0.1, layer: "top" },
+        { route_type: "wire", x: 3, y: 3, width: 0.1, layer: "top" },
+        { route_type: "via", x: 3, y: 3, from_layer: "top", to_layer: "bottom", via_diameter: 0.4, via_hole_diameter: 0.15 },
       ],
     },
   ], null, 2),
