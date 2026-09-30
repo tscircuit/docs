@@ -5,41 +5,58 @@ description: Group boards and mechanical parts into a complete device.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-device-1.json"
+import preview2 from "@site/src/data/assembly-previews/assembly-device-2.json"
 
-Import the `assembly` namespace from `@tscircuit/core` to describe a device containing boards, displays, and mechanical parts.
+`assembly.device` groups boards and mechanical parts into a complete device. Add `model` or `modelUrl` to render a model at the world origin.
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
+const models =
+  "https://docs.tscircuit.com/models/assembly"
+
 export default () => (
-  <assembly.device name="product" modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/housing.glb">
+  <assembly.device
+    name="product"
+    modelUrl={models + "/housing.glb"}
+  >
     <board name="B1" width="40mm" height="30mm" />
   </assembly.device>
 )`}
 />
 
-The preview imports a simplified housing model. Replace its URL with your own model URL, accessible to the viewer. Relative asset URLs are resolved using the platform's `projectBaseUrl`.
-
-Without `modelUrl`, `assembly.device` is a transparent container. With `modelUrl`, it renders a CAD model at the world origin without creating PCB pads or schematic symbols. Boards and other children keep their own rendering behavior; the device model does not reposition them. Devices can be nested; `assembly.screen` attachment selectors are scoped to their nearest device.
-
 | Property | Description |
 |----------|-------------|
 | `name` | Optional device name. |
-| `modelUrl` | Optional imported CAD model URL, rendered at the world origin. |
-| `children` | Boards, subassemblies, screens, or nested devices. |
+| `model` | Modelprinter string or HTTP(S) model URL. |
+| `modelUrl` | Imported CAD model URL. Use either `model` or `modelUrl`. |
+| `children` | Boards, subassemblies, and screens. |
 
-## Assembly elements
+## Modelprinter strings
 
-| Element | Purpose |
-|---------|---------|
-| [`assembly.subassembly`](./assembly-subassembly.mdx) | Group imported mechanical models and CAD children. |
-| [`assembly.cadassembly`](./assembly-cadassembly.mdx) | Alias for `assembly.subassembly`. |
-| [`assembly.screen`](./assembly-screen.mdx) | Place a display relative to a connector or another assembly. |
+Use a modelprinter string to generate a model without supplying a file. This display is 16 × 10 mm with a 5 mm cable.
 
-See [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx) for a board with mounting holes and imported screws.
+<CircuitPreview
+  wrapCode
+  circuitJson={preview2}
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  code={`import { assembly } from "@tscircuit/core"
 
-`modelUrl` uses the same file formats as [`cadmodel`](./cadmodel.mdx): GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML. Use a `#ext=glb` suffix when the URL does not include the file extension. For model offsets or other advanced options, place a `cadmodel` inside an `assembly.subassembly`.
+export default () => (
+  <assembly.device
+    name="display-demo"
+    model="flexscreen_w16_h10_flex5_sitsflat"
+  />
+)`}
+/>
+
+Assembly models add 3D geometry without creating PCB footprints or electrical connections. For imported models, see [`cadmodel`](./cadmodel.mdx) for supported formats.
+
+Use [`assembly.subassembly`](./assembly-subassembly.mdx) to group mechanical parts, or [`assembly.screen`](./assembly-screen.mdx) to attach a display to a connector. See [Mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx) for screws aligned with board holes.

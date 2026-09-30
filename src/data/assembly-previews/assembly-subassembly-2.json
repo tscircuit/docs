@@ -2,7 +2,7 @@
   {
     "type": "source_project_metadata",
     "source_project_metadata_id": "source_project_metadata_0",
-    "software_used_string": "@tscircuit/core@0.0.2014"
+    "software_used_string": "@tscircuit/core@0.0.2019"
   },
   {
     "type": "source_group",
@@ -20,7 +20,7 @@
     "type": "source_component",
     "source_component_id": "source_component_0",
     "ftype": "simple_chip",
-    "name": "housing"
+    "name": "bracket"
   },
   {
     "type": "schematic_group",
@@ -65,42 +65,16 @@
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_0",
-    "model_glb_url": "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/cover.glb",
+    "model_glb_url": "https://docs.tscircuit.com/models/assembly/bracket.glb",
     "position": {
-      "x": 0,
+      "x": 10,
       "y": 0,
-      "z": 4
+      "z": 0.8
     },
     "rotation": {
       "x": 0,
       "y": 0,
-      "z": 0
-    },
-    "layer": "top",
-    "source_component_id": "source_component_0",
-    "model_origin_position": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "model_unit_to_mm_scale_factor": 1,
-    "model_object_fit": "contain_within_bounds",
-    "anchor_alignment": "center",
-    "show_as_translucent_model": false
-  },
-  {
-    "type": "cad_component",
-    "cad_component_id": "cad_component_1",
-    "model_glb_url": "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/housing.glb",
-    "position": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0
+      "z": 90
     },
     "layer": "top",
     "source_component_id": "source_component_0",

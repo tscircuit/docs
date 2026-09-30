@@ -2,7 +2,7 @@
   {
     "type": "source_project_metadata",
     "source_project_metadata_id": "source_project_metadata_0",
-    "software_used_string": "@tscircuit/core@0.0.2014"
+    "software_used_string": "@tscircuit/core@0.0.2019"
   },
   {
     "type": "source_group",
@@ -1192,9 +1192,9 @@
     "pcb_component_id": "pcb_component_0",
     "center": {
       "x": 0,
-      "y": -11.4
+      "y": -14.6
     },
-    "width": 19.58,
+    "width": 19.88,
     "height": 4.449999999999999,
     "layer": "top",
     "rotation": 0,
@@ -1205,12 +1205,12 @@
     "is_allowed_to_be_off_board": false,
     "cable_insertion_center": {
       "x": 0,
-      "y": -8.575
+      "y": -17.424999999999997
     },
     "position_mode": "relative_to_group_anchor",
     "positioned_relative_to_pcb_board_id": "pcb_board_0",
     "display_offset_y": -13,
-    "pin1_location": "bottomside_left"
+    "pin1_location": "topside_left"
   },
   {
     "type": "pcb_board",
@@ -2084,11 +2084,11 @@
     "layer": "top",
     "shape": "rect",
     "width": 2,
-    "height": 3,
+    "height": 2.5,
     "port_hints": ["31"],
     "is_covered_with_solder_mask": false,
-    "x": 8.79,
-    "y": -10.675,
+    "x": 8.94,
+    "y": -15.575,
     "subcircuit_id": "subcircuit_source_group_0"
   },
   {
@@ -2097,9 +2097,9 @@
     "layer": "top",
     "shape": "rect",
     "width": 1.4,
-    "height": 2.0999999999999996,
-    "x": 8.79,
-    "y": -10.675,
+    "height": 1.75,
+    "x": 8.94,
+    "y": -15.575,
     "pcb_component_id": "pcb_component_0",
     "pcb_smtpad_id": "pcb_smtpad_30",
     "subcircuit_id": "subcircuit_source_group_0"
@@ -2112,11 +2112,11 @@
     "layer": "top",
     "shape": "rect",
     "width": 2,
-    "height": 3,
+    "height": 2.5,
     "port_hints": ["32"],
     "is_covered_with_solder_mask": false,
-    "x": -8.79,
-    "y": -10.675,
+    "x": -8.94,
+    "y": -15.575,
     "subcircuit_id": "subcircuit_source_group_0"
   },
   {
@@ -2125,9 +2125,9 @@
     "layer": "top",
     "shape": "rect",
     "width": 1.4,
-    "height": 2.0999999999999996,
-    "x": -8.79,
-    "y": -10.675,
+    "height": 1.75,
+    "x": -8.94,
+    "y": -15.575,
     "pcb_component_id": "pcb_component_0",
     "pcb_smtpad_id": "pcb_smtpad_31",
     "subcircuit_id": "subcircuit_source_group_0"
@@ -2140,11 +2140,11 @@
     "route": [
       {
         "x": -7.4,
-        "y": -8.975
+        "y": -12.175
       },
       {
         "x": 7.4,
-        "y": -8.975
+        "y": -12.175
       }
     ],
     "stroke_width": 0.1,
@@ -2158,11 +2158,11 @@
     "route": [
       {
         "x": -7.4,
-        "y": -13.825
+        "y": -17.025
       },
       {
         "x": 7.4,
-        "y": -13.825
+        "y": -17.025
       }
     ],
     "stroke_width": 0.1,
@@ -2196,7 +2196,7 @@
     "anchor_alignment": "center",
     "anchor_position": {
       "x": 0,
-      "y": -8.274999999999999
+      "y": -11.475
     },
     "font": "tscircuit2024",
     "font_size": 0.7,
@@ -2213,9 +2213,9 @@
     "layer": "top",
     "center": {
       "x": 0,
-      "y": -11.4
+      "y": -14.6
     },
-    "width": 20.08,
+    "width": 20.38,
     "height": 4.95,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -2525,8 +2525,8 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": 8.79,
-    "y": -10.675,
+    "x": 8.94,
+    "y": -15.575,
     "source_port_id": "source_port_30"
   },
   {
@@ -2535,8 +2535,8 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": -8.79,
-    "y": -10.675,
+    "x": -8.94,
+    "y": -15.575,
     "source_port_id": "source_port_31"
   },
   {
@@ -2544,7 +2544,7 @@
     "cad_component_id": "cad_component_0",
     "position": {
       "x": 0,
-      "y": -11.4,
+      "y": -14.6,
       "z": 0.8
     },
     "rotation": {
@@ -2556,21 +2556,21 @@
     "source_component_id": "source_component_0",
     "model_origin_alignment": "center_of_component_on_board_surface",
     "anchor_alignment": "center_of_component_on_board_surface",
-    "footprinter_string": "fpc30_p0.5mm_pw0.3mm_pl1.25mm_mpx17.58mm_mpy2.325mm_mpw2mm_mpl3mm_mounttop"
+    "footprinter_string": "fpc30_p0.5mm"
   },
   {
     "type": "cad_component",
     "cad_component_id": "cad_component_1",
-    "model_glb_url": "https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screen.glb",
+    "model_glb_url": "https://modelcdn.tscircuit.com/jscad_models/flexscreen_w16_h10_flex5_sitsflat.glb",
     "position": {
       "x": 0,
-      "y": -8.575,
+      "y": -17.424999999999997,
       "z": 0.8
     },
     "rotation": {
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 180
     },
     "layer": "top",
     "source_component_id": "source_component_1",
@@ -2584,17 +2584,5 @@
     "model_object_fit": "contain_within_bounds",
     "anchor_alignment": "center",
     "show_as_translucent_model": false
-  },
-  {
-    "type": "pcb_connector_not_in_accessible_orientation_warning",
-    "pcb_connector_not_in_accessible_orientation_warning_id": "pcb_connector_not_in_accessible_orientation_warning_0",
-    "warning_type": "pcb_connector_not_in_accessible_orientation_warning",
-    "message": "component is inferred to face y+ from its cable insertion center because no explicit footprint insertionDirection is defined, but should face y- so the connector is accessible from the board edge. Set insertionDirection on the <footprint> to specify the actual direction in the footprint's unrotated orientation; for example, <footprint insertionDirection=\"from_above\"> for a connector accessed from above the PCB (+Z).",
-    "pcb_component_id": "pcb_component_0",
-    "source_component_id": "source_component_0",
-    "pcb_board_id": "pcb_board_0",
-    "facing_direction": "y+",
-    "recommended_facing_direction": "y-",
-    "subcircuit_id": "subcircuit_source_group_0"
   }
 ]

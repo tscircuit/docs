@@ -6,9 +6,10 @@ description: Place a display model relative to a PCB connector or named assembly
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-screen-1.json"
 
-`assembly.screen` places display geometry at an attachment target. It does not create a PCB footprint or schematic symbol for the display.
+`assembly.screen` places a display at a connector or another assembly. `connectsTo` controls its position and orientation; it does not create electrical connections.
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
@@ -17,41 +18,38 @@ import preview1 from "@site/src/data/assembly-previews/assembly-screen-1.json"
 
 export default () => (
   <assembly.device name="product">
-    <board name="B1" width="44mm" height="36mm" thickness="1.6mm" routingDisabled>
+    <board
+      name="B1"
+      width="44mm"
+      height="36mm"
+      thickness="1.6mm"
+      routingDisabled
+    >
       <connector
         name="J1"
         pcbY={-13}
         pinCount={30}
-        footprint="fpc30_p0.5mm_pw0.3mm_pl1.25mm_mpx17.58mm_mpy2.325mm_mpw2mm_mpl3mm_mounttop"
+        footprint="fpc30_p0.5mm"
       />
     </board>
     <assembly.screen
       name="SCREEN"
       connectsTo=".B1 .J1"
-      modelUrl="https://raw.githubusercontent.com/tscircuit/docs/f8f00afd3c92ba4c9e1dff6f4b4e584e8ea258a0/static/models/assembly/screen.glb"
+      model="flexscreen_w16_h10_flex5_sitsflat"
     />
   </assembly.device>
 )`}
 />
 
-Without `modelUrl` or `cadModel`, both `width` and `height` are required to generate a default FlexScreen model. If either dimension is supplied, supply both; they must be positive. For more control over the generated display, use a modelprinter string such as `cadModel="flexscreen_w26.7mm_h19.26mm"`. To generate a screen from dimensions instead of importing a model, replace `modelUrl` in the preview with `width="26.7mm" height="19.26mm"`. The URL model uses the same connector-relative placement as the generated screen. Its model origin should be authored at the attachment point.
-
-The imported-screen preview uses a simplified GLB display model. Replace its URL with your own accessible model. Supported formats are GLB, GLTF, OBJ, STL, STEP/STP, and WRL/VRML; a URL without an extension can specify `#ext=glb`. Relative URLs resolve using the platform's `projectBaseUrl`.
-
-`modelUrl` and `cadModel` are mutually exclusive. Supplying `modelUrl` skips the default FlexScreen model, so dimensions are optional. If you do supply dimensions, both must be positive; they do not resize the imported model.
-
 | Property | Description |
 |----------|-------------|
-| `name` | Required, non-empty name. |
-| `connectsTo` | Required selector for a PCB component, another screen, or a named assembly container. |
-| `width`, `height` | Display dimensions; required when neither `modelUrl` nor `cadModel` is supplied. |
-| `modelUrl` | Imported display model URL; mutually exclusive with `cadModel`. |
-| `cadModel` | Non-empty modelprinter string, used instead of the dimension-derived model. |
+| `name` | Required screen name. |
+| `connectsTo` | Selector for a PCB component, screen, or named assembly. |
+| `model` | Modelprinter string or HTTP(S) model URL. |
+| `modelUrl` | Imported display model URL. |
+| `cadModel` | Modelprinter string. |
+| `width`, `height` | Required together when no model is supplied. |
 
-## Attachment placement
+Choose one of `model`, `modelUrl`, or `cadModel`. Dimensions do not resize an explicit model.
 
-For a PCB connector, the screen origin is its cable insertion center, falling back to the component center. Z starts at the board surface. Orientation follows the connector's insertion direction when available, otherwise its inferred cable direction or PCB rotation. Bottom-layer targets also flip the model to the underside.
-
-A screen targeting another screen or subassembly inherits that target's assembly frame, not the offset of its individual CAD model. Targets can be declared before or after the screen. Resolution stays within the nearest `assembly.device`; missing or ambiguous targets and attachment cycles produce errors.
-
-`connectsTo` controls mechanical placement; it does not create electrical traces. Use [`trace`](./trace.mdx) for board wiring and [`assembly.subassembly`](./assembly-subassembly.mdx) for general mechanical hardware.
+For your own display file, place its origin at the connector attachment point. The screen follows the connector's placement, including the board's bottom layer.
