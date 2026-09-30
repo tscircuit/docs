@@ -1,7 +1,7 @@
 # Assembly documentation demo models
 
-Original, simplified geometry for the assembly documentation, in millimetres. The descriptions below use board coordinates (+Z up); the
-GLB export uses the standard glTF +Y-up frame. Regenerate with
+Original, simplified geometry for the assembly documentation, in millimetres. The model vertices use tscircuit board
+coordinates (+Z above the board). Regenerate with
 `python3 scripts/generate-assembly-models.py` from the repository root.
 These assets are covered by this repository's license. They are illustrative,
 not manufacturer models or fabrication specifications.

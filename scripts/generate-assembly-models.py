@@ -14,10 +14,9 @@ def cylinder(r,z0,z1,n=32):
   tris.extend([(u,v,w),(u,w,t),((0,0,z0),v,u),((0,0,z1),t,w)])
  return tris
 def write(name,tris):
- # glTF uses +Y up: map board-world (x, y, z) to (x, z, -y).
+ # tscircuit model coordinates use +Z above the board.
  vertices=[]; normals=[]
  for a,b,c in tris:
-  a,b,c=[(p[0],p[2],-p[1]) for p in (a,b,c)]
   u=[b[i]-a[i] for i in range(3)];v=[c[i]-a[i] for i in range(3)]
   n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]]
   length=math.sqrt(sum(t*t for t in n));n=[t/length for t in n]
