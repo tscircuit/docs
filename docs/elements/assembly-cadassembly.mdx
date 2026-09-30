@@ -27,4 +27,4 @@ export default () => (
 
 The preview uses bundled demo housing and cover models. Replace their URLs with your own assets. The unnamespaced [`<cadassembly>`](./cadassembly.mdx) remains available for grouping models inside a component's `cadModel`. Use the namespaced element for device-level mechanical parts alongside a board.
 
-Like `assembly.subassembly`, this alias accepts `model="soic8"` or other modelprinter/footprinter strings, resolved to GLB models on modelcdn. Choose only one of `model`, `modelUrl`, and `cadModel`. See the [model string reference](./assembly-subassembly.mdx#modelprinter-and-footprinter-strings).
+Like `assembly.subassembly`, this alias accepts `model="soic8"` or other modelprinter/footprinter strings, resolved to GLB models on modelcdn. `model` also accepts direct HTTP(S) model URLs, with the same file format detection and `#ext` hints as `modelUrl`. Choose only one of `model`, `modelUrl`, and `cadModel`. See the [model string reference](./assembly-subassembly.mdx#modelprinter-and-footprinter-strings).

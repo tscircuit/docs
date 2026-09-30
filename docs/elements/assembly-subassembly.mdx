@@ -59,7 +59,7 @@ The imported housing and its children share the assembly frame. `modelUrl` suppo
 |----------|-------------|
 | `name` | Required, non-empty name. |
 | `displayName` | Optional display label. |
-| `model` | Non-empty modelprinter/footprinter string; surrounding whitespace is trimmed. |
+| `model` | HTTP(S) model URL or non-empty modelprinter/footprinter string; surrounding whitespace is trimmed. |
 | `modelUrl` | Optional imported model URL. Mutually exclusive with `model` and `cadModel`, including `cadModel={null}`. |
 | `cadModel` | Modelprinter string, model URL object, JSCAD model, JSX CAD subtree, or `null`. |
 | `children` | CAD models and nested subassemblies. Can coexist with `cadModel`. |
@@ -123,6 +123,8 @@ Subassemblies do not accept `connectsTo`. Use nesting for grouping and explicit 
 For a complete example, see [Mounting 3D models to a board](../guides/tscircuit-essentials/mounting-3d-models.mdx).
 
 ## Modelprinter and footprinter strings
+
+`model` also accepts direct HTTP(S) URLs, such as `model="https://example.com/housing.glb"`. URLs use the same file format detection and `#ext` hints as `modelUrl`; query strings are preserved.
 
 Use `model="soic8"`, `model="pinrow4"`, or another supported modelprinter/footprinter string to generate CAD geometry without supplying a file. Core resolves the string to `https://modelcdn.tscircuit.com/jscad_models/<URL-encoded-model>.glb`; the viewer fetches that model. The string must identify a model supported by modelcdn. This does not create a PCB footprint, pads, or electrical connections.
 
