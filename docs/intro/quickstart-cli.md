@@ -1,5 +1,6 @@
 ---
 title: Quickstart CLI
+ai_start: true
 sidebar_position: 4
 description: >-
     Ask your AI to use tscircuit, or follow these steps to create and preview a circuit with the CLI.

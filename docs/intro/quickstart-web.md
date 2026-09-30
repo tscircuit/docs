@@ -1,5 +1,6 @@
 ---
 title: Quickstart Web
+ai_start: true
 description: Build and preview tscircuit projects directly in the online editor
 sidebar_position: 3
 ---

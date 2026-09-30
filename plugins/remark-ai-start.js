@@ -8,7 +8,10 @@ function hasProse(node) {
 }
 
 module.exports = function remarkAiStart() {
-  return (tree) => {
+  return (tree, file) => {
+    // Only getting-started and intro guides should opt in with ai_start: true.
+    if (file?.data?.frontMatter?.ai_start !== true) return
+
     const opening = tree.children.findIndex(
       (node) => node.type === "paragraph" && hasProse(node),
     )
