@@ -23,7 +23,7 @@ tsci convert <file> [options]
 - `-o, --output <path>` – output TSX, footprinter text, or discovery JSON file path. KiCad-to-TSX conversion defaults to the input directory; discovery prints to the terminal when omitted.
 - `-n, --name <component>` – exported component name for KiCad-to-TSX conversion (defaults to the input filename without extension).
 - `--footprinter` – discover a footprinter string instead of generating TSX.
-- `--json` – output discovery details, including the best match and candidates; requires `--footprinter`.
+- `--json` – return a JSON match report containing the string, scores, and pin mismatches instead of text; requires `--footprinter`.
 
 ## Convert KiCad to TSX
 
@@ -46,11 +46,8 @@ Find a shorter `footprint="..."` for an imported component with explicit pads:
 
 ```bash
 tsci convert imports/MyChip.tsx --footprinter
-tsci convert imports/MyChip.tsx --footprinter --json -o footprint.json
 ```
 
-Discovery leaves the source unchanged. Inspect `best.footprinterString`,
-`pinsMatch`, and `pinMismatches` in the JSON report. Before replacing the footprint,
-render the candidate independently and compare pad geometry and electrical pin
-mapping, including pin-1 orientation and exposed pads. High copper overlap alone
-does not prove equivalence; keep explicit pads if the match is unsuitable.
+Use the printed string as the component's `footprint="..."` prop. The command
+also prints a copper overlap score; it does not rewrite the source. Verify pad
+geometry and electrical pin mapping before replacing the explicit pads.
