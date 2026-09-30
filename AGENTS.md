@@ -25,7 +25,9 @@
 ## Documentation Standards
 
 - Keep documentation concise and example-focused
-- Include working code examples where possible
+- Use `<CircuitPreview />` for runnable circuit code examples; use `fsMap` for
+  examples that import JSON or other files.
+- Keep explanations concise and avoid separate guides that duplicate element references.
 - Use proper heading hierarchy (h1 → h2 → h3)
 - Images should include descriptive alt text
 - When sharing a docs PR or completed documentation change, always include direct

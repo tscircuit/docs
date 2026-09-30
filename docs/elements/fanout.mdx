@@ -3,6 +3,8 @@ title: <fanout />
 description: Route component connections to fanout exits automatically or reuse pre-generated wire and via paths.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
 ## Overview
 
 `<fanout />` groups components for escape routing: tscircuit routes their
@@ -18,7 +20,7 @@ connections with [`<trace />`](./trace.mdx). The default fanout autorouter
 generates exits for connections leaving the region. Use `padding` to give those
 routes room around the component pads.
 
-```tsx
+<CircuitPreview verticalStack defaultView="pcb" code={`
 export default () => (
   <board width="20mm" height="16mm">
     <fanout name="R1_FANOUT" padding="2mm">
@@ -28,7 +30,7 @@ export default () => (
     <trace name="SIGNAL" from="R1.1" to="R2.1" />
   </board>
 )
-```
+`} />
 
 For explicit exit locations, place a `<fanoutpoint />` inside the fanout.
 It is an alias of [`<breakoutpoint />`](./breakoutpoint.mdx), with the same
@@ -36,42 +38,38 @@ It is an alias of [`<breakoutpoint />`](./breakoutpoint.mdx), with the same
 
 ## Local dogbones
 
-Use `autorouter="dogbone"` to escape BGA pads to nearby vias without routing to
-the region boundary:
+`autorouter="dogbone"` creates short BGA pad-to-via escapes instead of routing to
+a boundary. Connected signal, VCC and GND pads are included. Remaining board
+routing continues from the vias; `fanoutRoutingLayers` chooses their destination.
 
-```tsx
-<fanout autorouter="dogbone" fanoutRoutingLayers={["inner2"]}>
-  <AM3352 name="U1" />
-</fanout>
-```
+<CircuitPreview verticalStack defaultView="pcb" code={`
+export default () => (
+  <board width={8} height={8} layers={4} routeRemaining={false}
+    minTraceWidth={0.1} minViaPadDiameter={0.4} minViaHoleDiameter={0.15}>
+    <fanout autorouter="dogbone" fanoutRoutingLayers={["inner2"]}>
+      <chip name="U1"
+        connections={{pin1: "net.DATA", pin2: "net.VCC", pin3: "net.GND", pin4: "net.CLOCK"}}
+        footprint={<footprint>
+          <smtpad portHints={["1"]} shape="circle" radius={0.25} pcbX={0} pcbY={0} />
+          <smtpad portHints={["2"]} shape="circle" radius={0.25} pcbX={1} pcbY={0} />
+          <smtpad portHints={["3"]} shape="circle" radius={0.25} pcbX={0} pcbY={1} />
+          <smtpad portHints={["4"]} shape="circle" radius={0.25} pcbX={1} pcbY={1} />
+        </footprint>}
+      />
+    </fanout>
+  </board>
+)
+`} />
 
-Import your BGA component and define its electrical connections. Connected
-signal, power and ground pads are eligible. The destination layer must exist on
-the board. See [Local BGA dogbone fanout](../guides/dogbone-fanout.mdx) for version
-requirements, board rules and downstream routing behavior.
+Requires core 0.0.2026+ and props 0.0.672+. Use a two-dimensional SMT pad grid
+and an existing destination layer different from the pad layer.
 
 ## Reuse saved routes
 
-Pass `pcbTracePaths` to reuse pre-generated wire and via routes instead of
-automatically routing the fanout. Each entry identifies a component port with
-`connection` and supplies its port-to-exit `route`:
-
-```tsx
-<fanout name="SAVED_FANOUT" pcbTracePaths={savedPaths}>
-  <resistor name="R1" resistance="1k" footprint="0402" />
-</fanout>
-```
-
-Saved coordinates use the fanout's local PCB frame. Core creates an exit at
-the end of each path and preserves the supplied copper during global routing.
-Keep the electrical `<trace />` connections and supply paths for every routing
-connection in the fanout. Do not add an explicit exit for a port already covered
-by a saved path.
-
-Routes may start or end with vias. A via at the starting pad requires
-`allowViaInPad: true` in the board or fanout autorouter configuration.
-See [Reusing saved fanout trace paths](../guides/reusing-saved-fanout-trace-paths.mdx)
-for a complete example, JSON imports, version requirements, and validation rules.
+Pass `pcbTracePaths` to preserve edited routes and continue board routing from
+their exits. Keep the electrical connections and supply every pad-to-exit path.
+See [capturing and editing fanout paths](../guides/reusing-saved-fanout-trace-paths.mdx)
+for a runnable JSON example.
 
 ## Properties
 
@@ -86,7 +84,7 @@ routing props shared with `<breakout />`:
 | `pcbTracePaths` | Saved port-to-exit wire/via routes covering all routing connections in the fanout. |
 | `busFanoutDirections` | Maps named buses to preferred escape directions. |
 | `fanoutBoundaryPadding` | Padding between source pads and the shared boundary where fanout traces terminate. |
-| `fanoutRoutingLayers` | Copper layers available to boundary-terminated fanout buses. |
+| `fanoutRoutingLayers` | Routing layers; the destination layer for local dogbones. |
 | `fanoutPourNetMap` | Maps plane layers to nets for source-only escapes; inferred from matching copper pours when omitted. |
 
 For bus direction and power-plane examples, see the
