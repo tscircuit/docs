@@ -3,7 +3,7 @@
   --ifm-link-hover-color: var(--ifm-color-emphasis-700);
   --ifm-link-hover-decoration: none;
 
-  box-shadow: 0 1.5px 3px 0 rgb(0 0 0 / 15%);
+  box-shadow: none;
   border: 1px solid var(--ifm-color-emphasis-200);
   transition: all var(--ifm-transition-fast) ease;
   transition-property: border, box-shadow;
@@ -11,7 +11,7 @@
 
 .cardContainer:hover {
   border-color: var(--ifm-color-primary);
-  box-shadow: 0 3px 6px 0 rgb(0 0 0 / 20%);
+  box-shadow: none;
 }
 
 .cardContainer *:last-child {
@@ -19,11 +19,14 @@
 }
 
 .cardTitle {
-  font-size: 1.2rem;
+  font-size: 1.125rem;
+  white-space: normal;
 }
 
 .cardDescription {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
+  white-space: normal;
+  color: var(--workspace-muted);
 }
 
 .nestedList {

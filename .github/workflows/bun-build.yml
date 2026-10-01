@@ -24,3 +24,26 @@ jobs:
 
       - name: Run build
         run: bun run build
+
+      - name: Test public link checker
+        run: bun test scripts/check-public-links.test.mjs
+
+      - name: Check out the PR base for URL compatibility
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: .link-baseline
+
+      - name: Build the existing public routes
+        if: github.event_name == 'pull_request'
+        working-directory: .link-baseline
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Preserve routes, heading anchors, redirects and Markdown endpoints
+        if: github.event_name == 'pull_request'
+        run: |
+          bun scripts/check-public-links.mjs snapshot .link-baseline/build "$RUNNER_TEMP/public-links-before.json"
+          bun scripts/check-public-links.mjs check build "$RUNNER_TEMP/public-links-before.json"

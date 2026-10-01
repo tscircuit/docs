@@ -1,0 +1,365 @@
+/* Shared workspace chrome. Document IDs, slugs and generated category URLs stay unchanged. */
+:root {
+  --workspace-surface: #f7f8fa;
+  --workspace-border: #e4e8ef;
+  --workspace-muted: #626c7c;
+  --workspace-active: #edf3ff;
+  --ifm-color-primary: #245bcc;
+  --ifm-color-primary-dark: #2052b8;
+  --ifm-color-primary-darker: #1f4dad;
+  --ifm-color-primary-darkest: #19408f;
+  --ifm-color-primary-light: #346cdb;
+  --ifm-color-primary-lighter: #4075dd;
+  --ifm-color-primary-lightest: #6290e4;
+  --ifm-font-color-base: #202735;
+  --ifm-heading-color: #171e2a;
+  --ifm-navbar-height: 108px;
+  --ifm-navbar-shadow: none;
+  --ifm-toc-border-color: var(--workspace-border);
+  --ifm-global-radius: 8px;
+  --ifm-heading-font-weight: 600;
+  --ifm-line-height-base: 1.7;
+  --doc-sidebar-width: 264px;
+  --media-container-bg: var(--workspace-surface);
+  --media-container-border: var(--workspace-border);
+  --media-container-shadow: none;
+}
+
+[data-theme="dark"] {
+  --workspace-surface: #1b212a;
+  --workspace-border: #303844;
+  --workspace-muted: #a3afbf;
+  --workspace-active: #24324d;
+  --ifm-background-color: #14181e;
+  --ifm-navbar-background-color: #14181e;
+  --ifm-font-color-base: #e4e9f1;
+  --ifm-heading-color: #f0f3f8;
+  --ifm-color-primary: #8bb1ff;
+  --ifm-color-primary-dark: #6e9dff;
+  --ifm-color-primary-darker: #6094ff;
+  --ifm-color-primary-darkest: #3577ff;
+  --ifm-color-primary-light: #a8c5ff;
+  --ifm-color-primary-lighter: #b6ceff;
+  --ifm-color-primary-lightest: #e1ebff;
+  --media-container-bg: var(--workspace-surface);
+  --media-container-border: var(--workspace-border);
+  --media-container-shadow: none;
+}
+
+.workspace-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--ifm-z-index-fixed);
+  background: var(--ifm-navbar-background-color);
+}
+
+.workspace-header .navbar {
+  position: static;
+  height: 64px;
+  border-bottom: 1px solid var(--workspace-border);
+  padding: 0 1.75rem;
+}
+
+.navbar__title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--workspace-muted);
+  border-left: 1px solid var(--workspace-border);
+  margin-left: 0.9rem;
+  padding-left: 0.9rem;
+}
+
+.workspace-sections {
+  height: 44px;
+  display: flex;
+  align-items: stretch;
+  gap: 2rem;
+  padding: 0 1.75rem;
+  border-bottom: 1px solid var(--workspace-border);
+}
+
+.workspace-section {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--workspace-muted);
+  border-bottom: 2px solid transparent;
+}
+
+.workspace-section:hover {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.workspace-section[aria-current="true"] {
+  color: var(--ifm-color-primary);
+  border-bottom-color: currentColor;
+}
+
+.workspace-docs {
+  --doc-sidebar-width: 264px;
+  flex: 1;
+}
+
+.theme-doc-sidebar-container {
+  background: var(--workspace-surface);
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  background: var(--workspace-active);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+.doc-section-subtitle {
+  color: var(--ifm-color-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem;
+  padding: 0 var(--ifm-spacing-horizontal);
+}
+
+.theme-doc-markdown {
+  font-size: 1rem;
+}
+
+.theme-doc-markdown h1 {
+  font-size: 2.25rem;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.theme-doc-markdown h2 {
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+  margin-top: 2.5rem;
+}
+
+.theme-doc-markdown h3 {
+  font-size: 1.2rem;
+  letter-spacing: -0.015em;
+}
+
+.theme-doc-toc-desktop {
+  font-size: 0.8125rem;
+}
+
+.theme-code-block {
+  font-size: 0.8125rem;
+}
+
+.workspace-home .theme-doc-sidebar-container,
+.workspace-home .doc-section-subtitle {
+  display: none;
+}
+
+.workspace-home main {
+  max-width: 100%;
+}
+
+.workspace-home main > .container {
+  max-width: 1120px;
+  padding: 2.25rem 2rem 4rem;
+}
+
+.workspace-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem;
+  align-items: center;
+  padding-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.workspace-eyebrow {
+  color: var(--ifm-color-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.workspace-hero h1 {
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  letter-spacing: -0.045em;
+  margin: 0 0 1rem;
+}
+
+.workspace-lead {
+  max-width: 62ch;
+  color: var(--workspace-muted);
+  margin: 0;
+}
+
+.workspace-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workspace-actions .button {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  white-space: normal;
+}
+
+.workspace-actions .button--secondary {
+  border-color: var(--workspace-border);
+  color: var(--ifm-font-color-base);
+}
+
+[data-theme="dark"] .workspace-actions .button--primary {
+  color: #14181e;
+}
+
+.workspace-showcase {
+  border: 1px solid var(--workspace-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.workspace-example-title {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  color: var(--workspace-muted);
+  background: var(--workspace-surface);
+  border-bottom: 1px solid var(--workspace-border);
+}
+
+.workspace-example-title span:first-child {
+  font-family: var(--ifm-font-family-monospace);
+}
+
+/* Only the landing example gets a bounded editor; full examples remain readable. */
+.workspace-showcase > div:last-child {
+  margin-bottom: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.workspace-showcase .theme-code-block,
+.workspace-showcase .circuit-preview-pane {
+  height: 360px;
+  max-height: 360px;
+}
+
+.workspace-next-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.workspace-next-steps > a {
+  border-top: 1px solid var(--workspace-border);
+  padding-top: 1rem;
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.workspace-next-steps strong,
+.workspace-next-steps span {
+  display: block;
+  font-size: 0.875rem;
+}
+
+.workspace-next-steps strong {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.workspace-next-steps span {
+  color: var(--workspace-muted);
+}
+
+.workspace-next-steps a:hover strong {
+  color: var(--ifm-color-primary);
+}
+
+.workspace-home .markdown > p,
+.workspace-home .markdown > ul,
+.workspace-home .markdown > h2,
+.workspace-home .markdown > .ai-start {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 996px) {
+  .workspace-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .workspace-header .navbar {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .workspace-sections {
+    gap: 0;
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+
+  .workspace-section {
+    font-size: 0.8125rem;
+  }
+
+  .workspace-home main > .container {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .workspace-hero {
+    padding-top: 0;
+    gap: 1.25rem;
+  }
+
+  .workspace-next-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-actions {
+    flex-direction: column;
+  }
+
+  .theme-doc-markdown h1 {
+    font-size: 2rem;
+  }
+}
+
+/* Category pages use the same quiet surfaces as the editor workspace. */
+.workspace-docs [class*="generatedIndexPage"] {
+  max-width: 100%;
+  padding: 1.5rem 1rem;
+}
+
+.workspace-docs [class*="generatedIndexPage"] h1 {
+  font-size: 2.25rem;
+  letter-spacing: -0.035em;
+}
+
+.workspace-docs [class*="generatedIndexPage"] .card {
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.workspace-docs button:focus-visible,
+.workspace-header button:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 3px;
+}
