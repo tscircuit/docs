@@ -243,7 +243,7 @@ includes its planar lengths when matching each bus. Layer mismatches or impossib
 planar routes produce errors; adjust the fanouts rather than expecting a layer
 change inside the bus route.
 
-## Route AM3352 to DDR3 with `bus_lanes` {#am3352-bus-lanes}
+## Example: AM3352 to DDR3 with `bus_lanes` {#am3352-bus-lanes}
 
 For a direct package-to-package connection, you can skip boundary fanouts. A
 `bus_lanes` phase adds short local dogbones where an unrouted pad must reach a
@@ -288,15 +288,14 @@ layer, set `pcbAllowedLayers={["inner1"]}` on that bus. `preferredLayers` also
 restricts the allowed set in this routing flow. Keep corresponding fanout exits
 on a common permitted layer if you supply fanouts yourself.
 
-The completed reference has 47/47 connected signals, two local vias per signal,
-and no interconnect vias. It passes core's native DRC, skew, pair-gap, corner,
-and route-detour checks. These are routing-test values, not a complete AM3352
-board or a substitute for its timing and power design.
+Each signal uses two local vias to reach its routing layer, with no vias along
+the interconnect. Choose length and spacing constraints for your board's timing
+budget and stackup; this example focuses on the DDR signal connections.
 
-### Full source and completed routes
+### Complete routing example
 
-The files below are the core regression fixture, including the actual chip
-footprints, ball map, buses, and differential pairs. `routeRemaining={false}`
+The example includes both chip footprints, the AM3352 ball map, buses, and
+differential pairs. `routeRemaining={false}`
 keeps unrelated CPU pins out of this signal-only example.
 
 <CircuitPreview
@@ -320,11 +319,9 @@ signal connections; it does not infer every supply ball or create reference
 planes. Keep AM3352 voltage domains separate: the DDR supply is `VDDS_DDR`, not
 all of the processor's `VDD*` pins.
 
-This **separate power-escape study** connects both packages' VSS pins to `GND`
+This separate power-escape example connects both packages' VSS pins to `GND`
 and their DDR supply pins to `DDR_1V5`, then adds 89 local dogbones with
-`<fanout autorouter="dogbone" />`. The RAM footprint uses its nominal 0.8 mm grid;
-the rounded coordinates in the imported DDR fixture currently fail the dogbone
-router's strict 0/45-degree escape check. The study passes native DRC.
+`<fanout autorouter="dogbone" />`. The RAM footprint uses its nominal 0.8 mm grid.
 
 <CircuitPreview
   fsMap={am3352PowerFiles}
@@ -338,22 +335,10 @@ router's strict 0/45-degree escape check. The study passes native DRC.
 
 These are pad-to-via escapes only. `routeRemaining={false}` deliberately stops
 before joining the power nets, and no copper planes are included. Do not treat
-this study as a powered DDR board or simply overlay its vias on the signal
+this example as a powered DDR board or simply overlay its vias on the signal
 routes. Integrate the power nets and reviewed stackup before routing the final
 board, then rerun clearance and connectivity checks. For plane-terminated
 fanout configuration, see [Allocate layers deliberately](#allocate-layers-deliberately).
-
-### Rendering a dense board
-
-The live preview builds the TSX source and computes its routes. For multiple
-views of the same board, build and validate once, then render its Circuit JSON
-for each layer. The [image-generation API](../web-apis/image-generation-api.mdx)
-accepts precompiled circuit data. Cache that output by source and dependency
-version, and invalidate it when either changes.
-
-Keep the routing budget, grid resolution, matching tolerances, and clearance
-checks intact when optimizing. Faster image rendering is not evidence that a
-shorter or less constrained route search produces the same quality.
 
 ## Verify the complete channel
 
