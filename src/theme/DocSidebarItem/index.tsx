@@ -6,5 +6,9 @@ import type { WrapperProps } from "@docusaurus/types"
 type Props = WrapperProps<typeof DocSidebarItemType>
 
 export default function DocSidebarItemWrapper(props: Props): ReactNode {
-  return <DocSidebarItem {...props} />
+  const item =
+    props.item.type === "category"
+      ? { ...props.item, collapsed: true }
+      : props.item
+  return <DocSidebarItem {...props} item={item} />
 }

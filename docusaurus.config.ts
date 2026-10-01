@@ -52,7 +52,7 @@ const config: Config = {
           breadcrumbs: false,
         },
         theme: {
-          customCss: "./src/css/custom.css",
+          customCss: ["./src/css/custom.css", "./src/css/workspace.css"],
         },
         gtag: {
           trackingID: "G-LC5FBCPK4B",
@@ -152,6 +152,7 @@ const config: Config = {
     docs: {
       sidebar: {
         hideable: true,
+        autoCollapseCategories: true,
       },
     },
     metadata: [
@@ -175,21 +176,21 @@ const config: Config = {
       { property: "og:url", content: "https://docs.tscircuit.com/" },
     ],
     navbar: {
+      title: "Docs",
       logo: {
         alt: "tscircuit logo",
         src: "logo/logo.svg",
       },
       items: [
         {
-          type: "docSidebar",
-          sidebarId: "tutorialSidebar",
+          to: "/intro/quickstart-web",
           position: "left",
           label: "Quickstart",
         },
         { to: "https://blog.tscircuit.com", label: "Blog", position: "left" },
         {
           to: "https://tscircuit.com",
-          label: "Use Online",
+          label: "Open editor",
           position: "left",
         },
 
