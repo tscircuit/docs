@@ -14,6 +14,7 @@ import {
 import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "../TscircuitIframe"
+import PreviewImage from "./preview-image"
 import styles from "./styles.module.css"
 
 type CircuitPreviewView =
@@ -423,15 +424,18 @@ export default function CircuitPreview({
     hasHeader?: boolean
   }) => {
     return (
-      <div
+      <PreviewImage
+        key={src}
+        src={src}
+        alt={alt}
+        hidden={hidden}
         className={tw(
           `relative w-full ${getPreviewContentHeightCss(hasHeader)} ${
             hidden ? "hidden" : ""
           }`,
         )}
-      >
-        <img src={src} alt={alt} className={tw(`${imageClassName} h-full`)} />
-      </div>
+        imageClassName={tw(`${imageClassName} h-full`)}
+      />
     )
   }
 
