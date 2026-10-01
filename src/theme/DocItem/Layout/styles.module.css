@@ -8,7 +8,7 @@
 }
 
 .contentHeader {
-  position: relative;
+  position: static;
   z-index: 10;
 }
 
@@ -16,9 +16,14 @@
   position: absolute;
   top: 0;
   right: 0;
+  margin-top: 0;
 }
 
-.docItemWithButton :global(.markdown) > :global(h1):first-child {
+.docItemWithButton :global(.markdown) > :global(h1):first-child,
+.docItemWithButton
+  :global(.markdown)
+  > :global(header):first-child
+  > :global(h1) {
   padding-right: 180px;
 }
 
@@ -32,7 +37,11 @@
     position: relative;
   }
 
-  .docItemWithButton :global(.markdown) > :global(h1):first-child {
+  .docItemWithButton :global(.markdown) > :global(h1):first-child,
+  .docItemWithButton
+    :global(.markdown)
+    > :global(header):first-child
+    > :global(h1) {
     padding-right: 0;
     margin-bottom: 0.75rem;
   }
