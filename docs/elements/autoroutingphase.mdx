@@ -394,23 +394,31 @@ export default () => (
 Six pads spread across multiple rows and interior columns on each 36-pin BGA
 form the bus; the other 30 pads on each chip remain unconnected. Routes weave
 between unused pads and add meanders to match lengths within 0.05 mm. All stay
-on the top layer: `bus_lanes` does not automatically add dogbones or vias.
+on the top layer because their pads can route directly. With the integrated
+bus-lanes pipeline, unrouted component pads receive local dogbones when needed
+to reach a permitted signal layer. The interconnect itself never adds vias.
 The `<bus />` props supply the width and length-skew tolerance. The object form
 `autorouter={{ preset: "bus_lanes" }}` is also supported.
 
-For controller-to-RAM routing, first create two non-overlapping fanouts with
-space between their exits. Corresponding exits must share a routing layer, and
+For controller-to-RAM routing, either start at the package pads or supply two
+non-overlapping fanouts with space between their exits. Corresponding exits must share a routing layer, and
 their winding order must permit a crossing-free connection. The bus-lanes phase
 preserves the exact fanout copper and routes the gaps between exits. Later global
 routing receives the completed bus traces as fixed copper; unassigned connections
 route afterward.
 
-The router adds no vias. Incompatible exit layers or an unsatisfiable planar
-route produce a routing error, with no fallback to a multilayer router. Fix the
+Local dogbones are automatic only for unrouted component-pad endpoints that
+need to reach the signal layer. Existing fanout exits are used directly and are
+never dogboned again. Incompatible exit layers or an unsatisfiable planar route
+produce a routing error, with no fallback to a multilayer router. Fix the
 fanout layers, winding order, placement, or available routing space before retrying.
 
 Length matching includes the planar lengths of prior fanout traces and the new
-bus routes. Via depth and package delay are not included. Coupled differential-pair
-constraints are not currently supported by this solver. Check final connectivity,
-clearances, and end-to-end skew; a successful solve is not complete DDR timing
-verification.
+bus routes. Via depth and package delay are not included. Declare coupled pairs
+with `<differentialpair />`, using `maxLengthSkew` and `pcbTraceGap` for pair
+constraints. Check final connectivity, clearances, and end-to-end skew; a
+successful solve is not complete DDR timing verification.
+
+See [AM3352-to-DDR3 routing](../guides/routing-ddr.mdx#am3352-bus-lanes)
+for the complete TSX, routed layer previews, power escapes, and required core
+integration. Hosted evaluators may not yet include these integrated features.
