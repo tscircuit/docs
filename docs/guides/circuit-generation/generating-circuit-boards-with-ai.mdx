@@ -4,8 +4,6 @@ sidebar_position: 1
 description: Learn how to write effective prompts for AI-assisted circuit design with tscircuit
 ---
 
-import CircuitPreview from "@site/src/components/CircuitPreview"
-
 AI assistants are most useful when a circuit prompt describes the product, the important interfaces, the physical constraints, and how the result should be checked. The examples below are based on real tscircuit design prompts. They are intentionally direct: the goal is to give the AI enough engineering context to make useful decisions without prescribing every implementation detail.
 
 <video
@@ -23,26 +21,6 @@ AI assistants are most useful when a circuit prompt describes the product, the i
     Watch the tscircuit AI usage video on GitHub.
   </a>
 </video>
-
-## Start from a form factor
-
-Before asking an AI assistant to place parts, decide whether the board needs to fit an existing standard. Common starting points include Arduino shields, Raspberry Pi HATs, MicroMod modules, or a custom outline with mounting holes. A reusable form factor gives the AI a mechanical boundary and lets the prompt focus on the circuit.
-
-For example, an Arduino shield can provide the board outline and headers while the prompt describes the new function:
-
-<CircuitPreview defaultView="pcb" code={`
-import { ArduinoShield } from "@tscircuit/common"
-
-export default () => (
-  <ArduinoShield name="example">
-    <resistor name="R1" resistance="220ohm" footprint="0805" pcbX={0} pcbY={5} />
-    <led name="LED1" color="red" footprint="0603" pcbX={0} pcbY={-5} />
-    <trace from=".D13" to="R1.pin1" />
-    <trace from="R1.pin2" to="LED1.pin1" />
-    <trace from="LED1.pin2" to=".GND2" />
-  </ArduinoShield>
-)
-`} />
 
 ## Start with the tscircuit skill
 
