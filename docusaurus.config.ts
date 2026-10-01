@@ -181,12 +181,6 @@ const config: Config = {
         src: "logo/ts.svg",
       },
       items: [
-        {
-          type: "docSidebar",
-          sidebarId: "tutorialSidebar",
-          position: "left",
-          label: "Quickstart",
-        },
         { to: "https://blog.tscircuit.com", label: "Blog", position: "left" },
         { type: "search", position: "right", className: "header-search" },
         {

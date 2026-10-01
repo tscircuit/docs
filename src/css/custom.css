@@ -12,7 +12,7 @@
   --ifm-heading-font-family: var(--ifm-font-family-base);
   --ifm-heading-font-weight: 600;
   --ifm-line-height-base: 1.75;
-  --ifm-navbar-height: 4.5rem;
+  --ifm-navbar-height: 7rem;
   --ifm-navbar-shadow: none;
   --ifm-color-primary: #1877f2;
   --ifm-color-primary-dark: #166bda;
@@ -451,7 +451,21 @@ figure img {
 /* A quiet header with a readable wordmark and a distinct editor action. */
 .navbar {
   border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  flex-direction: column;
   padding: 0 2rem;
+}
+
+.navbar__inner,
+.navbar-sidebar__brand {
+  height: 4.5rem;
+}
+
+.navbar__inner {
+  flex-shrink: 0;
+}
+
+.navbar-sidebar__items {
+  height: calc(100% - 4.5rem);
 }
 
 .navbar__logo {
@@ -563,17 +577,6 @@ figure img {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-  }
-
-  .navbar__items:not(.navbar__items--right) .navbar__link {
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    border-bottom: 2px solid transparent;
-  }
-
-  .navbar__items:not(.navbar__items--right) .navbar__link--active {
-    border-bottom-color: var(--ifm-color-primary);
   }
 }
 
