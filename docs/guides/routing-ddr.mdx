@@ -303,24 +303,15 @@ keeps unrelated CPU pins out of this signal-only example.
   fsMap={am3352Files}
   entrypoint="index.tsx"
   mainComponentPath="index.tsx"
-  pcbPreviewUrl="/img/am3352-bus-lanes/inner1.svg"
   defaultView="pcb"
   verticalStack
   hideSchematicTab
   hide3DTab
 />
 
-The rendered layers below were generated from the complete solve; they are
-preview artifacts, never inputs to the algorithm.
-
-| inner1 | inner2 | bottom |
-| --- | --- | --- |
-| ![Completed AM3352 DDR3 routes on inner1](/img/am3352-bus-lanes/inner1.svg) | ![Completed AM3352 DDR3 routes on inner2](/img/am3352-bus-lanes/inner2.svg) | ![Completed AM3352 DDR3 routes on bottom](/img/am3352-bus-lanes/bottom.svg) |
-
-Integrated dogbones require the core integration in
-[core #4232](https://github.com/tscircuit/core/pull/4232). The portability fix uses
-bus-lanes-solver 0.0.3 or later. The hosted evaluator may lag these APIs; use a
-core build containing that integration to reproduce the full example locally.
+The live PCB preview sends these TSX files to `svg.tscircuit.com`, which computes
+the dogbones and bus routes. This example requires `@tscircuit/core` 0.0.2030 or
+later. It uses no custom algorithm or saved route geometry.
 
 ### VCC and GND dogbones
 
@@ -339,7 +330,6 @@ router's strict 0/45-degree escape check. The study passes native DRC.
   fsMap={am3352PowerFiles}
   entrypoint="index.tsx"
   mainComponentPath="index.tsx"
-  pcbPreviewUrl="/img/am3352-bus-lanes/power.svg"
   verticalStack
   defaultView="pcb"
   hideSchematicTab
@@ -355,9 +345,9 @@ fanout configuration, see [Allocate layers deliberately](#allocate-layers-delibe
 
 ### Rendering a dense board
 
-Solving this reference takes minutes, so avoid solving it again for every image
-or every layer. Build and validate the circuit once, then render its Circuit
-JSON for each view. The [image-generation API](../web-apis/image-generation-api.mdx)
+The live preview builds the TSX source and computes its routes. For multiple
+views of the same board, build and validate once, then render its Circuit JSON
+for each layer. The [image-generation API](../web-apis/image-generation-api.mdx)
 accepts precompiled circuit data. Cache that output by source and dependency
 version, and invalidate it when either changes.
 
