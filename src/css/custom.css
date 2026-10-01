@@ -449,6 +449,43 @@ figure img {
   font-size: 14px;
 }
 
+/* Keep search quiet at rest, with a clear keyboard-focus treatment. */
+.navbar .DocSearch-Button {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.625rem;
+  color: var(--ifm-color-emphasis-700);
+  box-shadow: none;
+}
+
+.navbar .DocSearch-Button:hover {
+  background: var(--ifm-menu-color-background-hover);
+  border-color: var(--ifm-color-emphasis-500);
+  color: var(--ifm-font-color-base);
+  box-shadow: none;
+}
+
+.navbar .DocSearch-Button:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.navbar .DocSearch-Button-Key {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  box-shadow: none;
+  top: 0;
+}
+
+@media (min-width: 997px) {
+  .navbar .DocSearch-Button {
+    min-width: 13rem;
+    justify-content: space-between;
+    padding: 0 0.75rem;
+  }
+}
+
 /* Reduce navbar toggle button SVG size */
 .navbar__toggle svg {
   width: 20px !important;
@@ -668,8 +705,51 @@ figure img {
   padding-bottom: 1px;
 }
 
+.theme-doc-sidebar-menu {
+  --ifm-menu-color: #525866;
+  --ifm-menu-color-active: #1764c0;
+  --ifm-menu-color-background-active: #edf4ff;
+  --ifm-menu-color-background-hover: #f6f7f9;
+}
+
+[data-theme="dark"] .theme-doc-sidebar-menu {
+  --ifm-menu-color: #b6bfcd;
+  --ifm-menu-color-active: #9cc2ff;
+  --ifm-menu-color-background-active: #23334d;
+  --ifm-menu-color-background-hover: #25282e;
+}
+
+.theme-doc-sidebar-menu .menu__link {
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.theme-doc-sidebar-menu .menu__list-item .menu__link {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.theme-doc-sidebar-menu .menu__link,
+.theme-doc-sidebar-menu .menu__list-item-collapsible {
+  border-radius: 0.5rem;
+}
+
+.theme-doc-sidebar-menu .menu__link--active {
+  font-weight: 600;
+}
+
+.theme-doc-sidebar-menu .menu__link:focus-visible,
+.theme-doc-sidebar-menu .menu__caret:focus-visible {
+  outline: 2px solid var(--ifm-menu-color-active);
+  outline-offset: -2px;
+}
+
 /* Add spacing only between top-level category sections */
 .theme-doc-sidebar-item-category-level-1 {
+  margin-top: 1.5rem !important;
+}
+
+.theme-doc-sidebar-item-category-level-1:first-child {
   margin-top: 1rem !important;
 }
 
