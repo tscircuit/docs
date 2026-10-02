@@ -6,12 +6,6 @@ import styles from "./styles.module.css"
 
 const sections = [
   { label: "Intro", directory: "intro", category: "intro" },
-  { label: "Tutorials", directory: "tutorials", category: "tutorials" },
-  {
-    label: "Electronics",
-    directory: "building-electronics",
-    category: "building-electronics",
-  },
   { label: "Guides", directory: "guides", category: "guides" },
   { label: "Elements", directory: "elements", category: "built-in-elements" },
   {

@@ -47,6 +47,11 @@ const config: Config = {
             ],
           ],
           sidebarPath: "./sidebars.ts",
+          sidebarItemsGenerator: ({ defaultSidebarItemsGenerator, ...args }) =>
+            defaultSidebarItemsGenerator({
+              ...args,
+              docs: args.docs.filter((doc) => !doc.frontMatter.unlisted),
+            }),
           routeBasePath: "/", // Serve docs at root
           editUrl: "https://github.com/tscircuit/docs/tree/main/",
           breadcrumbs: false,
@@ -75,6 +80,18 @@ const config: Config = {
       "@docusaurus/plugin-client-redirects",
       {
         redirects: [
+          {
+            to: "/guides/ordering-prototypes",
+            from: "/building-electronics/ordering-prototypes",
+          },
+          {
+            to: "/category/guides",
+            from: "/category/building-electronics",
+          },
+          {
+            to: "/category/intro",
+            from: ["/category/tutorials", "/category/raspberry-pi-hats"],
+          },
           {
             to: "/elements/copperpour",
             from: "/elements/groundplane",
