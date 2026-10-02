@@ -47,11 +47,30 @@ const config: Config = {
             ],
           ],
           sidebarPath: "./sidebars.ts",
-          sidebarItemsGenerator: ({ defaultSidebarItemsGenerator, ...args }) =>
-            defaultSidebarItemsGenerator({
+          sidebarItemsGenerator: async ({
+            defaultSidebarItemsGenerator,
+            ...args
+          }) => {
+            const items = await defaultSidebarItemsGenerator({
               ...args,
               docs: args.docs.filter((doc) => !doc.frontMatter.unlisted),
-            }),
+            })
+            return items.map((item) =>
+              item.type === "category" && item.label === "Intro"
+                ? {
+                    ...item,
+                    items: [
+                      ...item.items,
+                      {
+                        type: "link",
+                        label: "Quickstart AI",
+                        href: "/guides/circuit-generation/generating-circuit-boards-with-ai",
+                      },
+                    ],
+                  }
+                : item,
+            )
+          },
           routeBasePath: "/", // Serve docs at root
           editUrl: "https://github.com/tscircuit/docs/tree/main/",
           breadcrumbs: false,
