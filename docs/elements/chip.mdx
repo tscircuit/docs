@@ -750,10 +750,8 @@ export const A555Timer = (props: ChipProps<typeof pinLabels>) => (
 )
 ```
 
-:::warning
-Make sure to have `as const` when you're defining your `pinLabels`, if you're
-missing this the types won't work!
-:::
+`as const` preserves the literal pin labels so `ChipProps<typeof pinLabels>` can
+use them for type checking.
 
 You can also use the `sel` object to access the pins of a chip for traces!
 
