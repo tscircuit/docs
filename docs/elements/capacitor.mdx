@@ -12,7 +12,7 @@ description: >-
 
 A `<capacitor />` stores electrical energy in an electric field. Capacitors are commonly used for filtering, energy storage, and timing circuits. Unlike resistors, capacitors can be polarized (like electrolytic capacitors) or non-polarized (like ceramic capacitors).
 
-A capacitor element has two pins. Polarized capacitors must be placed with correct orientation to avoid damage.
+A capacitor element has two pins.
 
 When specifying a capacitor, you'll need to provide a footprint string (like `0402` or `0805`) and capacitance value. Popular capacitor types and sizes can be found at [jlcsearch](https://jlcsearch.tscircuit.com/capacitors/list).
 
@@ -42,12 +42,8 @@ A capacitor has the following pins and aliases:
 
 | Pin # | Aliases (Polarized) | Description |
 | ---------- | ------- | ----------- |
-| pin1 | pos, anode, left | The positive terminal (required for polarized capacitors) |
-| pin2 | neg, cathode, right | The negative terminal (must be connected properly for polarized caps) |
-
-:::warning
-For polarized capacitors, you must connect the positive and negative pins correctly. Reversing polarity can cause capacitor failure or even explosion!
-:::
+| pin1 | pos, anode, left | The positive terminal |
+| pin2 | neg, cathode, right | The negative terminal |
 
 ## Specifications
 
