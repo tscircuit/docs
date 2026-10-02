@@ -47,6 +47,11 @@ const config: Config = {
             ],
           ],
           sidebarPath: "./sidebars.ts",
+          sidebarItemsGenerator: ({ defaultSidebarItemsGenerator, ...args }) =>
+            defaultSidebarItemsGenerator({
+              ...args,
+              docs: args.docs.filter((doc) => !doc.frontMatter.unlisted),
+            }),
           routeBasePath: "/", // Serve docs at root
           editUrl: "https://github.com/tscircuit/docs/tree/main/",
           breadcrumbs: false,
@@ -75,6 +80,18 @@ const config: Config = {
       "@docusaurus/plugin-client-redirects",
       {
         redirects: [
+          {
+            to: "/guides/ordering-prototypes",
+            from: "/building-electronics/ordering-prototypes",
+          },
+          {
+            to: "/category/guides",
+            from: "/category/building-electronics",
+          },
+          {
+            to: "/category/intro",
+            from: ["/category/tutorials", "/category/raspberry-pi-hats"],
+          },
           {
             to: "/elements/copperpour",
             from: "/elements/groundplane",
@@ -175,24 +192,14 @@ const config: Config = {
       { property: "og:url", content: "https://docs.tscircuit.com/" },
     ],
     navbar: {
+      title: "tscircuit",
       logo: {
         alt: "tscircuit logo",
-        src: "logo/logo.svg",
+        src: "logo/ts.svg",
       },
       items: [
-        {
-          type: "docSidebar",
-          sidebarId: "tutorialSidebar",
-          position: "left",
-          label: "Quickstart",
-        },
         { to: "https://blog.tscircuit.com", label: "Blog", position: "left" },
-        {
-          to: "https://tscircuit.com",
-          label: "Use Online",
-          position: "left",
-        },
-
+        { type: "search", position: "right", className: "header-search" },
         {
           href: "https://discord.com/invite/V7FGE5ZCbA",
           position: "right",
@@ -204,6 +211,12 @@ const config: Config = {
           position: "right",
           className: "header-github-link header-icon-link",
           html: '<img src="/img/github.svg" alt="GitHub" style="height: 18px; width: 18px; margin-bottom: -4px; margin-right: 6px;" class="github-icon" />',
+        },
+        {
+          to: "https://tscircuit.com",
+          label: "Use Online",
+          position: "right",
+          className: "header-editor-link",
         },
       ],
     },

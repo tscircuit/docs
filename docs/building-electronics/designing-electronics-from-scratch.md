@@ -1,4 +1,5 @@
 ---
+unlisted: true
 title: Designing Electronics from Scratch
 sidebar_position: 2
 description: A comprehensive guide to electronics design workflow - from requirements analysis through system diagramming, schematic capture, PCB layout, to final manufacturing
@@ -86,4 +87,4 @@ Sometimes you'll want to assemble the PCB yourself (or sometimes just a single
 component that your manufacturer doesn't have!). In this case, you'll need a
 lab setup to facilitate soldering.
 
-Check out our guide on [Ordering Prototypes](./ordering-prototypes.mdx) to learn more.
+Check out our guide on [Ordering Prototypes](../guides/ordering-prototypes.mdx) to learn more.

@@ -4,12 +4,16 @@
  * work well for content-centric websites.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-font-family-base: "Google Sans", system-ui, -apple-system, sans-serif;
-  --ifm-heading-font-family: "Google Sans", system-ui, -apple-system, sans-serif;
+  --ifm-font-family-base: "Inter", system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: var(--ifm-font-family-base);
+  --ifm-heading-font-weight: 600;
+  --ifm-line-height-base: 1.75;
+  --ifm-navbar-height: 7rem;
+  --ifm-navbar-shadow: none;
   --ifm-color-primary: #1877f2;
   --ifm-color-primary-dark: #166bda;
   --ifm-color-primary-darker: #1564ce;
@@ -440,13 +444,140 @@ figure img {
 
 @media (max-width: 996px) {
   :root {
-    --ifm-navbar-sidebar-width: 23.125rem;
+    --ifm-navbar-sidebar-width: min(23.125rem, 100vw);
   }
 }
 
-/* Make top navbar links smaller */
+/* A quiet header with a readable wordmark and a distinct editor action. */
+.navbar {
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  flex-direction: column;
+  padding: 0 2rem;
+}
+
+.navbar__inner,
+.navbar-sidebar__brand {
+  height: 4.5rem;
+}
+
+.navbar__inner {
+  flex-shrink: 0;
+}
+
+.navbar-sidebar__items {
+  height: calc(100% - 4.5rem);
+}
+
+.navbar__logo {
+  height: 1.875rem;
+  margin-right: 0.625rem;
+}
+
+.navbar__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
 .navbar__link {
   font-size: 14px;
+  font-weight: 500;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: var(--ifm-font-color-base);
+}
+
+.navbar__link.header-editor-link {
+  background: var(--ifm-font-color-base);
+  color: var(--ifm-background-surface-color);
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  line-height: 1.5;
+}
+
+.navbar__link.header-editor-link:hover {
+  opacity: 0.85;
+}
+
+.navbar__link:focus-visible,
+.navbar__brand:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 4px;
+}
+
+@media (max-width: 996px) {
+  .navbar {
+    padding-inline: 1rem;
+  }
+
+  .navbar__items--right .navbar__item.header-editor-link {
+    display: none !important;
+  }
+}
+
+/* Keep search quiet at rest, with a clear keyboard-focus treatment. */
+.navbar .DocSearch-Button {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.625rem;
+  color: var(--ifm-color-emphasis-700);
+  box-shadow: none;
+  height: 2.5rem;
+  font-family: inherit;
+  font-weight: 400;
+}
+
+.navbar .DocSearch-Search-Icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.navbar .DocSearch-Button-Placeholder {
+  font-size: 0.875rem;
+  padding-left: 0.5rem;
+}
+
+.navbar .DocSearch-Button:hover {
+  background: var(--ifm-menu-color-background-hover);
+  border-color: var(--ifm-color-emphasis-500);
+  color: var(--ifm-font-color-base);
+  box-shadow: none;
+}
+
+.navbar .DocSearch-Button:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.navbar .DocSearch-Button-Key {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  box-shadow: none;
+  top: 0;
+}
+
+@media (min-width: 997px) {
+  .navbar__inner {
+    position: relative;
+  }
+
+  .navbar .DocSearch-Button {
+    width: clamp(14rem, 23vw, 22rem);
+    justify-content: space-between;
+    padding: 0 0.75rem;
+  }
+
+  .navbar__items--right > .header-search {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* Reduce navbar toggle button SVG size */
@@ -468,7 +599,7 @@ figure img {
 }
 
 .navbar__brand {
-  margin-right: 0rem !important;
+  margin-right: 1.5rem;
 }
 
 .navbar__items--right {
@@ -771,10 +902,10 @@ body {
 }
 
 .doc-section-subtitle {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ifm-color-primary-light);
-  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.75rem;
   margin-top: 1.8rem;
   line-height: 1.2;
   text-align: left;
@@ -800,16 +931,16 @@ body {
 
 article header h1 {
   text-align: left !important;
-  font-size: 1.9rem !important;
+  font-size: clamp(1.875rem, 3vw, 2.25rem) !important;
   font-weight: 600 !important;
-  text-shadow: 0 0 0.1px currentColor;
-  letter-spacing: -0.025em;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
   margin-bottom: 0.6rem !important;
 }
 
 article h2 {
   font-size: 1.5rem !important;
-  font-weight: 630 !important;
+  font-weight: 600 !important;
   letter-spacing: -0.025em;
   margin-bottom: 0.8rem !important;
 }
@@ -817,7 +948,6 @@ article h2 {
 article h3 {
   font-size: 1.25rem !important;
   font-weight: 600 !important;
-  text-shadow: 0 0 0.1px currentColor;
   letter-spacing: -0.025em;
 }
 
@@ -828,7 +958,10 @@ article h4 {
 }
 
 .markdown > p:first-of-type {
-  margin-top: 2rem !important;
+  margin-top: 1.25rem !important;
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--ifm-color-emphasis-800);
 }
 
 .skeleton-container {
@@ -972,10 +1105,10 @@ article h4 {
 }
 
 [class*="generatedIndexPage"] header h1 {
-  font-size: 1.9rem !important;
+  font-size: clamp(1.875rem, 3vw, 2.25rem) !important;
   font-weight: 600 !important;
-  text-shadow: 0 0 0.1px currentColor;
-  letter-spacing: -0.025em;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
 }
 
 [class*="generatedIndexPage"] article,
