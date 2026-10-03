@@ -7,7 +7,6 @@ description: >-
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import crosshatchPreview from "@site/src/data/crosshatch-preview.json"
 
 ## Overview
 
@@ -57,7 +56,7 @@ Set `crosshatch` to fill the pour with a 45-degree copper mesh. Omitting it or
 setting `crosshatch={false}` keeps the fill solid. Crosshatching works with
 `useThermalReliefs` and the usual pour clearances.
 
-<CircuitPreview defaultView="pcb" hideSchematicTab circuitJson={crosshatchPreview} code={`
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
   export default () => (
     <board width="8mm" height="6mm">
       <net name="GND" />
@@ -70,13 +69,40 @@ setting `crosshatch={false}` keeps the fill solid. Crosshatching works with
   )
 `} />
 
-The mesh uses a **1mm pitch** and **0.25mm copper width**, with square openings
+By default, the mesh uses a **1mm pitch** and **0.25mm copper width**, with square openings
 rotated 45 degrees. At the pour boundary, openings are clipped to leave a
 0.25mm solid copper rim inside the normal clearance. Tiny opening fragments
 are discarded. Copper around connections and obstacle clearances stays solid
 to preserve pads, traces, and thermal spokes.
 
-Hatch pitch and copper width are currently fixed; there are no size props.
+### Customize the Hatch Size
+
+Use `crosshatchPitch` for the repeat spacing perpendicular to the copper strips
+and `crosshatchWidth` for their thickness. Numbers are millimetres; strings can
+include units. The square opening's side length is the pitch minus the width.
+This example uses a coarser 2mm pitch with 0.4mm copper strips:
+
+<CircuitPreview defaultView="pcb" hideSchematicTab code={`
+  export default () => (
+    <board width="8mm" height="6mm">
+      <net name="GND" />
+      <copperpour
+        connectsTo="net.GND"
+        layer="top"
+        crosshatch
+        crosshatchPitch="2mm"
+        crosshatchWidth="0.4mm"
+      />
+    </board>
+  )
+`} />
+
+Both dimensions must be finite and positive, and the width must be smaller than
+the pitch. Setting dimensions alone does not enable crosshatching. The solid
+boundary rim and additional protection around connections follow the copper
+width. Clipped fragments must have at least `crosshatchWidth²` area and survive
+an inward offset of half that width; very small openings remain solid.
+
 `outline` changes the pour's boundary, and margin props change its clearances,
 without changing the mesh spacing.
 
@@ -86,7 +112,9 @@ without changing the mesh spacing.
 | -------- | ----------- | ------- |
 | `connectsTo` | Net that the pour is tied to. Often `net.GND` or `net.VCC`. | `"net.GND"` |
 | `layer` | PCB layer for the pour (`"top"`, `"bottom"`, or an inner layer name). | `"top"` |
-| `crosshatch` | Fill with a 45-degree mesh instead of solid copper. Uses 1mm pitch and 0.25mm copper width. Defaults to `false`. | `true` |
+| `crosshatch` | Fill with a 45-degree mesh instead of solid copper. Defaults to `false`. | `true` |
+| `crosshatchPitch` | Repeat spacing perpendicular to the hatch strips. Positive distance; defaults to `"1mm"`. Requires `crosshatch` to affect the pour. | `"2mm"` |
+| `crosshatchWidth` | Copper strip and solid rim width. Positive distance smaller than the pitch; defaults to `"0.25mm"`. | `"0.4mm"` |
 | `clearance` | Default minimum distance between the pour and other features (e.g. pads, traces, board edge). This is used as a fallback for specific margin properties. Defaults to `0.2mm`. | `"0.3mm"` |
 | `padMargin` | Minimum distance from component pads. Overrides `clearance`. | `"0.4mm"` |
 | `traceMargin` | Minimum distance from traces on other nets. Overrides `clearance`. | `"0.1mm"` |
