@@ -48,6 +48,8 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `outlineOffsetX`, `outlineOffsetY` | `string \| number` | Offset a custom outline relative to the bounding box origin. |
 | `material` | `'fr4' \| 'fr1' \| 'flex'` | PCB substrate material. Defaults to `'fr4'`. |
 | `thickness` | `string \| number` | Board thickness in millimeters. |
+| `mountedTo` | `string` | Mount to a named motor face, such as `"NEMA17.backface"`. See [`assembly.motor`](./assembly-motor.mdx). |
+| `mountGap` | `string \| number` | Clearance from the motor backface to the nearest PCB surface, in millimeters. Defaults to zero when `mountedTo` is set. |
 | `title` | `string` | Title for the board, displayed in documentation and exports. |
 | `solderMaskColor` | `string` | Color applied to both top and bottom solder masks. |
 | `topSolderMaskColor` | `string` | Color of the top solder mask. |

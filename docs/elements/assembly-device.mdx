@@ -35,7 +35,7 @@ export default () => (
 | `name` | Optional device name. |
 | `model` | Modelprinter string or HTTP(S) model URL. |
 | `modelUrl` | Imported CAD model URL. Use either `model` or `modelUrl`. |
-| `children` | Boards, subassemblies, and screens. |
+| `children` | Boards, motors, subassemblies, and screens. |
 
 ## Modelprinter strings
 
@@ -59,4 +59,4 @@ export default () => (
 
 Assembly models add 3D geometry without creating PCB footprints or electrical connections. For imported models, see [`cadmodel`](./cadmodel.mdx) for supported formats.
 
-Use [`assembly.subassembly`](./assembly-subassembly.mdx) to group mechanical parts, or [`assembly.screen`](./assembly-screen.mdx) to attach a display to a connector. See [Mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx) for screws aligned with board holes.
+Use [`assembly.motor`](./assembly-motor.mdx) to add a NEMA motor and mount a controller to its backface, [`assembly.subassembly`](./assembly-subassembly.mdx) to group mechanical parts, or [`assembly.screen`](./assembly-screen.mdx) to attach a display to a connector. See [Mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx) for screws aligned with board holes.
