@@ -7,6 +7,7 @@ description: >-
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import crosshatchPreview from "@site/src/data/crosshatch-preview.json"
 
 ## Overview
 
@@ -50,12 +51,42 @@ Thermal reliefs currently use four `0.3mm` spokes. Unconnected plated holes and
 plated holes on other nets continue to receive the normal clearance from the
 pour.
 
+## Crosshatched Copper Pours
+
+Set `crosshatch` to fill the pour with a 45-degree copper mesh. Omitting it or
+setting `crosshatch={false}` keeps the fill solid. Crosshatching works with
+`useThermalReliefs` and the usual pour clearances.
+
+<CircuitPreview defaultView="pcb" hideSchematicTab circuitJson={crosshatchPreview} code={`
+  export default () => (
+    <board width="8mm" height="6mm">
+      <net name="GND" />
+      <copperpour
+        connectsTo="net.GND"
+        layer="top"
+        crosshatch
+      />
+    </board>
+  )
+`} />
+
+The mesh uses a **1mm pitch** and **0.25mm copper width**, with square openings
+rotated 45 degrees. At the pour boundary, openings are clipped to leave a
+0.25mm solid copper rim inside the normal clearance. Tiny opening fragments
+are discarded. Copper around connections and obstacle clearances stays solid
+to preserve pads, traces, and thermal spokes.
+
+Hatch pitch and copper width are currently fixed; there are no size props.
+`outline` changes the pour's boundary, and margin props change its clearances,
+without changing the mesh spacing.
+
 ## Copper Pour Properties
 
 | Property | Description | Example |
 | -------- | ----------- | ------- |
 | `connectsTo` | Net that the pour is tied to. Often `net.GND` or `net.VCC`. | `"net.GND"` |
 | `layer` | PCB layer for the pour (`"top"`, `"bottom"`, or an inner layer name). | `"top"` |
+| `crosshatch` | Fill with a 45-degree mesh instead of solid copper. Uses 1mm pitch and 0.25mm copper width. Defaults to `false`. | `true` |
 | `clearance` | Default minimum distance between the pour and other features (e.g. pads, traces, board edge). This is used as a fallback for specific margin properties. Defaults to `0.2mm`. | `"0.3mm"` |
 | `padMargin` | Minimum distance from component pads. Overrides `clearance`. | `"0.4mm"` |
 | `traceMargin` | Minimum distance from traces on other nets. Overrides `clearance`. | `"0.1mm"` |
