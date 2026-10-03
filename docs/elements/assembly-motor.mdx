@@ -1,12 +1,12 @@
 ---
 title: <assembly.motor />
-description: Add a NEMA stepper motor to an assembly and mount a PCB to its backface.
+description: Represent a motor in an assembly and mount a PCB to its backface.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-motor-1.json"
 
-`assembly.motor` adds a NEMA stepper motor to an [`assembly.device`](./assembly-device.mdx). Choose a standard frame or customize the body and shaft with a modelprinter string. The motor has no PCB footprint or schematic symbol.
+`assembly.motor` represents a motor in an [`assembly.device`](./assembly-device.mdx). `standard` selects a built-in NEMA model; `model` supplies your own model specification. The examples below use a NEMA17 motor. The motor has no PCB footprint or schematic symbol.
 
 ![TSX examples on the left and 3D renders on the right comparing a NEMA17 above and below a PCB, with 6 mm clearance from the motor backface to the nearest PCB surface.](/img/elements/assembly-motor-board-mounting-annotated.snap.png)
 
@@ -63,13 +63,19 @@ Mounting keeps the board's PCB layout in the XY plane at Z = 0. The motor follow
 |----------|------|-------------|
 | `name` | `string` | Required motor name, used by board mount references. |
 | `displayName` | `string` | Optional display label. |
-| `standard` | `"nema8" \| "nema17" \| "nema23"` | Standard modelprinter motor dimensions. Use either `standard` or `model`. |
-| `model` | `string` | NEMA modelprinter string for custom dimensions. |
+| `standard` | `"nema8" \| "nema17" \| "nema23"` | Optional shortcut to a built-in motor model. Use either `standard` or `model`. |
+| `model` | `string` | Custom modelprinter specification. The current motor renderer accepts NEMA specifications. |
 | `shaftFacingDirection` | `"x+" \| "x-" \| "y+" \| "y-" \| "z+" \| "z-"` | Optional shaft direction; defaults to `"z+"`. |
 
-Supply exactly one of `standard` or `model`. The standard selects representative dimensions; choose a custom `model` when your motor has a different body or shaft length.
+Supply exactly one of `standard` or `model`. A built-in standard selects representative dimensions; choose a custom `model` when your motor has a different body or shaft length.
 
-## Customize the body and shaft
+:::note Current custom CAD support
+
+The current `assembly.motor` implementation accepts NEMA modelprinter specifications and does not yet accept imported model URLs or `cadModel`. For an arbitrary motor CAD file, use [`assembly.subassembly`](./assembly-subassembly.mdx) with `model`, `modelUrl`, or `cadModel`. Board-to-motor backface mounting requires `assembly.motor`.
+
+:::
+
+## Customize a NEMA model
 
 Use `model` to specify dimensions without generating or supplying a model URL:
 
