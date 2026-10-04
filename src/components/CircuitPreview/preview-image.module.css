@@ -1,0 +1,97 @@
+.preview {
+  min-height: 320px;
+}
+
+.image {
+  transition: opacity 200ms ease;
+}
+
+.placeholder {
+  --preview-text: #334155;
+  --preview-muted: #64748b;
+  --preview-accent: #3b82f6;
+  --preview-border: rgba(100, 116, 139, 0.16);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background-color: #f8fafc;
+  background-image: linear-gradient(
+      rgba(100, 116, 139, 0.05) 1px,
+      transparent 1px
+    ), linear-gradient(90deg, rgba(100, 116, 139, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--preview-text);
+  text-align: center;
+}
+
+:global([data-theme="dark"]) .placeholder,
+:global(.circuit-preview-pane-pcb) .placeholder {
+  --preview-text: #e2e8f0;
+  --preview-muted: #94a3b8;
+  --preview-accent: #60a5fa;
+  --preview-border: rgba(148, 163, 184, 0.2);
+  background-color: #0f172a;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--preview-border);
+  border-top-color: var(--preview-accent);
+  border-radius: 50%;
+  animation: preview-spin 900ms linear infinite;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.description {
+  margin-top: 4px;
+  color: var(--preview-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.retry {
+  padding: 6px 12px;
+  border: 1px solid var(--preview-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--preview-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.retry:hover,
+.retry:focus-visible {
+  border-color: var(--preview-accent);
+}
+
+@keyframes preview-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+
+  .image {
+    transition: none;
+  }
+}
