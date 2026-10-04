@@ -129,6 +129,7 @@ const getPreferredFsMapSource = (
 export default function CircuitPreview({
   code,
   circuitJson,
+  threeDImageUrl,
   showTabs = true,
   defaultView = "pcb",
   splitView = true,
@@ -156,6 +157,7 @@ export default function CircuitPreview({
   code?: string
   /** Precompiled preview data for APIs newer than the hosted evaluator. */
   circuitJson?: Record<string, unknown>[]
+  threeDImageUrl?: string
   showTabs?: boolean
   defaultView?: CircuitPreviewView
   splitView?: boolean
@@ -310,6 +312,7 @@ export default function CircuitPreview({
     [fsMapOrCode, mainComponentPath, circuitJson],
   )
   const threeDUrl = useMemo(() => {
+    if (threeDImageUrl) return threeDImageUrl
     if (circuitJson) {
       return configurePreviewUrl(
         "https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff",
@@ -363,6 +366,7 @@ export default function CircuitPreview({
     normalizedFsMap,
     fsMapOrCode,
     browser3dView,
+    threeDImageUrl,
     mainComponentPath,
     projectBaseUrl,
   ])

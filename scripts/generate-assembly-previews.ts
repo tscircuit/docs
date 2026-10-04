@@ -12,6 +12,7 @@ import {
   writeFile,
 } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
+import { createRequire } from "node:module"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 const coreDirectory = process.argv[2]
@@ -44,7 +45,7 @@ try {
       const code = match[1]
         .replace(/\\`/g, "`")
         .replace(/\\\$\{/g, "${")
-        .replace('"@tscircuit/core"', JSON.stringify(coreEntry))
+        .replace(/"(?:@tscircuit\/core|tscircuit)"/g, JSON.stringify(coreEntry))
       const temporarySource = resolve(scratch, `${name}.tsx`)
       await writeFile(temporarySource, code)
       const { default: Example } = await import(
@@ -57,6 +58,32 @@ try {
         resolve(output, `${name}.json`),
         `${JSON.stringify(circuit.getCircuitJson(), null, 2)}\n`,
       )
+      const imagePath = source.match(/threeDImageUrl="([^"]+)"/)?.[1]
+      if (imagePath && index === 1) {
+        const require = createRequire(resolve(coreDirectory, "package.json"))
+        const { convertCircuitJsonToGltf } = await import(
+          pathToFileURL(require.resolve("circuit-json-to-gltf")).href
+        )
+        const { renderGLTFToPNGFromGLB } = await import(
+          pathToFileURL(require.resolve("poppygl")).href
+        )
+        const glb = await convertCircuitJsonToGltf(circuit.getCircuitJson(), {
+          format: "glb",
+          includeModels: true,
+          showBoundingBoxes: false,
+          boardTextureResolution: 512,
+        })
+        const png = await renderGLTFToPNGFromGLB(Buffer.from(glb), {
+          width: 800,
+          height: 800,
+          camPos: [95, 35, 95],
+          lookAt: [0, -25, 0],
+          fov: 40,
+          grid: false,
+          backgroundColor: [1, 1, 1],
+        })
+        await writeFile(resolve(repoRoot, `static${imagePath}`), png)
+      }
       console.log(`Generated ${name}.json`)
     }
     if (index === 0) throw new Error(`No CircuitPreview examples in ${page}`)

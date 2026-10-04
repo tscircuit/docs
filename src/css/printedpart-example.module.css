@@ -1,0 +1,4 @@
+.example pre {
+  max-height: 36rem;
+  overflow: auto;
+}
