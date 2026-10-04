@@ -9,6 +9,8 @@ import preview1 from "@site/src/data/assembly-previews/assembly-printedpart-1.js
 
 `assembly.printedpart` adds a mechanical part to an [`assembly.device`](./assembly-device.mdx). Supply JSCAD JSX with `jscad`, or an existing model with `model`, `modelUrl`, or `cadModel`. The part has no PCB footprint or schematic symbol.
 
+For a motor mounted to a printed bracket and a controller on the same base, see [Advanced Assembly](../guides/advanced-assembly.mdx).
+
 ## Mount a printed spacer between a motor and a board
 
 The assembly below connects `NEMA17.backface` → `SPACER.motor`, then `SPACER.board` → the controller PCB. The spacer has a 4 mm plate, four hollow posts, and a 30 mm center opening. Its total height is 10 mm, including the plate.
