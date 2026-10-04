@@ -23,3 +23,15 @@ command renders it from the page's first example using `circuit-json-to-gltf`
 and `poppygl` from the core checkout. Its lower camera angle exposes the spacer's
 posts and center opening beneath the board. Keep the PNG and JSON in sync with
 the TSX example.
+
+The Advanced Assembly guide uses shared, complete file maps in
+`src/data/advanced-assembly/examples.ts`. Regenerate both of its Circuit JSON
+previews and camera-framed PNGs with a core checkout containing motor face
+mounting (0.0.2085 or later):
+
+```sh
+bun scripts/generate-advanced-assembly-previews.ts /path/to/tscircuit/core
+bunx biome format --write src/data/assembly-previews/advanced-assembly-*.json
+```
+
+Both CircuitPreview editor links receive the same file maps used by this script.

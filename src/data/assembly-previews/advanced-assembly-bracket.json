@@ -1,0 +1,305 @@
+[
+  {
+    "type": "source_project_metadata",
+    "source_project_metadata_id": "source_project_metadata_0",
+    "software_used_string": "@tscircuit/core@0.0.2083"
+  },
+  {
+    "type": "source_component",
+    "source_component_id": "source_component_0",
+    "ftype": "printedpart",
+    "name": "BRACKET"
+  },
+  {
+    "type": "source_component",
+    "source_component_id": "source_component_1",
+    "ftype": "motor",
+    "name": "MOTOR"
+  },
+  {
+    "type": "cad_component",
+    "cad_component_id": "cad_component_0",
+    "model_jscad": {
+      "type": "rotate",
+      "angles": [0, 0, 0],
+      "shape": {
+        "type": "subtract",
+        "shapes": [
+          {
+            "type": "union",
+            "shapes": [
+              {
+                "type": "translate",
+                "vector": [-10, 20, 2.5],
+                "shape": {
+                  "type": "cuboid",
+                  "size": [100, 105, 5]
+                }
+              },
+              {
+                "type": "translate",
+                "vector": [2, 0, 32],
+                "shape": {
+                  "type": "cuboid",
+                  "size": [4, 50, 54]
+                }
+              },
+              {
+                "type": "translate",
+                "vector": [-10, -24, 15],
+                "shape": {
+                  "type": "cuboid",
+                  "size": [28, 5, 20]
+                }
+              },
+              {
+                "type": "translate",
+                "vector": [-10, 24, 15],
+                "shape": {
+                  "type": "cuboid",
+                  "size": [28, 5, 20]
+                }
+              },
+              {
+                "type": "translate",
+                "vector": [-42, 38, 7],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 4,
+                  "height": 14
+                }
+              },
+              {
+                "type": "translate",
+                "vector": [-42, 62, 7],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 4,
+                  "height": 14
+                }
+              },
+              {
+                "type": "translate",
+                "vector": [22, 38, 7],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 4,
+                  "height": 14
+                }
+              },
+              {
+                "type": "translate",
+                "vector": [22, 62, 7],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 4,
+                  "height": 14
+                }
+              }
+            ]
+          },
+          {
+            "type": "translate",
+            "vector": [2, 0, 32],
+            "shape": {
+              "type": "rotate",
+              "angles": [0, 1.5707963267948966, 0],
+              "shape": {
+                "type": "cylinder",
+                "radius": 11.5,
+                "height": 6
+              }
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [2, 0, 32],
+            "shape": {
+              "type": "rotate",
+              "angles": [0, 1.5707963267948966, 0],
+              "shape": {
+                "type": "translate",
+                "vector": [-15.5, -15.5, 0],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 1.6,
+                  "height": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [2, 0, 32],
+            "shape": {
+              "type": "rotate",
+              "angles": [0, 1.5707963267948966, 0],
+              "shape": {
+                "type": "translate",
+                "vector": [-15.5, 15.5, 0],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 1.6,
+                  "height": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [2, 0, 32],
+            "shape": {
+              "type": "rotate",
+              "angles": [0, 1.5707963267948966, 0],
+              "shape": {
+                "type": "translate",
+                "vector": [15.5, -15.5, 0],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 1.6,
+                  "height": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [2, 0, 32],
+            "shape": {
+              "type": "rotate",
+              "angles": [0, 1.5707963267948966, 0],
+              "shape": {
+                "type": "translate",
+                "vector": [15.5, 15.5, 0],
+                "shape": {
+                  "type": "cylinder",
+                  "radius": 1.6,
+                  "height": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [-42, 38, 7],
+            "shape": {
+              "type": "cylinder",
+              "radius": 1.6,
+              "height": 16
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [-42, 62, 7],
+            "shape": {
+              "type": "cylinder",
+              "radius": 1.6,
+              "height": 16
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [22, 38, 7],
+            "shape": {
+              "type": "cylinder",
+              "radius": 1.6,
+              "height": 16
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [22, 62, 7],
+            "shape": {
+              "type": "cylinder",
+              "radius": 1.6,
+              "height": 16
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [-50, -24, 2.5],
+            "shape": {
+              "type": "cylinder",
+              "radius": 2.2,
+              "height": 7
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [-50, 66, 2.5],
+            "shape": {
+              "type": "cylinder",
+              "radius": 2.2,
+              "height": 7
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [30, -24, 2.5],
+            "shape": {
+              "type": "cylinder",
+              "radius": 2.2,
+              "height": 7
+            }
+          },
+          {
+            "type": "translate",
+            "vector": [30, 66, 2.5],
+            "shape": {
+              "type": "cylinder",
+              "radius": 2.2,
+              "height": 7
+            }
+          }
+        ]
+      }
+    },
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "layer": "top",
+    "source_component_id": "source_component_0",
+    "model_origin_position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "model_unit_to_mm_scale_factor": 1,
+    "model_object_fit": "contain_within_bounds",
+    "anchor_alignment": "center",
+    "show_as_translucent_model": false
+  },
+  {
+    "type": "cad_component",
+    "cad_component_id": "cad_component_1",
+    "model_glb_url": "https://modelcdn.tscircuit.com/jscad_models/nema17.glb",
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 32
+    },
+    "rotation": {
+      "x": 180,
+      "y": 90,
+      "z": 0
+    },
+    "layer": "top",
+    "source_component_id": "source_component_1",
+    "model_origin_position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "model_unit_to_mm_scale_factor": 1,
+    "model_object_fit": "contain_within_bounds",
+    "anchor_alignment": "center",
+    "show_as_translucent_model": false
+  }
+]
