@@ -23,3 +23,12 @@ command renders it from the page's first example using `circuit-json-to-gltf`
 and `poppygl` from the core checkout. Its lower camera angle exposes the spacer's
 posts and center opening beneath the board. Keep the PNG and JSON in sync with
 the TSX example.
+
+The 3D printer guide has a dedicated generator for its full assembly and controller
+close-up. It reads the complete example from the guide, writes its Circuit JSON,
+and renders both views:
+
+```sh
+bun scripts/generate-printer-guide.ts /path/to/tscircuit/core
+bunx biome format --write src/data/assembly-previews/3d-printer-assembly.json
+```

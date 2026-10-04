@@ -1,0 +1,384 @@
+---
+title: Build a 3D printer assembly
+description: Combine printed parts, three NEMA17 motors, and an XYZ controller board in one tscircuit assembly.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import styles from "@site/src/css/printedpart-example.module.css"
+import preview from "@site/src/data/assembly-previews/3d-printer-assembly.json"
+
+Build a simplified Cartesian 3D printer with a moving bed, an X gantry, a Z lead screw, three NEMA17 motors, and a controller on a printed tray. This guide uses [`assembly.printedpart`](../../elements/assembly-printedpart.mdx) and named JSCAD reference faces to connect the mechanical parts to the PCB.
+
+The controller has three four-pin **motor outputs**, one for each axis. Its QFP and SOIC packages are placement placeholders for a controller and three drivers; this example does not define their electrical circuits or route the board. An extrusion printer would additionally need an extruder drive, heater controls, temperature sensing, and homing inputs. The rails, belts, and toolhead here are simplified shapes showing the assembly layout.
+
+## Assemble the printer
+
+The first lines of the example put the assembly together. Scroll the code pane for the reusable geometry and controller components; the editor button opens the complete single-file example. Dimensions are in millimetres.
+
+<div className={styles.example}>
+<CircuitPreview
+  wrapCode
+  circuitJson={preview}
+  threeDImageUrl="/img/guides/3d-printer-assembly.png"
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly, jscad } from "tscircuit"
+import { Fragment } from "react"
+import type { BoardProps } from "@tscircuit/props"
+
+const axes = ["X", "Y", "Z"] as const
+const boardThickness = 1.6
+const trayHeight = 10
+const controllerHeight = 30
+const gantryHeight = 210
+const bedHeight = 82
+const frameZ = -(controllerHeight + trayHeight + boardThickness / 2)
+const boardHoles = [-44, 44].flatMap((x) => [-26, 26].map((y) => [x, y]))
+const nema17 = "https://modelcdn.tscircuit.com/jscad_models/nema17.glb"
+
+export default () => (
+  <assembly.device name="CARTESIAN_PRINTER">
+    <assembly.printedpart name="FRAME" jscad={<PrinterFrame />} />
+    <assembly.printedpart
+      name="BED"
+      jscad={<PrintBed />}
+      mountedTo="FRAME.bed"
+      mountFace="base"
+    />
+    <assembly.printedpart
+      name="GANTRY"
+      jscad={<Gantry />}
+      mountedTo="FRAME.gantry"
+      mountFace="base"
+    />
+    <assembly.printedpart
+      name="TRAY"
+      jscad={<ControllerTray />}
+      mountedTo="FRAME.controller"
+      mountFace="base"
+    />
+    <Controller mountedTo="TRAY.board" pcbY={-145} />
+
+    <assembly.subassembly
+      name="X_MOTOR"
+      cadModel={{
+        glbUrl: nema17,
+        positionOffset: { x: -143, y: 50, z: frameZ + gantryHeight + 10 },
+        rotationOffset: { x: 90, y: 0, z: 0 },
+      }}
+    />
+    <assembly.subassembly
+      name="Y_MOTOR"
+      cadModel={{
+        glbUrl: nema17,
+        positionOffset: { x: -25, y: 105, z: frameZ + 42 },
+        rotationOffset: { x: 0, y: 90, z: 0 },
+      }}
+    />
+    <assembly.subassembly
+      name="Z_MOTOR"
+      cadModel={{
+        glbUrl: nema17,
+        positionOffset: { x: -80, y: 78, z: frameZ + 40 },
+      }}
+    />
+  </assembly.device>
+)
+
+function BaseFace({ size = [40, 40] }: { size?: [number, number] }) {
+  return (
+    <jscad.rotate angles={[Math.PI, 0, 0]}>
+      <jscad.rectangle name="base" size={size} reference />
+    </jscad.rotate>
+  )
+}
+
+function PrinterFrame() {
+  return (
+    <>
+      <jscad.union>
+        {[-115, 115].map((x) => (
+          <jscad.cuboid key={x} size={[20, 240, 20]} center={[x, 0, 10]} />
+        ))}
+        {[-110, 110].map((y) => (
+          <jscad.cuboid key={y} size={[230, 20, 20]} center={[0, y, 10]} />
+        ))}
+        {[-115, 115].map((x) => (
+          <jscad.cuboid key={x} size={[20, 20, 290]} center={[x, 75, 165]} />
+        ))}
+        <jscad.cuboid size={[250, 20, 20]} center={[0, 75, 310]} />
+        {/* Feet and controller shelf supports. */}
+        {[-115, 115].flatMap((x) =>
+          [-110, 110].map((y) => (
+            <jscad.cuboid
+              key={[x, y].join(",")}
+              size={[30, 30, 8]}
+              center={[x, y, -4]}
+            />
+          )),
+        )}
+        {[-40, 40].map((x) => (
+          <jscad.cuboid key={x} size={[12, 65, 12]} center={[x, -132.5, 24]} />
+        ))}
+        {/* Y-axis guide rods run along Y; the Z screw runs along Z. */}
+        {[-50, 50].map((x) => (
+          <jscad.translate key={x} offset={[x, 0, 60]}>
+            <jscad.rotate angles={[Math.PI / 2, 0, 0]}>
+              <jscad.cylinder radius={4} height={200} />
+            </jscad.rotate>
+          </jscad.translate>
+        ))}
+        <jscad.cylinder radius={4} height={255} center={[-80, 78, 177.5]} />
+        <jscad.cylinder radius={7} height={16} center={[-80, 78, 50]} />
+        {/* Simplified Y belt and shaft pulley. */}
+        <jscad.cuboid size={[6, 195, 2]} center={[-12, 7.5, 47]} />
+        <jscad.translate offset={[-12, 105, 42]}>
+          <jscad.rotate angles={[0, Math.PI / 2, 0]}>
+            <jscad.cylinder radius={6} height={8} />
+          </jscad.rotate>
+        </jscad.translate>
+      </jscad.union>
+      <jscad.translate offset={[0, 0, bedHeight]}>
+        <jscad.rectangle name="bed" size={[150, 140]} reference />
+      </jscad.translate>
+      <jscad.translate offset={[0, 50, gantryHeight]}>
+        <jscad.rectangle name="gantry" size={[230, 40]} reference />
+      </jscad.translate>
+      <jscad.translate offset={[0, -145, controllerHeight]}>
+        <jscad.rectangle name="controller" size={[100, 65]} reference />
+      </jscad.translate>
+    </>
+  )
+}
+
+function PrintBed() {
+  return (
+    <>
+      <jscad.union>
+        <jscad.cuboid size={[150, 140, 4]} center={[0, 0, 2]} />
+        <jscad.cuboid size={[142, 132, 1]} center={[0, 0, 4.5]} />
+        {[-50, 50].map((x) => (
+          <jscad.cuboid key={x} size={[18, 50, 20]} center={[x, 0, -10]} />
+        ))}
+      </jscad.union>
+      <BaseFace size={[150, 140]} />
+    </>
+  )
+}
+
+function Gantry() {
+  return (
+    <>
+      <jscad.union>
+        {[-115, 115].map((x) => (
+          <jscad.cuboid key={x} size={[12, 50, 40]} center={[x, 15, 10]} />
+        ))}
+        {[0, 20].map((z) => (
+          <jscad.translate key={z} offset={[0, 0, z]}>
+            <jscad.rotate angles={[0, Math.PI / 2, 0]}>
+              <jscad.cylinder radius={4} height={230} />
+            </jscad.rotate>
+          </jscad.translate>
+        ))}
+        <jscad.cuboid size={[258, 2, 6]} center={[-14, -16, 10]} />
+        <jscad.subtract>
+          <jscad.cuboid size={[46, 4, 46]} center={[-143, -2, 10]} />
+          <jscad.translate offset={[-143, -2, 10]}>
+            <jscad.rotate angles={[Math.PI / 2, 0, 0]}>
+              <jscad.cylinder radius={11.5} height={6} />
+            </jscad.rotate>
+          </jscad.translate>
+        </jscad.subtract>
+        <jscad.translate offset={[-143, -12, 10]}>
+          <jscad.rotate angles={[Math.PI / 2, 0, 0]}>
+            <jscad.cylinder radius={6} height={8} />
+          </jscad.rotate>
+        </jscad.translate>
+        <jscad.cuboid size={[12, 28, 20]} center={[-80, 14, 10]} />
+        {/* Carriage, heat-sink block, heater block, and nozzle silhouette. */}
+        <jscad.cuboid size={[32, 28, 35]} center={[25, -3, 10]} />
+        <jscad.cuboid size={[20, 20, 20]} center={[25, -24, -12]} />
+        <jscad.cuboid size={[18, 16, 10]} center={[25, -24, -27]} />
+        <jscad.cylinder radius={3} height={8} center={[25, -24, -36]} />
+      </jscad.union>
+      <BaseFace size={[230, 40]} />
+    </>
+  )
+}
+
+function ControllerTray() {
+  return (
+    <>
+      <jscad.subtract>
+        <jscad.union>
+          <jscad.cuboid size={[104, 69, 4]} center={[0, 0, 2]} />
+          {boardHoles.map(([x, y]) => (
+            <jscad.cylinder
+              key={[x, y].join(",")}
+              radius={4}
+              height={trayHeight}
+              center={[x, y, trayHeight / 2]}
+            />
+          ))}
+        </jscad.union>
+        <jscad.cuboid size={[70, 38, 6]} center={[0, 0, 2]} />
+        {boardHoles.map(([x, y]) => (
+          <jscad.cylinder
+            key={[x, y].join(",")}
+            radius={1.6}
+            height={trayHeight + 2}
+            center={[x, y, trayHeight / 2]}
+          />
+        ))}
+      </jscad.subtract>
+      <BaseFace size={[100, 65]} />
+      <jscad.translate offset={[0, 0, trayHeight]}>
+        <jscad.rectangle name="board" size={[100, 65]} reference />
+      </jscad.translate>
+    </>
+  )
+}
+
+function Controller(props: BoardProps) {
+  return (
+    <board
+      width={100}
+      height={65}
+      thickness={boardThickness}
+      routingDisabled
+      {...props}
+    >
+      {boardHoles.map(([x, y]) => (
+        <Fragment key={[x, y].join(",")}>
+          <hole diameter={3.2} pcbX={x} pcbY={y} />
+        </Fragment>
+      ))}
+      <chip
+        name="U_MCU"
+        footprint="qfp32"
+        cadModel={{
+          glbUrl: "https://modelcdn.tscircuit.com/jscad_models/qfp32.glb",
+        }}
+        pcbX={0}
+        pcbY={-13}
+      />
+      <pinheader
+        name="J_POWER"
+        pinCount={2}
+        pitch={2.54}
+        pcbX={-33}
+        pcbY={-20}
+        pinLabels={["VMOT", "GND"]}
+      />
+      {axes.map((axis, i) => (
+        <group key={axis} name={axis} pcbX={(i - 1) * 28} pcbY={11}>
+          <chip
+            name={"U_" + axis}
+            footprint="soic16"
+            cadModel={{
+              glbUrl: "https://modelcdn.tscircuit.com/jscad_models/soic16.glb",
+            }}
+            pcbX={0}
+            pcbY={-5}
+          />
+          <pinheader
+            name={"J_" + axis}
+            pinCount={4}
+            pitch={2.54}
+            pcbX={0}
+            pcbY={13}
+            pinLabels={["A1", "A2", "B1", "B2"]}
+          />
+          <silkscreentext
+            text={axis + " MOTOR"}
+            pcbX={0}
+            pcbY={7}
+            fontSize={1.5}
+          />
+        </group>
+      ))}
+      <silkscreentext text="POWER" pcbX={-33} pcbY={-27} fontSize={1.5} />
+      <silkscreentext
+        text="XYZ CONTROLLER"
+        pcbX={0}
+        pcbY={-27}
+        fontSize={1.5}
+      />
+    </board>
+  )
+}`}
+/>
+</div>
+
+## Connect parts with named faces
+
+The assembly uses these connections:
+
+| Part | `mountedTo` | Own `mountFace` |
+|------|-------------|-----------------|
+| Bed carrier | `FRAME.bed` | `base` |
+| Gantry | `FRAME.gantry` | `base` |
+| Controller tray | `FRAME.controller` | `base` |
+| Controller PCB | `TRAY.board` | Not needed for a board |
+
+`BaseFace` makes a named reference rectangle facing down. Each target rectangle faces up. `mountedTo` and `mountFace` bring their centers together with opposing normals. The rectangles describe attachment frames and do not become printable material.
+
+For example, the tray defines its PCB contact plane at the post tips:
+
+```tsx
+<jscad.translate offset={[0, 0, trayHeight]}>
+  <jscad.rectangle name="board" size={[100, 65]} reference />
+</jscad.translate>
+```
+
+The controller component forwards its mounting props to `<board>`:
+
+```tsx
+<Controller mountedTo="TRAY.board" pcbY={-145} />
+
+function Controller(props: BoardProps) {
+  return (
+    <board width={100} height={65} thickness={1.6} {...props}>
+      {/* Components and mounting holes */}
+    </board>
+  )
+}
+```
+
+The PCB remains in the XY plane with its center at Z = 0. Core moves the connected mechanical parts around it. The tray's four 3.2 mm holes share the board's `boardHoles` coordinates, giving an 88 × 52 mm mounting pattern. Its 4 mm base and four posts give a total height of 10 mm. No `mountGap` is specified, so the PCB rests on the posts.
+
+Change `trayHeight` to adjust the standoff height, `bedHeight` to move the bed carrier, or `gantryHeight` to move the X carriage assembly. These are authored poses, not a motion simulation.
+
+## Position the three motors
+
+The motors use the NEMA17 model from modelcdn. Each `assembly.subassembly` supplies `cadModel.positionOffset` and `rotationOffset` to position it in the printer:
+
+| Motor | Location | Shaft direction | Controller connector |
+|-------|----------|-----------------|----------------------|
+| `X_MOTOR` | End of the upper gantry | −Y | `J_X` |
+| `Y_MOTOR` | Rear of the base | +X | `J_Y` |
+| `Z_MOTOR` | Beside the vertical lead screw | +Z | `J_Z` |
+
+JSCAD rotations use **radians**; `cadModel.rotationOffset` uses **degrees**. The model's native shaft points along +Z, so X uses a 90° rotation around X and Y uses a 90° rotation around Y.
+
+`assembly.motor` currently supports a shaft direction and backface mounting, but has no free-position offset prop. This example therefore uses the existing CAD subassembly API for independently positioned motors. `frameZ` keeps their vertical offsets aligned with the frame when the tray height changes. The motor model represents the mechanical part; it does not create electrical motor terminals or cable connections.
+
+## Inspect the controller board
+
+![Close-up of the controller board on its printed tray, showing X MOTOR, Y MOTOR, Z MOTOR, and the power header.](/img/guides/3d-printer-controller.png)
+
+Each motor connector has four pins labelled `A1`, `A2`, `B1`, and `B2` for the two motor windings. The three SOIC packages reserve space for driver stages, and the QFP package reserves controller space. The two-pin `J_POWER` header is labelled `VMOT` and `GND`. No electrical connectivity is implied by placing these components or the CAD motors.
+
+To turn the layout into your controller, select the actual driver and controller parts, implement their pin maps and supporting circuitry, connect each driver's winding outputs to the corresponding header, and replace `routingDisabled` with your routing configuration. The assembly build currently reports unconnected-pin and unspecified-part warnings because these are placeholders.
+
+The motor-to-connector table describes the intended harness. Cable geometry and wiring are omitted from this example. See the [motor spacer example](../../elements/assembly-printedpart.mdx) for a smaller assembly that mounts a PCB directly behind one motor.
+
+## Run it locally
+
+Use `tscircuit` 0.0.2744 or later. Copy the complete example to `printer.circuit.tsx` in a tscircuit project, then run:
+
+```sh
+bunx tsci build printer.circuit.tsx
+```
+
+The docs preview images are generated from the same TSX and Circuit JSON as the example. The PCB tab shows the controller's fabrication layout; the 3D view includes the printer around it.
