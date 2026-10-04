@@ -17,3 +17,9 @@ Demo models live in `static/models/assembly`. Their URLs are pinned to a committ
 asset revision so previews and editor links work before the docs PR is deployed.
 If models change, commit and push the assets, update the URLs in the examples,
 and regenerate this data. Never edit the JSON independently of its example.
+
+The printed-part page also sets `threeDImageUrl` to a checked-in PNG. The same
+command renders it from the page's first example using `circuit-json-to-gltf`
+and `poppygl` from the core checkout. Its lower camera angle exposes the spacer's
+posts and center opening beneath the board. Keep the PNG and JSON in sync with
+the TSX example.
