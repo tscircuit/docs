@@ -328,12 +328,8 @@ export default function CircuitPreview({
     // If fsMap is provided, use fs_map parameter instead of code
     if (normalizedFsMap) {
       const fsMapJson = JSON.stringify(normalizedFsMap)
-      // Use browser-compatible base64 encoding
-      const encodedFsMap = btoa(
-        encodeURIComponent(fsMapJson).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
-          String.fromCharCode(Number.parseInt(p1, 16)),
-        ),
-      )
+      // Gzip keeps examples with imported files within the image API's URL limit.
+      const encodedFsMap = getCompressedBase64SnippetString(fsMapJson)
 
       // Construct the URL step by step for clarity
       const baseUrl = "https://svg.tscircuit.com/"
