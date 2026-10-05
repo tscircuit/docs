@@ -22,5 +22,11 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Test image discovery and refresh requests
+        run: bun test tests/warm-docs-images.test.mjs
+
       - name: Run build
         run: bun run build
+
+      - name: Validate image inventory
+        run: bun run warm:images --dry-run
