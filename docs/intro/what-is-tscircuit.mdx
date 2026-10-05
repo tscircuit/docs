@@ -8,8 +8,6 @@ sidebar_position: 1
 import Tabs from "@theme/Tabs"
 import TabItem from "@theme/TabItem"
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import { motorControllerFiles } from "@site/src/data/advanced-assembly/examples"
-import controllerPreview from "@site/src/data/assembly-previews/advanced-assembly-controller.json"
 import styles from "@site/src/css/intro-examples.module.css"
 
 tscircuit is an open-source electronics design toolchain. Write **TypeScript and
@@ -41,14 +39,14 @@ Switch between the generated views, then
 
 <Tabs groupId="speaker-view">
   <TabItem value="3d" label="3D" default>
-    <img className={styles.speakerImage} src="/img/intro/esp32-speaker-3d.png" width="800" height="600" alt="3D render of the ESP32 Bluetooth speaker PCB with USB-C, audio jack, battery connector, and control buttons" />
+    <img className={styles.boardImage} src="/img/intro/esp32-speaker-3d.png" width="800" height="600" alt="3D render of the ESP32 Bluetooth speaker PCB with USB-C, audio jack, battery connector, and control buttons" />
   </TabItem>
   <TabItem value="pcb" label="PCB">
-    <img className={styles.speakerImage} src="/img/intro/esp32-speaker-pcb.svg" loading="lazy" alt="Routed two-layer ESP32 speaker PCB showing components, copper traces, and mounting holes" />
+    <img className={styles.boardImage} src="/img/intro/esp32-speaker-pcb.svg" loading="lazy" alt="Routed two-layer ESP32 speaker PCB showing components, copper traces, and mounting holes" />
   </TabItem>
   <TabItem value="schematic" label="Schematic">
     <a href="/img/intro/esp32-speaker-schematic.svg" target="_blank" rel="noopener noreferrer" title="Open the full-size schematic">
-      <img className={`${styles.speakerImage} ${styles.schematicImage}`} src="/img/intro/esp32-speaker-schematic.svg" loading="lazy" alt="Three-sheet schematic of the ESP32 speaker's USB power, battery supply, controller, and audio amplifier; open for full-size detail" />
+      <img className={`${styles.boardImage} ${styles.schematicImage}`} src="/img/intro/esp32-speaker-schematic.svg" loading="lazy" alt="Three-sheet schematic of the ESP32 speaker's USB power, battery supply, controller, and audio amplifier; open for full-size detail" />
     </a>
   </TabItem>
 </Tabs>
@@ -88,29 +86,34 @@ export default () => (
 
 Explore more [SPICE simulation examples](../guides/spice-simulation/introduction.mdx).
 
-## Bring electronics and mechanics together
+## Design an RP2040 motor controller
 
-React components can also describe printed parts and mechanical assemblies.
-Here, a NEMA17 motor and a PCB mount to named faces on a bracket defined with
-JSCAD. The same project contains the bracket geometry, mounting holes, and
-board placement.
+This [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller)
+by **imrishabh18** combines a DRV8825 stepper-motor driver, separate USB-C data
+and USB-PD power ports, and winding-current and temperature sensing on a
+42.30 × 42.32 mm, four-layer PCB. Its TypeScript project brings the controller,
+motor driver, power supplies, and sensing circuits into one board design.
 
-<div className={styles.assembly}>
-  <CircuitPreview
-    fsMap={motorControllerFiles}
-    entrypoint="index.tsx"
-    mainComponentPath="index.tsx"
-    circuitJson={controllerPreview}
-    threeDImageUrl="/img/guides/advanced-assembly-controller.png"
-    defaultView="3d"
-    hideSchematicTab
-    wrapCode
-  />
-</div>
+{/* Published renders from imrishabh18/rp2040-motor-controller v1.0.42,
+    release e8d285f7-c3d8-46f5-9a54-344fdde0124e.
+    The schematic preview shows the controller sheet, not every project sheet. */}
 
-This example demonstrates mechanical mounting and PCB placement; the driver
-circuit and motor wiring are left for your design.
-[Learn how the assembly works](../guides/advanced-assembly.mdx).
+<Tabs groupId="motor-controller-view">
+  <TabItem value="3d" label="3D" default>
+    <img className={`${styles.boardImage} ${styles.whiteImage}`} src="https://api.tscircuit.com/package_files/view?package_release_id=e8d285f7-c3d8-46f5-9a54-344fdde0124e&file_path=dist%2Findex%2F3d.png" width="800" height="600" loading="lazy" alt="3D render of the four-layer RP2040 motor controller PCB with two USB-C connectors, motor terminals, and driver circuitry" />
+  </TabItem>
+  <TabItem value="pcb" label="PCB">
+    <img className={styles.boardImage} src="https://api.tscircuit.com/package_files/view?package_release_id=e8d285f7-c3d8-46f5-9a54-344fdde0124e&file_path=dist%2Findex%2Fpcb.svg" loading="lazy" alt="Routed four-layer RP2040 motor controller PCB with copper traces, vias, and component placement" />
+  </TabItem>
+  <TabItem value="schematic" label="Controller schematic">
+    <a href="https://api.tscircuit.com/package_files/view?package_release_id=e8d285f7-c3d8-46f5-9a54-344fdde0124e&file_path=dist%2Findex%2Fschematic.svg" target="_blank" rel="noopener noreferrer" title="Open the full-size controller schematic">
+      <img className={`${styles.boardImage} ${styles.schematicImage}`} src="https://api.tscircuit.com/package_files/view?package_release_id=e8d285f7-c3d8-46f5-9a54-344fdde0124e&file_path=dist%2Findex%2Fschematic.svg" loading="lazy" alt="RP2040 controller schematic sheet with flash memory, clock, and USB data connections; open for full-size detail" />
+    </a>
+  </TabItem>
+</Tabs>
+
+[Explore the source and all schematic sheets](https://tscircuit.com/imrishabh18/rp2040-motor-controller)
+to see how the board is put together.
 
 ## From a project to physical hardware
 

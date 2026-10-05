@@ -5,7 +5,7 @@
   margin: 1.5rem 0 2rem;
 }
 
-.speakerImage {
+.boardImage {
   display: block;
   width: 100%;
   height: auto;
@@ -20,9 +20,8 @@
   background: #f5f1ed;
 }
 
-.assembly pre {
-  max-height: 30rem;
-  overflow: auto;
+.whiteImage {
+  background: #fff;
 }
 
 .hardware {
