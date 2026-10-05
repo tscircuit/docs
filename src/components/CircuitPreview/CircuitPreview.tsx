@@ -1,5 +1,4 @@
 import {
-  createSnippetUrl,
   createSvgUrl,
   createPngUrl,
   getCompressedBase64SnippetString,
@@ -16,6 +15,7 @@ import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "../TscircuitIframe"
 import styles from "./styles.module.css"
 import { PreviewCodeSourceContext } from "./preview-code-source-context"
+import { createCircuitPreviewEditorUrl } from "./create-editor-url"
 
 type CircuitPreviewView =
   | "code"
@@ -114,22 +114,11 @@ const TryInEditorLink = ({ href }: { href: string }) => (
   </a>
 )
 
-const getPreferredFsMapSource = (
-  fsMap: Record<string, string> | undefined,
-  preferredFilenames: Array<string | undefined>,
-) => {
-  if (!fsMap) return undefined
-
-  for (const filename of preferredFilenames) {
-    if (filename && fsMap[filename]) return fsMap[filename]
-  }
-
-  return Object.values(fsMap)[0]
-}
-
 export default function CircuitPreview({
   code,
   circuitJson,
+  pcbImageUrl,
+  schematicImageUrl,
   threeDImageUrl,
   showTabs = true,
   defaultView = "pcb",
@@ -138,6 +127,7 @@ export default function CircuitPreview({
   hideSchematicTab = false,
   hidePCBTab = false,
   hide3DTab = false,
+  hideCodeTab = false,
   showPinoutTab = false,
   browser3dView = false,
   realistic = true,
@@ -159,6 +149,8 @@ export default function CircuitPreview({
   code?: string
   /** Precompiled preview data for APIs newer than the hosted evaluator. */
   circuitJson?: Record<string, unknown>[]
+  pcbImageUrl?: string
+  schematicImageUrl?: string
   threeDImageUrl?: string
   showTabs?: boolean
   defaultView?: CircuitPreviewView
@@ -167,6 +159,7 @@ export default function CircuitPreview({
   hideSchematicTab?: boolean
   hidePCBTab?: boolean
   hide3DTab?: boolean
+  hideCodeTab?: boolean
   showPinoutTab?: boolean
   fsMap?: Record<string, string>
   entrypoint?: string
@@ -267,6 +260,7 @@ export default function CircuitPreview({
   }
 
   const pcbUrl = useMemo(() => {
+    if (pcbImageUrl) return pcbImageUrl
     const basePcbUrl = configurePreviewUrl(createSvgUrl(fsMapOrCode, "pcb"))
     const flags: string[] = []
 
@@ -282,8 +276,10 @@ export default function CircuitPreview({
     showCourtyards,
     showDebugObjects,
     circuitJson,
+    pcbImageUrl,
   ])
   const schUrl = useMemo(() => {
+    if (schematicImageUrl) return schematicImageUrl
     const baseUrl = configurePreviewUrl(
       createSvgUrl(
         fsMapOrCode,
@@ -310,6 +306,7 @@ export default function CircuitPreview({
     mainComponentPath,
     selectedSimulationExperimentName,
     showSimulationGraph,
+    schematicImageUrl,
   ])
   const pinoutUrl = useMemo(
     () => configurePreviewUrl(createSvgUrl(fsMapOrCode, "pinout")),
@@ -411,15 +408,13 @@ export default function CircuitPreview({
     formattedCode.filename === currentFile
       ? formattedCode.code
       : currentCode.trim()
-  const editorSource =
-    getPreferredFsMapSource(normalizedFsMap, [
-      entrypoint,
-      mainComponentPath,
-      currentFile,
-    ]) ?? normalizedCode
-  const editorUrl = editorSource.trim()
-    ? createSnippetUrl(editorSource, "board")
-    : undefined
+  const editorUrl = createCircuitPreviewEditorUrl({
+    code: normalizedCode,
+    fsMap: normalizedFsMap,
+    entrypoint,
+    mainComponentPath,
+    currentFile,
+  })
 
   const getPreviewContentHeightCss = (hasHeader: boolean) =>
     hasHeader && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
@@ -511,7 +506,7 @@ export default function CircuitPreview({
             `flex-inline justify-end gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-100" : "bg-slate-800"} p-1 gap-2`,
           )}
         >
-          {!shouldSplitCode && (
+          {!shouldSplitCode && !hideCodeTab && (
             <Tab
               label="Code"
               active={view === "code"}
