@@ -3,3 +3,65 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.glbPreview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background: white;
+}
+
+.previewImage,
+.modelViewer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  margin: 0;
+  object-fit: contain;
+}
+
+.previewImageButton {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: white;
+  cursor: pointer;
+}
+
+.modelControls {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.modelControls button,
+.modelControls a {
+  padding: 4px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  color: #0f172a;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px #0002;
+}
+
+.modelStatus {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: white;
+  color: #0f172a;
+  font-size: 13px;
+}

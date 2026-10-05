@@ -14,6 +14,8 @@ import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "../TscircuitIframe"
 import styles from "./styles.module.css"
+import GlbPreview from "./GlbPreview"
+import { create3dAssetUrls } from "./create-3d-asset-urls"
 import { createCircuitPreviewEditorUrl } from "./create-editor-url"
 
 type CircuitPreviewView =
@@ -123,7 +125,6 @@ export default function CircuitPreview({
   defaultView = "pcb",
   splitView = true,
   showRunFrame = false,
-  runFrameDefaultTab,
   hideSchematicTab = false,
   hidePCBTab = false,
   hide3DTab = false,
@@ -131,6 +132,7 @@ export default function CircuitPreview({
   showPinoutTab = false,
   browser3dView = false,
   realistic = true,
+  cameraPreset,
   fsMap,
   entrypoint = undefined,
   mainComponentPath = undefined,
@@ -156,8 +158,6 @@ export default function CircuitPreview({
   defaultView?: CircuitPreviewView
   splitView?: boolean
   showRunFrame?: boolean
-  /** Initial tab in the interactive preview. */
-  runFrameDefaultTab?: "cad" | "pcb" | "schematic"
   hideSchematicTab?: boolean
   hidePCBTab?: boolean
   hide3DTab?: boolean
@@ -170,6 +170,8 @@ export default function CircuitPreview({
   browser3dView?: boolean
   /** Studio lighting for hosted 3D images. */
   realistic?: boolean
+  /** Camera preset for the static 3D image, such as bottom or top-down. */
+  cameraPreset?: string
   leftView?: CircuitPreviewView
   rightView?: CircuitPreviewView
   projectBaseUrl?: string
@@ -315,7 +317,6 @@ export default function CircuitPreview({
     [fsMapOrCode, mainComponentPath, circuitJson],
   )
   const threeDUrl = useMemo(() => {
-    if (threeDImageUrl) return threeDImageUrl
     if (circuitJson) {
       return configurePreviewUrl(
         `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&realistic=${realistic}`,
@@ -375,6 +376,12 @@ export default function CircuitPreview({
     mainComponentPath,
     projectBaseUrl,
   ])
+
+  const { imageUrl: threeDImage, glbUrl } = create3dAssetUrls(
+    threeDUrl,
+    cameraPreset,
+    threeDImageUrl,
+  )
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
   const showSimulationSelector =
@@ -660,13 +667,19 @@ export default function CircuitPreview({
         hasHeader: imageViewHasHeader,
         imageClassName: "w-full m-0 object-contain bg-white",
       })}
-      {renderPreviewImage({
-        src: threeDUrl,
-        alt: "3D Circuit Preview",
-        hidden: view !== "3d",
-        hasHeader: imageViewHasHeader,
-        imageClassName: "w-full m-0 object-contain bg-white",
-      })}
+      {view === "3d" && (
+        <div
+          className={tw(
+            `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
+          )}
+        >
+          <GlbPreview
+            imageUrl={threeDImage}
+            glbUrl={glbUrl}
+            cameraPreset={cameraPreset}
+          />
+        </div>
+      )}
       {showRunFrame && view === "runframe" && (
         <div
           className={tw(
@@ -677,7 +690,6 @@ export default function CircuitPreview({
             code={normalizedCode}
             fsMap={normalizedFsMap}
             entrypoint={entrypoint}
-            defaultActiveTab={runFrameDefaultTab}
           />
         </div>
       )}

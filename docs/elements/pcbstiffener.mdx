@@ -14,9 +14,8 @@ does not add copper layers or define an integrated rigid-flex stackup.
 `layer` selects the board attachment face, `"top"` or `"bottom"`. `thickness`
 describes the stiffener material alone; PCB and adhesive thickness are separate.
 
-The examples below open an interactive 3D viewer. Drag the board to rotate it
-and look underneath: both stiffeners are attached to the bottom face. Scroll
-to zoom in on the reinforcement.
+The previews below show the bottom face so the stiffeners are visible. Click
+**Click to Rotate** to inspect the model from other angles.
 
 ## Rectangular Stiffener
 
@@ -24,9 +23,8 @@ A rectangle is centered at its placement anchor. Use `pcbX`, `pcbY`, and
 `pcbRotation` to position it in the flat layout.
 
 <CircuitPreview
-  defaultView="runframe"
-  showRunFrame
-  runFrameDefaultTab="cad"
+  defaultView="3d"
+  cameraPreset="bottom-center-angled"
   hideSchematicTab
   code={`export default () => (
   <board material="flex" layers={2} width="30mm" height="15mm" thickness="0.12mm">
@@ -54,9 +52,8 @@ The outline is implicitly closed and then transformed by PCB placement and
 rotation. It must contain at least three finite vertices enclosing nonzero area.
 
 <CircuitPreview
-  defaultView="runframe"
-  showRunFrame
-  runFrameDefaultTab="cad"
+  defaultView="3d"
+  cameraPreset="bottom-center-angled"
   hideSchematicTab
   code={`export default () => (
   <board material="flex" layers={2} width="30mm" height="20mm" thickness="0.12mm">
