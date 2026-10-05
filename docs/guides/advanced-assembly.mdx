@@ -9,7 +9,7 @@ import { motorBracketFiles, motorControllerFiles } from "@site/src/data/advanced
 import bracketPreview from "@site/src/data/assembly-previews/advanced-assembly-bracket.json"
 import controllerPreview from "@site/src/data/assembly-previews/advanced-assembly-controller.json"
 
-Combine motors, printed parts, and PCBs inside an [`assembly.device`](../elements/assembly-device.mdx). These examples show how named mounting faces connect a NEMA17 to a printed bracket, then place its controller on the same base.
+Combine motors, printed parts, and PCBs inside an [`assembly.device`](../elements/assembly-device.mdx). These examples show how named mounting faces connect a NEMA17 to a printed bracket, then place its controller on the same base and connect it with a cable.
 
 Start with the `index.tsx` tab to see the assembly connections. The other tabs contain the complete geometry and controller components; the editor button opens all the files together.
 
@@ -68,7 +68,9 @@ The bracket also defines a `controller` face at the tips of four posts. Mount a 
 
 Mounting keeps the PCB in the XY plane at Z = 0. Core moves the connected bracket and motor around it: in this example, the bracket's underside moves to Z = −14.8 mm so the posts touch the bottom of the 1.6 mm PCB. No manual Z offset is needed in the assembly code.
 
-The four-pin `J_MOTOR` header reserves a connection for the motor's two windings. The driver package and headers demonstrate board placement; this example has no routed driver circuit or cable connection. Replace them with your controller circuitry when adapting the assembly.
+The motor uses `wireConnection="jst-ph-6"`; the six-pin `J_MOTOR` connector uses `standard="jst_ph"` and `footprint="jst6_ph"`. [`assembly.cable`](../elements/assembly-cable.mdx) connects `MOTOR.wireside` to `.CONTROL > .J_MOTOR`, inferring the PH cable and its route from the positioned endpoints.
+
+The driver package and headers demonstrate board placement, without a routed driver circuit or electrical pin mapping. Replace them with your controller circuitry when adapting the assembly.
 
 ## Adjust the mounting
 
@@ -84,4 +86,4 @@ The four-pin `J_MOTOR` header reserves a connection for the motor's two windings
 
 References resolve within the nearest `assembly.device`, and declaration order does not matter. A connected assembly can have one PCB anchor. Missing or ambiguous targets, cycles, and a PCB mounted to a tilted face report errors. For assemblies containing a face-mounted motor, author rotation in the reference geometry rather than using board `mountRotation` or `mountRotationAnchor`.
 
-These examples require `@tscircuit/core` 0.0.2085 or later, with `@tscircuit/props` 0.0.687 or later. For all available props, see [`assembly.motor`](../elements/assembly-motor.mdx) and [`assembly.printedpart`](../elements/assembly-printedpart.mdx).
+These examples require `@tscircuit/core` 0.0.2088 or later, with `@tscircuit/props` 0.0.687 or later. For all available props, see [`assembly.motor`](../elements/assembly-motor.mdx) and [`assembly.printedpart`](../elements/assembly-printedpart.mdx).

@@ -2,7 +2,7 @@
 
 These Circuit JSON files are generated from the `code` props in the assembly
 reference pages and mounting guide. `CircuitPreview` displays the original code
-and renders this data because the hosted SVG service's evaluator predates the
+and renders this data while downstream evaluator and renderer releases catch up with the
 assembly API. The editor link still opens the original source.
 
 After editing any example, regenerate with a core checkout that supports
@@ -35,3 +35,15 @@ bunx biome format --write src/data/assembly-previews/advanced-assembly-*.json
 ```
 
 Both CircuitPreview editor links receive the same file maps used by this script.
+
+Cable examples require core 0.0.2088 or later and the published
+`circuit-json-to-gltf` 0.0.144 or later. The regeneration script accepts page
+paths after the core checkout to update only edited examples:
+
+```sh
+bun scripts/generate-assembly-previews.ts /path/to/tscircuit/core \
+  elements/assembly-cable.mdx elements/assembly-motor.mdx \
+  elements/assembly-printedpart.mdx
+```
+
+Each example's `threeDImageUrl` is rendered from its own Circuit JSON.
