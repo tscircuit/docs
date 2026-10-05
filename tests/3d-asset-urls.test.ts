@@ -11,7 +11,7 @@ test("3D images and models retain the same circuit input with separate presentat
     assert.equal(model.host, image.host)
     assert.equal(image.searchParams.get("camera_preset"), "bottom-center-angled")
     assert.equal(model.searchParams.get("format"), "glb")
-    for (const option of ["camera_preset", "png_width", "realistic"]) assert.equal(model.searchParams.has(option), false)
+    for (const option of ["svg_type", "view", "camera_preset", "png_width", "realistic"]) assert.equal(model.searchParams.has(option), false)
     for (const [key, value] of new URLSearchParams(input)) assert.equal(model.searchParams.get(key), value)
   }
   const custom = create3dAssetUrls("https://svg.tscircuit.com/?code=abc", "bottom", "/img/custom.png")

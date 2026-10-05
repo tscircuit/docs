@@ -11,6 +11,8 @@ export function create3dAssetUrls(
   if (cameraPreset) url.searchParams.set("camera_preset", cameraPreset)
   const imageUrl = imageOverride ?? url.toString()
   for (const option of [
+    "svg_type",
+    "view",
     "camera_preset",
     "png_width",
     "png_height",
