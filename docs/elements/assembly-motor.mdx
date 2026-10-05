@@ -1,6 +1,6 @@
 ---
 title: <assembly.motor />
-description: Represent a motor in an assembly and mount a PCB to its backface.
+description: Mount a motor to a named assembly face or attach a PCB to its backface.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
@@ -19,7 +19,7 @@ Give the motor a `name`, then set the board's `mountedTo` to that name followed 
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
-  browser3dView={false}
+  threeDImageUrl="/img/elements/assembly-motor-cable.png"
   code={`import { assembly } from "@tscircuit/core"
 import type { BoardProps } from "@tscircuit/props"
 
@@ -34,7 +34,9 @@ const MotorController = (props: BoardProps) => (
     <hole diameter="3.2mm" pcbX={-15.5} pcbY={15.5} />
     <hole diameter="3.2mm" pcbX={15.5} pcbY={-15.5} />
     <hole diameter="3.2mm" pcbX={15.5} pcbY={15.5} />
-    {/* Add your controller components and traces here. */}
+    <connector name="J_MOTOR" standard="jst_ph" pinCount={6}
+      footprint="jst6_ph" pcbX={0} pcbY={0} />
+    {/* Add your driver circuit and traces here. */}
   </board>
 )
 
@@ -44,11 +46,15 @@ export default () => (
       name="NEMA17"
       standard="nema17"
       shaftFacingDirection="z-"
+      wireConnection="jst-ph-6"
     />
     <MotorController
+      name="CONTROLLER"
       mountedTo="NEMA17.backface"
       mountGap="6mm"
     />
+    <assembly.cable name="MOTOR_CABLE"
+      from="NEMA17.wireside" to=".CONTROLLER > .J_MOTOR" />
   </assembly.device>
 )`}
 />
@@ -57,7 +63,15 @@ export default () => (
 
 Mounting keeps the board's PCB layout in the XY plane at Z = 0. The motor follows the board's center and rotation in that plane. Add mounting holes and standoffs yourself; mounting props do not create them. The example's four holes use the default NEMA17 rear-hole spacing of 31 mm.
 
+`wireConnection="jst-ph-6"` supplies the motor’s six-pin PH connector. [`assembly.cable`](./assembly-cable.mdx) infers a matching cable between `NEMA17.wireside` and the controller’s six-pin JST PH header; mounting and cabling are independent. This describes physical cabling, not electrical winding connections.
+
 For a printed spacer between the motor and controller, see the [complete motor–spacer–board example](./assembly-printedpart.mdx#mount-a-printed-spacer-between-a-motor-and-a-board).
+
+## Mount the motor to a printed part
+
+Pair `mountedTo` with `mountFace` to attach the motor to a named face on another part. Use `mountFace="frontface"` for the shaft-side body plane or `mountFace="backface"` for the opposite body plane. The mating faces determine position and orientation, so omit `shaftFacingDirection` when mounting the motor.
+
+See [Advanced Assembly](../guides/advanced-assembly.mdx) for complete CircuitPreview examples of a NEMA17 mounted to a printed L bracket, then a controller mounted to the same base.
 
 ## Motor properties
 
@@ -67,9 +81,13 @@ For a printed spacer between the motor and controller, see the [complete motor�
 | `displayName` | `string` | Optional display label. |
 | `standard` | `"nema8" \| "nema17" \| "nema23"` | Optional shortcut to a built-in motor model. Use either `standard` or `model`. |
 | `model` | `string` | Custom modelprinter specification. The current motor renderer accepts NEMA specifications. |
-| `shaftFacingDirection` | `"x+" \| "x-" \| "y+" \| "y-" \| "z+" \| "z-"` | Optional shaft direction; defaults to `"z+"`. |
+| `shaftFacingDirection` | `"x+" \| "x-" \| "y+" \| "y-" \| "z+" \| "z-"` | Optional shaft direction for an unmounted motor; defaults to `"z+"`. Omit when mounted. |
+| `wireConnection` | `"jst-ph-6" \| "stubs" \| "none"` | Motor wire termination; use `"jst-ph-6"` for the `wireside` cable endpoint. |
+| `mountedTo` | `string` | Target assembly face, such as `"BRACKET.motor"`; supply together with `mountFace`. |
+| `mountFace` | `string` | This motor's mating face: `"frontface"` or `"backface"`. |
+| `mountGap` | `string \| number` | Nonnegative face clearance in mm or a distance string; requires `mountedTo`. Omitted means zero. |
 
-Supply exactly one of `standard` or `model`. A built-in standard selects representative dimensions; choose a custom `model` when your motor has a different body or shaft length.
+Supply exactly one of `standard` or `model`. With a custom `model`, specify the wire termination in the string (for example, `nema17_backfaceholes_jstph6`) instead of passing `wireConnection`. A built-in standard selects representative dimensions; choose a custom `model` when your motor has a different body or shaft length.
 
 :::note Current custom CAD support
 
