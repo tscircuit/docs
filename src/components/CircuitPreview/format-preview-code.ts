@@ -4,11 +4,30 @@ import estree from "prettier/plugins/estree"
 import typescript from "prettier/plugins/typescript"
 import * as prettier from "prettier/standalone"
 
-const unwrapJsxExample = (source: string) => {
-  const ast = parse(source, {
-    sourceType: "module",
-    plugins: ["typescript", "jsx"],
-  })
+const unwrapJsxExample = (input: string) => {
+  let source = input
+  const parseSource = (code: string) =>
+    parse(code, {
+      sourceType: "module",
+      plugins: ["typescript", "jsx"],
+    })
+  let ast = parseSource(source)
+  const imports = ast.program.body.filter(
+    (node) => node.type === "ImportDeclaration",
+  )
+  if (
+    imports.some(
+      (node) => !["tscircuit", "@tscircuit/core"].includes(node.source.value),
+    )
+  ) {
+    return source
+  }
+  // Hide inferable imports only in the display. Keep their surrounding comments.
+  for (const node of imports.reverse()) {
+    source = source.slice(0, node.start!) + source.slice(node.end!)
+  }
+  source = source.trim()
+  ast = parseSource(source)
   const exported = ast.program.body.find(
     (node) => node.type === "ExportDefaultDeclaration",
   )

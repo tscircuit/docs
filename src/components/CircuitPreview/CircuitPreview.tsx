@@ -15,6 +15,7 @@ import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "../TscircuitIframe"
 import styles from "./styles.module.css"
+import { PreviewCodeSourceContext } from "./preview-code-source-context"
 
 type CircuitPreviewView =
   | "code"
@@ -436,12 +437,14 @@ export default function CircuitPreview({
         <div
           className={`${tw("relative w-full min-w-0 min-h-[320px]")} ${styles.codePane} ${wrapCode ? styles.wrapCode : ""}`}
         >
-          <CodeBlock
-            className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
-            language="tsx"
-          >
-            {displayCode}
-          </CodeBlock>
+          <PreviewCodeSourceContext.Provider value={currentCode.trim()}>
+            <CodeBlock
+              className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
+              language="tsx"
+            >
+              {displayCode}
+            </CodeBlock>
+          </PreviewCodeSourceContext.Provider>
         </div>
       </div>
     </div>

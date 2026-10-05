@@ -8,12 +8,41 @@ export default () => (
 <assembly.device><board name="CONTROLLER" width={32} height={28} pcbX={60} routingDisabled><connector name="J_USB" standard="usb_c" footprint="usbcmidmount" /></board></assembly.device>
 );`
   const formatted = await formatPreviewCode(source)
-  assert.ok(formatted.startsWith('import { assembly } from "tscircuit"'))
+  assert.ok(formatted.startsWith("<assembly.device>"))
+  assert.ok(!formatted.includes("import "))
   assert.ok(!formatted.includes("export default"))
   assert.ok(formatted.includes('\n  <board\n    name="CONTROLLER"'))
   assert.ok(formatted.includes("\n    <connector\n"))
   assert.ok(formatted.endsWith("</assembly.device>"))
   assert.ok(source.includes("export default () => ("))
+})
+
+test("hides imports only from the inferable tscircuit packages", async () => {
+  const formatted =
+    await formatPreviewCode(`import { assembly } from "@tscircuit/core"
+import { jscad } from "tscircuit"
+export default () => (<assembly.device><jscad.cuboid size={[1, 2, 3]} /></assembly.device>)`)
+  assert.ok(!formatted.includes("import "))
+  assert.ok(!formatted.includes("export default"))
+  assert.ok(formatted.startsWith("<assembly.device>"))
+})
+
+test("retains all imports and the wrapper if any import is from another module", async () => {
+  for (const imported of [
+    'import { Model } from "./model"',
+    'import React from "react"',
+    'import data from "./data.json"',
+    'import type { Props } from "@tscircuit/props"',
+    'import "./setup"',
+  ]) {
+    const formatted =
+      await formatPreviewCode(`import { assembly } from "@tscircuit/core"
+${imported}
+export default () => (<assembly.device />)`)
+    assert.ok(formatted.includes('import { assembly } from "@tscircuit/core"'))
+    assert.ok(formatted.includes(imported))
+    assert.ok(formatted.includes("export default () =>"))
+  }
 })
 
 test("unwraps fragments and retains setup declarations and surrounding comments", async () => {
