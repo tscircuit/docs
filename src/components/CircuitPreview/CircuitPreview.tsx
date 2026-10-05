@@ -123,6 +123,7 @@ export default function CircuitPreview({
   defaultView = "pcb",
   splitView = true,
   showRunFrame = false,
+  runFrameDefaultTab,
   hideSchematicTab = false,
   hidePCBTab = false,
   hide3DTab = false,
@@ -155,6 +156,8 @@ export default function CircuitPreview({
   defaultView?: CircuitPreviewView
   splitView?: boolean
   showRunFrame?: boolean
+  /** Initial tab in the interactive preview. */
+  runFrameDefaultTab?: "cad" | "pcb" | "schematic"
   hideSchematicTab?: boolean
   hidePCBTab?: boolean
   hide3DTab?: boolean
@@ -670,7 +673,12 @@ export default function CircuitPreview({
             `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
           )}
         >
-          <TscircuitIframe fsMap={fsMap} entrypoint={entrypoint} />
+          <TscircuitIframe
+            code={normalizedCode}
+            fsMap={normalizedFsMap}
+            entrypoint={entrypoint}
+            defaultActiveTab={runFrameDefaultTab}
+          />
         </div>
       )}
     </div>

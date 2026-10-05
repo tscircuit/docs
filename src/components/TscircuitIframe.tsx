@@ -4,6 +4,7 @@ export interface TscircuitIframeProps {
   fsMap?: Record<string, string>
   entrypoint?: string
   code?: string
+  defaultActiveTab?: "cad" | "pcb" | "schematic"
 }
 
 export const TscircuitIframe = (runFrameProps: TscircuitIframeProps) => {
