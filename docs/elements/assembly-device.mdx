@@ -10,6 +10,7 @@ import preview2 from "@site/src/data/assembly-previews/assembly-device-2.json"
 `assembly.device` groups boards and mechanical parts into a complete device. Add `model` or `modelUrl` to render a model at the world origin.
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
@@ -41,6 +42,7 @@ export default () => (
 Use a modelprinter string to generate a model without supplying a file. This display is 16 × 10 mm with a 5 mm cable.
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview2}
   defaultView="3d"
   hidePCBTab

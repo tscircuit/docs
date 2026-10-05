@@ -10,6 +10,7 @@ import preview2 from "@site/src/data/assembly-previews/assembly-subassembly-2.js
 `assembly.subassembly` groups mechanical models alongside a board. It can have its own model, CAD children, or both.
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab
@@ -55,6 +56,7 @@ Choose one of `model`, `modelUrl`, or `cadModel`. Omit all three for a group wit
 Use `cadModel` for offsets and rotation:
 
 <CircuitPreview
+  wrapCode
   circuitJson={preview2}
   defaultView="3d"
   hideSchematicTab

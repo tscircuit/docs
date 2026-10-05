@@ -154,7 +154,7 @@ export default function CircuitPreview({
   verticalStack = false,
   showCourtyards = false,
   showDebugObjects = false,
-  wrapCode = false,
+  wrapCode = true,
 }: {
   code?: string
   /** Precompiled preview data for APIs newer than the hosted evaluator. */
