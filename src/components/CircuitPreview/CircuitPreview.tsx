@@ -139,6 +139,7 @@ export default function CircuitPreview({
   hide3DTab = false,
   showPinoutTab = false,
   browser3dView = false,
+  realistic = true,
   fsMap,
   entrypoint = undefined,
   mainComponentPath = undefined,
@@ -171,6 +172,8 @@ export default function CircuitPreview({
   mainComponentPath?: string
   schematicOnly?: boolean
   browser3dView?: boolean
+  /** Studio lighting for hosted 3D images. */
+  realistic?: boolean
   leftView?: CircuitPreviewView
   rightView?: CircuitPreviewView
   projectBaseUrl?: string
@@ -315,7 +318,7 @@ export default function CircuitPreview({
     if (threeDImageUrl) return threeDImageUrl
     if (circuitJson) {
       return configurePreviewUrl(
-        "https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff",
+        `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&realistic=${realistic}`,
       )
     }
     if (browser3dView && typeof fsMapOrCode === "string") {
@@ -340,6 +343,7 @@ export default function CircuitPreview({
         png_width: "800",
         png_height: "600",
         show_infinite_grid: "true",
+        realistic: String(realistic),
         background_color: "%23ffffff",
         fs_map: encodeURIComponent(encodedFsMap),
         main_component_path: mainComponentPath
@@ -359,13 +363,14 @@ export default function CircuitPreview({
         typeof fsMapOrCode === "string" ? fsMapOrCode : normalizedCode,
       ),
     )
-    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&code=${encodedCode}`
+    return `https://svg.tscircuit.com/?svg_type=3d&format=png&png_width=800&png_height=600&show_infinite_grid=true&background_color=%23ffffff&realistic=${realistic}&code=${encodedCode}`
   }, [
     circuitJson,
     normalizedCode,
     normalizedFsMap,
     fsMapOrCode,
     browser3dView,
+    realistic,
     threeDImageUrl,
     mainComponentPath,
     projectBaseUrl,

@@ -106,10 +106,16 @@ https://png.tscircuit.com/?view=<type>&code=<compressed-code>
 
 For 3D renderings of PCBs, use the dedicated endpoints:
 
+Hosted 3D images in `<CircuitPreview />` use realistic lighting by default. Use
+`realistic={false}` on a preview to select regular rendering. When calling the
+image API directly, pass `realistic=true` for studio lighting, soft shadows, and
+reflections. The flag works for both PNG and SVG output, and can also be passed
+as `"realistic": true` in a POST JSON body.
+
 ### Basic Usage
 
 ```
-https://svg.tscircuit.com/?svg_type=3d&background_color=%23ffffff&code=<compressed-code>
+https://svg.tscircuit.com/?svg_type=3d&format=png&realistic=true&background_color=%23ffffff&code=<compressed-code>
 ```
 
 ### Parameters
@@ -117,6 +123,8 @@ https://svg.tscircuit.com/?svg_type=3d&background_color=%23ffffff&code=<compress
 | Parameter | Description | Required |
 |-----------|-------------|----------|
 | `svg_type` | Must be set to `3d` | Yes |
+| `format` | Output format: `png` or `svg` | No (default: `svg`) |
+| `realistic` | Enable studio lighting, soft shadows, and reflections | No (API default: `false`; hosted docs previews: `true`) |
 | `code` | Compressed and encoded circuit code | Yes |
 | `width` | Width of the rendering in pixels | No (default: 800) |
 | `height` | Height of the rendering in pixels | No (default: 600) |
@@ -132,7 +140,7 @@ import React from 'react';
 import { createSvgUrl } from '@tscircuit/create-snippet-url';
 
 const Circuit3DViewer = ({ circuitCode }) => {
-  const viewerUrl = `${createSvgUrl(circuitCode, "3d")}&background_color=%23ffffff`;
+  const viewerUrl = `${createSvgUrl(circuitCode, "3d")}&realistic=true&background_color=%23ffffff`;
   
   return (
     <iframe 
