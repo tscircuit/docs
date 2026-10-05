@@ -81,7 +81,9 @@ export default function GlbPreview({
           alt: "Interactive 3D circuit model",
           "camera-controls": "",
           "camera-orbit": cameraPreset?.startsWith("bottom")
-            ? "0deg 135deg auto"
+            ? cameraPreset === "bottom" || cameraPreset === "bottom-up"
+              ? "180deg 179.9deg auto"
+              : "180deg 135deg auto"
             : "auto auto auto",
           "max-camera-orbit": "auto 180deg auto",
           "interaction-prompt": "none",
