@@ -312,7 +312,7 @@
     "type": "pcb_component",
     "pcb_component_id": "pcb_component_0",
     "center": {
-      "x": 44,
+      "x": 67,
       "y": 0
     },
     "width": 1.75,
@@ -325,12 +325,12 @@
     "obstructs_within_bounds": true,
     "is_allowed_to_be_off_board": false,
     "cable_insertion_center": {
-      "x": 40.6,
+      "x": 63.6,
       "y": 0
     },
     "position_mode": "relative_to_group_anchor",
     "positioned_relative_to_pcb_board_id": "pcb_board_0",
-    "display_offset_x": -21,
+    "display_offset_x": -18,
     "pin1_location": "topside_left"
   },
   {
@@ -339,7 +339,7 @@
     "source_board_id": "source_board_0",
     "subcircuit_id": "subcircuit_source_group_0",
     "center": {
-      "x": 65,
+      "x": 85,
       "y": 0
     },
     "thickness": 1.4,
@@ -367,7 +367,7 @@
     "rect_pad_height": 1.75,
     "shape": "circular_hole_with_rect_pad",
     "port_hints": ["unnamed_platedhole1", "1"],
-    "x": 44,
+    "x": 67,
     "y": -5,
     "layers": ["top", "bottom"],
     "is_covered_with_solder_mask": false,
@@ -388,7 +388,7 @@
     "hole_height": 0.75,
     "shape": "pill",
     "port_hints": ["unnamed_platedhole2", "2"],
-    "x": 44,
+    "x": 67,
     "y": -3,
     "layers": ["top", "bottom"],
     "is_covered_with_solder_mask": false,
@@ -404,7 +404,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": -3,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -417,7 +417,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": -3,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -432,7 +432,7 @@
     "hole_height": 0.75,
     "shape": "pill",
     "port_hints": ["unnamed_platedhole3", "3"],
-    "x": 44,
+    "x": 67,
     "y": -1,
     "layers": ["top", "bottom"],
     "is_covered_with_solder_mask": false,
@@ -448,7 +448,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": -1,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -461,7 +461,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": -1,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -476,7 +476,7 @@
     "hole_height": 0.75,
     "shape": "pill",
     "port_hints": ["unnamed_platedhole4", "4"],
-    "x": 44,
+    "x": 67,
     "y": 1,
     "layers": ["top", "bottom"],
     "is_covered_with_solder_mask": false,
@@ -492,7 +492,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": 1,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -505,7 +505,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": 1,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -520,7 +520,7 @@
     "hole_height": 0.75,
     "shape": "pill",
     "port_hints": ["unnamed_platedhole5", "5"],
-    "x": 44,
+    "x": 67,
     "y": 3,
     "layers": ["top", "bottom"],
     "is_covered_with_solder_mask": false,
@@ -536,7 +536,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": 3,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -549,7 +549,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": 3,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -564,7 +564,7 @@
     "hole_height": 0.75,
     "shape": "pill",
     "port_hints": ["unnamed_platedhole6", "6"],
-    "x": 44,
+    "x": 67,
     "y": 5,
     "layers": ["top", "bottom"],
     "is_covered_with_solder_mask": false,
@@ -580,7 +580,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": 5,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -593,7 +593,7 @@
     "ccw_rotation": 90,
     "width": 1.2,
     "height": 1.75,
-    "x": 44,
+    "x": 67,
     "y": 5,
     "subcircuit_id": "subcircuit_source_group_0"
   },
@@ -604,23 +604,23 @@
     "layer": "top",
     "route": [
       {
-        "x": 41,
+        "x": 64,
         "y": -7
       },
       {
-        "x": 41,
+        "x": 64,
         "y": 7
       },
       {
-        "x": 46,
+        "x": 69,
         "y": 7
       },
       {
-        "x": 46,
+        "x": 69,
         "y": -7
       },
       {
-        "x": 41,
+        "x": 64,
         "y": -7
       }
     ],
@@ -632,7 +632,7 @@
     "pcb_silkscreen_text_id": "pcb_silkscreen_text_0",
     "anchor_alignment": "center",
     "anchor_position": {
-      "x": 40.5,
+      "x": 63.5,
       "y": 2.143131898507868e-16
     },
     "font": "tscircuit2024",
@@ -649,7 +649,7 @@
     "pcb_component_id": "pcb_component_0",
     "layer": "top",
     "center": {
-      "x": 44.55,
+      "x": 67.55,
       "y": -3.367778697655222e-17
     },
     "width": 14.9,
@@ -663,7 +663,7 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top", "bottom"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": 44,
+    "x": 67,
     "y": -5,
     "source_port_id": "source_port_0"
   },
@@ -673,7 +673,7 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top", "bottom"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": 44,
+    "x": 67,
     "y": -3,
     "source_port_id": "source_port_1"
   },
@@ -683,7 +683,7 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top", "bottom"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": 44,
+    "x": 67,
     "y": -1,
     "source_port_id": "source_port_2"
   },
@@ -693,7 +693,7 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top", "bottom"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": 44,
+    "x": 67,
     "y": 1,
     "source_port_id": "source_port_3"
   },
@@ -703,7 +703,7 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top", "bottom"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": 44,
+    "x": 67,
     "y": 3,
     "source_port_id": "source_port_4"
   },
@@ -713,7 +713,7 @@
     "pcb_component_id": "pcb_component_0",
     "layers": ["top", "bottom"],
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": 44,
+    "x": 67,
     "y": 5,
     "source_port_id": "source_port_5"
   },
@@ -747,7 +747,7 @@
     "type": "cad_component",
     "cad_component_id": "cad_component_1",
     "position": {
-      "x": 44,
+      "x": 67,
       "y": 0,
       "z": 0.7
     },
@@ -781,247 +781,247 @@
         "z": -35.5
       },
       {
-        "x": 34.98126206620664,
+        "x": 35.19173561673463,
         "y": 0,
-        "z": -35.409329155562475
+        "z": -35.390721720395135
       },
       {
-        "x": 35.840882700053974,
+        "x": 36.30399451644626,
         "y": 0,
-        "z": -35.14278516764409
+        "z": -35.068935578169004
       },
       {
-        "x": 36.582098987324635,
+        "x": 37.338009591608284,
         "y": 0,
-        "z": -34.708733654275086
+        "z": -34.54425185799165
       },
       {
-        "x": 37.209188312721295,
+        "x": 38.29605403357058,
         "y": 0,
-        "z": -34.11575232297987
+        "z": -33.82698073984926
       },
       {
-        "x": 37.72742307614727,
+        "x": 39.181396048842,
         "y": 0,
-        "z": -33.37262173862179
+        "z": -32.92810183293248
       },
       {
-        "x": 38.14300838400129,
+        "x": 39.99823655038768,
         "y": 0,
-        "z": -32.48831262030248
+        "z": -31.8592222554053
       },
       {
-        "x": 38.46300378160547,
+        "x": 40.7516308900604,
         "y": 0,
-        "z": -31.471969884669733
+        "z": -30.632523977321874
       },
       {
-        "x": 38.69523036594644,
+        "x": 41.44739597134553,
         "y": 0,
-        "z": -30.332893708656748
+        "z": -29.260701327667633
       },
       {
-        "x": 38.84816486805631,
+        "x": 42.09200433174643,
         "y": 0,
-        "z": -29.08051793567508
+        "z": -27.756889734797323
       },
       {
-        "x": 38.93082251731337,
+        "x": 42.69246700709015,
         "y": 0,
-        "z": -27.724386194737004
+        "z": -26.134586919540467
       },
       {
-        "x": 38.95263069188684,
+        "x": 43.25620718197732,
         "y": 0,
-        "z": -26.27412614111579
+        "z": -24.407567889382097
       },
       {
-        "x": 38.923295517201396,
+        "x": 43.790926788252385,
         "y": 0,
-        "z": -24.73942225929338
+        "z": -22.589795188191967
       },
       {
-        "x": 38.85266369495905,
+        "x": 44.30446833403125,
         "y": 0,
-        "z": -23.129987693544575
+        "z": -20.695325937154248
       },
       {
-        "x": 38.75058192686176,
+        "x": 44.80467432742976,
         "y": 0,
-        "z": -21.455535588144144
+        "z": -18.73821725745308
       },
       {
-        "x": 38.62675633833426,
+        "x": 45.2992467002924,
         "y": 0,
-        "z": -19.725750427574063
+        "z": -16.732431692958247
       },
       {
-        "x": 38.490614307545734,
+        "x": 45.7956086372198,
         "y": 0,
-        "z": -17.950259867107594
+        "z": -14.691744251154782
       },
       {
-        "x": 38.35117106387447,
+        "x": 46.300771174038964,
         "y": 0,
-        "z": -16.138607535756975
+        "z": -12.629652652872165
       },
       {
-        "x": 38.21690333835261,
+        "x": 46.82120684825333,
         "y": 0,
-        "z": -14.300227276933805
+        "z": -10.55929232646519
       },
       {
-        "x": 38.09563222796677,
+        "x": 47.36273256334823,
         "y": 0,
-        "z": -12.444419267571288
+        "z": -8.493357600919285
       },
       {
-        "x": 37.99441727803901,
+        "x": 47.93040367117638,
         "y": 0,
-        "z": -10.580328424317152
+        "z": -6.4440304462885285
       },
       {
-        "x": 37.91946359496815,
+        "x": 48.52842108470303,
         "y": 0,
-        "z": -8.716925466273114
+        "z": -4.42291798073703
       },
       {
-        "x": 37.876043578657466,
+        "x": 49.16005301043696,
         "y": 0,
-        "z": -6.862990958302475
+        "z": -2.4409998134553694
       },
       {
-        "x": 37.868434613809605,
+        "x": 49.82757263972805,
         "y": 0,
-        "z": -5.02710260792963
+        "z": -0.5085861244297014
       },
       {
-        "x": 37.89987378620723,
+        "x": 50.532212865049736,
         "y": 0,
-        "z": -3.217626033184863
+        "z": 1.3647128016698566
       },
       {
-        "x": 37.9725303987966,
+        "x": 51.27413879608377,
         "y": 0,
-        "z": -1.4427091593590644
+        "z": 3.170005066198062
       },
       {
-        "x": 38.087496757831566,
+        "x": 52.052438545864675,
         "y": 0,
-        "z": 0.2897196594582354
+        "z": 4.899123355459139
       },
       {
-        "x": 38.24479738672965,
+        "x": 52.865132444635314,
         "y": 0,
-        "z": 1.971949761916911
+        "z": 6.544618741782201
       },
       {
-        "x": 38.443416509988324,
+        "x": 53.70920052376213,
         "y": 0,
-        "z": 3.5964825761609363
+        "z": 8.099742192812382
       },
       {
-        "x": 38.6813433369044,
+        "x": 54.580627799452536,
         "y": 0,
-        "z": 5.156022387673194
+        "z": 9.558414105399251
       },
       {
-        "x": 38.95563437027927,
+        "x": 55.47446658145769,
         "y": 0,
-        "z": 6.643463636174989
+        "z": 10.915182385365904
       },
       {
-        "x": 39.26249167399097,
+        "x": 56.38491474064111,
         "y": 0,
-        "z": 8.051874958933627
+        "z": 12.1651697904254
       },
       {
-        "x": 39.597355760253016,
+        "x": 57.305408596233704,
         "y": 0,
-        "z": 9.374480253501911
+        "z": 13.304011437222172
       },
       {
-        "x": 39.95501150723343,
+        "x": 58.22872883344839,
         "y": 0,
-        "z": 10.60463708391099
+        "z": 14.32778354176997
       },
       {
-        "x": 40.32970529475403,
+        "x": 59.147117639174446,
         "y": 0,
-        "z": 11.735812799792717
+        "z": 15.232924612557285
       },
       {
-        "x": 40.71527135384576,
+        "x": 60.05240505152748,
         "y": 0,
-        "z": 12.761558777039928
+        "z": 16.016150444728133
       },
       {
-        "x": 41.105265168284056,
+        "x": 60.93614236137936,
         "y": 0,
-        "z": 13.675483220754174
+        "z": 16.67436436981127
       },
       {
-        "x": 41.49310164556707,
+        "x": 61.78974028333047,
         "y": 0,
-        "z": 14.47122299582982
+        "z": 17.204564296649835
       },
       {
-        "x": 41.87219569319295,
+        "x": 62.60460953198125,
         "y": 0,
-        "z": 15.142414967161235
+        "z": 17.60374813408698
       },
       {
-        "x": 42.23610279493713,
+        "x": 63.37230139820352,
         "y": 0,
-        "z": 15.68266733984996
+        "z": 17.868819213651456
       },
       {
-        "x": 42.57865718183056,
+        "x": 64.08464592011293,
         "y": 0,
-        "z": 16.08553148978885
+        "z": 17.996493330487276
       },
       {
-        "x": 42.89410523369505,
+        "x": 64.73388528459871,
         "y": 0,
-        "z": 16.344474766609736
+        "z": 17.983208993082936
       },
       {
-        "x": 43.17723182869862,
+        "x": 65.31280017687378,
         "y": 0,
-        "z": 16.452854734343774
+        "z": 17.82504241745218
       },
       {
-        "x": 43.4234774790548,
+        "x": 65.81482691616911,
         "y": 0,
-        "z": 16.403895290543765
+        "z": 17.517628720239436
       },
       {
-        "x": 43.62904424864162,
+        "x": 66.23416337334817,
         "y": 0,
-        "z": 16.190665072477042
+        "z": 17.0560906591578
       },
       {
-        "x": 43.79098864026046,
+        "x": 66.56586185816211,
         "y": 0,
-        "z": 15.806058519864868
+        "z": 16.434976140030315
       },
       {
-        "x": 43.90729986320815,
+        "x": 66.80590738681836,
         "y": 0,
-        "z": 15.242779918190143
+        "z": 15.648205559706575
       },
       {
-        "x": 43.97696214198217,
+        "x": 66.95127999068337,
         "y": 0,
-        "z": 14.493330695596864
+        "z": 14.689029885831735
       },
       {
-        "x": 44,
+        "x": 67,
         "y": 0,
         "z": 13.650000190734863
       },
       {
-        "x": 44,
+        "x": 67,
         "y": 0,
         "z": 13.550000190734863
       }
@@ -1035,41 +1035,5 @@
     "standard": "jst_ph",
     "warning_type": "source_missing_manufacturer_part_number_warning",
     "message": "<connector#1(.CONTROLLER>.J_MOTOR) /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
-  },
-  {
-    "type": "pcb_placement_error",
-    "pcb_placement_error_id": "pcb_placement_error_0",
-    "error_type": "pcb_placement_error",
-    "message": "Plated hole J_MOTOR.pin1 violates copper-to-board-edge clearance (measured 0.125mm, required 0.200mm)"
-  },
-  {
-    "type": "pcb_placement_error",
-    "pcb_placement_error_id": "pcb_placement_error_1",
-    "error_type": "pcb_placement_error",
-    "message": "Plated hole J_MOTOR.pin2 violates copper-to-board-edge clearance (measured 0.125mm, required 0.200mm)"
-  },
-  {
-    "type": "pcb_placement_error",
-    "pcb_placement_error_id": "pcb_placement_error_2",
-    "error_type": "pcb_placement_error",
-    "message": "Plated hole J_MOTOR.pin3 violates copper-to-board-edge clearance (measured 0.125mm, required 0.200mm)"
-  },
-  {
-    "type": "pcb_placement_error",
-    "pcb_placement_error_id": "pcb_placement_error_3",
-    "error_type": "pcb_placement_error",
-    "message": "Plated hole J_MOTOR.pin4 violates copper-to-board-edge clearance (measured 0.125mm, required 0.200mm)"
-  },
-  {
-    "type": "pcb_placement_error",
-    "pcb_placement_error_id": "pcb_placement_error_4",
-    "error_type": "pcb_placement_error",
-    "message": "Plated hole J_MOTOR.pin5 violates copper-to-board-edge clearance (measured 0.125mm, required 0.200mm)"
-  },
-  {
-    "type": "pcb_placement_error",
-    "pcb_placement_error_id": "pcb_placement_error_5",
-    "error_type": "pcb_placement_error",
-    "message": "Plated hole J_MOTOR.pin6 violates copper-to-board-edge clearance (measured 0.125mm, required 0.200mm)"
   }
 ]

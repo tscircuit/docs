@@ -86,11 +86,11 @@ try {
           width: 800,
           height: 800,
           camPos: name.startsWith("assembly-cable")
-            ? [100, 70, 120]
+            ? [120, 90, 150]
             : [95, 35, 95],
           lookAt: name.startsWith("assembly-cable")
             ? name === "assembly-cable-1"
-              ? [-30, -14, 0]
+              ? [-40, -14, 0]
               : [0, 0, 0]
             : [0, -25, 0],
           fov: 40,

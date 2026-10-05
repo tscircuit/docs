@@ -26,9 +26,9 @@ export default () => (
     <assembly.motor name="MOTOR" standard="nema17"
       wireConnection="jst-ph-6" />
     <board name="CONTROLLER" width={44} height={34}
-      pcbX={65} routingDisabled>
+      pcbX={85} routingDisabled>
       <connector name="J_MOTOR" standard="jst_ph" pinCount={6}
-        footprint="jst6_ph" pcbX={-21} pcbRotation={90} />
+        footprint="jst6_ph" pcbX={-18} pcbRotation={90} />
     </board>
     <assembly.cable name="MOTOR_CABLE"
       from="MOTOR.wireside" to=".CONTROLLER > .J_MOTOR" />
