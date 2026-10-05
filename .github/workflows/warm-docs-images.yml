@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Test image discovery and refresh requests
-        run: bun test tests/warm-docs-images.test.mjs
+        run: bun test tests/warm-docs-images.test.mjs tests/circuit-preview-images.test.mjs
       - name: Build all docs pages
         run: bun run build
       - name: Refresh every docs image

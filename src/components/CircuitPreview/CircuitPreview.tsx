@@ -418,15 +418,18 @@ export default function CircuitPreview({
     src,
     alt,
     imageClassName,
+    enabled = true,
     hidden = false,
     hasHeader = false,
   }: {
     src: string
     alt: string
     imageClassName: string
+    enabled?: boolean
     hidden?: boolean
     hasHeader?: boolean
   }) => {
+    if (!enabled) return null
     return (
       <div
         className={tw(
@@ -636,6 +639,7 @@ export default function CircuitPreview({
       {imageViewHasHeader && previewHeaderElm(_showTabs)}
       {renderPreviewImage({
         src: pcbUrl,
+        enabled: !_hidePCBTab || view === "pcb",
         alt: "PCB Circuit Preview",
         hidden: view !== "pcb",
         hasHeader: imageViewHasHeader,
@@ -644,6 +648,7 @@ export default function CircuitPreview({
       })}
       {renderPreviewImage({
         src: schUrl,
+        enabled: !hideSchematicTab || view === "schematic",
         alt: selectedSimulationExperimentName
           ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
           : "Schematic Circuit Preview",
@@ -653,6 +658,7 @@ export default function CircuitPreview({
       })}
       {renderPreviewImage({
         src: pinoutUrl,
+        enabled: showPinoutTab || view === "pinout",
         alt: "Pinout Circuit Preview",
         hidden: view !== "pinout",
         hasHeader: imageViewHasHeader,
@@ -660,6 +666,7 @@ export default function CircuitPreview({
       })}
       {renderPreviewImage({
         src: threeDUrl,
+        enabled: !_hide3DTab || view === "3d",
         alt: "3D Circuit Preview",
         hidden: view !== "3d",
         hasHeader: imageViewHasHeader,

@@ -9,6 +9,8 @@ be started manually from Actions. It builds the docs, finds every image URL in
 the rendered HTML (including inactive CircuitPreview tabs and responsive image
 variants), deduplicates them, and downloads each image with four concurrent
 requests. Relative image paths resolve against `https://docs.tscircuit.com/`.
+CircuitPreview omits images for disabled views; enabled inactive tabs are still
+included so their images are ready when readers switch tabs.
 
 Requests preserve the original URL and send `Pragma: no-cache` and
 `Cache-Control: no-cache` so stale Vercel image entries refresh synchronously.

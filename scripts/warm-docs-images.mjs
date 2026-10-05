@@ -83,7 +83,7 @@ export async function warmImages(
   {
     concurrency = 4,
     attempts = 2,
-    timeoutMs = 120_000,
+    timeoutMs = 310_000,
     retryDelayMs = 5_000,
     fetchImage = fetch,
     onResult = () => {},
