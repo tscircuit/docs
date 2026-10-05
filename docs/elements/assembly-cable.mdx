@@ -42,9 +42,9 @@ The board connector sits at the edge facing the motor, so the cable approaches o
 
 The six-pin PH termination is a supported model configuration, not a requirement for every NEMA17 motor. Choose the connector and winding pinout for your actual motor. A physical cable does not create electrical traces or map pins.
 
-## Connect two USB-C ports
+## Connect two boards with USB-C
 
-`standard="usb_c"` explicitly requests a USB-C-to-USB-C cable. It can also be omitted when both endpoints use `standard="usb_c"`:
+Place each USB-C port on its own board and select each endpoint through its board name. `standard="usb_c"` explicitly requests a USB-C-to-USB-C cable. It can also be omitted when both endpoints use `standard="usb_c"`:
 
 <CircuitPreview
   wrapCode
@@ -56,14 +56,18 @@ The six-pin PH termination is a supported model configuration, not a requirement
 
 export default () => (
   <assembly.device>
-    <board name="DEVICE" width={84} height={28} routingDisabled>
-      <connector name="J_HOST" standard="usb_c" footprint="usbcmidmount"
-        pcbX={-28} pcbRotation={90} />
-      <connector name="J_CONTROLLER" standard="usb_c" footprint="usbcmidmount"
-        pcbX={28} pcbRotation={90} />
+    <board name="HOST" width={32} height={28} pcbX={-60}
+      routingDisabled>
+      <connector name="J_USB" standard="usb_c" footprint="usbcmidmount"
+        pcbX={13} pcbRotation={90} />
+    </board>
+    <board name="CONTROLLER" width={32} height={28} pcbX={60}
+      routingDisabled>
+      <connector name="J_USB" standard="usb_c" footprint="usbcmidmount"
+        pcbX={-13} pcbRotation={270} />
     </board>
     <assembly.cable name="USB" standard="usb_c"
-      from=".DEVICE > .J_HOST" to=".DEVICE > .J_CONTROLLER" />
+      from=".HOST > .J_USB" to=".CONTROLLER > .J_USB" />
   </assembly.device>
 )`}
 />
