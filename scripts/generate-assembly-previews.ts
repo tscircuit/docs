@@ -95,6 +95,7 @@ try {
             : [0, -25, 0],
           fov: 40,
           grid: false,
+          realistic: name.startsWith("assembly-cable"),
           backgroundColor: [1, 1, 1],
         })
         await writeFile(resolve(repoRoot, `static${imagePath}`), png)

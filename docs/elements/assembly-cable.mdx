@@ -28,13 +28,15 @@ export default () => (
     <board name="CONTROLLER" width={44} height={34}
       pcbX={65} routingDisabled>
       <connector name="J_MOTOR" standard="jst_ph" pinCount={6}
-        footprint="jst6_ph" />
+        footprint="jst6_ph" pcbX={-21} pcbRotation={90} />
     </board>
     <assembly.cable name="MOTOR_CABLE"
       from="MOTOR.wireside" to=".CONTROLLER > .J_MOTOR" />
   </assembly.device>
 )`}
 />
+
+The board connector sits at the edge facing the motor, so the cable approaches outside the PCB instead of passing through it.
 
 `MOTOR.wireside` is the named motor endpoint. `.CONTROLLER > .J_MOTOR` selects the connector inside that board. Mounting and cabling are independent: use `mountedTo` to place parts, and keep the same cable references when their positions change. See the [printed spacer](./assembly-printedpart.mdx#mount-a-printed-spacer-between-a-motor-and-a-board) and [bracket-mounted controller](../guides/advanced-assembly.mdx#add-a-controller-to-the-same-base) examples.
 

@@ -47,3 +47,6 @@ bun scripts/generate-assembly-previews.ts /path/to/tscircuit/core \
 ```
 
 Each example's `threeDImageUrl` is rendered from its own Circuit JSON.
+
+Cable PNGs use PoppyGL 0.0.32 or later for realistic lighting. The core
+checkout used for regeneration must resolve that renderer version.
