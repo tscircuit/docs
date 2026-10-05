@@ -9,7 +9,7 @@ import preview from "@site/src/data/assembly-previews/3d-printer-assembly.json"
 
 Build a simplified Cartesian 3D printer with a moving bed, an X gantry, a Z lead screw, three NEMA17 motors, and a controller on a printed tray. This guide uses [`assembly.printedpart`](../../elements/assembly-printedpart.mdx) and named JSCAD reference faces to connect the mechanical parts to the PCB.
 
-The controller has three six-pin JST PH **motor outputs**, one for each axis, connected to the motors by three independent [`assembly.cable`](../../elements/assembly-cable.mdx) elements. Its QFP and SOIC packages are placement placeholders for a controller and three drivers; this example does not define their electrical circuits or route the board. An extrusion printer would additionally need an extruder drive, heater controls, temperature sensing, and homing inputs. The rails, belts, and toolhead here are simplified shapes showing the assembly layout.
+The controller has three six-pin JST PH **motor outputs**, one for each axis, connected to the motors by three independent [`assembly.cable`](/elements/assembly-cable) elements. Its QFP and SOIC packages are placement placeholders for a controller and three drivers; this example does not define their electrical circuits or route the board. An extrusion printer would additionally need an extruder drive, heater controls, temperature sensing, and homing inputs. The rails, belts, and toolhead here are simplified shapes showing the assembly layout.
 
 ## Assemble the printer
 
