@@ -9,7 +9,7 @@ import preview from "@site/src/data/assembly-previews/3d-printer-assembly.json"
 
 Build a simplified Cartesian 3D printer with a moving bed, an X gantry, a Z lead screw, three NEMA17 motors, and a controller on a printed tray. This guide uses [`assembly.printedpart`](../../elements/assembly-printedpart.mdx) and named JSCAD reference faces to connect the mechanical parts to the PCB.
 
-The controller has three four-pin **motor outputs**, one for each axis. Its QFP and SOIC packages are placement placeholders for a controller and three drivers; this example does not define their electrical circuits or route the board. An extrusion printer would additionally need an extruder drive, heater controls, temperature sensing, and homing inputs. The rails, belts, and toolhead here are simplified shapes showing the assembly layout.
+The controller has three six-pin JST PH **motor outputs**, one for each axis, connected to the motors by three independent [`assembly.cable`](../../elements/assembly-cable.mdx) elements. Its QFP and SOIC packages are placement placeholders for a controller and three drivers; this example does not define their electrical circuits or route the board. An extrusion printer would additionally need an extruder drive, heater controls, temperature sensing, and homing inputs. The rails, belts, and toolhead here are simplified shapes showing the assembly layout.
 
 ## Assemble the printer
 
@@ -32,9 +32,7 @@ const trayHeight = 10
 const controllerHeight = 30
 const gantryHeight = 210
 const bedHeight = 82
-const frameZ = -(controllerHeight + trayHeight + boardThickness / 2)
 const boardHoles = [-44, 44].flatMap((x) => [-26, 26].map((y) => [x, y]))
-const nema17 = "https://modelcdn.tscircuit.com/jscad_models/nema17.glb"
 
 export default () => (
   <assembly.device name="CARTESIAN_PRINTER">
@@ -57,31 +55,19 @@ export default () => (
       mountedTo="FRAME.controller"
       mountFace="base"
     />
-    <Controller mountedTo="TRAY.board" pcbY={-145} />
+    <Controller name="CONTROL" mountedTo="TRAY.board" pcbY={-145} />
 
-    <assembly.subassembly
-      name="X_MOTOR"
-      cadModel={{
-        glbUrl: nema17,
-        positionOffset: { x: -143, y: 50, z: frameZ + gantryHeight + 10 },
-        rotationOffset: { x: 90, y: 0, z: 0 },
-      }}
-    />
-    <assembly.subassembly
-      name="Y_MOTOR"
-      cadModel={{
-        glbUrl: nema17,
-        positionOffset: { x: -25, y: 105, z: frameZ + 42 },
-        rotationOffset: { x: 0, y: 90, z: 0 },
-      }}
-    />
-    <assembly.subassembly
-      name="Z_MOTOR"
-      cadModel={{
-        glbUrl: nema17,
-        positionOffset: { x: -80, y: 78, z: frameZ + 40 },
-      }}
-    />
+    {axes.map((axis) => (
+      <assembly.motor key={axis} name={axis + "_MOTOR"}
+        standard="nema17" wireConnection="jst-ph-6"
+        mountedTo={"FRAME." + axis.toLowerCase() + "Motor"}
+        mountFace="frontface" />
+    ))}
+    {axes.map((axis) => (
+      <assembly.cable key={axis} name={axis + "_CABLE"}
+        from={axis + "_MOTOR.wireside"}
+        to={".CONTROL > ." + axis + " > .J_" + axis} />
+    ))}
   </assembly.device>
 )
 
@@ -146,6 +132,21 @@ function PrinterFrame() {
       </jscad.translate>
       <jscad.translate offset={[0, -145, controllerHeight]}>
         <jscad.rectangle name="controller" size={[100, 65]} reference />
+      </jscad.translate>
+      <jscad.translate offset={[-143, 50, gantryHeight + 10]}>
+        <jscad.rotate angles={[-Math.PI / 2, 0, 0]}>
+          <jscad.rectangle name="xMotor" size={[42, 42]} reference />
+        </jscad.rotate>
+      </jscad.translate>
+      <jscad.translate offset={[-25, 105, 42]}>
+        <jscad.rotate angles={[0, -Math.PI / 2, 0]}>
+          <jscad.rectangle name="yMotor" size={[42, 42]} reference />
+        </jscad.rotate>
+      </jscad.translate>
+      <jscad.translate offset={[-80, 78, 40]}>
+        <jscad.rotate angles={[Math.PI, 0, 0]}>
+          <jscad.rectangle name="zMotor" size={[42, 42]} reference />
+        </jscad.rotate>
       </jscad.translate>
     </>
   )
@@ -281,13 +282,13 @@ function Controller(props: BoardProps) {
             pcbX={0}
             pcbY={-5}
           />
-          <pinheader
+          <connector
             name={"J_" + axis}
-            pinCount={4}
-            pitch={2.54}
+            standard="jst_ph"
+            pinCount={6}
+            footprint="jst6_ph"
             pcbX={0}
             pcbY={13}
-            pinLabels={["A1", "A2", "B1", "B2"]}
           />
           <silkscreentext
             text={axis + " MOTOR"}
@@ -334,7 +335,7 @@ For example, the tray defines its PCB contact plane at the post tips:
 The controller component forwards its mounting props to `<board>`:
 
 ```tsx
-<Controller mountedTo="TRAY.board" pcbY={-145} />
+<Controller name="CONTROL" mountedTo="TRAY.board" pcbY={-145} />
 
 function Controller(props: BoardProps) {
   return (
@@ -351,7 +352,7 @@ Change `trayHeight` to adjust the standoff height, `bedHeight` to move the bed c
 
 ## Position the three motors
 
-The motors use the NEMA17 model from modelcdn. Each `assembly.subassembly` supplies `cadModel.positionOffset` and `rotationOffset` to position it in the printer:
+Each `assembly.motor` mates its shaft-side `frontface` to a named reference on `FRAME`. The reference geometry positions and orients the motor, so no manual CAD offsets are needed:
 
 | Motor | Location | Shaft direction | Controller connector |
 |-------|----------|-----------------|----------------------|
@@ -359,23 +360,23 @@ The motors use the NEMA17 model from modelcdn. Each `assembly.subassembly` suppl
 | `Y_MOTOR` | Rear of the base | +X | `J_Y` |
 | `Z_MOTOR` | Beside the vertical lead screw | +Z | `J_Z` |
 
-JSCAD rotations use **radians**; `cadModel.rotationOffset` uses **degrees**. The model's native shaft points along +Z, so X uses a 90° rotation around X and Y uses a 90° rotation around Y.
+JSCAD rotations use **radians**. Each target reference faces opposite the desired shaft direction; its in-plane X direction controls rotation around the shaft. These faces move with the frame when the controller tray height changes.
 
-`assembly.motor` currently supports a shaft direction and backface mounting, but has no free-position offset prop. This example therefore uses the existing CAD subassembly API for independently positioned motors. `frameZ` keeps their vertical offsets aligned with the frame when the tray height changes. The motor model represents the mechanical part; it does not create electrical motor terminals or cable connections.
+Each motor uses `wireConnection="jst-ph-6"`. The three `assembly.cable` elements connect `X_MOTOR.wireside`, `Y_MOTOR.wireside`, and `Z_MOTOR.wireside` to their matching JST PH headers. The nested selector `.CONTROL > .X > .J_X`, for example, selects the X connector inside its controller group. Cable standards and routes are inferred independently.
 
 ## Inspect the controller board
 
 ![Close-up of the controller board on its printed tray, showing X MOTOR, Y MOTOR, Z MOTOR, and the power header.](/img/guides/3d-printer-controller.png)
 
-Each motor connector has four pins labelled `A1`, `A2`, `B1`, and `B2` for the two motor windings. The three SOIC packages reserve space for driver stages, and the QFP package reserves controller space. The two-pin `J_POWER` header is labelled `VMOT` and `GND`. No electrical connectivity is implied by placing these components or the CAD motors.
+Each motor connector has six contacts matching the modeled PH termination. Choose the winding pinout and connector for your actual motor; the physical cables do not create an electrical pin map. The three SOIC packages reserve space for driver stages, and the QFP package reserves controller space. The two-pin `J_POWER` header is labelled `VMOT` and `GND`. No electrical connectivity is implied by placing these components or the CAD motors.
 
 To turn the layout into your controller, select the actual driver and controller parts, implement their pin maps and supporting circuitry, connect each driver's winding outputs to the corresponding header, and replace `routingDisabled` with your routing configuration. The assembly build currently reports unconnected-pin and unspecified-part warnings because these are placeholders.
 
-The motor-to-connector table describes the intended harness. Cable geometry and wiring are omitted from this example. See the [motor spacer example](../../elements/assembly-printedpart.mdx) for a smaller assembly that mounts a PCB directly behind one motor.
+The preview includes the three cable meshes. Their initial clearance arches do not avoid obstacles or calculate sag; inspect them around the frame and moving parts before designing the actual harness. See the [motor spacer example](../../elements/assembly-printedpart.mdx) for a smaller assembly that mounts a PCB directly behind one motor.
 
 ## Run it locally
 
-Use `tscircuit` 0.0.2744 or later. Copy the complete example to `printer.circuit.tsx` in a tscircuit project, then run:
+Use a `tscircuit` release containing `@tscircuit/core` 0.0.2088 or later and `circuit-json-to-gltf` 0.0.144 or later. Copy the complete example to `printer.circuit.tsx` in a tscircuit project, then run:
 
 ```sh
 bunx tsci build printer.circuit.tsx
