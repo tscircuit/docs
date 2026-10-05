@@ -1,5 +1,4 @@
 import {
-  createSnippetUrl,
   createSvgUrl,
   createPngUrl,
   getCompressedBase64SnippetString,
@@ -15,6 +14,7 @@ import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "../TscircuitIframe"
 import styles from "./styles.module.css"
+import { createCircuitPreviewEditorUrl } from "./create-editor-url"
 
 type CircuitPreviewView =
   | "code"
@@ -112,19 +112,6 @@ const TryInEditorLink = ({ href }: { href: string }) => (
     </svg>
   </a>
 )
-
-const getPreferredFsMapSource = (
-  fsMap: Record<string, string> | undefined,
-  preferredFilenames: Array<string | undefined>,
-) => {
-  if (!fsMap) return undefined
-
-  for (const filename of preferredFilenames) {
-    if (filename && fsMap[filename]) return fsMap[filename]
-  }
-
-  return Object.values(fsMap)[0]
-}
 
 export default function CircuitPreview({
   code,
@@ -376,15 +363,13 @@ export default function CircuitPreview({
     showSimulationGraph && simulationExperimentNames.length > 1
 
   const currentCode = normalizedFsMap?.[currentFile] ?? normalizedCode
-  const editorSource =
-    getPreferredFsMapSource(normalizedFsMap, [
-      entrypoint,
-      mainComponentPath,
-      currentFile,
-    ]) ?? normalizedCode
-  const editorUrl = editorSource.trim()
-    ? createSnippetUrl(editorSource, "board")
-    : undefined
+  const editorUrl = createCircuitPreviewEditorUrl({
+    code: normalizedCode,
+    fsMap: normalizedFsMap,
+    entrypoint,
+    mainComponentPath,
+    currentFile,
+  })
 
   const getPreviewContentHeightCss = (hasHeader: boolean) =>
     hasHeader && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"

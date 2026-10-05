@@ -1,112 +1,138 @@
 ---
 title: What is tscircuit?
-ai_start: true
 slug: /
-description: Learn what tscircuit is and how the React-powered toolchain works
+description: Design electronics with TypeScript and React, from routed PCBs and SPICE simulations to 3D assemblies and manufacturing files.
 sidebar_position: 1
 ---
 
-import YouTubeEmbed from '../../src/components/YouTubeEmbed';
-
-tscircuit is an open-source React/Typescript electronics toolchain and ecosystem
-for creating, previewing, simulating and manufacturing Printed Circuit Boards
-(PCBs).
-
-React and Typescript are standard tools that revolutionized the web development
-ecosystem. tscircuit combines the powerful static analysis of Typescript with
-the modular component system of React to make developing electronics faster,
-easier and more automated. To generate tscircuit with AI chat, check out our
-[guide to using tscircuit with AI](../advanced/ai-context.mdx)
-
-<YouTubeEmbed youtubeId="HAd5_ZJgg50" />
-
-Here's an example of a basic tscircuit electronic device, it's the USB
-flashlight that we make in [this tutorial](../tutorials/building-a-simple-usb-flashlight.mdx).
-
+import Tabs from "@theme/Tabs"
+import TabItem from "@theme/TabItem"
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import { motorControllerFiles } from "@site/src/data/advanced-assembly/examples"
+import controllerPreview from "@site/src/data/assembly-previews/advanced-assembly-controller.json"
+import styles from "@site/src/css/intro-examples.module.css"
 
-<CircuitPreview defaultView="3d" code={`
-import { PushButton } from "@tsci/seveibar.push-button"
-import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+tscircuit is an open-source electronics design toolchain. Write **TypeScript and
+React components** to create schematics, routed printed circuit boards (PCBs),
+3D previews, and manufacturing files.
 
-export default () => {
-  return (
-    <board width="12mm" height="30mm">
-      <SmdUsbC
-        name="J1"
-        connections={{
-          GND1: "net.GND",
-          GND2: "net.GND",
-          VBUS1: "net.VBUS",
-          VBUS2: "net.VBUS",
-        }}
-        pcbY={-10.5}
-      />
-      <led
-        name="LED"
-        supplierPartNumbers={{
-          jlcpcb: ["965799"],
-        }}
-        color="red"
-        footprint="0603"
-        pcbY={12}
-      />
-      <pushbutton
-        name="SW1"
-        pcbRotation="90deg"
-        footprint="pushbutton_id1.3mm_od2mm"
-        connections={{ pin1: ".R1 > .pos", pin2: "net.VBUS" }}
-        supplierPartNumbers={{
-          jlcpcb: ["C110153"],
-        }}
-      />
-      <resistor name="R1" footprint="0603" resistance="1k" pcbY={7} />
+Your circuit is code: reuse a USB-C interface across projects, generate repeated
+circuits with a loop, or review a board change in Git. Work in the browser,
+in your local editor, or with an [AI assistant](../advanced/ai-context.mdx).
 
-      <trace from="R1.neg" to="LED.pos" />
-      <trace from="LED.neg" to="net.GND" />
-    </board>
-  )
-}
-`} />
-
-This small snippet of code helps demonstrate the power of tscircuit. From those
-40 lines, we were able to create a full PCB, Schematic and 3D preview. Not only
-that, but we can export this circuit to [Fabrication Files](../guides/understanding-fabrication-files)
-and get it fabricated and assembled. In fact we did!
-
-import usbcflashlight from "@site/static/img/usbcflashlight_20250123_1816894.jpg"
-
-<div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
-<img style={{maxWidth: 400}} src={usbcflashlight} alt="USB Flashlight PCB After Manufacturing" />
+<div className={styles.actions}>
+  <a className="button button--primary" href="https://tscircuit.com/playground">Try the browser editor</a>
+  <a className="button button--secondary button--outline" href="/intro/quickstart-cli">Start a local project</a>
 </div>
 
-It may not seem like much, but tscircuit just handled a _lot_ of work for us!
+## Explore a complete ESP32 design
 
-- Automatic Part Selection and Bill of Materials Generation
-- Autorouting
-- Schematic and PCB Layout
-- 3D Model Generation
-- Fabrication File Generation
+This [Bluetooth speaker board](https://tscircuit.com/seveibar/esp32-bluetooth-speaker)
+combines an ESP32, a MAX98357A I2S audio amplifier, USB-C power and programming,
+and a battery power supply on a 62 × 44 mm, two-layer PCB. Its three-sheet
+schematic separates USB power, battery power, and the controller and audio circuitry.
 
-...and it ran completely in our browser!
+Switch between the generated views, then
+[explore the complete TypeScript source](https://github.com/tscircuit/esp32-bluetooth-speaker).
 
-tscircuit isn't limited to simple circuits like this. You can keep adding
-elements, creating modules and combining them to create more and more complex
-circuits. Here's an example of a [simple 3x3 macrokeypad based on the PICO2!](https://tscircuit.com/seveibar/nine-key-keyboard)
+{/* These snapshots come from tscircuit/esp32-bluetooth-speaker at
+    e968a0c3fd5fc9aa99e7accc27df5d3f8d64b296, __snapshots__/index.circuit-*.
+    Keep all three views from the same source revision when updating them. */}
 
-We ordered this one too!
+<Tabs groupId="speaker-view">
+  <TabItem value="3d" label="3D" default>
+    <img className={styles.speakerImage} src="/img/intro/esp32-speaker-3d.png" width="800" height="600" alt="3D render of the ESP32 Bluetooth speaker PCB with USB-C, audio jack, battery connector, and control buttons" />
+  </TabItem>
+  <TabItem value="pcb" label="PCB">
+    <img className={styles.speakerImage} src="/img/intro/esp32-speaker-pcb.svg" loading="lazy" alt="Routed two-layer ESP32 speaker PCB showing components, copper traces, and mounting holes" />
+  </TabItem>
+  <TabItem value="schematic" label="Schematic">
+    <a href="/img/intro/esp32-speaker-schematic.svg" target="_blank" rel="noopener noreferrer" title="Open the full-size schematic">
+      <img className={`${styles.speakerImage} ${styles.schematicImage}`} src="/img/intro/esp32-speaker-schematic.svg" loading="lazy" alt="Three-sheet schematic of the ESP32 speaker's USB power, battery supply, controller, and audio amplifier; open for full-size detail" />
+    </a>
+  </TabItem>
+</Tabs>
 
-import macrokeypad from "@site/static/img/macrokeypad.png"
+## Simulate a circuit from the same source
 
-<div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-<img style={{maxHeight: 400}} src={macrokeypad} alt="3x3 Macrokeypad" />
+Add sources, probes, and a simulation to your circuit to inspect its analog
+behavior. This RC filter uses SPICE to show the capacitor charging toward the
+5 V input. Open it in the editor and change the resistance or capacitance to
+see how the response changes.
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  showSimulationGraph
+  code={`
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" schX={-4} schY={1} schRotation={270} />
+    <resistor name="R1" resistance="1k" schX={-1} />
+    <capacitor name="C1" capacitance="1uF" schX={2} schY={1} schRotation={270} />
+
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from=".V1 > .pin2" to="net.GND" />
+
+    <voltageprobe name="INPUT" connectsTo=".V1 > .pin1" />
+    <voltageprobe name="OUTPUT" connectsTo=".C1 > .pin1" />
+    <analogsimulation duration="5ms" timePerStep="0.05ms" spiceEngine="ngspice" />
+  </board>
+)
+`}
+/>
+
+Explore more [SPICE simulation examples](../guides/spice-simulation/introduction.mdx).
+
+## Bring electronics and mechanics together
+
+React components can also describe printed parts and mechanical assemblies.
+Here, a NEMA17 motor and a PCB mount to named faces on a bracket defined with
+JSCAD. The same project contains the bracket geometry, mounting holes, and
+board placement.
+
+<div className={styles.assembly}>
+  <CircuitPreview
+    fsMap={motorControllerFiles}
+    entrypoint="index.tsx"
+    mainComponentPath="index.tsx"
+    circuitJson={controllerPreview}
+    threeDImageUrl="/img/guides/advanced-assembly-controller.png"
+    defaultView="3d"
+    hideSchematicTab
+    wrapCode
+  />
 </div>
 
-Depending on your experience level with electronics, you may want to get started
-with any of the following resources:
+This example demonstrates mechanical mounting and PCB placement; the driver
+circuit and motor wiring are left for your design.
+[Learn how the assembly works](../guides/advanced-assembly.mdx).
 
-- [Learn about the Essential tscircuit Elements](../guides/tscircuit-essentials/essential-elements)
-- [How do I design an electronic device from scratch with tscircuit?](../building-electronics/designing-electronics-from-scratch)
-- [Install tscircuit locally](./installation.md)
-- [Explore tscircuit electronics online](https://tscircuit.com)
-- [Install the `tscircuit` skill for your AI assistant](../advanced/ai-context.mdx)
+## From a project to physical hardware
+
+Export [Gerbers, a bill of materials, and pick-and-place files](../guides/understanding-fabrication-files.md)
+to have your board fabricated and assembled. You can also
+[export to KiCad, STEP, GLB, and SPICE](../command-line/tsci-export.md),
+or [arrange boards into a manufacturing panel](../guides/tscircuit-essentials/panelization.mdx).
+
+<figure className={styles.hardware}>
+  <img src="/img/macrokeypad.png" loading="lazy" width="400" alt="Manufactured nine-key macrokeypad with a Raspberry Pi Pico 2 and mechanical key switches" />
+  <figcaption>
+    This <a href="https://tscircuit.com/seveibar/nine-key-keyboard">Pico 2 macrokeypad</a> was designed with tscircuit, fabricated, and assembled.
+  </figcaption>
+</figure>
+
+## Start building
+
+- **In your browser:** [open the playground](https://tscircuit.com/playground) and explore [community designs](https://tscircuit.com).
+- **In your editor:** [create a local project](./quickstart-cli.md) and preview changes with `tsci dev`.
+- **With AI:** [install the tscircuit skill](../advanced/ai-context.mdx) for your assistant.
+
+Learn the [essential circuit elements](../guides/tscircuit-essentials/essential-elements.mdx),
+[import real parts from JLCPCB](../guides/importing-modules-and-chips/importing-from-jlcpcb.mdx),
+and combine [automatic layout](../guides/tscircuit-essentials/automatic-pcb-layout.mdx)
+with [manual placement and routing](../guides/tscircuit-essentials/manual-edits.mdx).
