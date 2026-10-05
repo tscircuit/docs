@@ -22,7 +22,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
         footprint="soic8"
         cadModel={
           <cadmodel
-            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+            model="soic8"
           />
         }
       />
@@ -31,10 +31,13 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   `}
 />
 
+Use `model="soic8"` for a modelprinter model; no modelcdn URL is needed. Use `modelUrl` for a local imported asset. Provide exactly one of `model` or `modelUrl`.
+
 ## Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `model` | `string` | Modelprinter specification (e.g. `"soic8"`) or HTTP(S) model URL; provide either `model` or `modelUrl` |
 | `modelUrl` | `string` | URL to the 3D model file (GLB, GLTF, OBJ, STL, STEP, WRL) |
 | `stepUrl` | `string` | URL to a STEP model file for export purposes |
 | `positionOffset` | `{x: number, y: number, z: number}` | Offset the model position from the component center |
@@ -64,7 +67,7 @@ You can use `positionOffset`, `rotationOffset`, and `zOffsetFromSurface` to repo
           <cadmodel
             positionOffset={{ x: -2, y: 0, z: 0 }}
             rotationOffset={{ x: 0, y: 0, z: 45 }}
-            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+            model="soic8"
           />
         }
       />
@@ -91,7 +94,7 @@ Use `zOffsetFromSurface` to control the vertical distance of the model from the 
         cadModel={
           <cadmodel
             zOffsetFromSurface="2mm"
-            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+            model="soic8"
           />
         }
       />
@@ -178,7 +181,7 @@ You can also use `showAsTranslucentModel` inside a `<cadmodel />`.
         footprint="soic8"
         cadModel={
           <cadmodel
-            modelUrl="https://modelcdn.tscircuit.com/jscad_models/soic8.glb"
+            model="soic8"
             showAsTranslucentModel
           />
         }
