@@ -18,11 +18,7 @@ This example uses a GLB model in millimetres, with its origin under the screw he
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
-const models =
-  "https://docs.tscircuit.com/models/assembly"
-
 const boardThickness = 1.6
-const screwModelUrl = models + "/screw.glb"
 const mounts = [
   { name: "left", x: -15, y: 0 },
   { name: "right", x: 15, y: 0 },
@@ -49,7 +45,7 @@ export default () => (
       {mounts.map(({ name, x, y }) => (
         <cadmodel
           key={name}
-          modelUrl={screwModelUrl}
+          model="https://docs.tscircuit.com/models/assembly/screw.glb"
           modelUnitToMmScale={1}
           pcbX={x}
           pcbY={y}
