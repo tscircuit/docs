@@ -42,41 +42,6 @@ Switch between the generated views, then
 
 [Open the full-size schematic](/img/intro/esp32-speaker-schematic.svg).
 
-## Simulate a circuit from the same source
-
-Add sources, probes, and a simulation to your circuit to inspect its analog
-behavior. This RC filter uses SPICE to show the capacitor charging toward the
-5 V input. Open it in the editor and change the resistance or capacitance to
-see how the response changes.
-
-<CircuitPreview
-  defaultView="schematic"
-  hidePCBTab
-  hide3DTab
-  verticalStack
-  showSimulationGraph
-  code={`
-export default () => (
-  <board routingDisabled>
-    <voltagesource name="V1" voltage="5V" schX={-4} schY={1} schRotation={270} />
-    <resistor name="R1" resistance="1k" schX={-1} />
-    <capacitor name="C1" capacitance="1uF" schX={2} schY={1} schRotation={270} />
-
-    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
-    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
-    <trace from=".C1 > .pin2" to="net.GND" />
-    <trace from=".V1 > .pin2" to="net.GND" />
-
-    <voltageprobe name="INPUT" connectsTo=".V1 > .pin1" />
-    <voltageprobe name="OUTPUT" connectsTo=".C1 > .pin1" />
-    <analogsimulation duration="5ms" timePerStep="0.05ms" spiceEngine="ngspice" />
-  </board>
-)
-`}
-/>
-
-Explore more [SPICE simulation examples](../guides/spice-simulation/introduction.mdx).
-
 ## Design an RP2040 motor controller
 
 This [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller)
