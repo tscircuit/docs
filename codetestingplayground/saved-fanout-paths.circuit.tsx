@@ -1,4 +1,4 @@
-import type { FanoutTracePath } from "@tscircuit/props"
+import type { FanoutTracePath } from "tscircuit"
 
 const savedPaths: FanoutTracePath[] = [
   {

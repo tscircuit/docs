@@ -15,7 +15,7 @@ import preview2 from "@site/src/data/assembly-previews/assembly-device-2.json"
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
-  code={`import { assembly } from "@tscircuit/core"
+  code={`import { assembly } from "tscircuit"
 
 const models =
   "https://docs.tscircuit.com/models/assembly"
@@ -47,7 +47,7 @@ Use a modelprinter string to generate a model without supplying a file. This dis
   defaultView="3d"
   hidePCBTab
   hideSchematicTab
-  code={`import { assembly } from "@tscircuit/core"
+  code={`import { assembly } from "tscircuit"
 
 export default () => (
   <assembly.device

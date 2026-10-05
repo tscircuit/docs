@@ -70,7 +70,7 @@ export function MotorBracket() {
 `
 
 const controllerSource = `import { Fragment } from "react"
-import type { BoardProps } from "@tscircuit/props"
+import type { BoardProps } from "tscircuit"
 import { controllerHoles } from "./motor-bracket"
 
 export function MotorController(props: BoardProps) {

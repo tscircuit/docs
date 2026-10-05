@@ -20,8 +20,8 @@ Give the motor a `name`, then set the board's `mountedTo` to that name followed 
   defaultView="3d"
   hideSchematicTab
   browser3dView={false}
-  code={`import { assembly } from "@tscircuit/core"
-import type { BoardProps } from "@tscircuit/props"
+  code={`import { assembly } from "tscircuit"
+import type { BoardProps } from "tscircuit"
 
 const MotorController = (props: BoardProps) => (
   <board
@@ -91,7 +91,7 @@ The current `assembly.motor` implementation accepts NEMA modelprinter specificat
 Use `model` to specify dimensions without generating or supplying a model URL:
 
 ```tsx
-import { assembly } from "@tscircuit/core"
+import { assembly } from "tscircuit"
 
 const model =
   "nema17_bodylength38mm_shaftlength24mm" +

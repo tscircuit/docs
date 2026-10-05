@@ -159,7 +159,7 @@ When you initialize a `RootCircuit`, you can provide the platform configuration
 as the `{ platform }` parameter:
 
 ```tsx
-import { RootCircuit } from "@tscircuit/core"
+import { RootCircuit } from "tscircuit"
 
 const circuit = new RootCircuit({
   platform: {

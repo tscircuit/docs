@@ -115,8 +115,8 @@ We will follow the following steps to build the circuit step by step:
 ### Pico Schematic
 Schematic of the Pico microcontroller [imported from JLCPCB](/guides/importing-modules-and-chips/importing-from-jlcpcb) is shown below:
 <CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
-import { createUseComponent } from "@tscircuit/core"
-import type { CommonLayoutProps } from "@tscircuit/props"
+import { createUseComponent } from "tscircuit"
+import type { CommonLayoutProps } from "tscircuit"
 
 const pinLabels = {
   "pin1": [
@@ -436,8 +436,8 @@ We are using IC LEDs (specifically [WS2812B](https://jlcpcb.com/partdetail/World
 - **Individual Control** - Each LED in the chain can be controlled independently for color and brightness
 
 <CircuitPreview splitView={false} hidePCBTab hide3DTab defaultView="schematic" code={`
-import { createUseComponent } from "@tscircuit/core"
-import type { CommonLayoutProps } from "@tscircuit/props"
+import { createUseComponent } from "tscircuit"
+import type { CommonLayoutProps } from "tscircuit"
 
 const pinLabels = {
   "pin1": [

@@ -489,7 +489,7 @@ PCB layout and must synchronously return the PCB-world positions and layers of
 the generated breakout points.
 
 ```tsx
-import type { ImplicitBreakoutPointSolverFn } from "@tscircuit/props"
+import type { ImplicitBreakoutPointSolverFn } from "tscircuit"
 
 const placeBreakoutPoints: ImplicitBreakoutPointSolverFn = (input) => {
   const connections = input.connections.flatMap((connection) =>
