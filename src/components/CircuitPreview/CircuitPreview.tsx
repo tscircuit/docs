@@ -116,6 +116,8 @@ const TryInEditorLink = ({ href }: { href: string }) => (
 export default function CircuitPreview({
   code,
   circuitJson,
+  pcbImageUrl,
+  schematicImageUrl,
   threeDImageUrl,
   showTabs = true,
   defaultView = "pcb",
@@ -124,6 +126,7 @@ export default function CircuitPreview({
   hideSchematicTab = false,
   hidePCBTab = false,
   hide3DTab = false,
+  hideCodeTab = false,
   showPinoutTab = false,
   browser3dView = false,
   fsMap,
@@ -144,6 +147,8 @@ export default function CircuitPreview({
   code?: string
   /** Precompiled preview data for APIs newer than the hosted evaluator. */
   circuitJson?: Record<string, unknown>[]
+  pcbImageUrl?: string
+  schematicImageUrl?: string
   threeDImageUrl?: string
   showTabs?: boolean
   defaultView?: CircuitPreviewView
@@ -152,6 +157,7 @@ export default function CircuitPreview({
   hideSchematicTab?: boolean
   hidePCBTab?: boolean
   hide3DTab?: boolean
+  hideCodeTab?: boolean
   showPinoutTab?: boolean
   fsMap?: Record<string, string>
   entrypoint?: string
@@ -250,6 +256,7 @@ export default function CircuitPreview({
   }
 
   const pcbUrl = useMemo(() => {
+    if (pcbImageUrl) return pcbImageUrl
     const basePcbUrl = configurePreviewUrl(createSvgUrl(fsMapOrCode, "pcb"))
     const flags: string[] = []
 
@@ -265,8 +272,10 @@ export default function CircuitPreview({
     showCourtyards,
     showDebugObjects,
     circuitJson,
+    pcbImageUrl,
   ])
   const schUrl = useMemo(() => {
+    if (schematicImageUrl) return schematicImageUrl
     const baseUrl = configurePreviewUrl(
       createSvgUrl(
         fsMapOrCode,
@@ -293,6 +302,7 @@ export default function CircuitPreview({
     mainComponentPath,
     selectedSimulationExperimentName,
     showSimulationGraph,
+    schematicImageUrl,
   ])
   const pinoutUrl = useMemo(
     () => configurePreviewUrl(createSvgUrl(fsMapOrCode, "pinout")),
@@ -459,7 +469,7 @@ export default function CircuitPreview({
             `flex-inline justify-end gap-2 mt-2 mb-2 rounded-lg ${!isDarkTheme ? "bg-slate-100" : "bg-slate-800"} p-1 gap-2`,
           )}
         >
-          {!shouldSplitCode && (
+          {!shouldSplitCode && !hideCodeTab && (
             <Tab
               label="Code"
               active={view === "code"}
