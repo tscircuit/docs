@@ -1,0 +1,103 @@
+---
+title: <pcbbend />
+description: Define a bend and optional tear reliefs on a flex PCB.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+Use `<pcbbend />` inside a `<board material="flex">` to describe how the flat
+PCB folds in 3D. Components and routing still use the flat PCB coordinates.
+
+The endpoints define a directed centerline through the bend zone. Looking from
+`(x1, y1)` toward `(x2, y2)` from the board's top, `bendSide` selects the side
+that moves. Positive `bendAngle` folds that side toward the local top face;
+negative angles fold it toward the bottom. Zero leaves the board flat.
+
+## Basic Usage
+
+This example folds the right half of a flex board by 90 degrees. The bottom
+[stiffener](./pcbstiffener.mdx) reinforces the stationary left section.
+
+<CircuitPreview
+  defaultView="3d"
+  hideSchematicTab
+  code={`export default () => (
+  <board material="flex" layers={2} width="40mm" height="20mm" thickness="0.12mm">
+    <pcbbend
+      name="B1"
+      x1={0}
+      y1={-10}
+      x2={0}
+      y2={10}
+      bendAngle={90}
+      bendRadius="2mm"
+      bendSide="right"
+    />
+    <pcbstiffener
+      name="S1"
+      shape="rect"
+      pcbX={-12}
+      width="10mm"
+      height="16mm"
+      layer="bottom"
+      material="fr4"
+      thickness="0.4mm"
+    />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-12} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={12} />
+  </board>
+)`}
+/>
+
+`bendRadius` is measured at the neutral surface, rather than the inside surface.
+The developed bend-zone width is `bendRadius * abs(bendAngle in radians)`,
+centered on the line. Keep components, vias, and stiffeners outside that zone.
+
+## Tear Reliefs
+
+Set `tearReliefRadius` to create circular cutouts at both centerline endpoints.
+When the endpoints lie on the board edge, the circles form rounded relief
+notches. These remove material from the flat board as well as its 3D geometry.
+Omitting the prop leaves the outline unchanged.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`export default () => (
+  <board material="flex" layers={2} width="30mm" height="10mm" thickness="0.12mm">
+    <pcbbend
+      x1={0}
+      y1={-5}
+      x2={0}
+      y2={5}
+      bendAngle={90}
+      bendRadius="2mm"
+      bendSide="right"
+      tearReliefRadius="0.5mm"
+    />
+  </board>
+)`}
+/>
+
+The relief radius is independent of the bend radius, side, and angle, including
+a zero angle. Choose it with enough remaining board material and copper clearance.
+
+## Props
+
+Distances accept numbers in millimeters or distance strings such as `"2mm"`.
+
+| Prop | Type | Required | Description |
+| ---- | ---- | -------- | ----------- |
+| `name` | string | No | Optional bend identifier. |
+| `x1`, `y1` | distance | Yes | Centerline start in the parent's flat PCB coordinates. |
+| `x2`, `y2` | distance | Yes | Centerline end in the parent's flat PCB coordinates. Must differ from the start. |
+| `bendAngle` | number or angle string | Yes | Finite signed angle in degrees, or a string such as `"90deg"`. Angles are not clamped or wrapped. |
+| `bendRadius` | distance | Yes | Finite positive radius at the neutral surface. |
+| `bendSide` | `"left"` or `"right"` | Yes | Moving side relative to the directed centerline viewed from above. |
+| `tearReliefRadius` | distance | No | Finite positive radius of each endpoint cutout. No implicit radius. |
+
+Endpoints must be finite. Parent group placement and rotation transform the
+centerline into board coordinates. See [board](./board.mdx) for flex material
+and thickness settings.
