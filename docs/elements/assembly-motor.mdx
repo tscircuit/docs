@@ -15,7 +15,6 @@ import preview1 from "@site/src/data/assembly-previews/assembly-motor-1.json"
 Give the motor a `name`, then set the board's `mountedTo` to that name followed by `.backface`. A controller component must forward `mountedTo` and `mountGap` to its underlying [`board`](./board.mdx), as `MotorController` does here:
 
 <CircuitPreview
-  wrapCode
   circuitJson={preview1}
   defaultView="3d"
   hideSchematicTab

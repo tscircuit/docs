@@ -381,6 +381,35 @@ export default function CircuitPreview({
     showSimulationGraph && simulationExperimentNames.length > 1
 
   const currentCode = normalizedFsMap?.[currentFile] ?? normalizedCode
+  const [formattedCode, setFormattedCode] = useState<{
+    source: string
+    filename: string
+    code: string
+  }>()
+
+  useEffect(() => {
+    let cancelled = false
+    // Load the formatter separately so it does not block the initial preview.
+    import("./format-preview-code")
+      .then(({ formatPreviewCode }) =>
+        formatPreviewCode(currentCode, currentFile),
+      )
+      .then((code) => {
+        if (!cancelled) {
+          setFormattedCode({ source: currentCode, filename: currentFile, code })
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [currentCode, currentFile])
+
+  const displayCode =
+    formattedCode?.source === currentCode &&
+    formattedCode.filename === currentFile
+      ? formattedCode.code
+      : currentCode.trim()
   const editorSource =
     getPreferredFsMapSource(normalizedFsMap, [
       entrypoint,
@@ -405,13 +434,13 @@ export default function CircuitPreview({
         )}
       >
         <div
-          className={`${tw("relative w-full min-h-[320px]")} ${wrapCode ? styles.wrapCode : ""}`}
+          className={`${tw("relative w-full min-w-0 min-h-[320px]")} ${styles.codePane} ${wrapCode ? styles.wrapCode : ""}`}
         >
           <CodeBlock
             className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
             language="tsx"
           >
-            {currentCode.trim()}
+            {displayCode}
           </CodeBlock>
         </div>
       </div>
