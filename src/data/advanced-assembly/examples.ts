@@ -88,13 +88,13 @@ export function MotorController(props: BoardProps) {
           <hole diameter={3.2} pcbX={x} pcbY={y} />
         </Fragment>
       ))}
-      <pinheader
+      <connector
         name="J_MOTOR"
-        pinCount={4}
-        pitch={2.54}
+        standard="jst_ph"
+        pinCount={6}
+        footprint="jst6_ph"
         pcbX={-23}
         pcbY={0}
-        pinLabels={["A1", "A2", "B1", "B2"]}
       />
       <pinheader name="J_POWER" pinCount={2} pitch={2.54} pcbX={24} pcbY={0} />
       <chip name="U_DRIVER" footprint="soic16" pcbX={0} pcbY={0} />
@@ -136,6 +136,7 @@ export default () => (
     <assembly.motor
       name="MOTOR"
       standard="nema17"
+      wireConnection="jst-ph-6"
       mountedTo="BRACKET.motor"
       mountFace="frontface"
     />
@@ -143,6 +144,11 @@ export default () => (
       mountedTo="BRACKET.controller"
       pcbX={-10}
       pcbY={50}
+    />
+    <assembly.cable
+      name="MOTOR_CABLE"
+      from="MOTOR.wireside"
+      to=".CONTROL > .J_MOTOR"
     />
   </assembly.device>
 )

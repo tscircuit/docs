@@ -35,7 +35,7 @@ export default () => (
   <assembly.device>
     <assembly.motor
       name="NEMA17"
-      model="nema17_backfaceholes"
+      model="nema17_backfaceholes_jstph6"
       shaftFacingDirection="z-"
     />
     <assembly.printedpart
@@ -44,7 +44,9 @@ export default () => (
       mountedTo="NEMA17.backface"
       mountFace="motor"
     />
-    <MotorController mountedTo="SPACER.board" />
+    <MotorController name="CONTROLLER" mountedTo="SPACER.board" />
+    <assembly.cable name="MOTOR_CABLE"
+      from="NEMA17.wireside" to=".CONTROLLER > .J_MOTOR" />
   </assembly.device>
 )
 
@@ -107,12 +109,16 @@ function MotorController(props: BoardProps) {
           pcbY={y}
         />
       ))}
-      {/* Add your controller components and traces here. */}
+      <connector name="J_MOTOR" standard="jst_ph" pinCount={6}
+        footprint="jst6_ph" pcbX={0} pcbY={0} />
+      {/* Add your driver circuit and traces here. */}
     </board>
   )
 }`}
 />
 </div>
+
+The [`assembly.cable`](./assembly-cable.mdx) connects the motor’s `wireside` PH connector to the matching controller header. Its route is inferred after mounting has positioned the parts.
 
 The motor sits below the PCB, with its shaft pointing down. Omitted `mountGap` values default to zero: the plate touches the motor's backface and the PCB rests on the post tips. Add `mountGap="1mm"` to the printed part for motor-to-spacer clearance, or to `MotorController` for spacer-to-PCB clearance.
 
@@ -125,7 +131,7 @@ The motor sits below the PCB, with its shaft pointing down. Omitted `mountGap` v
 | Hole centers | X and Y at ±15.5 mm, giving a 31 × 31 mm pattern |
 | Center opening | 30 mm diameter |
 
-`nema17_backfaceholes` selects a NEMA17 model with open rear holes instead of protruding rear screw heads. Match the rear-hole pattern to your actual motor. The controller here is a board with mounting holes; replace its contents with your circuit, or pass the same mounting props through your existing controller component.
+`nema17_backfaceholes_jstph6` includes the six-pin PH termination and selects a NEMA17 model with open rear holes instead of protruding rear screw heads. Match the rear-hole pattern to your actual motor. The controller here is a board with mounting holes; replace its contents with your circuit, or pass the same mounting props through your existing controller component.
 
 ## Name a mounting face in JSCAD
 
