@@ -1,0 +1,340 @@
+---
+title: Building an LED Letter Sign
+description: >-
+  Learn how to draw a letter with LEDs on a PCB using tscircuit — turn a
+  bitmap of a letter into 0603 LED positions, size current-limiting resistors,
+  and assemble a 5V sign board.
+---
+
+## Overview
+
+In this tutorial you will build a small PCB sign that draws the letter **T**
+out of nine red LEDs, one current-limiting resistor per LED, and a 2-pin
+header for 5V power — all laid out programmatically from a bitmap of the
+letter.
+
+We chose the letter **T** because its strokes are the simplest possible: one
+straight horizontal bar and one straight vertical stem, with no diagonals and
+no corners mid-stroke. That keeps the dot pattern compact (a 5x5 grid, 9 LEDs)
+while still being unmistakably readable. The technique works for **any
+capital letter A–Z** — you will see at the end that changing the letter means
+changing one array of strings.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## How a Letter Becomes a Circuit
+
+A letter drawn with LEDs is just a **dot-matrix bitmap**: each cell of the
+grid either holds an LED (`1`) or stays empty (`0`). The letter "T" on a 5x5
+grid looks like this:
+
+```
+# # # # #
+    #
+    #
+    #
+    #
+```
+
+As strings (one string per row, read left-to-right, top-to-bottom):
+
+```
+11111
+00100
+00100
+00100
+00100
+```
+
+Every `1` becomes an `<led />` on the PCB. Because the grid coordinates are
+just math, tscircuit can compute the PCB position of each LED for us — this
+is what the original [Draw any letter with
+LEDs](https://github.com/tscircuit/docs-old/issues/50) bounty asked for: use
+math to automatically lay out the PCB and schematic.
+
+## Bill of Materials
+
+| Ref | Part | Value / Package | Qty | Notes |
+| --- | ---- | --------------- | --- | ----- |
+| LED1–LED9 | Red LED | 0603 | 9 | ~2V forward voltage at 10–20mA |
+| R1–R9 | Resistor | 220Ω, 0402 | 9 | One per LED, limits its current |
+| J1 | Pin header | 2-pin, 2.54mm, male | 1 | 5V in + GND |
+
+Power comes from any 5V source (a USB breakout or a bench supply) through
+J1. There is no microcontroller on this board — the letter is always on
+while 5V is present. (If you want to blink or dim the whole letter later,
+switch the 5V rail with a GPIO pin or a small MOSFET.)
+
+## Step 1: Place LEDs from the Bitmap
+
+Instead of typing nine `<led />` elements by hand, we flatten the bitmap into
+a list of "lit dots" and map over it. The PCB position of each LED falls out
+of the grid math:
+
+- `pcbX = (col - 2) * DOT_PITCH` centers the 5 columns on x = 0
+- `pcbY = (2 - row) * DOT_PITCH + 6` flips the bitmap vertically (row 0 is
+  the top of the letter, but PCB y grows upwards) and lifts the letter above
+  the connector
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+const DOT_PITCH = 4
+
+const LETTER_T = ["11111", "00100", "00100", "00100", "00100"]
+
+const dots = LETTER_T.flatMap((rowBits, row) =>
+  rowBits.split("").map((bit, col) => ({ bit, col, row })),
+).filter((dot) => dot.bit === "1")
+
+export default () => (
+  <board width="42mm" height="32mm">
+    {dots.map(({ col, row }, i) => (
+      <led
+        key={"LED" + (i + 1)}
+        name={"LED" + (i + 1)}
+        color="red"
+        footprint="0603"
+        pcbX={(col - 2) * DOT_PITCH}
+        pcbY={(2 - row) * DOT_PITCH + 6}
+        schX={4}
+        schY={-i * 2}
+      />
+    ))}
+  </board>
+)
+`}
+/>
+
+The dot pitch is **4mm**: with 0603 LEDs (1.6mm x 0.8mm body) that leaves
+enough courtyard clearance between neighbors to pass DRC. Four LEDs fill the
+stem, five fill the top bar — nine LEDs total, and the preview already reads
+as the letter "T".
+
+## Step 2: Size the Current-Limiting Resistors
+
+Each LED needs its own series resistor. With a 5V supply and a typical red
+LED (forward voltage `Vf ≈ 2V`, forward current `If ≈ 10–20mA`):
+
+```
+R = (V_supply - Vf) / If
+R = (5V - 2V) / 15mA = 200 ohm
+```
+
+200Ω is not a standard E12/E24 value, so we pick the next standard value up:
+**220Ω**. The actual current is then:
+
+```
+If = (5V - 2V) / 220 = 13.6mA   (comfortably inside 10-20mA)
+```
+
+Sanity checks:
+
+- **Resistor power**: `P = If^2 * R = 13.6mA^2 * 220 = 41mW` — well under the
+  62.5mW (1/16W) rating of a 0402 resistor.
+- **Total current**: `9 * 13.6mA = 123mA` — well within a USB port's 500mA
+  budget.
+
+One resistor per LED (rather than one shared resistor) matters: LEDs with
+slightly different forward voltages would otherwise share current unevenly,
+and a single resistor would have to be rated for the full 123mA.
+
+## Step 3: Wire One String per Dot and Add Power
+
+Each lit dot gets its own series string:
+
+```
+5V (net.V5) -> R.pin1 -> R.pin2 -> LED anode -> LED cathode -> GND
+```
+
+The `<pinheader />` J1 feeds both rails, and `<autoroutingphase />` routes
+the PCB with the built-in autorouter. Here is the complete circuit:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+const DOT_PITCH = 4
+
+// The letter "T" as a bitmap. Each string is one row of the 5x5 dot grid,
+// read left-to-right, top-to-bottom. "1" = place an LED at that dot.
+const LETTER_T = ["11111", "00100", "00100", "00100", "00100"]
+
+// Flatten the bitmap into a list of lit dots with grid coordinates.
+const dots = LETTER_T.flatMap((rowBits, row) =>
+  rowBits.split("").map((bit, col) => ({ bit, col, row })),
+).filter((dot) => dot.bit === "1")
+
+export default () => (
+  <board width="42mm" height="32mm">
+    {/* Route the PCB with the built-in autorouter */}
+    <autoroutingphase />
+
+    {/* Power input: 5V from USB or a bench supply */}
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pinLabels={["5V", "GND"]}
+      gender="male"
+      pcbX={0}
+      pcbY={-13}
+      schX={-9}
+      schY={-8}
+    />
+
+    {/* One resistor + LED string per lit dot, laid out from the bitmap */}
+    {dots.map(({ col, row }, i) => {
+      const ledName = "LED" + (i + 1)
+      const resName = "R" + (i + 1)
+      return (
+        <>
+          <led
+            name={ledName}
+            color="red"
+            footprint="0603"
+            forwardVoltage="2V"
+            pcbX={(col - 2) * DOT_PITCH}
+            pcbY={(2 - row) * DOT_PITCH + 6}
+            schX={4}
+            schY={-i * 2}
+          />
+          <resistor
+            name={resName}
+            resistance="220"
+            footprint="0402"
+            pcbX={(i - 4) * DOT_PITCH}
+            pcbY={-7}
+            schX={-2}
+            schY={-i * 2}
+          />
+          {/* 5V -> resistor -> LED anode -> LED cathode -> GND */}
+          <trace from={"." + resName + " .pin1"} to="net.V5" />
+          <trace
+            from={"." + resName + " .pin2"}
+            to={"." + ledName + " .anode"}
+          />
+          <trace from={"." + ledName + " .cathode"} to="net.GND" />
+        </>
+      )
+    })}
+
+    <trace from=".J1 .pin1" to="net.V5" />
+    <trace from=".J1 .pin2" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+On the schematic, the nine strings read as nine identical resistor-LED rows
+stacked under the header — the schematic placement (`schX`, `schY`) is also
+computed from the map index, so adding a dot adds a row without any manual
+cleanup:
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  code={`
+const DOT_PITCH = 4
+
+const LETTER_T = ["11111", "00100", "00100", "00100", "00100"]
+
+const dots = LETTER_T.flatMap((rowBits, row) =>
+  rowBits.split("").map((bit, col) => ({ bit, col, row })),
+).filter((dot) => dot.bit === "1")
+
+export default () => (
+  <board width="42mm" height="32mm">
+    <autoroutingphase />
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pinLabels={["5V", "GND"]}
+      gender="male"
+      pcbX={0}
+      pcbY={-13}
+      schX={-9}
+      schY={-8}
+    />
+    {dots.map(({ col, row }, i) => {
+      const ledName = "LED" + (i + 1)
+      const resName = "R" + (i + 1)
+      return (
+        <>
+          <led
+            name={ledName}
+            color="red"
+            footprint="0603"
+            forwardVoltage="2V"
+            pcbX={(col - 2) * DOT_PITCH}
+            pcbY={(2 - row) * DOT_PITCH + 6}
+            schX={4}
+            schY={-i * 2}
+          />
+          <resistor
+            name={resName}
+            resistance="220"
+            footprint="0402"
+            pcbX={(i - 4) * DOT_PITCH}
+            pcbY={-7}
+            schX={-2}
+            schY={-i * 2}
+          />
+          <trace from={"." + resName + " .pin1"} to="net.V5" />
+          <trace
+            from={"." + resName + " .pin2"}
+            to={"." + ledName + " .anode"}
+          />
+          <trace from={"." + ledName + " .cathode"} to="net.GND" />
+        </>
+      )
+    })}
+    <trace from=".J1 .pin1" to="net.V5" />
+    <trace from=".J1 .pin2" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+## Step 4: Assembly
+
+1. **Solder the resistors first** (R1–R9). They sit lowest on the board and
+   won't be in the way later. 0402 parts are small — tack one pad, slide the
+   part in with tweezers, then solder the second pad.
+2. **Solder the LEDs (LED1–LED9)**. 0603 LEDs are polarized: the marked
+   (green/gray) side or the notch is the **cathode**, which must face the GND
+   side of the pad. On this board every anode faces its resistor and every
+   cathode faces away from the letter's center column — the silkscreen shows
+   the pad outline.
+3. **Solder the header J1** on the bottom edge of the board.
+4. **First power-up**: connect 5V and GND to J1 (a current-limited bench
+   supply set to ~150mA, or a USB breakout). All nine LEDs should light and
+   the board should draw roughly 120mA. Nothing should get more than warm —
+   each resistor only dissipates ~41mW.
+5. **If one dot stays dark**, re-check that LED's orientation first (a
+   reversed 0603 LED is the most common cause), then its solder joints.
+
+## Extending to Any Letter (A–Z)
+
+The letter is **data**, not layout. To draw a different letter you only
+change the bitmap array — for example, the letter "L":
+
+```
+10000
+10000
+10000
+10000
+11111
+```
+
+The same map produces 9 LEDs and 9 resistor strings in an L shape, and the
+resistor math from Step 2 is unchanged. For letters with diagonal strokes
+(such as "A", "N" or "Z") you can either keep the 5x5 dot-matrix style, or
+sample points along stroke polylines — the
+[tscircuit/alphabet](https://github.com/tscircuit/alphabet) project has
+stroke paths for capital letters that you can resample into LED positions.
+
+## Ordering the PCB
+
+You can order this PCB by downloading the fabrication files and uploading
+them to JLCPCB. Follow the instructions from
+[here](/guides/ordering-prototypes).
