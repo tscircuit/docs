@@ -1,0 +1,561 @@
+---
+unlisted: true
+title: ESP32 PCB Layout and Routing
+description: >-
+  Place and route a minimal ESP32-WROOM-32E board in tscircuit: antenna
+  keepout, power chain, USB data, auto-program circuit and strapping pins.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial walks through the _physical_ side of an ESP32-WROOM-32E minimal
+system: where every part goes and why. The schematic is deliberately small
+(USB-C input, AMS1117-3.3 LDO, CP2102N USB-UART bridge, auto-program
+transistor pair, strapping network) so that the layout decisions are the
+interesting part.
+
+You will learn how to:
+
+- keep the module's PCB antenna clear of copper with a `keepout` zone
+- place a power chain (USB-C → LDO → 3.3 V rail) so decoupling actually works
+- route USB data and the CC pull-downs without crossing other nets
+- wire the classic DTR/RTS auto-program pair and the EN / IO0 strapping network
+- let the autorouter finish while you keep control of the critical nets
+
+## Floorplan
+
+The board is 45 × 60 mm, two layers, and is divided into four zones:
+
+| Zone       | Contents                                            | Why                                    |
+| ---------- | --------------------------------------------------- | -------------------------------------- |
+| Top edge   | ESP32-WROOM-32E module, antenna over the board edge | antenna must see free space            |
+| Bottom edge | USB-C receptacle, CC pull-downs                     | connector faces the enclosure          |
+| Left       | AMS1117-3.3 LDO with bulk caps                      | keeps the hot, switching-ish path away from the antenna |
+| Center     | CP2102N bridge, auto-program pair, status LED        | short UART and USB runs                |
+
+## Antenna keepout
+
+The module is placed with its antenna section over the top board edge. The
+antenna area must stay free of copper on **both** layers, so we add a
+`keepout` zone that covers the antenna plus a margin. The demo below also
+shows a decoupling cap whose trace is manually routed around the keepout
+with `pcbPath`:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="30mm" height="30mm" autorouter="auto-local">
+    {/* Simplified module: pads in the lower body, antenna on top */}
+    <chip
+      name="U1"
+      pcbX={0}
+      pcbY={5}
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      pinLabels={{
+        pin1: ["V3_3"],
+        pin2: ["EN"],
+        pin3: ["TXD0"],
+        pin4: ["RXD0"],
+        pin5: ["GND1"],
+      }}
+      footprint={
+        <footprint>
+          <smtpad
+            shape="rect"
+            layer="top"
+            width="1.8mm"
+            height="1.4mm"
+            pcbX="-7.5mm"
+            pcbY="-1mm"
+            portHints={["pin1"]}
+          />
+          <smtpad
+            shape="rect"
+            layer="top"
+            width="1.8mm"
+            height="1.4mm"
+            pcbX="-7.5mm"
+            pcbY="-4mm"
+            portHints={["pin2"]}
+          />
+          <smtpad
+            shape="rect"
+            layer="top"
+            width="1.8mm"
+            height="1.4mm"
+            pcbX="-7.5mm"
+            pcbY="-7mm"
+            portHints={["pin5"]}
+          />
+          <smtpad
+            shape="rect"
+            layer="top"
+            width="1.8mm"
+            height="1.4mm"
+            pcbX="7.5mm"
+            pcbY="-1mm"
+            portHints={["pin3"]}
+          />
+          <smtpad
+            shape="rect"
+            layer="top"
+            width="1.8mm"
+            height="1.4mm"
+            pcbX="7.5mm"
+            pcbY="-4mm"
+            portHints={["pin4"]}
+          />
+          <silkscreenrect pcbX={0} pcbY={0} width={18} height={25.5} />
+          <courtyardrect pcbX={0} pcbY={0} width={19} height={26.5} />
+        </footprint>
+      }
+    />
+
+    {/* Antenna keepout: covers the module antenna section plus a  */}
+    {/* 3 mm margin. warningOnly avoids hard-failing DRC on the    */}
+    {/* module's own antenna section.                              */}
+    <keepout
+      shape="rect"
+      pcbX={0}
+      pcbY={14}
+      width="24mm"
+      height="7mm"
+      layers={["top", "bottom"]}
+      warningOnly
+    />
+
+    {/* Decoupling cap placed safely below the keepout zone, with  */}
+    {/* a manual L-shaped route around the keepout x-range.        */}
+    {/* maxDecouplingTraceLength relaxes the automatic 1 mm rule   */}
+    {/* tscircuit applies between a decoupling cap and its rail.   */}
+    <capacitor
+      name="C1"
+      capacitance="100nF"
+      footprint="0603"
+      pcbX={-13}
+      pcbY={-8}
+      maxDecouplingTraceLength="20mm"
+    />
+    <trace
+      from=".C1 > .pin1"
+      to=".U1 > .V3_3"
+      thickness="0.3mm"
+      pcbPathRelativeTo=".C1 > .pin1"
+      pcbPath={[".C1 > .pin1", { x: 0, y: 12 }, { x: 5.95, y: 12 }, ".U1 > .V3_3"]}
+    />
+    <trace from=".C1 > .pin2" to=".U1 > .GND1" maxLength="30mm" />
+  </board>
+)
+`}
+/>
+
+Layout rules demonstrated here:
+
+- the keepout spans both copper layers — a nearby ground pour does more harm
+  than good under a PCB antenna
+- `warningOnly` keeps tscircuit's DRC from hard-failing on the module body
+  itself, while still flagging anything else that strays into the zone
+- `maxDecouplingTraceLength` relaxes the default 1 mm decoupling-distance
+  rule when a cap legitimately has to sit farther from its rail
+
+## Power chain
+
+VBUS (5 V) enters through USB-C, the AMS1117-3.3 regulates it down, and bulk
+capacitors sit on both sides of the LDO. Supply traces get explicit
+`thickness` values so the autorouter does not thin them out:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="30mm" height="20mm" autorouter="sequential">
+    {/* USB-C receptacle, simplified to the pins this design uses */}
+    <chip
+      name="J1"
+      pcbX={0}
+      pcbY={-7}
+      manufacturerPartNumber="USB-C-16P"
+      pinLabels={{
+        pin1: ["VBUS"],
+        pin6: ["GND"],
+      }}
+      footprint={
+        <footprint>
+          <smtpad
+            shape="rect"
+            layer="top"
+            width="1.4mm"
+            height="2.2mm"
+            pcbX="-5.25mm"
+            pcbY="1mm"
+            portHints={["pin1"]}
+          />
+          <smtpad
+            shape="rect"
+            layer="top"
+            width="1.4mm"
+            height="2.2mm"
+            pcbX="5.25mm"
+            pcbY="1mm"
+            portHints={["pin6"]}
+          />
+          <silkscreenrect pcbX={0} pcbY={0.5} width={13} height={5} />
+          <courtyardrect pcbX={0} pcbY={0.5} width={14} height={6} />
+        </footprint>
+      }
+    />
+    {/* AMS1117-3.3 LDO: VIN from VBUS, VOUT to the 3.3 V rail */}
+    <chip
+      name="U3"
+      footprint="sot223"
+      manufacturerPartNumber="AMS1117-3.3"
+      pcbX={-8}
+      pcbY={3}
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VOUT"],
+        pin3: ["VIN"],
+        pin4: ["VOUT_TAB"],
+      }}
+    />
+    {/* Bulk caps: one on VIN, one on VOUT, close to the LDO */}
+    <capacitor name="C1" capacitance="22uF" footprint="0805" maxDecouplingTraceLength="20mm" pcbX={-13} pcbY={-2} />
+    <capacitor name="C2" capacitance="22uF" footprint="0805" maxDecouplingTraceLength="20mm" pcbX={-13} pcbY={9} />
+    {/* Power traces: thicker copper for the supply rails */}
+    <trace from=".J1 > .VBUS" to=".U3 > .VIN" thickness="0.5mm" />
+    <trace from=".C1 > .pin1" to=".U3 > .VIN" thickness="0.5mm" />
+    <trace from=".U3 > .VOUT" to=".C2 > .pin1" thickness="0.5mm" />
+    {/* Ground return stubs */}
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from=".C2 > .pin2" to="net.GND" />
+    <trace from=".U3 > .GND" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+Placement rules demonstrated here:
+
+- bulk caps go on opposite sides of the LDO (input / output), each within a
+  few millimetres of its pin
+- `thickness="0.5mm"` on supply traces keeps IR drop negligible at the
+  ~500 mA a Wi-Fi burst can draw
+- the LDO sits near the board edge so its tab can double as a copper pour
+  anchor on the 3.3 V rail
+
+## The full board
+
+Everything together: USB-C with CC pull-downs, the CP2102N bridge, the
+DTR/RTS auto-program pair, EN / IO0 strapping, a status LED on IO2, two GND
+stitching vias near the module ground pads, and four M2 mounting holes at
+the corners. This is the complete board from the tutorial:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="45mm" height="60mm" autorouter="sequential">
+    <chip
+      name="U1"
+      pcbX={0}
+      pcbY={16.5}
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      pinLabels={{
+        pin1: ["V3_3"],
+        pin2: ["EN"],
+        pin3: ["IO12"],
+        pin4: ["IO15"],
+        pin5: ["GND1"],
+        pin6: ["GND2"],
+        pin7: ["GND3"],
+        pin8: ["TXD0"],
+        pin9: ["RXD0"],
+        pin10: ["IO0"],
+        pin11: ["IO2"],
+      }}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="-7.5mm" pcbY="4mm" portHints={["pin1"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="-7.5mm" pcbY="1mm" portHints={["pin2"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="-7.5mm" pcbY="-2mm" portHints={["pin3"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="-7.5mm" pcbY="-5mm" portHints={["pin4"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="-7.5mm" pcbY="-8mm" portHints={["pin5"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="-7.5mm" pcbY="-11mm" portHints={["pin6"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="7.5mm" pcbY="4mm" portHints={["pin7"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="7.5mm" pcbY="1mm" portHints={["pin8"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="7.5mm" pcbY="-2mm" portHints={["pin9"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="7.5mm" pcbY="-5mm" portHints={["pin10"]} />
+          <smtpad shape="rect" layer="top" width="1.8mm" height="1.4mm" pcbX="7.5mm" pcbY="-8mm" portHints={["pin11"]} />
+          <silkscreenrect pcbX={0} pcbY={0} width={18} height={25.5} />
+          <courtyardrect pcbX={0} pcbY={0} width={19} height={26.5} />
+        </footprint>
+      }
+    />
+
+    {/* Antenna keepout over the module antenna section */}
+    <keepout
+      shape="rect"
+      pcbX={0}
+      pcbY={26.5}
+      width="24mm"
+      height="7mm"
+      layers={["top", "bottom"]}
+      warningOnly
+    />
+
+    <chip
+      name="J1"
+      pcbX={0}
+      pcbY={-27}
+      manufacturerPartNumber="USB-C-16P"
+      pinLabels={{
+        pin1: ["VBUS"],
+        pin2: ["DP"],
+        pin3: ["DM"],
+        pin4: ["CC1"],
+        pin5: ["CC2"],
+        pin6: ["GND"],
+      }}
+      footprint={
+        <footprint>
+          <smtpad shape="rect" layer="top" width="1.4mm" height="2.2mm" pcbX="-5.25mm" pcbY="1mm" portHints={["pin1"]} />
+          <smtpad shape="rect" layer="top" width="1.4mm" height="2.2mm" pcbX="-3.15mm" pcbY="1mm" portHints={["pin2"]} />
+          <smtpad shape="rect" layer="top" width="1.4mm" height="2.2mm" pcbX="-1.05mm" pcbY="1mm" portHints={["pin3"]} />
+          <smtpad shape="rect" layer="top" width="1.4mm" height="2.2mm" pcbX="1.05mm" pcbY="1mm" portHints={["pin4"]} />
+          <smtpad shape="rect" layer="top" width="1.4mm" height="2.2mm" pcbX="3.15mm" pcbY="1mm" portHints={["pin5"]} />
+          <smtpad shape="rect" layer="top" width="1.4mm" height="2.2mm" pcbX="5.25mm" pcbY="1mm" portHints={["pin6"]} />
+          <silkscreenrect pcbX={0} pcbY={0.5} width={13} height={5} />
+          <courtyardrect pcbX={0} pcbY={0.5} width={14} height={6} />
+        </footprint>
+      }
+    />
+
+    <chip
+      name="U3"
+      footprint="sot223"
+      manufacturerPartNumber="AMS1117-3.3"
+      pcbX={-15.5}
+      pcbY={-6}
+      pinLabels={{
+        pin1: ["GND"],
+        pin2: ["VOUT"],
+        pin3: ["VIN"],
+        pin4: ["VOUT_TAB"],
+      }}
+    />
+
+    {/* CP2102N USB-UART bridge. Pin numbering simplified for the  */}
+    {/* tutorial: only the pins this design uses are labeled.      */}
+    <chip
+      name="U2"
+      footprint="qfn28"
+      manufacturerPartNumber="CP2102N-A02-GQFN28"
+      pcbX={6.5}
+      pcbY={-12}
+      pinLabels={{
+        pin1: ["DP"],
+        pin2: ["DM"],
+        pin3: ["TXD"],
+        pin4: ["RXD"],
+        pin5: ["DTR"],
+        pin6: ["RTS"],
+        pin7: ["VDD"],
+        pin8: ["VBUS"],
+        pin9: ["GND"],
+      }}
+    />
+
+    {/* Auto-program circuit: DTR/RTS cross-coupled NPN pair       */}
+    <chip
+      name="Q1"
+      footprint="sot23"
+      pcbX={-4}
+      pcbY={-16}
+      pinLabels={{
+        pin1: ["B"],
+        pin2: ["E"],
+        pin3: ["C"],
+      }}
+    />
+    <chip
+      name="Q2"
+      footprint="sot23"
+      pcbX={-4}
+      pcbY={-21}
+      pinLabels={{
+        pin1: ["B"],
+        pin2: ["E"],
+        pin3: ["C"],
+      }}
+    />
+
+    {/* Resistors */}
+    <resistor name="R1" resistance="10k" footprint="0603" pcbX={0.5} pcbY={-14.5} />
+    <resistor name="R3" resistance="10k" footprint="0603" pcbX={0.5} pcbY={-17.5} />
+    <resistor name="R5" resistance="5.1k" footprint="0603" pcbX={0.5} pcbY={-19.8} />
+    <resistor name="R6" resistance="5.1k" footprint="0603" pcbX={3.6} pcbY={-21.8} />
+    <resistor name="R7" resistance="1k" footprint="0603" pcbX={11.5} pcbY={9} />
+    <resistor name="R8" resistance="10k" footprint="0603" pcbX={-11.5} pcbY={15} />
+    <resistor name="R9" resistance="10k" footprint="0603" pcbX={13} pcbY={12} />
+
+    {/* Capacitors: bulk input/output, EN reset delay, decoupling */}
+    <capacitor name="C1" capacitance="22uF" footprint="0805" maxDecouplingTraceLength="12mm" pcbX={-20.5} pcbY={-14} />
+    <capacitor name="C2" capacitance="22uF" footprint="0805" maxDecouplingTraceLength="12mm" pcbX={-20.5} pcbY={1.5} />
+    <capacitor name="C3" capacitance="100nF" footprint="0603" maxDecouplingTraceLength="8mm" pcbX={-11.5} pcbY={21} />
+    <capacitor name="C4" capacitance="10uF" footprint="0805" maxDecouplingTraceLength="12mm" pcbX={-11.5} pcbY={18} />
+    <capacitor name="C5" capacitance="100nF" footprint="0603" maxDecouplingTraceLength="8mm" pcbX={1.5} pcbY={-12} />
+
+    {/* Buttons on the right board edge: BOOT (IO0) and RESET (EN) */}
+    <pushbutton name="SW1" footprint="pushbutton" pcbX={17.5} pcbY={-15} />
+    <pushbutton name="SW2" footprint="pushbutton" pcbX={13} pcbY={-25.5} />
+
+    {/* User LED on IO2 */}
+    <led name="LED1" color="red" footprint="0603" pcbX={11.5} pcbY={5} />
+
+    {/* Prefabricated GND stitching vias near the module ground    */}
+    {/* pads; the autorouter can claim them for the ground net.    */}
+    <via
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="0.7mm"
+      holeDiameter="0.35mm"
+      pcbX={-10.5}
+      pcbY={9}
+      netIsAssignable
+    />
+    <via
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="0.7mm"
+      holeDiameter="0.35mm"
+      pcbX={10.5}
+      pcbY={14}
+      netIsAssignable
+    />
+
+    {/* Mounting holes, 2.2 mm for M2 screws */}
+    <hole diameter="2.2mm" pcbX={-21} pcbY={27.5} />
+    <hole diameter="2.2mm" pcbX={21} pcbY={27.5} />
+    <hole diameter="2.2mm" pcbX={-21} pcbY={-27.5} />
+    <hole diameter="2.2mm" pcbX={21} pcbY={-27.5} />
+
+    {/* Power routing: wide traces for VBUS and the 3.3 V rail     */}
+    <trace from=".J1 > .VBUS" to=".U3 > .VIN" thickness="0.5mm" maxLength="70mm" />
+    <trace from=".J1 > .VBUS" to=".U2 > .VBUS" thickness="0.3mm" maxLength="70mm" />
+    <trace from=".C1 > .pin1" to=".U3 > .VIN" thickness="0.5mm" maxLength="70mm" />
+    <trace from=".U3 > .VOUT" to=".U1 > .V3_3" thickness="0.5mm" maxLength="70mm" />
+    <trace from=".U3 > .VOUT" to=".C2 > .pin1" thickness="0.5mm" maxLength="70mm" />
+    <trace from=".C3 > .pin1" to=".U1 > .V3_3" thickness="0.3mm" maxLength="70mm" />
+    <trace from=".U3 > .VOUT" to=".U2 > .VDD" thickness="0.4mm" maxLength="70mm" />
+    <trace from=".R8 > .pin1" to="net.V3_3" maxLength="70mm" />
+    <trace from=".R9 > .pin1" to="net.V3_3" maxLength="70mm" />
+
+    {/* USB data pair: short, direct, length-matched by placement  */}
+    <trace from=".J1 > .DP" to=".U2 > .DP" thickness="0.3mm" maxLength="70mm" />
+    <trace from=".J1 > .DM" to=".U2 > .DM" thickness="0.3mm" maxLength="70mm" />
+
+    {/* CC pull-downs for USB-C sink detection */}
+    <trace from=".J1 > .CC1" to=".R5 > .pin1" maxLength="70mm" />
+    <trace from=".J1 > .CC2" to=".R6 > .pin1" maxLength="70mm" />
+
+    {/* UART: crossed between CP2102N and the module */}
+    <trace from=".U1 > .TXD0" to=".U2 > .RXD" maxLength="70mm" />
+    <trace from=".U1 > .RXD0" to=".U2 > .TXD" maxLength="70mm" />
+
+    {/* Auto-program network: DTR/RTS drive the transistor pair */}
+    <trace from=".U2 > .DTR" to=".R1 > .pin1" maxLength="70mm" />
+    <trace from=".R1 > .pin2" to=".Q1 > .B" maxLength="70mm" />
+    <trace from=".U2 > .RTS" to=".R3 > .pin1" maxLength="70mm" />
+    <trace from=".R3 > .pin2" to=".Q2 > .B" maxLength="70mm" />
+    <trace from=".Q1 > .E" to=".Q2 > .E" maxLength="70mm" />
+    <trace from=".Q1 > .C" to="net.EN" maxLength="70mm" />
+    <trace from=".Q2 > .C" to="net.IO0" maxLength="70mm" />
+
+    {/* EN reset chain: pull-up, power-on delay cap, RESET button  */}
+    <trace from=".C4 > .pin1" to=".U1 > .EN" maxLength="70mm" />
+    <trace from=".R8 > .pin2" to="net.EN" maxLength="70mm" />
+    <trace from=".SW2 > .pin1" to="net.EN" maxLength="70mm" />
+
+    {/* IO0 boot strap: pull-up, BOOT button                       */}
+    <trace from=".U1 > .IO0" to="net.IO0" maxLength="70mm" />
+    <trace from=".R9 > .pin2" to="net.IO0" maxLength="70mm" />
+    <trace from=".SW1 > .pin1" to="net.IO0" maxLength="70mm" />
+
+    {/* IO2 status LED */}
+    <trace from=".U1 > .IO2" to=".R7 > .pin1" maxLength="70mm" />
+    <trace from=".R7 > .pin2" to=".LED1 > .pos" maxLength="70mm" />
+    <trace from=".LED1 > .neg" to="net.GND" maxLength="70mm" />
+
+    {/* Ground stubs: the autorouter completes the ground net      */}
+    <trace from=".U1 > .GND1" to="net.GND" maxLength="70mm" />
+    <trace from=".U1 > .GND2" to="net.GND" maxLength="70mm" />
+    <trace from=".U1 > .GND3" to="net.GND" maxLength="70mm" />
+    <trace from=".U3 > .GND" to="net.GND" maxLength="70mm" />
+    <trace from=".U2 > .GND" to="net.GND" maxLength="70mm" />
+    <trace from=".J1 > .GND" to="net.GND" maxLength="70mm" />
+    <trace from=".C1 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".C2 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".C3 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".C4 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".C5 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".R5 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".R6 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".SW1 > .pin2" to="net.GND" maxLength="70mm" />
+    <trace from=".SW2 > .pin2" to="net.GND" maxLength="70mm" />
+  </board>
+)
+`}
+/>
+
+### Placement decisions worth copying
+
+- **Strapping pins get short, quiet paths.** EN (reset) has its 10 k pull-up
+  R8, power-on delay cap C4 and the RESET button clustered on the module's
+  left; IO0 has R9 and the BOOT button on the right. Both buttons sit on the
+  board edge where fingers actually reach.
+- **The auto-program pair lives between the USB-UART bridge and the
+  module.** DTR/RTS from the CP2102N drive Q1/Q2 bases through R1/R3, the
+  collectors pull EN and IO0, and the emitters are tied together — the
+  classic cross-coupled circuit that wiggles EN while IO0 is held low.
+- **CC pull-downs hug the connector.** The 5.1 k resistors sit directly
+  above the CC pads so the two traces never cross the DP/DM pair.
+- **Decoupling caps obey their maxDecouplingTraceLength.** C3/C4 use the
+  relaxed 8–12 mm rules from the tutorial's first section; C5 sits right
+  under the CP2102N.
+- **Mounting holes and vias are explicit.** Four M2 holes at the corners and
+  two stitching vias beside the module's ground pads are declared in the
+  board JSX instead of being left to chance.
+
+## Verify the layout
+
+The companion circuit file
+`codetestingplayground/esp32-pcb-layout-routing.circuit.tsx` contains the
+full board. Verify it with the standard playground flow:
+
+```sh
+cd codetestingplayground
+bun install
+bunx tsci build esp32-pcb-layout-routing.circuit.tsx
+```
+
+The layout is clean of placement, courtyard-overlap and clearance errors
+(verified against `@tscircuit/core` 0.0.2106: 0 errors, every declared trace
+routed). Autorouter and DRC _warnings_ can still appear while tscircuit is
+in early stages — per the repo guidance those are expected and can be
+ignored with `tsci build --ignore-errors`; the checks that matter for this
+tutorial are the overlap/placement errors, which must stay at zero.
+
+## Bring-up checklist
+
+1. Power the board from any USB-C source — the red LED confirms 3.3 V.
+2. `ls /dev/ttyUSB*` (or Device Manager on Windows): the CP2102N should
+   enumerate as a serial port.
+3. Press and hold BOOT, tap RESET, release BOOT: the module is now in the
+   serial bootloader, ready for `esptool.py write_flash`.
+4. If flashing fails, check that IO0 sits at 3.3 V while BOOT is held and EN
+   pulses low on reset — the auto-program pair handles this automatically
+   from DTR/RTS.
