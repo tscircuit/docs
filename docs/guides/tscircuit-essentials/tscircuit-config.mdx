@@ -5,6 +5,32 @@ description: Configure your tscircuit project settings
 
 The `tscircuit.config.json` file is a project-level configuration file that allows you to customize settings for your tscircuit project. This file should be placed in the root of your project directory and is automatically created when you run `tsci init`.
 
+## Disable part availability checks
+
+CLI availability checks can emit an advisory warning such as
+`R1 may not have availability from JLCPCB (C1525).` when supplier stock is zero,
+unknown, or could not be fetched. Live lookups can change between builds.
+
+To disable these checks for the project, create `tscircuit.config.ts` at the project
+root, or add this setting to its existing export:
+
+```ts title="tscircuit.config.ts"
+export default {
+  platformConfig: {
+    checkAvailability: false,
+  },
+}
+```
+
+This overrides the CLI default while keeping other project and platform settings.
+The CLI loads `tscircuit.config.ts` or `tscircuit.config.js` alongside
+`tscircuit.config.json`; this setting belongs in the TypeScript/JavaScript file,
+because the JSON schema does not currently support it.
+
+See [Part availability warnings](../running-tscircuit/platform-configuration.md#part-availability-warnings)
+for warning behavior and programmatic platform configuration. Availability checks
+remain opt-in in the tscircuit.com web editor.
+
 ## Example
 
 ```json
