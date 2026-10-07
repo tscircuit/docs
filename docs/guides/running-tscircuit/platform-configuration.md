@@ -62,6 +62,7 @@ grouped below by purpose.
 | `routingDisabled` | `boolean` | Disables PCB routing. |
 | `schematicDisabled` | `boolean` | Disables schematic rendering. |
 | `partsEngineDisabled` | `boolean` | Disables automatic part selection through the parts engine. |
+| `checkAvailability` | `boolean` | Checks supplier stock through the parts engine and emits advisory availability warnings. CLI defaults enable this; core/eval and the tscircuit.com editor keep it opt-in. See [Part availability warnings](#part-availability-warnings). |
 | `analogSimulationDisabled` | `boolean` | Top-level project/platform option that skips SPICE-model processing, validation, and simulator execution. Defaults to `false`. |
 | `drcChecksDisabled` | `boolean` | Disables all design-rule checks. |
 | `netlistDrcChecksDisabled` | `boolean` | Disables netlist design-rule checks. |
@@ -96,6 +97,65 @@ Current vendors used for automatic part sourcing:
 
 For each vendor, tscircuit populates multiple available chips. This means even
 if tscircuit finds parts for a vendor, you don't have to use that vendor!
+
+## Part availability warnings
+
+When `checkAvailability` is `true`, tscircuit checks supplier part numbers using
+the parts engine's optional `fetchPartAvailability` method. The default JLCPCB
+engine looks up live stock at [jlcsearch.tscircuit.com](https://jlcsearch.tscircuit.com).
+
+If none of a component's checked alternatives for a supplier has known positive
+stock, Circuit JSON includes a `source_component_availability_warning`, for example:
+
+```text
+R1 may not have availability from JLCPCB (C1525).
+```
+
+This is an advisory warning. It can mean zero stock, unknown stock, or a failed
+or timed-out lookup; it does not prove the part is unavailable. Check the supplier
+before ordering. Unsupported suppliers and engines without availability lookup
+support are skipped. Components marked `doNotPlace`, or with `bomDisabled` or
+`partsEngineDisabled`, are also skipped. Disabling all DRC checks skips these checks.
+
+CLI defaults enable availability checks. Core/eval defaults and the tscircuit.com
+web editor keep them opt-in. Live stock and network results can change between
+builds, so disable the checks when you need repeatable output or offline builds.
+
+### Disable checks for a project
+
+Add this to your project-root `tscircuit.config.ts` (or merge it into your existing
+export). The project setting overrides the CLI default:
+
+```ts title="tscircuit.config.ts"
+export default {
+  platformConfig: {
+    checkAvailability: false,
+  },
+}
+```
+
+Use `tscircuit.config.ts` or `tscircuit.config.js` for this setting. The CLI's
+`tscircuit.config.json` schema does not currently accept `checkAvailability` or
+`platformConfig`. See [project configuration](../tscircuit-essentials/tscircuit-config.mdx#disable-part-availability-checks).
+
+### Disable checks programmatically
+
+Set `checkAvailability: false` in the platform passed to the circuit or runner:
+
+```ts
+import { RootCircuit } from "@tscircuit/core"
+
+const circuit = new RootCircuit({
+  platform: {
+    checkAvailability: false,
+  },
+})
+```
+
+Set it to `true` to enable checks in an opt-in environment. With eval's default
+platform, the bundled parts engine already supports availability lookups; no
+`fetchPartAvailability` override is needed. A custom parts engine must implement
+that optional method for checks to run.
 
 ## Using your Platform
 
