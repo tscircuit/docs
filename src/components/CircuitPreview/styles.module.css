@@ -32,28 +32,6 @@
   cursor: pointer;
 }
 
-.modelControls {
-  position: absolute;
-  z-index: 1;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 6px;
-}
-
-.modelControls button,
-.modelControls a {
-  padding: 4px 8px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: white;
-  color: #0f172a;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 1px 3px #0002;
-}
-
 .modelStatus {
   position: absolute;
   bottom: 12px;

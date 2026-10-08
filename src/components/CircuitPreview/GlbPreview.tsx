@@ -1,4 +1,5 @@
 import { createElement, useEffect, useRef, useState } from "react"
+import { getCameraOrbit } from "./camera-orbit"
 import styles from "./styles.module.css"
 
 let viewerModule: Promise<void> | undefined
@@ -80,11 +81,8 @@ export default function GlbPreview({
           src: glbUrl,
           alt: "Interactive 3D circuit model",
           "camera-controls": "",
-          "camera-orbit": cameraPreset?.startsWith("bottom")
-            ? cameraPreset === "bottom" || cameraPreset === "bottom-up"
-              ? "180deg 179.9deg auto"
-              : "180deg 135deg auto"
-            : "auto auto auto",
+          "camera-orbit": getCameraOrbit(cameraPreset),
+          "min-camera-orbit": "auto 0deg auto",
           "max-camera-orbit": "auto 180deg auto",
           "interaction-prompt": "none",
           className: styles.modelViewer,
@@ -109,37 +107,12 @@ export default function GlbPreview({
           />
         </button>
       )}
-      <div className={styles.modelControls}>
-        {!interactive ? (
-          <button type="button" onClick={() => setInteractive(true)}>
-            Click to Rotate
-          </button>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={() => {
-                setInteractive(false)
-                setLoaded(false)
-                setError(false)
-              }}
-            >
-              Back to Image
-            </button>
-            <a href={glbUrl} download="circuit.glb">
-              Download GLB
-            </a>
-          </>
-        )}
-      </div>
       {interactive && !loaded && !error && (
-        <span className={styles.modelStatus} role="status">
-          Loading 3D model…
-        </span>
+        <output className={styles.modelStatus}>Loading 3D model…</output>
       )}
       {interactive && error && (
         <span className={styles.modelStatus} role="alert">
-          Could not load the 3D model. Return to the image to try again.
+          Could not load the 3D model. Reload the page to try again.
         </span>
       )}
     </div>
