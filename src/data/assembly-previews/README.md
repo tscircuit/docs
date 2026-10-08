@@ -46,6 +46,10 @@ bun scripts/generate-assembly-previews.ts /path/to/tscircuit/core \
   elements/assembly-printedpart.mdx
 ```
 
+The explicit adapter cable example also requires core 0.0.2110 or later,
+props 0.0.695 or later, and `circuit-json-to-gltf` 0.0.148 or later. The
+playground uses `tscircuit` 0.0.2764 or later to compile this example.
+
 Each example's `threeDImageUrl` is rendered from its own Circuit JSON.
 
 Cable PNGs use PoppyGL 0.0.32 or later for realistic lighting. The core

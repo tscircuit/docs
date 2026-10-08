@@ -1,11 +1,12 @@
 ---
 title: <assembly.cable />
-description: Connect assembly endpoints with an inferred physical cable and 3D connector models.
+description: Connect assembly endpoints with an inferred or explicitly selected physical cable and 3D connector models.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-cable-1.json"
 import preview2 from "@site/src/data/assembly-previews/assembly-cable-2.json"
+import preview3 from "@site/src/data/assembly-previews/assembly-cable-3.json"
 
 `assembly.cable` connects two endpoints inside an [`assembly.device`](./assembly-device.mdx). Give it a `name`, `from`, and `to`. Core infers a compatible cable and its route from the connectors' positions and orientations, then renders its wires and plugs in 3D.
 
@@ -72,6 +73,57 @@ export default () => (
 )`}
 />
 
+## Connect different cable ends
+
+Set `model` to an explicit cable model string when the ends differ. The
+`adaptercable_a(...)_b(...)` form specifies end A at `from` and end B at `to`.
+This example connects three 3.5 mm female contacts to three 4 mm female contacts:
+
+<CircuitPreview
+  wrapCode
+  circuitJson={preview3}
+  threeDImageUrl="/img/elements/assembly-cable-adapter.png"
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly } from "tscircuit"
+import { Fragment } from "react"
+
+const contactFootprint = (pitch: number) => (
+  <footprint>
+    {[0, 1, 2].map((pin) => (
+      <Fragment key={pin}>
+        <platedhole pcbX={(pin - 1) * pitch}
+          portHints={[\`pin\${pin + 1}\`]}
+          holeDiameter={0.5} outerDiameter={0.8} shape="circle" />
+      </Fragment>
+    ))}
+  </footprint>
+)
+
+export default () => (
+  <assembly.device>
+    <board width={65} height={30} routingDisabled>
+      <connector name="J1" pinCount={3} pcbX={-20}
+        footprint={contactFootprint(5.5)} />
+      <connector name="J2" pinCount={3} pcbX={20}
+        footprint={contactFootprint(6)} />
+    </board>
+    <assembly.cable name="ADAPTER" from=".J1" to=".J2"
+      model="adaptercable_a(bullet3_d3.5mm_gfemale)_b(bullet3_d4mm_gfemale)" />
+  </assembly.device>
+)`}
+/>
+
+`bullet3` groups three contacts at each end, `d3.5mm` and `d4mm` set their
+diameters, and `gfemale` selects female contacts. Choose genders that mate
+with your hardware; three male 3.5 mm outputs would mate with the female A end.
+
+The board connectors here are generic endpoint anchors with three plated holes
+each. The cable's `model` determines the plugs; the board footprints do not
+define a bullet connector model. The two cable ends must have the same contact
+count. An explicit model also supports other combinations, such as
+`adaptercable_a(jst_sh_pins4)_b(jst_ph_pins4)`.
+
 ## Cable properties
 
 | Property | Type | Description |
@@ -79,10 +131,11 @@ export default () => (
 | `name` | `string` | Required cable name. Use a different name for each cable. |
 | `from` | `string` | Required starting endpoint: a connector selector or a motor's `wireside` reference. |
 | `to` | `string` | Required ending endpoint, distinct from `from`. |
+| `model` | `string` | Optional explicit cable model, including different-ended adapter cables. Omit to infer the model from the endpoints. |
 | `standard` | `"usb_c"` | Optional USB-C preset. Omit to infer USB-C, JST SH (1 mm pitch), or JST PH (2 mm pitch) from the endpoints. |
 
-For JST cables, both connectors must have the same standard and `pinCount`. Select a matching footprint, such as `jst6_ph` for a six-pin PH header. Incompatible standards, different pin counts, and missing or ambiguous endpoints report errors. Endpoints resolve within the nearest `assembly.device`, including components declared later.
+When `model` is omitted, both JST connectors must have the same standard and `pinCount`. Select a matching footprint, such as `jst6_ph` for a six-pin PH header. Inferred cables reject incompatible standards or pin counts. Missing or ambiguous endpoints report errors with either mode. Endpoints resolve within the nearest `assembly.device`, including components declared later.
 
 Add one `assembly.cable` for each physical cable; several cables can share a device. Each produces an independent `cad_cable` path in Circuit JSON. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There are no length or route-hint props.
 
-These examples require `@tscircuit/core` 0.0.2088 or later and `circuit-json-to-gltf` 0.0.144 or later. When using the `tscircuit` package, use a release that includes those versions.
+These examples require `@tscircuit/core` 0.0.2088 or later and `circuit-json-to-gltf` 0.0.144 or later. The explicit `model` example requires `@tscircuit/core` 0.0.2110 or later, `@tscircuit/props` 0.0.695 or later, and `circuit-json-to-gltf` 0.0.148 or later. `tscircuit` 0.0.2764 includes these versions.
