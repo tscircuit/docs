@@ -1,0 +1,101 @@
+---
+title: <pcbstiffener />
+description: Reinforce a flex PCB with a rectangular or polygonal bonded stiffener.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+Use `<pcbstiffener />` inside a board to add bonded mechanical reinforcement,
+for example beneath a connector or component area on a flex PCB. A stiffener
+does not add copper layers or define an integrated rigid-flex stackup.
+
+`layer` selects the board attachment face, `"top"` or `"bottom"`. `thickness`
+describes the stiffener material alone; PCB and adhesive thickness are separate.
+
+The previews below show the bottom face so the stiffeners are visible. Click the
+3D preview to inspect the model from other angles.
+
+## Rectangular Stiffener
+
+A rectangle is centered at its placement anchor. Use `pcbX`, `pcbY`, and
+`pcbRotation` to position it in the flat layout.
+
+<CircuitPreview
+  defaultView="3d"
+  cameraPreset="bottom-center-angled"
+  hideSchematicTab
+  code={`export default () => (
+  <board material="flex" layers={2} width="30mm" height="15mm" thickness="0.12mm">
+    <pcbstiffener
+      name="S1"
+      shape="rect"
+      pcbX={-8}
+      pcbY={0}
+      width="10mm"
+      height="12mm"
+      layer="bottom"
+      material="fr4"
+      thickness="0.4mm"
+      adhesiveThickness="0.05mm"
+    />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-8} />
+  </board>
+)`}
+/>
+
+## Polygon Stiffener
+
+For a custom shape, use `shape="polygon"` and supply local `outline` vertices.
+The outline is implicitly closed and then transformed by PCB placement and
+rotation. It must contain at least three finite vertices enclosing nonzero area.
+
+<CircuitPreview
+  defaultView="3d"
+  cameraPreset="bottom-center-angled"
+  hideSchematicTab
+  code={`export default () => (
+  <board material="flex" layers={2} width="30mm" height="20mm" thickness="0.12mm">
+    <pcbstiffener
+      name="support"
+      shape="polygon"
+      pcbX={-6}
+      pcbY={0}
+      pcbRotation={30}
+      outline={[
+        { x: -5, y: -4 },
+        { x: 5, y: -4 },
+        { x: 5, y: 2 },
+        { x: 3, y: 4 },
+        { x: -5, y: 4 },
+      ]}
+      layer="bottom"
+      material="polyimide"
+      thickness="0.2mm"
+    />
+  </board>
+)`}
+/>
+
+## Props
+
+Distances accept numbers in millimeters or distance strings such as `"0.4mm"`.
+Shape, attachment face, material, and thickness have no implicit defaults.
+
+| Prop | Type | Required | Description |
+| ---- | ---- | -------- | ----------- |
+| `name` | string | No | Optional stiffener identifier. |
+| `shape` | `"rect"` or `"polygon"` | Yes | Selects rectangle dimensions or a custom outline. |
+| `layer` | `"top"` or `"bottom"` | Yes | Board attachment face. |
+| `material` | `"fr4"`, `"polyimide"`, `"stainless_steel"`, or `"aluminum"` | Yes | Stiffener material. |
+| `thickness` | distance | Yes | Finite positive material thickness, excluding PCB and adhesive. |
+| `adhesiveThickness` | distance | No | Finite nonnegative adhesive thickness. Omission means unspecified, not zero. |
+| `width`, `height` | distance | For rectangles | Finite positive dimensions. Do not supply for polygons. |
+| `outline` | array of `{ x, y }` distances | For polygons | Local vertices, implicitly closed. Do not supply for rectangles. |
+| `pcbX`, `pcbY` | distance | No | PCB placement coordinates. |
+| `pcbRotation` | number or angle string | No | Rotation in degrees, or a string such as `"30deg"`. |
+
+Stiffeners also accept the shared PCB layout props. Keep reinforcement outside
+the bend zone when combining it with [pcbbend](./pcbbend.mdx). See
+[board](./board.mdx) for the flex substrate and PCB thickness.
