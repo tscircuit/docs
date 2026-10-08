@@ -1,0 +1,34 @@
+name: Generate adapter cable documentation preview
+on:
+  push:
+    branches: [codex/adapter-cable-preview-20261008]
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install
+      - uses: actions/checkout@v4
+        with:
+          repository: tscircuit/core
+          ref: 6cb29ea80f3f71905bd78914ec17b95fd0d17e17
+          path: work/core
+      - run: bun install
+        working-directory: work/core
+      - run: bun scripts/generate-assembly-previews.ts work/core elements/assembly-cable.mdx
+      - run: bunx biome format --write src/data/assembly-previews/assembly-cable-3.json
+      - name: Test published package example
+        run: |
+          bun -e 'const fs = require("fs"); const source = fs.readFileSync("docs/elements/assembly-cable.mdx", "utf8"); const examples = [...source.matchAll(/code=\{`([\s\S]*?)`\}/g)]; const code = examples[2][1].replace(/\\`/g, "`").replace(/\\\$\{/g, "${"); fs.writeFileSync("codetestingplayground/assembly-cable-adapter.circuit.tsx", code);'
+          cd codetestingplayground
+          bun install
+          bunx tsci build assembly-cable-adapter.circuit.tsx --ignore-errors
+      - uses: actions/upload-artifact@v4
+        with:
+          name: adapter-cable-docs-preview
+          path: |
+            src/data/assembly-previews/assembly-cable-3.json
+            static/img/elements/assembly-cable-adapter.png
