@@ -1,3 +1,9 @@
+.codePane pre {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  --ifm-pre-padding: 0.875rem;
+}
+
 .wrapCode pre,
 .wrapCode pre code {
   white-space: pre-wrap;

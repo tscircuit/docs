@@ -17,9 +17,6 @@ import preview2 from "@site/src/data/assembly-previews/assembly-subassembly-2.js
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
-const models =
-  "https://docs.tscircuit.com/models/assembly"
-
 export default () => (
   <assembly.device name="product">
     <board
@@ -29,10 +26,10 @@ export default () => (
     />
     <assembly.subassembly
       name="housing"
-      modelUrl={models + "/housing.glb"}
+      model="https://docs.tscircuit.com/models/assembly/housing.glb"
     >
       <cadmodel
-        modelUrl={models + "/cover.glb"}
+        model="https://docs.tscircuit.com/models/assembly/cover.glb"
         pcbZ={4}
       />
     </assembly.subassembly>
@@ -63,9 +60,6 @@ Use `cadModel` for offsets and rotation:
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
-const models =
-  "https://docs.tscircuit.com/models/assembly"
-
 export default () => (
   <assembly.device name="product">
     <board
@@ -76,7 +70,7 @@ export default () => (
     <assembly.subassembly
       name="bracket"
       cadModel={{
-        glbUrl: models + "/bracket.glb",
+        glbUrl: "https://docs.tscircuit.com/models/assembly/bracket.glb",
         positionOffset: { x: 10, y: 0, z: 0.8 },
         rotationOffset: { x: 0, y: 0, z: 90 },
       }}

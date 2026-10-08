@@ -1,0 +1,141 @@
+---
+title: <assembly.cable />
+description: Connect assembly endpoints with an inferred or explicitly selected physical cable and 3D connector models.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview1 from "@site/src/data/assembly-previews/assembly-cable-1.json"
+import preview2 from "@site/src/data/assembly-previews/assembly-cable-2.json"
+import preview3 from "@site/src/data/assembly-previews/assembly-cable-3.json"
+
+`assembly.cable` connects two endpoints inside an [`assembly.device`](./assembly-device.mdx). Give it a `name`, `from`, and `to`. Core infers a compatible cable and its route from the connectors' positions and orientations, then renders its wires and plugs in 3D.
+
+## Connect a motor to its controller
+
+Use `wireConnection="jst-ph-6"` on [`assembly.motor`](./assembly-motor.mdx) to expose the `wireside` connector. Match it with a six-pin JST PH connector on the board. The cable standard is inferred, so this example does not need a `standard` prop:
+
+<CircuitPreview
+  wrapCode
+  circuitJson={preview1}
+  threeDImageUrl="/img/elements/assembly-cable-motor.png"
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly } from "tscircuit"
+
+export default () => (
+  <assembly.device>
+    <assembly.motor name="MOTOR" standard="nema17"
+      wireConnection="jst-ph-6" />
+    <board name="CONTROLLER" width={44} height={34}
+      pcbX={85} routingDisabled>
+      <connector name="J_MOTOR" standard="jst_ph" pinCount={6}
+        footprint="jst6_ph" pcbX={-18} pcbRotation={90} />
+    </board>
+    <assembly.cable name="MOTOR_CABLE"
+      from="MOTOR.wireside" to=".CONTROLLER > .J_MOTOR" />
+  </assembly.device>
+)`}
+/>
+
+The board connector sits at the edge facing the motor, so the cable approaches outside the PCB instead of passing through it.
+
+`MOTOR.wireside` is the named motor endpoint. `.CONTROLLER > .J_MOTOR` selects the connector inside that board. Mounting and cabling are independent: use `mountedTo` to place parts, and keep the same cable references when their positions change. See the [printed spacer](./assembly-printedpart.mdx#mount-a-printed-spacer-between-a-motor-and-a-board) and [bracket-mounted controller](../guides/advanced-assembly.mdx#add-a-controller-to-the-same-base) examples.
+
+The six-pin PH termination is a supported model configuration, not a requirement for every NEMA17 motor. Choose the connector and winding pinout for your actual motor. A physical cable does not create electrical traces or map pins.
+
+## Connect two boards with USB-C
+
+Place each USB-C port on its own board and select each endpoint through its board name. `standard="usb_c"` explicitly requests a USB-C-to-USB-C cable. It can also be omitted when both endpoints use `standard="usb_c"`:
+
+<CircuitPreview
+  wrapCode
+  circuitJson={preview2}
+  threeDImageUrl="/img/elements/assembly-cable-usb.png"
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly } from "tscircuit"
+
+export default () => (
+  <assembly.device>
+    <board name="HOST" width={32} height={28} pcbX={-60}
+      routingDisabled>
+      <connector name="J_USB" standard="usb_c" footprint="usbcmidmount"
+        pcbX={13} pcbRotation={90} />
+    </board>
+    <board name="CONTROLLER" width={32} height={28} pcbX={60}
+      routingDisabled>
+      <connector name="J_USB" standard="usb_c" footprint="usbcmidmount"
+        pcbX={-13} pcbRotation={270} />
+    </board>
+    <assembly.cable name="USB" standard="usb_c"
+      from=".HOST > .J_USB" to=".CONTROLLER > .J_USB" />
+  </assembly.device>
+)`}
+/>
+
+## Connect different cable ends
+
+Set `model` to an explicit cable model string when the ends differ. The
+`adaptercable_a(...)_b(...)` form specifies end A at `from` and end B at `to`.
+This example connects three 3.5 mm female contacts to three 4 mm female contacts:
+
+<CircuitPreview
+  wrapCode
+  circuitJson={preview3}
+  threeDImageUrl="/img/elements/assembly-cable-adapter.png"
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly } from "tscircuit"
+import { Fragment } from "react"
+
+const contactFootprint = (pitch: number) => (
+  <footprint>
+    {[0, 1, 2].map((pin) => (
+      <Fragment key={pin}>
+        <platedhole pcbX={(pin - 1) * pitch}
+          portHints={[\`pin\${pin + 1}\`]}
+          holeDiameter={0.5} outerDiameter={0.8} shape="circle" />
+      </Fragment>
+    ))}
+  </footprint>
+)
+
+export default () => (
+  <assembly.device>
+    <board width={65} height={30} routingDisabled>
+      <connector name="J1" pinCount={3} pcbX={-20}
+        footprint={contactFootprint(5.5)} />
+      <connector name="J2" pinCount={3} pcbX={20}
+        footprint={contactFootprint(6)} />
+    </board>
+    <assembly.cable name="ADAPTER" from=".J1" to=".J2"
+      model="adaptercable_a(bullet3_d3.5mm_gfemale)_b(bullet3_d4mm_gfemale)" />
+  </assembly.device>
+)`}
+/>
+
+`bullet3` groups three contacts at each end, `d3.5mm` and `d4mm` set their
+diameters, and `gfemale` selects female contacts. Choose genders that mate
+with your hardware; three male 3.5 mm outputs would mate with the female A end.
+
+The board connectors here are generic endpoint anchors with three plated holes
+each. The cable's `model` determines the plugs; the board footprints do not
+define a bullet connector model. The two cable ends must have the same contact
+count. An explicit model also supports other combinations, such as
+`adaptercable_a(jst_sh_pins4)_b(jst_ph_pins4)`.
+
+## Cable properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Required cable name. Use a different name for each cable. |
+| `from` | `string` | Required starting endpoint: a connector selector or a motor's `wireside` reference. |
+| `to` | `string` | Required ending endpoint, distinct from `from`. |
+| `model` | `string` | Optional explicit cable model, including different-ended adapter cables. Omit to infer the model from the endpoints. |
+| `standard` | `"usb_c"` | Optional USB-C preset. Omit to infer USB-C, JST SH (1 mm pitch), or JST PH (2 mm pitch) from the endpoints. |
+
+When `model` is omitted, both JST connectors must have the same standard and `pinCount`. Select a matching footprint, such as `jst6_ph` for a six-pin PH header. Inferred cables reject incompatible standards or pin counts. Missing or ambiguous endpoints report errors with either mode. Endpoints resolve within the nearest `assembly.device`, including components declared later.
+
+Add one `assembly.cable` for each physical cable; several cables can share a device. Each produces an independent `cad_cable` path in Circuit JSON. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There are no length or route-hint props.
+
+These examples require `@tscircuit/core` 0.0.2088 or later and `circuit-json-to-gltf` 0.0.144 or later. The explicit `model` example requires `@tscircuit/core` 0.0.2110 or later, `@tscircuit/props` 0.0.695 or later, and `circuit-json-to-gltf` 0.0.148 or later. `tscircuit` 0.0.2764 includes these versions.

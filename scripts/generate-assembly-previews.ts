@@ -31,12 +31,17 @@ await mkdir(playground, { recursive: true })
 const scratch = await mkdtemp(resolve(playground, "assembly-preview-"))
 await mkdir(output, { recursive: true })
 try {
-  const pages = [
-    ...(await readdir(resolve(docsRoot, "elements")))
-      .filter((name) => name.startsWith("assembly-") && name.endsWith(".mdx"))
-      .map((name) => `elements/${name}`),
-    "guides/tscircuit-essentials/mounting-3d-models.mdx",
-  ]
+  const pages =
+    process.argv.length > 3
+      ? process.argv.slice(3)
+      : [
+          ...(await readdir(resolve(docsRoot, "elements")))
+            .filter(
+              (name) => name.startsWith("assembly-") && name.endsWith(".mdx"),
+            )
+            .map((name) => `elements/${name}`),
+          "guides/tscircuit-essentials/mounting-3d-models.mdx",
+        ]
   for (const page of pages) {
     const source = await readFile(resolve(docsRoot, page), "utf8")
     let index = 0
@@ -58,8 +63,12 @@ try {
         resolve(output, `${name}.json`),
         `${JSON.stringify(circuit.getCircuitJson(), null, 2)}\n`,
       )
-      const imagePath = source.match(/threeDImageUrl="([^"]+)"/)?.[1]
-      if (imagePath && index === 1) {
+      const previewProps = source.slice(
+        source.lastIndexOf("<CircuitPreview", match.index),
+        match.index,
+      )
+      const imagePath = previewProps.match(/threeDImageUrl="([^"]+)"/)?.[1]
+      if (imagePath) {
         const require = createRequire(resolve(coreDirectory, "package.json"))
         const { convertCircuitJsonToGltf } = await import(
           pathToFileURL(require.resolve("circuit-json-to-gltf")).href
@@ -76,10 +85,21 @@ try {
         const png = await renderGLTFToPNGFromGLB(Buffer.from(glb), {
           width: 800,
           height: 800,
-          camPos: [95, 35, 95],
-          lookAt: [0, -25, 0],
+          camPos: name.startsWith("assembly-cable")
+            ? [120, 90, 150]
+            : name.startsWith("assembly-part")
+              ? [55, 35, 55]
+              : [95, 35, 95],
+          lookAt: name.startsWith("assembly-cable")
+            ? name === "assembly-cable-1"
+              ? [-40, -14, 0]
+              : [0, 0, 0]
+            : name.startsWith("assembly-part")
+              ? [0, 0, 0]
+              : [0, -25, 0],
           fov: 40,
           grid: false,
+          realistic: name.startsWith("assembly-cable"),
           backgroundColor: [1, 1, 1],
         })
         await writeFile(resolve(repoRoot, `static${imagePath}`), png)

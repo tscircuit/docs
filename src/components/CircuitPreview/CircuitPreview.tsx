@@ -16,6 +16,7 @@ import TscircuitIframe from "../TscircuitIframe"
 import styles from "./styles.module.css"
 import GlbPreview from "./GlbPreview"
 import { create3dAssetUrls } from "./create-3d-asset-urls"
+import { PreviewCodeSourceContext } from "./preview-code-source-context"
 import { createCircuitPreviewEditorUrl } from "./create-editor-url"
 
 type CircuitPreviewView =
@@ -146,7 +147,7 @@ export default function CircuitPreview({
   verticalStack = false,
   showCourtyards = false,
   showDebugObjects = false,
-  wrapCode = false,
+  wrapCode = true,
 }: {
   code?: string
   /** Precompiled preview data for APIs newer than the hosted evaluator. */
@@ -388,6 +389,35 @@ export default function CircuitPreview({
     showSimulationGraph && simulationExperimentNames.length > 1
 
   const currentCode = normalizedFsMap?.[currentFile] ?? normalizedCode
+  const [formattedCode, setFormattedCode] = useState<{
+    source: string
+    filename: string
+    code: string
+  }>()
+
+  useEffect(() => {
+    let cancelled = false
+    // Load the formatter separately so it does not block the initial preview.
+    import("./format-preview-code")
+      .then(({ formatPreviewCode }) =>
+        formatPreviewCode(currentCode, currentFile),
+      )
+      .then((code) => {
+        if (!cancelled) {
+          setFormattedCode({ source: currentCode, filename: currentFile, code })
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [currentCode, currentFile])
+
+  const displayCode =
+    formattedCode?.source === currentCode &&
+    formattedCode.filename === currentFile
+      ? formattedCode.code
+      : currentCode.trim()
   const editorUrl = createCircuitPreviewEditorUrl({
     code: normalizedCode,
     fsMap: normalizedFsMap,
@@ -410,14 +440,16 @@ export default function CircuitPreview({
         )}
       >
         <div
-          className={`${tw("relative w-full min-h-[320px]")} ${wrapCode ? styles.wrapCode : ""}`}
+          className={`${tw("relative w-full min-w-0 min-h-[320px]")} ${styles.codePane} ${wrapCode ? styles.wrapCode : ""}`}
         >
-          <CodeBlock
-            className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
-            language="tsx"
-          >
-            {currentCode.trim()}
-          </CodeBlock>
+          <PreviewCodeSourceContext.Provider value={currentCode.trim()}>
+            <CodeBlock
+              className={tw("w-full rounded-none shadow-none p-0 m-0 min-w-0")}
+              language="tsx"
+            >
+              {displayCode}
+            </CodeBlock>
+          </PreviewCodeSourceContext.Provider>
         </div>
       </div>
     </div>

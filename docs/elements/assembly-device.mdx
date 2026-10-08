@@ -17,13 +17,10 @@ import preview2 from "@site/src/data/assembly-previews/assembly-device-2.json"
   browser3dView={false}
   code={`import { assembly } from "@tscircuit/core"
 
-const models =
-  "https://docs.tscircuit.com/models/assembly"
-
 export default () => (
   <assembly.device
     name="product"
-    modelUrl={models + "/housing.glb"}
+    model="https://docs.tscircuit.com/models/assembly/housing.glb"
   >
     <board name="B1" width="40mm" height="30mm" />
   </assembly.device>
@@ -39,7 +36,7 @@ export default () => (
 
 ## Modelprinter strings
 
-Use a modelprinter string to generate a model without supplying a file. This display is 16 × 10 mm with a 5 mm cable.
+Use a modelprinter string directly in `model`; no modelcdn URL is needed. This display is 16 × 10 mm with a 5 mm cable.
 
 <CircuitPreview
   wrapCode
