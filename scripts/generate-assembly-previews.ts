@@ -87,12 +87,16 @@ try {
           height: 800,
           camPos: name.startsWith("assembly-cable")
             ? [120, 90, 150]
-            : [95, 35, 95],
+            : name.startsWith("assembly-part")
+              ? [55, 35, 55]
+              : [95, 35, 95],
           lookAt: name.startsWith("assembly-cable")
             ? name === "assembly-cable-1"
               ? [-40, -14, 0]
               : [0, 0, 0]
-            : [0, -25, 0],
+            : name.startsWith("assembly-part")
+              ? [0, 0, 0]
+              : [0, -25, 0],
           fov: 40,
           grid: false,
           realistic: name.startsWith("assembly-cable"),

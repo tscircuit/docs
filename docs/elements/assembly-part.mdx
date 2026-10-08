@@ -1,0 +1,55 @@
+---
+title: <assembly.part />
+description: Add a generic mechanical component to an assembly with optional CAD geometry.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import preview1 from "@site/src/data/assembly-previews/assembly-part-1.json"
+
+`assembly.part` is a generic component of an assembly, such as a bracket, cover, or purchased mechanical part. Give it a stable `name` and optionally supply a CAD model. It has no PCB footprint, schematic symbol, or electrical ports.
+
+<CircuitPreview
+  wrapCode
+  circuitJson={preview1}
+  threeDImageUrl="/img/elements/assembly-part-bracket.png"
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="product">
+    <board width="40mm" height="30mm" thickness="1.6mm" />
+    <assembly.part
+      name="bracket"
+      displayName="Mounting bracket"
+      cadModel={{
+        glbUrl: "https://docs.tscircuit.com/models/assembly/bracket.glb",
+        positionOffset: { x: 10, y: 0, z: 0.8 },
+        rotationOffset: { x: 0, y: 0, z: 90 },
+      }}
+    />
+  </assembly.device>
+)`}
+/>
+
+## Part properties
+
+| Property | Description |
+|----------|-------------|
+| `name` | Required stable identity. Trimmed and must not be empty. |
+| `displayName` | Optional human-facing name. |
+| `model` | Modelprinter/footprinter specification or an HTTP(S) model URL. |
+| `modelUrl` | Imported model URL or asset path. |
+| `cadModel` | Existing CAD formats and transforms, including CAD JSX; see [`cadmodel`](./cadmodel.mdx). |
+
+Supply at most one of `model`, `modelUrl`, or `cadModel`. Omit all three for a part with no geometry. `cadModel={null}` also keeps the part's identity without rendering a model; it cannot be combined with another model source.
+
+## Placement
+
+Standalone parts use the world origin. Nested parts inherit the nearest assembly's placement. `cadModel.positionOffset` moves the model in that local frame; `rotationOffset` rotates it. A model's offsets do not move the assembly origin used by other elements.
+
+Coordinates are in millimetres in a right-handed frame: +X right, +Y top, and +Z above the board. In the example, the top of the 1.6 mm board is at Z = 0.8 mm. These model transforms do not attach the bracket to mounting holes or create fasteners.
+
+An [`assembly.screen`](./assembly-screen.mdx) can target the part's identity with `connectsTo=".bracket"`. This uses the part's assembly origin, not the model's offset, and does not create electrical connections. `pcbDisabled` suppresses part CAD geometry.
+
+Use [`assembly.printedpart`](./assembly-printedpart.mdx) for printable JSCAD geometry with named mounting faces, or [`assembly.subassembly`](./assembly-subassembly.mdx) to group nested assembly elements. A generic part has no `mountedTo`, `mountFace`, or `jscad` prop.
