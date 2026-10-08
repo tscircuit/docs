@@ -70,7 +70,8 @@ layer.
 <summary>Compare top-side and bottom-side headers</summary>
 
 <CircuitPreview
-  defaultView="3d"
+  defaultView="pcb"
+  hide3DTab
   code={`export default () => (
   <board width="26mm" height="12mm" routingDisabled>
     <pinheader
@@ -93,6 +94,8 @@ layer.
 
 `J_TOP` mates from above the board and `J_BOTTOM` from below. Adding
 `layer="top"` to `J_BOTTOM` would override `connectsFromBelow` and mount both
-headers on top. See [`<board />`](./board.mdx) for board settings.
+headers on top. In the PCB preview, `J_BOTTOM` has bottom-side silkscreen,
+mirrored when viewed from the top. See [`<board />`](./board.mdx) for board
+settings.
 
 </details>
