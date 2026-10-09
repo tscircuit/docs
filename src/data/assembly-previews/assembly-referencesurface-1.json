@@ -1,0 +1,447 @@
+[
+  {
+    "type": "source_project_metadata",
+    "source_project_metadata_id": "source_project_metadata_0",
+    "software_used_string": "@tscircuit/core@0.0.2111"
+  },
+  {
+    "type": "source_component",
+    "source_component_id": "source_component_0",
+    "ftype": "subassembly",
+    "name": "BASE"
+  },
+  {
+    "type": "source_component",
+    "source_component_id": "source_component_1",
+    "ftype": "subassembly",
+    "name": "BULB"
+  },
+  {
+    "type": "source_component",
+    "source_component_id": "source_component_2",
+    "ftype": "printedpart",
+    "name": "STEM",
+    "color": "#436f8b",
+    "material": "petg"
+  },
+  {
+    "type": "source_component",
+    "source_component_id": "source_component_3",
+    "ftype": "printedpart",
+    "name": "SHADE",
+    "color": "#d9a15f",
+    "material": "pla"
+  },
+  {
+    "type": "cad_reference_surface",
+    "cad_reference_surface_id": "cad_reference_surface_0",
+    "source_component_id": "source_component_0",
+    "name": "stem",
+    "shape": "rect",
+    "center": {
+      "x": 0,
+      "y": 0,
+      "z": 12
+    },
+    "normal": {
+      "x": 0,
+      "y": 0,
+      "z": 1
+    },
+    "x_axis": {
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    "width": 28,
+    "height": 28
+  },
+  {
+    "type": "cad_component",
+    "cad_component_id": "cad_component_0",
+    "model_jscad": {
+      "type": "colorize",
+      "color": [0.08, 0.12, 0.16],
+      "shape": {
+        "type": "subtract",
+        "shapes": [
+          {
+            "type": "union",
+            "shapes": [
+              {
+                "type": "cylinder",
+                "radius": 34,
+                "height": 8,
+                "center": [0, 0, 4]
+              },
+              {
+                "type": "cylinder",
+                "radius": 24,
+                "height": 4,
+                "center": [0, 0, 10]
+              }
+            ]
+          },
+          {
+            "type": "cylinder",
+            "radius": 2,
+            "height": 14,
+            "center": [0, 0, 6]
+          },
+          {
+            "type": "translate",
+            "vector": [17, 0, 1],
+            "shape": {
+              "type": "cuboid",
+              "size": [34, 4, 3]
+            }
+          }
+        ]
+      }
+    },
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "layer": "top",
+    "source_component_id": "source_component_0",
+    "model_origin_position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "model_unit_to_mm_scale_factor": 1,
+    "model_object_fit": "contain_within_bounds",
+    "anchor_alignment": "center",
+    "show_as_translucent_model": false
+  },
+  {
+    "type": "cad_component",
+    "cad_component_id": "cad_component_1",
+    "model_jscad": {
+      "type": "colorize",
+      "color": [1, 0.9, 0.65],
+      "shape": {
+        "type": "union",
+        "shapes": [
+          {
+            "type": "cylinder",
+            "radius": 2,
+            "height": 8,
+            "center": [0, 0, 84]
+          },
+          {
+            "type": "sphere",
+            "radius": 7,
+            "center": [0, 0, 88]
+          }
+        ]
+      }
+    },
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 12
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "layer": "top",
+    "source_component_id": "source_component_1",
+    "model_origin_position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "model_unit_to_mm_scale_factor": 1,
+    "model_object_fit": "contain_within_bounds",
+    "anchor_alignment": "center",
+    "show_as_translucent_model": false
+  },
+  {
+    "type": "cad_reference_surface",
+    "cad_reference_surface_id": "cad_reference_surface_1",
+    "source_component_id": "source_component_2",
+    "name": "base",
+    "shape": "rect",
+    "center": {
+      "x": 0,
+      "y": 0,
+      "z": 12
+    },
+    "normal": {
+      "x": 0,
+      "y": -1.2246468525851679e-16,
+      "z": -1
+    },
+    "x_axis": {
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    "width": 28,
+    "height": 28
+  },
+  {
+    "type": "cad_reference_surface",
+    "cad_reference_surface_id": "cad_reference_surface_2",
+    "source_component_id": "source_component_2",
+    "name": "shade",
+    "shape": "rect",
+    "center": {
+      "x": 0,
+      "y": 9.797174397164869e-15,
+      "z": 92
+    },
+    "normal": {
+      "x": 0,
+      "y": 1.2246468525851679e-16,
+      "z": 1
+    },
+    "x_axis": {
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    "width": 28,
+    "height": 28
+  },
+  {
+    "type": "cad_component",
+    "cad_component_id": "cad_component_2",
+    "model_jscad": {
+      "type": "rotate",
+      "angles": [-1.2246467991473532e-16, 0, 0],
+      "shape": {
+        "type": "colorize",
+        "color": [0.2627450980392157, 0.43529411764705883, 0.5450980392156862],
+        "shape": {
+          "type": "subtract",
+          "shapes": [
+            {
+              "type": "translate",
+              "vector": [0, 0, 40],
+              "shape": {
+                "type": "cylinder",
+                "radius": 4,
+                "height": 80
+              }
+            },
+            {
+              "type": "translate",
+              "vector": [0, 0, 40],
+              "shape": {
+                "type": "cylinder",
+                "radius": 2,
+                "height": 82
+              }
+            }
+          ]
+        }
+      }
+    },
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 12
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "layer": "top",
+    "source_component_id": "source_component_2",
+    "color": "#436f8b",
+    "model_origin_position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "model_unit_to_mm_scale_factor": 1,
+    "model_object_fit": "contain_within_bounds",
+    "anchor_alignment": "center",
+    "show_as_translucent_model": false
+  },
+  {
+    "type": "cad_reference_surface",
+    "cad_reference_surface_id": "cad_reference_surface_3",
+    "source_component_id": "source_component_3",
+    "name": "stem",
+    "shape": "rect",
+    "center": {
+      "x": 0,
+      "y": 1.7145054771522047e-14,
+      "z": 152
+    },
+    "normal": {
+      "x": 0,
+      "y": -2.4492937051703357e-16,
+      "z": -1
+    },
+    "x_axis": {
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    "width": 28,
+    "height": 28
+  },
+  {
+    "type": "cad_component",
+    "cad_component_id": "cad_component_3",
+    "model_jscad": {
+      "type": "rotate",
+      "angles": [-2.4492935982947064e-16, 0, 0],
+      "shape": {
+        "type": "colorize",
+        "color": [0.8509803921568627, 0.6313725490196078, 0.37254901960784315],
+        "shape": {
+          "type": "union",
+          "shapes": [
+            {
+              "type": "subtract",
+              "shapes": [
+                {
+                  "type": "hull",
+                  "shapes": [
+                    {
+                      "type": "translate",
+                      "vector": [0, 0, -23.9],
+                      "shape": {
+                        "type": "cylinder",
+                        "radius": 36,
+                        "height": 0.2
+                      }
+                    },
+                    {
+                      "type": "translate",
+                      "vector": [0, 0, 19.9],
+                      "shape": {
+                        "type": "cylinder",
+                        "radius": 20,
+                        "height": 0.2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "hull",
+                  "shapes": [
+                    {
+                      "type": "translate",
+                      "vector": [0, 0, -25],
+                      "shape": {
+                        "type": "cylinder",
+                        "radius": 34.4,
+                        "height": 0.2
+                      }
+                    },
+                    {
+                      "type": "translate",
+                      "vector": [0, 0, 21],
+                      "shape": {
+                        "type": "cylinder",
+                        "radius": 17.6,
+                        "height": 0.2
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "subtract",
+              "shapes": [
+                {
+                  "type": "translate",
+                  "vector": [0, 0, 2],
+                  "shape": {
+                    "type": "cylinder",
+                    "radius": 7,
+                    "height": 4
+                  }
+                },
+                {
+                  "type": "translate",
+                  "vector": [0, 0, 2],
+                  "shape": {
+                    "type": "cylinder",
+                    "radius": 2.2,
+                    "height": 6
+                  }
+                }
+              ]
+            },
+            {
+              "type": "rotate",
+              "angles": [0, 0, 0],
+              "shape": {
+                "type": "translate",
+                "vector": [16, 0, 2],
+                "shape": {
+                  "type": "cuboid",
+                  "size": [20, 2, 2]
+                }
+              }
+            },
+            {
+              "type": "rotate",
+              "angles": [0, 0, 2.0943951023931953],
+              "shape": {
+                "type": "translate",
+                "vector": [16, 0, 2],
+                "shape": {
+                  "type": "cuboid",
+                  "size": [20, 2, 2]
+                }
+              }
+            },
+            {
+              "type": "rotate",
+              "angles": [0, 0, 4.1887902047863905],
+              "shape": {
+                "type": "translate",
+                "vector": [16, 0, 2],
+                "shape": {
+                  "type": "cuboid",
+                  "size": [20, 2, 2]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "position": {
+      "x": 0,
+      "y": 1.7145055188062946e-14,
+      "z": 152
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "layer": "top",
+    "source_component_id": "source_component_3",
+    "color": "#d9a15f",
+    "model_origin_position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "model_unit_to_mm_scale_factor": 1,
+    "model_object_fit": "contain_within_bounds",
+    "anchor_alignment": "center",
+    "show_as_translucent_model": false
+  }
+]

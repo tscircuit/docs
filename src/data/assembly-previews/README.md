@@ -54,3 +54,18 @@ Each example's `threeDImageUrl` is rendered from its own Circuit JSON.
 
 Cable PNGs use PoppyGL 0.0.32 or later for realistic lighting. The core
 checkout used for regeneration must resolve that renderer version.
+
+The reference-surface lamp example requires core support for
+`assembly.referencesurface`, printed-part `color`/`material`, and
+`circuit-json-to-gltf` 0.0.151 or later. Regenerate its source-linked preview with:
+
+```sh
+bun scripts/generate-assembly-previews.ts /path/to/tscircuit/core \
+  elements/assembly-referencesurface.mdx
+```
+
+`assembly-referencesurface-frames.png` is the inspected four-panel PoppyGL snapshot
+from `circuit-json-to-gltf/tests/snapshot/reference-surface-lamp.test.ts`.
+It shows the same lamp with surfaces hidden/shown, its collar underside, and
+frames without CAD models. Update it from that renderer snapshot when the
+reference-surface rendering changes.

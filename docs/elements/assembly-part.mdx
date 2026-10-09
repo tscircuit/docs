@@ -41,6 +41,7 @@ export default () => (
 | `model` | Modelprinter/footprinter specification or an HTTP(S) model URL. |
 | `modelUrl` | Imported model URL or asset path. |
 | `cadModel` | Existing CAD formats and transforms, including CAD JSX; see [`cadmodel`](./cadmodel.mdx). |
+| `children` | Child reference surfaces and nested assembly elements. |
 
 Supply at most one of `model`, `modelUrl`, or `cadModel`. Omit all three for a part with no geometry. `cadModel={null}` also keeps the part's identity without rendering a model; it cannot be combined with another model source.
 
@@ -53,3 +54,14 @@ Coordinates are in millimetres in a right-handed frame: +X right, +Y top, and +Z
 An [`assembly.screen`](./assembly-screen.mdx) can target the part's identity with `connectsTo=".bracket"`. This uses the part's assembly origin, not the model's offset, and does not create electrical connections. `pcbDisabled` suppresses part CAD geometry.
 
 Use [`assembly.printedpart`](./assembly-printedpart.mdx) for printable JSCAD geometry with named mounting faces, or [`assembly.subassembly`](./assembly-subassembly.mdx) to group nested assembly elements. A generic part has no `mountedTo`, `mountFace`, or `jscad` prop.
+
+
+## Define a mounting anchor
+
+Add an [`assembly.referencesurface`](./assembly-referencesurface.mdx) as a direct
+child to define a mounting frame independently of the CAD model. The default
+surface name is `anchor`, so other parts can target `BRACKET.anchor`. Its local
+center offsets measure from the part origin; model offsets do not move it.
+
+This also works on a part with no model. See the reference-surface page's runnable
+lamp example for a base anchoring a printed stem and shade.
