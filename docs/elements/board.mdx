@@ -119,13 +119,11 @@ uses `tented={false}` to expose both sides, and the third uses `tented` to tent
 both sides. An explicit `false` overrides the board default just like any other
 `tented` value.
 
-{/* PCB asset generated from the TSX below with circuit-to-svg@0.0.445 and { showSolderMask: true, layer: "top", width: 800, height: 330 }. */}
-
 <CircuitPreview
   defaultView="pcb"
   splitView={false}
   hideSchematicTab
-  pcbImageUrl="/img/elements/board-via-tenting.svg"
+  showSolderMask
   cameraPreset="top-down"
   code={`export default () => (
   <board width="28mm" height="10mm" defaultViaTenting="top_tented">

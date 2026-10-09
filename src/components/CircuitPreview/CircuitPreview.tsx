@@ -146,6 +146,7 @@ export default function CircuitPreview({
   defaultSimulationExperimentName,
   verticalStack = false,
   showCourtyards = false,
+  showSolderMask = false,
   showDebugObjects = false,
   wrapCode = true,
 }: {
@@ -181,6 +182,7 @@ export default function CircuitPreview({
   defaultSimulationExperimentName?: string
   verticalStack?: boolean
   showCourtyards?: boolean
+  showSolderMask?: boolean
   showDebugObjects?: boolean
   wrapCode?: boolean
 }) {
@@ -270,6 +272,7 @@ export default function CircuitPreview({
     const flags: string[] = []
 
     if (showCourtyards) flags.push("show_courtyards=true")
+    if (showSolderMask) flags.push("show_solder_mask=true")
     if (showDebugObjects) flags.push("show_debug_objects=true")
     if (flags.length === 0) return basePcbUrl
 
@@ -279,6 +282,7 @@ export default function CircuitPreview({
     fsMapOrCode,
     mainComponentPath,
     showCourtyards,
+    showSolderMask,
     showDebugObjects,
     circuitJson,
     pcbImageUrl,
