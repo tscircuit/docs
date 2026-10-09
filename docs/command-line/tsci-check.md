@@ -1,9 +1,9 @@
 ---
 title: tsci check
-description: Partially build and validate circuit artifacts
+description: Build and validate circuit artifacts
 ---
 
-`tsci check` partially builds your circuit and validates specific aspects of the output. It is useful for catching issues early without running a full build.
+`tsci check` builds and validates specific aspects of your circuit, such as the netlist, component placement, and routing.
 
 ## Usage
 
@@ -44,3 +44,17 @@ tsci check routing
 :::note
 These subcommands are currently under development and may not be fully implemented yet.
 :::
+
+### `tsci check pcb-style`
+
+Detect long odd-angle trace runs and unnecessary stair stepping using default rules. Source files are built and routed before analysis.
+
+```bash
+tsci check pcb-style [file]
+```
+
+- `file` *(optional)* – source entrypoint or prebuilt Circuit JSON; defaults to the project's entrypoint
+- `--json` – print the analysis as JSON
+- `--svg <file>` – choose the SVG output path (default: `checks/check-pcb-style/pcb.svg`)
+
+Reports the issue count and saves a highlighted SVG overview. Exits with code `1` if style issues are found.
