@@ -34,6 +34,7 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `borderRadius` | `string \| number` | Round the corners of rectangular outlines by the specified radius. |
 | `layers` | `1 \| 2 \| 4 \| 6 \| 8 \| 10` | Specify the number of copper layers in the board stackup. Defaults to 2 layers. |
 | `allowBlindAndBuriedVias` | `boolean` | Allow partial-stack autorouter vias. Defaults to `false` (full-stack vias); confirm manufacturer support before enabling. |
+| `defaultViaTenting` | `boolean \| string` | Default solder-mask coverage for vias. Accepts the same values as [`via.tented`](./via.mdx#via-tenting); an explicit `tented` prop on a via overrides it. See [Default via tenting](#default-via-tenting). |
 | `autorouter` | `'auto' \| 'auto-local' \| 'fanout' \| 'laser_prefab' \| 'auto_jumper' \| AutorouterConfig` | Select a built-in autorouter preset or provide a configuration object. |
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
 | `autorouterVersion` | `'beta_pipeline1' \| 'beta_pipeline3' \| 'beta_pipeline4' \| 'beta_pipeline5' \| 'beta_pipeline7' \| 'beta_pipeline9' \| 'latest'` | Pin routing to a known autorouter implementation when comparing routing behavior across versions. Unknown values fall back to `latest` with a warning. |
@@ -106,6 +107,60 @@ instantly:
 
 Simply remove `routingDisabled` or set it to `false` when you're ready to see the
 final routed board. This workflow significantly speeds up the iterative design process.
+
+### Default via tenting
+
+Set `defaultViaTenting` on the board to choose the default solder-mask coverage
+for its vias. It accepts the same [values as `tented`](./via.mdx#via-tenting),
+including `true`, `false`, `"top_tented"`, and `"bottom_tented"`.
+
+In this example, the first via inherits top-only tenting. The second explicitly
+uses `tented={false}` to expose both sides, and the third uses `tented` to tent
+both sides. An explicit `false` overrides the board default just like any other
+`tented` value.
+
+<CircuitPreview
+  defaultView="pcb"
+  splitView={false}
+  hideSchematicTab
+  showSolderMask
+  cameraPreset="top-down"
+  code={`export default () => (
+  <board width="28mm" height="10mm" defaultViaTenting="top_tented">
+    <via
+      pcbX={-9}
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="1.2mm"
+      holeDiameter="0.6mm"
+    />
+    <silkscreentext pcbX={-9} pcbY={2} fontSize={0.8} text="Inherited" />
+
+    <via
+      pcbX={0}
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="1.2mm"
+      holeDiameter="0.6mm"
+      tented={false}
+    />
+    <silkscreentext pcbX={0} pcbY={2} fontSize={0.8} text="Exposed" />
+
+    <via
+      pcbX={9}
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="1.2mm"
+      holeDiameter="0.6mm"
+      tented
+    />
+    <silkscreentext pcbX={9} pcbY={2} fontSize={0.8} text="Both sides" />
+  </board>
+)`}
+/>
+
+The PCB preview shows the top side with solder mask visible. On the bottom
+side, only **Both sides** is tented. Select **Code** to see the default and overrides.
 
 ### Board Material and Colors
 
