@@ -43,6 +43,83 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | toLayer | string | "bottom" | Ending layer for the via |
 | holeDiameter | number \| string | "0.4mm" | Diameter of the plated hole |
 | outerDiameter | number \| string | "0.8mm" | Outer diameter of the copper annular ring |
+| tented | boolean \| string | Inherits the board default | Select which sides have solder mask over the via. See [Via tenting](#via-tenting) for accepted values. |
 | pcbX | number | 0 | PCB X position of the via |
 | pcbY | number | 0 | PCB Y position of the via |
 | netIsAssignable | boolean | `false` | Marks the via as prefabricated so autorouters like `laser_prefab` can claim it for any compatible net. |
+
+## Via tenting
+
+Use `tented` to control solder-mask coverage on each side of a via:
+
+| `tented` value | Top side | Bottom side |
+| --- | --- | --- |
+| `true`, `"both_sides"`, or `"top_and_bottom_tented"` | Tented | Tented |
+| `"top_tented"` | Tented | Exposed |
+| `"bottom_tented"` | Exposed | Tented |
+| `false` or `"exposed"` | Exposed | Exposed |
+
+The `tented` shorthand is equivalent to `tented={true}`. If you omit it, the
+via inherits [`defaultViaTenting`](./board.mdx#default-via-tenting) from its board.
+
+With solder mask visible, **Both sides** and **Top only** have a mask-colored
+ring and a darkened center on the top side. **Exposed** and **Bottom only** have
+exposed copper there. The PCB preview below shows the top side with solder mask
+visible. Select **Code** to see the props used for each via.
+
+{/* PCB asset generated from the TSX below with circuit-to-svg@0.0.445 and { showSolderMask: true, layer: "top", width: 800, height: 330 }. */}
+
+<CircuitPreview
+  defaultView="pcb"
+  splitView={false}
+  hideSchematicTab
+  pcbImageUrl="/img/elements/via-tenting.svg"
+  cameraPreset="top-down"
+  code={`export default () => (
+  <board width="32mm" height="10mm">
+    <via
+      pcbX={-12}
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="1.2mm"
+      holeDiameter="0.6mm"
+      tented={false}
+    />
+    <silkscreentext pcbX={-12} pcbY={2} fontSize={0.8} text="Exposed" />
+
+    <via
+      pcbX={-4}
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="1.2mm"
+      holeDiameter="0.6mm"
+      tented
+    />
+    <silkscreentext pcbX={-4} pcbY={2} fontSize={0.8} text="Both sides" />
+
+    <via
+      pcbX={4}
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="1.2mm"
+      holeDiameter="0.6mm"
+      tented="top_tented"
+    />
+    <silkscreentext pcbX={4} pcbY={2} fontSize={0.8} text="Top only" />
+
+    <via
+      pcbX={12}
+      fromLayer="top"
+      toLayer="bottom"
+      outerDiameter="1.2mm"
+      holeDiameter="0.6mm"
+      tented="bottom_tented"
+    />
+    <silkscreentext pcbX={12} pcbY={2} fontSize={0.8} text="Bottom only" />
+  </board>
+)`}
+/>
+
+Tenting does not fill the via or remove its physical drill hole. The darkened
+center represents the hole beneath the surface mask treatment; drill data is
+preserved for manufacturing.
