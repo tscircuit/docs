@@ -166,7 +166,21 @@ Provide exactly one of `jscad`, `model`, `modelUrl`, or `cadModel`:
 
 Use your own asset paths. `model` accepts a modelprinter/footprinter specification or a model URL. `cadModel` accepts the existing CAD model formats and transforms described in [mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx).
 
-Imported models do not automatically provide named mounting faces. For the face-based mounting shown above, author the reference rectangles through the `jscad` prop.
+Imported models do not automatically provide named mounting faces. Add
+[`assembly.referencesurface`](./assembly-referencesurface.mdx) children to define
+them independently of the model:
+
+```tsx
+<assembly.printedpart name="SPACER" modelUrl="./spacer.stl"
+  material="pla" color="#ff8800">
+  <assembly.referencesurface name="bottom" normalDirection="z-" />
+  <assembly.referencesurface name="top" centerZOffset="10mm" />
+</assembly.printedpart>
+```
+
+Child reference surfaces also work alongside the `jscad` prop. Their names must
+be unique across both child surfaces and named JSCAD reference rectangles. See
+the reference-surface page for a complete printed lamp example.
 
 ## Printed part properties
 
@@ -174,6 +188,9 @@ Imported models do not automatically provide named mounting faces. For the face-
 |----------|------|-------------|
 | `name` | `string` | Required name used in references such as `SPACER.board`. |
 | `displayName` | `string` | Optional display label. |
+| `color` | `string` | Optional rendered color, such as `"orange"` or `"#ff8800"`. Overrides authored model colors; omit to keep them. |
+| `material` | `"pla" \| "petg" \| "nylon"` | Optional printing material classification. Does not choose a rendering color. |
+| `children` | `ReactNode` | Child reference surfaces and nested assembly elements. |
 | `jscad` | `ReactElement` | JSCAD JSX from `jscad-fiber`, available as `jscad` from `tscircuit`. |
 | `model` | `string` | Model specification or model URL. |
 | `modelUrl` | `string` | URL or asset path for an existing CAD model. |
