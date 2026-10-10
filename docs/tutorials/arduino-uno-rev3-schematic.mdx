@@ -1,0 +1,1149 @@
+---
+unlisted: true
+title: Arduino Uno Rev3 Schematic
+description: >-
+  Recreate the Arduino Uno Rev3 schematic in tscircuit: dual ATmega328P +
+  ATmega16U2 design, power regulation, USB interface, auto-reset and the
+  expansion headers. Schematic-only, no PCB layout.
+---
+
+## Overview
+
+The Arduino Uno is the most classic beginner board, and its schematic is a
+great exercise in reading a real-world two-chip design. In this tutorial we
+recreate the **Arduino Uno Rev3 schematic** in tscircuit, one subsystem at a
+time:
+
+- **Power**: barrel jack into an NCP1117 5V LDO, a LP2985-33 3.3V LDO, and a
+  P-FET + comparator circuit that picks between USB power and the barrel jack
+- **USB interface**: a USB-B connector wired through an ATmega16U2 USB-serial
+  bridge, with a 500 mA resettable fuse and 22 ohm series termination
+- **MCU core**: the ATmega328P with its 16 MHz crystal, decoupling, AREF cap
+  and reset circuit (10k pull-up, pushbutton, and the famous auto-reset cap)
+- **Board extras**: the buffered D13 "L" LED, the power/digital/analog headers
+  and the ICSP header
+
+This tutorial is schematic-only. For reference, compare your result against the
+official Arduino UNO Rev3 schematic linked from the
+[Uno Rev3 product page](https://docs.arduino.cc/hardware/uno-rev3).
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Power Input and Regulation
+
+When powered from the barrel jack (7-12 V), the NCP1117-5.0 LDO produces the
+5V rail, with an input decoupling cap and a 47uF bulk cap on its output. The
+LP2985-33 then derives the 3.3V rail from 5V for the ICSP header and 3.3V pin.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    {/* Barrel jack: 7-12 V DC input */}
+    <chip
+      name="J_PWR"
+      pinLabels={{ pin1: ["TIP"], pin2: ["SLEEVE"] }}
+      schPortArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["TIP", "SLEEVE"] },
+      }}
+      schX={-12}
+      schY={2}
+    />
+    {/* NCP1117-5.0 5V LDO fed from the jack */}
+    <chip
+      name="U_REG"
+      manufacturerPartNumber="NCP1117ST50T3G"
+      pinLabels={{ pin1: ["IN"], pin2: ["OUT"], pin3: ["GND"] }}
+      schPortArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["IN", "GND"] },
+        rightSide: { direction: "top-to-bottom", pins: ["OUT"] },
+      }}
+      schX={-4}
+      schY={2}
+    />
+    <capacitor
+      name="C_REG_IN"
+      capacitance="4.7uF"
+      footprint="0805"
+      schX={-4}
+      schY={6}
+    />
+    <capacitor
+      name="C_REG_OUT"
+      capacitance="47uF"
+      footprint="SMC"
+      schX={0}
+      schY={6}
+    />
+    {/* LP2985-33 3.3V LDO fed from the 5V rail */}
+    <chip
+      name="U_3V3"
+      manufacturerPartNumber="LP2985-33DBVR"
+      pinLabels={{ pin1: ["IN"], pin2: ["OUT"], pin3: ["GND"] }}
+      schPortArrangement={{
+        leftSide: { direction: "top-to-bottom", pins: ["IN", "GND"] },
+        rightSide: { direction: "top-to-bottom", pins: ["OUT"] },
+      }}
+      schX={-4}
+      schY={-4}
+    />
+    <capacitor
+      name="C_3V3_IN"
+      capacitance="1uF"
+      footprint="0603"
+      schX={-8}
+      schY={-4}
+    />
+    <capacitor
+      name="C_3V3_OUT"
+      capacitance="10uF"
+      footprint="0805"
+      schX={0}
+      schY={-4}
+    />
+
+    <trace from=".J_PWR .TIP" to="net.VIN" />
+    <trace from=".J_PWR .SLEEVE" to="net.GND" />
+    <trace from="net.VIN" to=".U_REG .IN" />
+    <trace from="net.VIN" to=".C_REG_IN .pin1" />
+    <trace from=".C_REG_IN .pin2" to="net.GND" />
+    <trace from=".U_REG .OUT" to="net.V5" />
+    <trace from=".U_REG .GND" to="net.GND" />
+    <trace from=".C_REG_OUT .pin1" to="net.V5" />
+    <trace from=".C_REG_OUT .pin2" to="net.GND" />
+    <trace from="net.V5" to=".U_3V3 .IN" />
+    <trace from=".U_3V3 .GND" to="net.GND" />
+    <trace from=".U_3V3 .OUT" to="net.V3_3" />
+    <trace from=".C_3V3_IN .pin1" to="net.V5" />
+    <trace from=".C_3V3_IN .pin2" to="net.GND" />
+    <trace from=".C_3V3_OUT .pin1" to="net.V3_3" />
+    <trace from=".C_3V3_OUT .pin2" to="net.GND" />
+  </board>
+)
+`} />
+
+## USB Power Path and Source Selection
+
+When USB is plugged in, VBUS first passes through a 500 mA resettable fuse
+(`F1`) and then reaches the 5V rail through the P-channel MOSFET `T1`. One half
+of the LMV358 acts as a comparator: it watches the barrel-jack voltage against
+the 5V rail and drives the FET gate, so the board automatically runs from the
+barrel jack whenever both sources are present. The USB data lines leave the
+connector through 22 ohm series resistors toward the USB-serial chip.
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export default () => (
+  <board routingDisabled>
+    {/* USB-B connector */}
+    <chip
+      name="J_USB"
+      pinLabels={{
+        pin1: ["VBUS"],
+        pin2: ["DMINUS"],
+        pin3: ["DPLUS"],
+        pin4: ["GND"],
+        pin5: ["SHIELD"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VBUS", "DMINUS", "DPLUS"],
+        },
+        rightSide: { direction: "top-to-bottom", pins: ["GND", "SHIELD"] },
+      }}
+      schX={-14}
+      schY={-2}
+    />
+    {/* 500 mA resettable fuse in series with USB VBUS */}
+    <fuse
+      name="F1"
+      currentRating="0.5A"
+      footprint="1206"
+      schX={-8}
+      schY={-2}
+    />
+    {/* FDN340P P-FET selects between USBVCC and the regulator output */}
+    <mosfet
+      name="T1"
+      channelType="p"
+      mosfetMode="enhancement"
+      footprint="sot23"
+      schX={-2}
+      schY={-2}
+    />
+    {/* LMV358 (half B): comparator drives the P-FET gate */}
+    <chip
+      name="U2A"
+      manufacturerPartNumber="LMV358"
+      pinLabels={{
+        pin1: ["IN2P"],
+        pin2: ["IN2N"],
+        pin3: ["GND"],
+        pin4: ["OUT2"],
+        pin5: ["VCC"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["IN2P", "IN2N", "GND"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["OUT2", "VCC"],
+        },
+      }}
+      schX={-2}
+      schY={-8}
+    />
+
+    {/* 22 ohm series termination continues to the 16U2 USB pins */}
+    <resistor
+      name="R_USB_DP"
+      resistance="22"
+      footprint="0603"
+      schX={-8}
+      schY={-5}
+    />
+    <resistor
+      name="R_USB_DM"
+      resistance="22"
+      footprint="0603"
+      schX={-8}
+      schY={-7}
+    />
+
+    {/* USB power: VBUS -> fuse -> USBVCC -> P-FET -> 5V rail */}
+    <trace from=".J_USB .VBUS" to="net.VBUS" />
+    <trace from=".J_USB .VBUS" to=".F1 .pin1" />
+    <trace from=".F1 .pin2" to="net.USBVCC" />
+    <trace from=".T1 .source" to="net.USBVCC" />
+    <trace from=".T1 .drain" to="net.V5" />
+    {/* Comparator: jack voltage vs 5V rail -> FET gate */}
+    <trace from=".U2A .IN2P" to="net.VIN" />
+    <trace from=".U2A .IN2N" to="net.V5" />
+    <trace from=".U2A .OUT2" to="net.FET_GATE" />
+    <trace from=".T1 .gate" to="net.FET_GATE" />
+    <trace from=".U2A .VCC" to="net.V5" />
+    <trace from=".U2A .GND" to="net.GND" />
+    {/* Grounds and shield */}
+    <trace from=".J_USB .GND" to="net.GND" />
+    <trace from=".J_USB .SHIELD" to="net.GND" />
+    {/* USB data lines continue to the 16U2 */}
+    <trace from=".J_USB .DPLUS" to=".R_USB_DP .pin1" />
+    <trace from=".J_USB .DMINUS" to=".R_USB_DM .pin1" />
+    <trace from=".R_USB_DP .pin2" to="net.UDP" />
+    <trace from=".R_USB_DM .pin2" to="net.UDM" />
+  </board>
+)
+`} />
+
+## USB-Serial Bridge: ATmega16U2
+
+The ATmega16U2 runs from the 5V rail (VCC) and senses USB power on UVCC. Its
+own 16 MHz crystal keeps the USB clock stable, and `C_UCAP` decouples the 3.3V
+output of its internal regulator. On the firmware side:
+
+- `TXD`/`RXD` are crossed into the ATmega328P UART
+- `DTR` pulses through a 100 nF cap (`C_AUTO`) into the 328P RESET net - this
+  is the auto-reset that makes serial uploads "just work"
+- `HWB` is held low through 10k so the chip boots its USB firmware normally
+- its own RESET is pulled up to USBVCC and routed to the 16U2 ICSP header
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export const Atmega16U2 = (props: any) => (
+  <chip
+    {...props}
+    manufacturerPartNumber="ATmega16U2-MU"
+    pinLabels={{
+      pin1: ["UVCC"],
+      pin2: ["UCAP"],
+      pin3: ["XTAL1"],
+      pin4: ["XTAL2"],
+      pin5: ["RESET"],
+      pin6: ["HWB"],
+      pin7: ["VCC"],
+      pin8: ["GND"],
+      pin9: ["UDM"],
+      pin10: ["UDP"],
+      pin11: ["TXD"],
+      pin12: ["RXD"],
+      pin13: ["DTR"],
+    }}
+    schPortArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: ["UVCC", "UCAP", "XTAL1", "XTAL2", "RESET", "HWB"],
+      },
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: ["VCC", "GND", "UDM", "UDP", "TXD", "RXD", "DTR"],
+      },
+    }}
+  />
+)
+
+export default () => {
+  return (
+    <board routingDisabled>
+      <Atmega16U2 name="U3" schX={0} schY={0} />
+      {/* 16 MHz crystal for the 16U2 */}
+      <crystal
+        name="Q2"
+        frequency="16MHz"
+        loadCapacitance="22pF"
+        footprint="hc49"
+        schX={0}
+        schY={-6}
+      />
+      <capacitor name="C_X2A" capacitance="22pF" footprint="0603" schX={-3} schY={-8} />
+      <capacitor name="C_X2B" capacitance="22pF" footprint="0603" schX={3} schY={-8} />
+      {/* UCAP: 1uF on the internal 3.3V regulator output */}
+      <capacitor name="C_UCAP" capacitance="1uF" footprint="0603" schX={4} schY={2} />
+      {/* HWB held low so the 16U2 boots its USB firmware */}
+      <resistor name="R_HWB" resistance="10k" footprint="0603" schX={-4} schY={2} />
+      {/* 16U2 reset pull-up to USBVCC */}
+      <resistor name="R_U3RST" resistance="10k" footprint="0603" schX={4} schY={-3} />
+      {/* Auto-reset: 100 nF from the 16U2 DTR into the 328P RESET net */}
+      <capacitor
+        name="C_AUTO"
+        capacitance="100nF"
+        footprint="0603"
+        schX={4}
+        schY={5}
+      />
+
+      <trace from=".U3 .VCC" to="net.V5" />
+      <trace from=".U3 .GND" to="net.GND" />
+      <trace from=".U3 .UVCC" to="net.USBVCC" />
+      <trace from=".U3 .UCAP" to=".C_UCAP .pin1" />
+      <trace from=".C_UCAP .pin2" to="net.GND" />
+      <trace from=".U3 .XTAL1" to=".Q2 .pin1" />
+      <trace from=".U3 .XTAL2" to=".Q2 .pin2" />
+      <trace from=".Q2 .pin1" to=".C_X2A .pin1" />
+      <trace from=".Q2 .pin2" to=".C_X2B .pin1" />
+      <trace from=".C_X2A .pin2" to="net.GND" />
+      <trace from=".C_X2B .pin2" to="net.GND" />
+      <trace from=".U3 .HWB" to=".R_HWB .pin1" />
+      <trace from=".R_HWB .pin2" to="net.GND" />
+      {/* 16U2 reset pull-up, continues to the 16U2 ICSP header */}
+      <trace from=".U3 .RESET" to="net.URESET" />
+      <trace from="net.USBVCC" to=".R_U3RST .pin1" />
+      <trace from=".R_U3RST .pin2" to="net.URESET" />
+      {/* USB data lines from the series termination resistors */}
+      <trace from="net.UDM" to=".U3 .UDM" />
+      <trace from="net.UDP" to=".U3 .UDP" />
+      {/* Crossed UART to the 328P */}
+      <trace from=".U3 .TXD" to="net.SER_RX" />
+      <trace from=".U3 .RXD" to="net.SER_TX" />
+      {/* Auto-reset cap from DTR into the shared RESET net */}
+      <trace from=".U3 .DTR" to="net.DTR" />
+      <trace from=".C_AUTO .pin1" to="net.DTR" />
+      <trace from=".C_AUTO .pin2" to="net.RESET" />
+    </board>
+  )
+}
+`} />
+
+## The ATmega328P Core
+
+The main MCU is the ATmega328P in a 28-pin DIP on the Rev3 board. Around it:
+
+- a 16 MHz crystal with two 22 pF load capacitors on XTAL1/XTAL2
+- 100 nF decoupling on VCC and AVCC, plus a 100 nF cap on AREF
+- a 10k pull-up and a pushbutton on the RESET net, plus the auto-reset cap
+  arriving from the 16U2's DTR line
+- the crossed UART on PD0/PD1, and the GPIO nets that fan out to the headers
+- PB3/PB4/PB5 double as MOSI/MISO/SCK for the ICSP header
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export const Atmega328P = (props: any) => (
+  <chip
+    {...props}
+    manufacturerPartNumber="ATmega328P-PU"
+    pinLabels={{
+      pin1: ["RESET"],
+      pin2: ["PD0", "D0"],
+      pin3: ["PD1", "D1"],
+      pin4: ["PD2", "D2"],
+      pin5: ["PD3", "D3"],
+      pin6: ["PD4", "D4"],
+      pin7: ["VCC"],
+      pin8: ["GND"],
+      pin9: ["XTAL1", "PB6"],
+      pin10: ["XTAL2", "PB7"],
+      pin11: ["PD5", "D5"],
+      pin12: ["PD6", "D6"],
+      pin13: ["PD7", "D7"],
+      pin14: ["PB0", "D8"],
+      pin15: ["PB1", "D9"],
+      pin16: ["PB2", "D10"],
+      pin17: ["PB3", "D11"],
+      pin18: ["PB4", "D12"],
+      pin19: ["PB5", "D13"],
+      pin20: ["AVCC"],
+      pin21: ["AREF"],
+      pin22: ["GND2"],
+      pin23: ["PC0", "A0"],
+      pin24: ["PC1", "A1"],
+      pin25: ["PC2", "A2"],
+      pin26: ["PC3", "A3"],
+      pin27: ["PC4", "A4", "SDA"],
+      pin28: ["PC5", "A5", "SCL"],
+    }}
+    schPortArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: ["VCC", "AVCC", "AREF", "GND", "GND2", "RESET"],
+      },
+      topSide: {
+        direction: "left-to-right",
+        pins: ["XTAL1", "XTAL2"],
+      },
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: [
+          "PD0",
+          "PD1",
+          "PD2",
+          "PD3",
+          "PD4",
+          "PD5",
+          "PD6",
+          "PD7",
+          "PB0",
+          "PB1",
+          "PB2",
+          "PB3",
+          "PB4",
+          "PB5",
+        ],
+      },
+      bottomSide: {
+        direction: "left-to-right",
+        pins: ["PC0", "PC1", "PC2", "PC3", "PC4", "PC5"],
+      },
+    }}
+  />
+)
+
+export default () => {
+  return (
+    <board routingDisabled>
+      <Atmega328P name="U1" schX={0} schY={0} />
+      {/* 16 MHz crystal + load caps */}
+      <crystal
+        name="Q1"
+        frequency="16MHz"
+        loadCapacitance="22pF"
+        footprint="hc49"
+        schX={0}
+        schY={6}
+      />
+      <capacitor name="C_X1A" capacitance="22pF" footprint="0603" schX={-3} schY={8} />
+      <capacitor name="C_X1B" capacitance="22pF" footprint="0603" schX={3} schY={8} />
+      {/* Decoupling + AREF cap */}
+      <capacitor name="C_VCC" capacitance="100nF" footprint="0603" schX={-7} schY={2} />
+      <capacitor name="C_AVCC" capacitance="100nF" footprint="0603" schX={-7} schY={0} />
+      <capacitor name="C_AREF" capacitance="100nF" footprint="0603" schX={-7} schY={-2} />
+      {/* Reset: 10k pull-up + pushbutton to GND */}
+      <resistor name="R_RST" resistance="10k" footprint="0603" schX={-7} schY={-4} />
+      <pushbutton name="SW1" footprint="pushbutton" schX={-7} schY={-7} />
+
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+      <trace from=".C_VCC .pin1" to="net.V5" />
+      <trace from=".C_VCC .pin2" to="net.GND" />
+      <trace from=".C_AVCC .pin1" to="net.V5" />
+      <trace from=".C_AVCC .pin2" to="net.GND" />
+      <trace from=".U1 .AREF" to="net.AREF" />
+      <trace from=".C_AREF .pin1" to="net.AREF" />
+      <trace from=".C_AREF .pin2" to="net.GND" />
+      <trace from=".U1 .XTAL1" to=".Q1 .pin1" />
+      <trace from=".U1 .XTAL2" to=".Q1 .pin2" />
+      <trace from=".Q1 .pin1" to=".C_X1A .pin1" />
+      <trace from=".Q1 .pin2" to=".C_X1B .pin1" />
+      <trace from=".C_X1A .pin2" to="net.GND" />
+      <trace from=".C_X1B .pin2" to="net.GND" />
+      <trace from=".U1 .RESET" to="net.RESET" />
+      <trace from=".R_RST .pin1" to="net.V5" />
+      <trace from=".R_RST .pin2" to="net.RESET" />
+      <trace from=".SW1 .pin1" to="net.RESET" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+      {/* Crossed UART from the 16U2 */}
+      <trace from="net.SER_RX" to=".U1 .PD0" />
+      <trace from="net.SER_TX" to=".U1 .PD1" />
+      {/* GPIO nets continue to the headers and the ICSP header */}
+      <trace from=".U1 .PD2" to="net.D2" />
+      <trace from=".U1 .PD3" to="net.D3" />
+      <trace from=".U1 .PD4" to="net.D4" />
+      <trace from=".U1 .PD5" to="net.D5" />
+      <trace from=".U1 .PD6" to="net.D6" />
+      <trace from=".U1 .PD7" to="net.D7" />
+      <trace from=".U1 .PD0" to="net.D0" />
+      <trace from=".U1 .PD1" to="net.D1" />
+      <trace from=".U1 .PB0" to="net.D8" />
+      <trace from=".U1 .PB1" to="net.D9" />
+      <trace from=".U1 .PB2" to="net.D10" />
+      <trace from=".U1 .PB3" to="net.D11" />
+      <trace from=".U1 .PB4" to="net.D12" />
+      <trace from=".U1 .PB5" to="net.D13" />
+      <trace from=".U1 .PC0" to="net.A0" />
+      <trace from=".U1 .PC1" to="net.A1" />
+      <trace from=".U1 .PC2" to="net.A2" />
+      <trace from=".U1 .PC3" to="net.A3" />
+      <trace from=".U1 .PC4" to="net.SDA" />
+      <trace from=".U1 .PC5" to="net.SCL" />
+      {/* ICSP sharing: D11/D12/D13 are MOSI/MISO/SCK */}
+      <trace from="net.MOSI" to=".U1 .PB3" />
+      <trace from="net.MISO" to=".U1 .PB4" />
+      <trace from="net.SCK" to=".U1 .PB5" />
+    </board>
+  )
+}
+`} />
+
+## Status LED, Headers and the Full Schematic
+
+Two finishing touches, straight from the reference design:
+
+- The "L" LED on D13 is driven through the **second half of the LMV358 wired
+  as a unity-gain buffer**, so the LED's load never disturbs the SPI clock on
+  D13. The buffered output goes through a 1k resistor into the orange LED.
+- The expansion headers mirror the real board: the 8-pin power header (NC,
+  IOREF, RESET, 3V3, 5V, GND, GND, VIN), the D0-D7 header, the D8-D13 header
+  with GND/AREF/SDA/SCL, the analog header (A0-A5 plus power taps) and the
+  6-pin ICSP header.
+
+Here is the complete Arduino Uno Rev3 schematic, all subsystems wired together:
+
+<CircuitPreview hidePCBTab hide3DTab defaultView="schematic" code={`
+export const Atmega328P = (props: any) => (
+  <chip
+    {...props}
+    manufacturerPartNumber="ATmega328P-PU"
+    pinLabels={{
+      pin1: ["RESET"],
+      pin2: ["PD0", "D0"],
+      pin3: ["PD1", "D1"],
+      pin4: ["PD2", "D2"],
+      pin5: ["PD3", "D3"],
+      pin6: ["PD4", "D4"],
+      pin7: ["VCC"],
+      pin8: ["GND"],
+      pin9: ["XTAL1", "PB6"],
+      pin10: ["XTAL2", "PB7"],
+      pin11: ["PD5", "D5"],
+      pin12: ["PD6", "D6"],
+      pin13: ["PD7", "D7"],
+      pin14: ["PB0", "D8"],
+      pin15: ["PB1", "D9"],
+      pin16: ["PB2", "D10"],
+      pin17: ["PB3", "D11"],
+      pin18: ["PB4", "D12"],
+      pin19: ["PB5", "D13"],
+      pin20: ["AVCC"],
+      pin21: ["AREF"],
+      pin22: ["GND2"],
+      pin23: ["PC0", "A0"],
+      pin24: ["PC1", "A1"],
+      pin25: ["PC2", "A2"],
+      pin26: ["PC3", "A3"],
+      pin27: ["PC4", "A4", "SDA"],
+      pin28: ["PC5", "A5", "SCL"],
+    }}
+    schPortArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: ["VCC", "AVCC", "AREF", "GND", "GND2", "RESET"],
+      },
+      topSide: {
+        direction: "left-to-right",
+        pins: ["XTAL1", "XTAL2"],
+      },
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: [
+          "PD0",
+          "PD1",
+          "PD2",
+          "PD3",
+          "PD4",
+          "PD5",
+          "PD6",
+          "PD7",
+          "PB0",
+          "PB1",
+          "PB2",
+          "PB3",
+          "PB4",
+          "PB5",
+        ],
+      },
+      bottomSide: {
+        direction: "left-to-right",
+        pins: ["PC0", "PC1", "PC2", "PC3", "PC4", "PC5"],
+      },
+    }}
+  />
+)
+
+export const Atmega16U2 = (props: any) => (
+  <chip
+    {...props}
+    manufacturerPartNumber="ATmega16U2-MU"
+    pinLabels={{
+      pin1: ["UVCC"],
+      pin2: ["UCAP"],
+      pin3: ["XTAL1"],
+      pin4: ["XTAL2"],
+      pin5: ["RESET"],
+      pin6: ["HWB"],
+      pin7: ["VCC"],
+      pin8: ["GND"],
+      pin9: ["UDM"],
+      pin10: ["UDP"],
+      pin11: ["TXD"],
+      pin12: ["RXD"],
+      pin13: ["DTR"],
+    }}
+    schPortArrangement={{
+      leftSide: {
+        direction: "top-to-bottom",
+        pins: ["UVCC", "UCAP", "XTAL1", "XTAL2", "RESET", "HWB"],
+      },
+      rightSide: {
+        direction: "top-to-bottom",
+        pins: ["VCC", "GND", "UDM", "UDP", "TXD", "RXD", "DTR"],
+      },
+    }}
+  />
+)
+
+export default () => {
+  return (
+    <board routingDisabled>
+      {/* ------------------------- Power input ------------------------- */}
+      {/* Barrel jack: 7-12 V DC input */}
+      <chip
+        name="J_PWR"
+        pinLabels={{ pin1: ["TIP"], pin2: ["SLEEVE"] }}
+        schPortArrangement={{
+          leftSide: { direction: "top-to-bottom", pins: ["TIP", "SLEEVE"] },
+        }}
+        schX={-22}
+        schY={4}
+      />
+      {/* NCP1117-5.0 5V LDO fed from the jack */}
+      <chip
+        name="U_REG"
+        manufacturerPartNumber="NCP1117ST50T3G"
+        pinLabels={{ pin1: ["IN"], pin2: ["OUT"], pin3: ["GND"] }}
+        schPortArrangement={{
+          leftSide: { direction: "top-to-bottom", pins: ["IN", "GND"] },
+          rightSide: { direction: "top-to-bottom", pins: ["OUT"] },
+        }}
+        schX={-14}
+        schY={4}
+      />
+      {/* Regulator input decoupling + 5V bulk cap */}
+      <capacitor
+        name="C_REG_IN"
+        capacitance="4.7uF"
+        footprint="0805"
+        schX={-14}
+        schY={8}
+      />
+      <capacitor
+        name="C_REG_OUT"
+        capacitance="47uF"
+        footprint="SMC"
+        schX={-10}
+        schY={8}
+      />
+      {/* LP2985-33 3.3V LDO fed from the 5V rail */}
+      <chip
+        name="U_3V3"
+        manufacturerPartNumber="LP2985-33DBVR"
+        pinLabels={{ pin1: ["IN"], pin2: ["OUT"], pin3: ["GND"] }}
+        schPortArrangement={{
+          leftSide: { direction: "top-to-bottom", pins: ["IN", "GND"] },
+          rightSide: { direction: "top-to-bottom", pins: ["OUT"] },
+        }}
+        schX={-14}
+        schY={-1}
+      />
+      <capacitor
+        name="C_3V3_IN"
+        capacitance="1uF"
+        footprint="0603"
+        schX={-17}
+        schY={-1}
+      />
+      <capacitor
+        name="C_3V3_OUT"
+        capacitance="10uF"
+        footprint="0805"
+        schX={-10}
+        schY={-1}
+      />
+
+      {/* --------------------- USB power path --------------------- */}
+      {/* USB-B connector */}
+      <chip
+        name="J_USB"
+        pinLabels={{
+          pin1: ["VBUS"],
+          pin2: ["DMINUS"],
+          pin3: ["DPLUS"],
+          pin4: ["GND"],
+          pin5: ["SHIELD"],
+        }}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["VBUS", "DMINUS", "DPLUS"],
+          },
+          rightSide: { direction: "top-to-bottom", pins: ["GND", "SHIELD"] },
+        }}
+        schX={-22}
+        schY={-6}
+      />
+      {/* 500 mA resettable fuse in series with USB VBUS */}
+      <fuse
+        name="F1"
+        currentRating="0.5A"
+        footprint="1206"
+        schX={-16}
+        schY={-6}
+      />
+      {/* FDN340P P-FET selects between USBVCC and the regulator output */}
+      <mosfet
+        name="T1"
+        channelType="p"
+        mosfetMode="enhancement"
+        footprint="sot23"
+        schX={-10}
+        schY={-6}
+      />
+      {/* LMV358 (half B): comparator drives the P-FET gate */}
+      <chip
+        name="U2A"
+        manufacturerPartNumber="LMV358"
+        pinLabels={{
+          pin1: ["IN2P"],
+          pin2: ["IN2N"],
+          pin3: ["GND"],
+          pin4: ["OUT2"],
+          pin5: ["VCC"],
+        }}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["IN2P", "IN2N", "GND"],
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["OUT2", "VCC"],
+          },
+        }}
+        schX={-10}
+        schY={-11}
+      />
+
+      {/* ------------------- USB-serial: ATmega16U2 ------------------- */}
+      {/* 22 ohm series termination on the USB data lines */}
+      <resistor
+        name="R_USB_DP"
+        resistance="22"
+        footprint="0603"
+        schX={-17}
+        schY={-8}
+      />
+      <resistor
+        name="R_USB_DM"
+        resistance="22"
+        footprint="0603"
+        schX={-17}
+        schY={-10}
+      />
+      <Atmega16U2 name="U3" schX={-10} schY={-18} />
+      {/* 16 MHz crystal for the 16U2 */}
+      <crystal
+        name="Q2"
+        frequency="16MHz"
+        loadCapacitance="22pF"
+        footprint="hc49"
+        schX={-10}
+        schY={-24}
+      />
+      <capacitor name="C_X2A" capacitance="22pF" footprint="0603" schX={-13} schY={-26} />
+      <capacitor name="C_X2B" capacitance="22pF" footprint="0603" schX={-7} schY={-26} />
+      {/* UCAP: 1uF on the internal 3.3V regulator output */}
+      <capacitor name="C_UCAP" capacitance="1uF" footprint="0603" schX={-6} schY={-16} />
+      {/* HWB held low so the 16U2 boots its USB firmware */}
+      <resistor name="R_HWB" resistance="10k" footprint="0603" schX={-14} schY={-16} />
+      {/* 16U2 reset pull-up to USBVCC */}
+      <resistor name="R_U3RST" resistance="10k" footprint="0603" schX={-4} schY={-12} />
+      {/* Auto-reset: 100 nF from the 16U2 DTR into the 328P RESET net */}
+      <capacitor name="C_AUTO" capacitance="100nF" footprint="0603" schX={-4} schY={-14} />
+
+      {/* --------------------- ATmega328P core --------------------- */}
+      <Atmega328P name="U1" schX={8} schY={-6} />
+      {/* 16 MHz crystal + load caps */}
+      <crystal
+        name="Q1"
+        frequency="16MHz"
+        loadCapacitance="22pF"
+        footprint="hc49"
+        schX={8}
+        schY={2}
+      />
+      <capacitor name="C_X1A" capacitance="22pF" footprint="0603" schX={5} schY={4} />
+      <capacitor name="C_X1B" capacitance="22pF" footprint="0603" schX={11} schY={4} />
+      {/* Decoupling + AREF cap */}
+      <capacitor name="C_VCC" capacitance="100nF" footprint="0603" schX={2} schY={-4} />
+      <capacitor name="C_AVCC" capacitance="100nF" footprint="0603" schX={2} schY={-6} />
+      <capacitor name="C_AREF" capacitance="100nF" footprint="0603" schX={2} schY={-8} />
+      {/* Reset: 10k pull-up + pushbutton to GND */}
+      <resistor name="R_RST" resistance="10k" footprint="0603" schX={2} schY={-10} />
+      <pushbutton name="SW1" footprint="pushbutton" schX={2} schY={-13} />
+
+      {/* ----------------- D13 "L" LED (LMV358 half A) ----------------- */}
+      <chip
+        name="U2B"
+        manufacturerPartNumber="LMV358"
+        pinLabels={{
+          pin1: ["IN1P"],
+          pin2: ["IN1N"],
+          pin3: ["GND"],
+          pin4: ["OUT1"],
+          pin5: ["VCC"],
+        }}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["IN1P", "IN1N", "GND"],
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["OUT1", "VCC"],
+          },
+        }}
+        schX={-16}
+        schY={-18}
+      />
+      <resistor name="R_L" resistance="1k" footprint="0603" schX={-11} schY={-18} />
+      <led name="LED_L" color="orange" footprint="0603" schX={-8} schY={-18} />
+
+      {/* --------------------- Expansion headers --------------------- */}
+      {/* Power header: NC, IOREF, RESET, 3V3, 5V, GND, GND, VIN */}
+      <chip
+        name="J_PWRHDR"
+        pinLabels={{
+          pin1: ["NC"],
+          pin2: ["IOREF"],
+          pin3: ["RESET"],
+          pin4: ["V3_3", "3V3"],
+          pin5: ["V5", "5V"],
+          pin6: ["GND1", "GND"],
+          pin7: ["GND2", "GND"],
+          pin8: ["VIN"],
+        }}
+        schPortArrangement={{
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["NC", "IOREF", "RESET", "V3_3", "V5", "GND1", "GND2", "VIN"],
+          },
+        }}
+        schX={-22}
+        schY={12}
+      />
+      {/* Digital header, D0-D7 */}
+      <chip
+        name="J_DIG8"
+        pinLabels={{
+          pin1: ["D0"],
+          pin2: ["D1"],
+          pin3: ["D2"],
+          pin4: ["D3"],
+          pin5: ["D4"],
+          pin6: ["D5"],
+          pin7: ["D6"],
+          pin8: ["D7"],
+        }}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7"],
+          },
+        }}
+        schX={16}
+        schY={2}
+      />
+      {/* Digital header, D8-D13 + GND + AREF + SDA + SCL */}
+      <chip
+        name="J_DIG10"
+        pinLabels={{
+          pin1: ["D8"],
+          pin2: ["D9"],
+          pin3: ["D10"],
+          pin4: ["D11"],
+          pin5: ["D12"],
+          pin6: ["D13"],
+          pin7: ["GND"],
+          pin8: ["AREF"],
+          pin9: ["SDA"],
+          pin10: ["SCL"],
+        }}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: [
+              "D8",
+              "D9",
+              "D10",
+              "D11",
+              "D12",
+              "D13",
+              "GND",
+              "AREF",
+              "SDA",
+              "SCL",
+            ],
+          },
+        }}
+        schX={16}
+        schY={-6}
+      />
+      {/* Analog header: A0-A5 + GND + 5V */}
+      <chip
+        name="J_AN8"
+        pinLabels={{
+          pin1: ["A0"],
+          pin2: ["A1"],
+          pin3: ["A2"],
+          pin4: ["A3"],
+          pin5: ["A4"],
+          pin6: ["A5"],
+          pin7: ["GND"],
+          pin8: ["V5", "VCC"],
+        }}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["A0", "A1", "A2", "A3", "A4", "A5", "GND", "V5"],
+          },
+        }}
+        schX={16}
+        schY={-18}
+      />
+      {/* ICSP header for the ATmega328P */}
+      <chip
+        name="J_ICSP"
+        pinLabels={{
+          pin1: ["MISO"],
+          pin2: ["V5", "5V"],
+          pin3: ["SCK"],
+          pin4: ["MOSI"],
+          pin5: ["RESET"],
+          pin6: ["GND"],
+        }}
+        schPortArrangement={{
+          leftSide: {
+            direction: "top-to-bottom",
+            pins: ["MISO", "V5", "SCK"],
+          },
+          rightSide: {
+            direction: "top-to-bottom",
+            pins: ["MOSI", "RESET", "GND"],
+          },
+        }}
+        schX={8}
+        schY={-20}
+      />
+
+      {/* ------------------------- Power traces ------------------------- */}
+      <trace from=".J_PWR .TIP" to="net.VIN" />
+      <trace from=".J_PWR .SLEEVE" to="net.GND" />
+      <trace from="net.VIN" to=".U_REG .IN" />
+      <trace from="net.VIN" to=".C_REG_IN .pin1" />
+      <trace from=".C_REG_IN .pin2" to="net.GND" />
+      <trace from=".U_REG .OUT" to="net.V5" />
+      <trace from=".U_REG .GND" to="net.GND" />
+      <trace from=".C_REG_OUT .pin1" to="net.V5" />
+      <trace from=".C_REG_OUT .pin2" to="net.GND" />
+      <trace from="net.V5" to=".U_3V3 .IN" />
+      <trace from=".U_3V3 .GND" to="net.GND" />
+      <trace from=".U_3V3 .OUT" to="net.V3_3" />
+      <trace from=".C_3V3_IN .pin1" to="net.V5" />
+      <trace from=".C_3V3_IN .pin2" to="net.GND" />
+      <trace from=".C_3V3_OUT .pin1" to="net.V3_3" />
+      <trace from=".C_3V3_OUT .pin2" to="net.GND" />
+
+      {/* USB power: VBUS -> fuse -> USBVCC -> P-FET -> 5V rail */}
+      <trace from=".J_USB .VBUS" to="net.VBUS" />
+      <trace from=".J_USB .GND" to="net.GND" />
+      <trace from=".J_USB .SHIELD" to="net.GND" />
+      <trace from=".J_USB .VBUS" to=".F1 .pin1" />
+      <trace from=".F1 .pin2" to="net.USBVCC" />
+      <trace from=".T1 .source" to="net.USBVCC" />
+      <trace from=".T1 .drain" to="net.V5" />
+      {/* Comparator: jack voltage vs 5V rail -> FET gate */}
+      <trace from=".U2A .IN2P" to="net.VIN" />
+      <trace from=".U2A .IN2N" to="net.V5" />
+      <trace from=".U2A .OUT2" to="net.FET_GATE" />
+      <trace from=".T1 .gate" to="net.FET_GATE" />
+      <trace from=".U2A .VCC" to="net.V5" />
+      <trace from=".U2A .GND" to="net.GND" />
+
+      {/* ------------------------- USB data ------------------------- */}
+      <trace from=".J_USB .DPLUS" to=".R_USB_DP .pin1" />
+      <trace from=".J_USB .DMINUS" to=".R_USB_DM .pin1" />
+      <trace from=".R_USB_DP .pin2" to=".U3 .UDP" />
+      <trace from=".R_USB_DM .pin2" to=".U3 .UDM" />
+
+      {/* ------------------------ 16U2 wiring ------------------------ */}
+      <trace from=".U3 .VCC" to="net.V5" />
+      <trace from=".U3 .GND" to="net.GND" />
+      <trace from=".U3 .UVCC" to="net.USBVCC" />
+      <trace from=".U3 .UCAP" to=".C_UCAP .pin1" />
+      <trace from=".C_UCAP .pin2" to="net.GND" />
+      <trace from=".U3 .XTAL1" to=".Q2 .pin1" />
+      <trace from=".U3 .XTAL2" to=".Q2 .pin2" />
+      <trace from=".Q2 .pin1" to=".C_X2A .pin1" />
+      <trace from=".Q2 .pin2" to=".C_X2B .pin1" />
+      <trace from=".C_X2A .pin2" to="net.GND" />
+      <trace from=".C_X2B .pin2" to="net.GND" />
+      <trace from=".U3 .HWB" to=".R_HWB .pin1" />
+      <trace from=".R_HWB .pin2" to="net.GND" />
+      {/* 16U2 reset pull-up, continues to the 16U2 ICSP header */}
+      <trace from=".U3 .RESET" to="net.URESET" />
+      <trace from="net.USBVCC" to=".R_U3RST .pin1" />
+      <trace from=".R_U3RST .pin2" to="net.URESET" />
+      {/* Crossed UART between the 16U2 and the 328P */}
+      <trace from=".U3 .TXD" to="net.SER_RX" />
+      <trace from=".U3 .RXD" to="net.SER_TX" />
+      {/* Auto-reset cap from DTR into the shared RESET net */}
+      <trace from=".U3 .DTR" to="net.DTR" />
+      <trace from=".C_AUTO .pin1" to="net.DTR" />
+      <trace from=".C_AUTO .pin2" to="net.RESET" />
+
+      {/* ------------------------ 328P wiring ------------------------ */}
+      <trace from=".U1 .VCC" to="net.V5" />
+      <trace from=".U1 .AVCC" to="net.V5" />
+      <trace from=".U1 .GND" to="net.GND" />
+      <trace from=".U1 .GND2" to="net.GND" />
+      <trace from=".C_VCC .pin1" to="net.V5" />
+      <trace from=".C_VCC .pin2" to="net.GND" />
+      <trace from=".C_AVCC .pin1" to="net.V5" />
+      <trace from=".C_AVCC .pin2" to="net.GND" />
+      <trace from=".U1 .AREF" to="net.AREF" />
+      <trace from=".C_AREF .pin1" to="net.AREF" />
+      <trace from=".C_AREF .pin2" to="net.GND" />
+      <trace from=".U1 .XTAL1" to=".Q1 .pin1" />
+      <trace from=".U1 .XTAL2" to=".Q1 .pin2" />
+      <trace from=".Q1 .pin1" to=".C_X1A .pin1" />
+      <trace from=".Q1 .pin2" to=".C_X1B .pin1" />
+      <trace from=".C_X1A .pin2" to="net.GND" />
+      <trace from=".C_X1B .pin2" to="net.GND" />
+      <trace from=".U1 .RESET" to="net.RESET" />
+      <trace from=".R_RST .pin1" to="net.V5" />
+      <trace from=".R_RST .pin2" to="net.RESET" />
+      <trace from=".SW1 .pin1" to="net.RESET" />
+      <trace from=".SW1 .pin2" to="net.GND" />
+      {/* UART crossing */}
+      <trace from="net.SER_RX" to=".U1 .PD0" />
+      <trace from="net.SER_TX" to=".U1 .PD1" />
+
+      {/* D13 LED buffer: unity-gain buffer -> 1k -> LED -> GND */}
+      <trace from=".U2B .IN1P" to="net.D13" />
+      <trace from=".U2B .IN1N" to=".U2B .OUT1" />
+      <trace from=".U2B .OUT1" to=".R_L .pin1" />
+      <trace from=".R_L .pin2" to=".LED_L .pos" />
+      <trace from=".LED_L .neg" to="net.GND" />
+      <trace from=".U2B .VCC" to="net.V5" />
+      <trace from=".U2B .GND" to="net.GND" />
+
+      {/* --------------------- Digital port D0-D7 --------------------- */}
+      <trace from=".U1 .PD2" to="net.D2" />
+      <trace from=".U1 .PD3" to="net.D3" />
+      <trace from=".U1 .PD4" to="net.D4" />
+      <trace from=".U1 .PD5" to="net.D5" />
+      <trace from=".U1 .PD6" to="net.D6" />
+      <trace from=".U1 .PD7" to="net.D7" />
+      <trace from="net.D0" to=".J_DIG8 .D0" />
+      <trace from="net.D1" to=".J_DIG8 .D1" />
+      <trace from="net.D2" to=".J_DIG8 .D2" />
+      <trace from="net.D3" to=".J_DIG8 .D3" />
+      <trace from="net.D4" to=".J_DIG8 .D4" />
+      <trace from="net.D5" to=".J_DIG8 .D5" />
+      <trace from="net.D6" to=".J_DIG8 .D6" />
+      <trace from="net.D7" to=".J_DIG8 .D7" />
+      {/* D0/D1 also land on the 16U2 UART through SER_RX/SER_TX */}
+      <trace from=".U1 .PD0" to="net.D0" />
+      <trace from=".U1 .PD1" to="net.D1" />
+
+      {/* --------------------- Digital port D8-D13 --------------------- */}
+      <trace from=".U1 .PB0" to="net.D8" />
+      <trace from=".U1 .PB1" to="net.D9" />
+      <trace from=".U1 .PB2" to="net.D10" />
+      <trace from=".U1 .PB3" to="net.D11" />
+      <trace from=".U1 .PB4" to="net.D12" />
+      <trace from=".U1 .PB5" to="net.D13" />
+      <trace from="net.D8" to=".J_DIG10 .D8" />
+      <trace from="net.D9" to=".J_DIG10 .D9" />
+      <trace from="net.D10" to=".J_DIG10 .D10" />
+      <trace from="net.D11" to=".J_DIG10 .D11" />
+      <trace from="net.D12" to=".J_DIG10 .D12" />
+      <trace from="net.D13" to=".J_DIG10 .D13" />
+      <trace from=".J_DIG10 .GND" to="net.GND" />
+      <trace from=".J_DIG10 .AREF" to="net.AREF" />
+      {/* SDA/SCL on A4/A5 */}
+      <trace from="net.SDA" to=".J_DIG10 .SDA" />
+      <trace from="net.SCL" to=".J_DIG10 .SCL" />
+
+      {/* ------------------------- Analog header ------------------------- */}
+      <trace from=".U1 .PC0" to="net.A0" />
+      <trace from=".U1 .PC1" to="net.A1" />
+      <trace from=".U1 .PC2" to="net.A2" />
+      <trace from=".U1 .PC3" to="net.A3" />
+      <trace from="net.A0" to=".J_AN8 .A0" />
+      <trace from="net.A1" to=".J_AN8 .A1" />
+      <trace from="net.A2" to=".J_AN8 .A2" />
+      <trace from="net.A3" to=".J_AN8 .A3" />
+      <trace from="net.SDA" to=".J_AN8 .A4" />
+      <trace from="net.SCL" to=".J_AN8 .A5" />
+      <trace from=".J_AN8 .GND" to="net.GND" />
+      <trace from=".J_AN8 .V5" to="net.V5" />
+
+      {/* ------------------------- Power header ------------------------- */}
+      <trace from=".J_PWRHDR .IOREF" to="net.V5" />
+      <trace from=".J_PWRHDR .RESET" to="net.RESET" />
+      <trace from=".J_PWRHDR .V3_3" to="net.V3_3" />
+      <trace from=".J_PWRHDR .V5" to="net.V5" />
+      <trace from=".J_PWRHDR .GND1" to="net.GND" />
+      <trace from=".J_PWRHDR .GND2" to="net.GND" />
+      <trace from=".J_PWRHDR .VIN" to="net.VIN" />
+
+      {/* -------------------------- ICSP header -------------------------- */}
+      <trace from="net.MOSI" to=".U1 .PB3" />
+      <trace from="net.MISO" to=".U1 .PB4" />
+      <trace from="net.SCK" to=".U1 .PB5" />
+      <trace from="net.MOSI" to=".J_ICSP .MOSI" />
+      <trace from="net.MISO" to=".J_ICSP .MISO" />
+      <trace from="net.SCK" to=".J_ICSP .SCK" />
+      <trace from="net.RESET" to=".J_ICSP .RESET" />
+      <trace from="net.V5" to=".J_ICSP .V5" />
+      <trace from=".J_ICSP .GND" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## Next Steps
+
+- Open the full-schematic preview above and hover the pins to trace each net
+- Compare your work against the official Arduino UNO Rev3 schematic
+- Try extending the design: add the 16U2 ICSP header or route the board as a
+  practice PCB exercise
