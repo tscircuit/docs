@@ -650,10 +650,9 @@ figure img {
   height: 1rem;
 }
 
-/* Ensure theme toggle aligns with icons */
+/* Preserve Docusaurus's mobile hiding rule for the theme toggle wrapper. */
 .navbar__items--right > div,
 .navbar__items--right button {
-  display: flex !important;
   align-items: center !important;
   margin: 0 !important;
 }
