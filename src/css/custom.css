@@ -567,6 +567,11 @@ figure img {
   top: 0;
 }
 
+/* Keep the chat widget clear of the search dialog, including its footer. */
+.DocSearch--active .crisp-client {
+  display: none !important;
+}
+
 @media (min-width: 997px) {
   .navbar .DocSearch-Button {
     width: clamp(11rem, 15vw, 16rem);
