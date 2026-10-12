@@ -650,11 +650,19 @@ figure img {
   height: 1rem;
 }
 
-/* Preserve Docusaurus's mobile hiding rule for the theme toggle wrapper. */
+/* Keep the theme toggle visible alongside the other navbar controls. */
 .navbar__items--right > div,
 .navbar__items--right button {
+  display: flex !important;
   align-items: center !important;
   margin: 0 !important;
+}
+
+@media (max-width: 996px) {
+  /* Keep search in the flex row instead of positioning it over the toggle. */
+  .navbar__items--right > div {
+    position: static;
+  }
 }
 
 .navbar .dropdown__menu {
