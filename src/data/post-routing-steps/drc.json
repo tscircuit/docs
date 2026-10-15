@@ -2,7 +2,7 @@
   {
     "type": "source_project_metadata",
     "source_project_metadata_id": "source_project_metadata_0",
-    "software_used_string": "@tscircuit/core@0.0.2158"
+    "software_used_string": "@tscircuit/core@0.0.2160"
   },
   {
     "type": "source_group",
@@ -172,7 +172,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_0",
-    "message": "<trace#43(from:.J1 > .pin1 to:.U1 > .pin8) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#441(from:.J1 > .pin1 to:.U1 > .pin8) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_0",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -189,7 +189,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_1",
-    "message": "<trace#44(from:.J1 > .pin2 to:.U1 > .pin4) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#442(from:.J1 > .pin2 to:.U1 > .pin4) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_1",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -206,7 +206,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_2",
-    "message": "<trace#45(from:.J1 > .pin3 to:.U1 > .pin1) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#443(from:.J1 > .pin3 to:.U1 > .pin1) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_2",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -223,7 +223,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_3",
-    "message": "<trace#46(from:.J1 > .pin4 to:.U1 > .pin2) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#444(from:.J1 > .pin4 to:.U1 > .pin2) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_3",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -1609,7 +1609,7 @@
     "source_component_id": "source_component_0",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_missing_manufacturer_part_number_warning",
-    "message": "<pinheader#0 name=\".J1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
+    "message": "<pinheader#398 name=\".J1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
   },
   {
     "type": "source_missing_manufacturer_part_number_warning",
@@ -1617,7 +1617,7 @@
     "source_component_id": "source_component_1",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_missing_manufacturer_part_number_warning",
-    "message": "<chip#11 name=\".U1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
+    "message": "<chip#409 name=\".U1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
   },
   {
     "type": "pcb_trace",
@@ -1810,35 +1810,12 @@
     "subcircuit_connectivity_map_key": "unnamedsubcircuitsubcircuit_source_group_0_connectivity_net1"
   },
   {
-    "type": "pcb_trace",
-    "pcb_trace_id": "pcb_trace_4",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "route": [
-      {
-        "route_type": "wire",
-        "x": -11.2,
-        "y": 3.81,
-        "width": 0.25,
-        "start_pcb_port_id": "pcb_port_0",
-        "layer": "top"
-      },
-      {
-        "route_type": "wire",
-        "x": -11.71763809020504,
-        "y": 5.741851652578137,
-        "width": 0.25,
-        "layer": "top",
-        "end_pcb_port_id": "pcb_port_0"
-      }
-    ]
-  },
-  {
     "type": "pcb_smtpad",
     "pcb_smtpad_id": "pcb_smtpad_8",
     "shape": "circle",
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": -11.71763809020504,
-    "y": 5.741851652578137,
+    "x": -8.7,
+    "y": 3.81,
     "radius": 0.6,
     "layer": "top",
     "port_hints": [],
@@ -1846,50 +1823,12 @@
     "pcb_port_id": "pcb_port_0"
   },
   {
-    "type": "pcb_silkscreen_text",
-    "pcb_silkscreen_text_id": "pcb_silkscreen_text_2",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "font": "tscircuit2024",
-    "font_size": 0.6,
-    "pcb_component_id": "pcb_component_0",
-    "text": "TP1",
-    "layer": "top",
-    "anchor_position": {
-      "x": -12.07998475334857,
-      "y": 7.094147809382832
-    },
-    "anchor_alignment": "center"
-  },
-  {
-    "type": "pcb_trace",
-    "pcb_trace_id": "pcb_trace_5",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "route": [
-      {
-        "route_type": "wire",
-        "x": -11.2,
-        "y": 1.27,
-        "width": 0.25,
-        "start_pcb_port_id": "pcb_port_1",
-        "layer": "top"
-      },
-      {
-        "route_type": "wire",
-        "x": -9.785786437626903,
-        "y": 2.684213562373095,
-        "width": 0.25,
-        "layer": "top",
-        "end_pcb_port_id": "pcb_port_1"
-      }
-    ]
-  },
-  {
     "type": "pcb_smtpad",
     "pcb_smtpad_id": "pcb_smtpad_9",
     "shape": "circle",
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": -9.785786437626903,
-    "y": 2.684213562373095,
+    "x": -8.7,
+    "y": 1.27,
     "radius": 0.6,
     "layer": "top",
     "port_hints": [],
@@ -1897,50 +1836,12 @@
     "pcb_port_id": "pcb_port_1"
   },
   {
-    "type": "pcb_silkscreen_text",
-    "pcb_silkscreen_text_id": "pcb_silkscreen_text_3",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "font": "tscircuit2024",
-    "font_size": 0.6,
-    "pcb_component_id": "pcb_component_0",
-    "text": "TP2",
-    "layer": "top",
-    "anchor_position": {
-      "x": -8.795836943965737,
-      "y": 3.6741630560342613
-    },
-    "anchor_alignment": "center"
-  },
-  {
-    "type": "pcb_trace",
-    "pcb_trace_id": "pcb_trace_6",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "route": [
-      {
-        "route_type": "wire",
-        "x": -11.2,
-        "y": -1.27,
-        "width": 0.25,
-        "start_pcb_port_id": "pcb_port_2",
-        "layer": "top"
-      },
-      {
-        "route_type": "wire",
-        "x": -9.785786437626903,
-        "y": 0.1442135623730949,
-        "width": 0.25,
-        "layer": "top",
-        "end_pcb_port_id": "pcb_port_2"
-      }
-    ]
-  },
-  {
     "type": "pcb_smtpad",
     "pcb_smtpad_id": "pcb_smtpad_10",
     "shape": "circle",
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": -9.785786437626903,
-    "y": 0.1442135623730949,
+    "x": -8.7,
+    "y": -1.27,
     "radius": 0.6,
     "layer": "top",
     "port_hints": [],
@@ -1948,50 +1849,12 @@
     "pcb_port_id": "pcb_port_2"
   },
   {
-    "type": "pcb_silkscreen_text",
-    "pcb_silkscreen_text_id": "pcb_silkscreen_text_4",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "font": "tscircuit2024",
-    "font_size": 0.6,
-    "pcb_component_id": "pcb_component_0",
-    "text": "TP3",
-    "layer": "top",
-    "anchor_position": {
-      "x": -8.795836943965737,
-      "y": 1.1341630560342613
-    },
-    "anchor_alignment": "center"
-  },
-  {
-    "type": "pcb_trace",
-    "pcb_trace_id": "pcb_trace_7",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "route": [
-      {
-        "route_type": "wire",
-        "x": -11.2,
-        "y": -3.81,
-        "width": 0.25,
-        "start_pcb_port_id": "pcb_port_3",
-        "layer": "top"
-      },
-      {
-        "route_type": "wire",
-        "x": -11.71763809020504,
-        "y": -5.741851652578137,
-        "width": 0.25,
-        "layer": "top",
-        "end_pcb_port_id": "pcb_port_3"
-      }
-    ]
-  },
-  {
     "type": "pcb_smtpad",
     "pcb_smtpad_id": "pcb_smtpad_11",
     "shape": "circle",
     "subcircuit_id": "subcircuit_source_group_0",
-    "x": -11.71763809020504,
-    "y": -5.741851652578137,
+    "x": -8.7,
+    "y": -3.81,
     "radius": 0.6,
     "layer": "top",
     "port_hints": [],
@@ -1999,18 +1862,31 @@
     "pcb_port_id": "pcb_port_3"
   },
   {
-    "type": "pcb_silkscreen_text",
-    "pcb_silkscreen_text_id": "pcb_silkscreen_text_5",
-    "subcircuit_id": "subcircuit_source_group_0",
-    "font": "tscircuit2024",
-    "font_size": 0.6,
-    "pcb_component_id": "pcb_component_0",
-    "text": "TP4",
-    "layer": "top",
-    "anchor_position": {
-      "x": -12.079984753348569,
-      "y": -7.094147809382832
+    "type": "pcb_trace_error",
+    "pcb_trace_error_id": "pcb_trace_error_0",
+    "error_type": "pcb_trace_error",
+    "message": "PCB trace .J1 > .pin4 to .U1 > .pin2 overlaps with pcb_smtpad \"J1.SDA\" (accidental contact)",
+    "pcb_trace_id": "source_trace_3_0",
+    "center": {
+      "x": -8.68,
+      "y": -1.2900000000000005
     },
-    "anchor_alignment": "center"
+    "source_trace_id": "",
+    "pcb_component_ids": ["pcb_component_0"],
+    "pcb_port_ids": ["pcb_port_3", "pcb_port_5", "pcb_port_2"]
+  },
+  {
+    "type": "pcb_trace_error",
+    "pcb_trace_error_id": "pcb_trace_error_1",
+    "error_type": "pcb_trace_error",
+    "message": "PCB trace .J1 > .pin3 to .U1 > .pin1 overlaps with pcb_smtpad \"J1.GND\" (accidental contact)",
+    "pcb_trace_id": "source_trace_2_0",
+    "center": {
+      "x": -8.68,
+      "y": 1.25
+    },
+    "source_trace_id": "",
+    "pcb_component_ids": ["pcb_component_0"],
+    "pcb_port_ids": ["pcb_port_2", "pcb_port_4", "pcb_port_1"]
   }
 ]

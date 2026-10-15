@@ -7,11 +7,13 @@ import {
   drcFiles,
   pourFiles,
   powerWidthFiles,
+  renderFiles,
+  stackedFiles,
   testPointsFiles,
-} from "../src/data/post-routing-hook/examples"
+} from "../src/data/post-routing-steps/examples"
 
-// Usage: bun scripts/generate-post-routing-hook-previews.ts /path/to/core
-// Needs a core checkout with pcbPostRoutingHook (tscircuit/core#4657).
+// Usage: bun scripts/generate-post-routing-step-previews.ts /path/to/core
+// Needs a core checkout with <pcbpostroutingstep /> (tscircuit/core#4657).
 const coreDirectory = process.argv[2]
 if (!coreDirectory)
   throw new Error("Provide the path to a tscircuit/core checkout")
@@ -30,14 +32,16 @@ const { renderGLTFToPNGFromGLB } = await import(
 )
 await mkdir(resolve(root, "codetestingplayground"), { recursive: true })
 const scratch = await mkdtemp(
-  resolve(root, "codetestingplayground/post-routing-hook-"),
+  resolve(root, "codetestingplayground/post-routing-steps-"),
 )
 try {
   for (const [name, files] of [
     ["test-points", testPointsFiles],
     ["power-width", powerWidthFiles],
+    ["stacked", stackedFiles],
     ["pour", pourFiles],
     ["drc", drcFiles],
+    ["render", renderFiles],
   ] as const) {
     const directory = resolve(scratch, name)
     await mkdir(directory)
@@ -55,7 +59,7 @@ try {
     await circuit.renderUntilSettled()
     const json = circuit.getCircuitJson()
     await writeFile(
-      resolve(root, `src/data/post-routing-hook/${name}.json`),
+      resolve(root, `src/data/post-routing-steps/${name}.json`),
       JSON.stringify(json, null, 2) + "\n",
     )
     const glb = await convertCircuitJsonToGltf(json, {
@@ -73,11 +77,11 @@ try {
       grid: false,
       backgroundColor: [1, 1, 1],
     })
-    await mkdir(resolve(root, "static/img/post-routing-hook"), {
+    await mkdir(resolve(root, "static/img/post-routing-steps"), {
       recursive: true,
     })
     await writeFile(
-      resolve(root, `static/img/post-routing-hook/${name}-3d.png`),
+      resolve(root, `static/img/post-routing-steps/${name}-3d.png`),
       png,
     )
     const errors = json
@@ -92,7 +96,7 @@ try {
 // The repo's format check covers the generated JSON too
 spawnSync(
   "bunx",
-  ["biome", "format", "--write", "src/data/post-routing-hook"],
+  ["biome", "format", "--write", "src/data/post-routing-steps"],
   {
     cwd: root,
     stdio: "inherit",

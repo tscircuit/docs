@@ -2,7 +2,7 @@
   {
     "type": "source_project_metadata",
     "source_project_metadata_id": "source_project_metadata_0",
-    "software_used_string": "@tscircuit/core@0.0.2158"
+    "software_used_string": "@tscircuit/core@0.0.2160"
   },
   {
     "type": "source_group",
@@ -172,7 +172,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_0",
-    "message": "<trace#239(from:.J1 > .pin1 to:.U1 > .pin8) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#341(from:.J1 > .pin1 to:.U1 > .pin8) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_0",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -189,7 +189,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_1",
-    "message": "<trace#240(from:.J1 > .pin2 to:.U1 > .pin4) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#342(from:.J1 > .pin2 to:.U1 > .pin4) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_1",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -206,7 +206,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_2",
-    "message": "<trace#241(from:.J1 > .pin3 to:.U1 > .pin1) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#343(from:.J1 > .pin3 to:.U1 > .pin1) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_2",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -223,7 +223,7 @@
   {
     "type": "source_unnamed_trace_warning",
     "source_unnamed_trace_warning_id": "source_unnamed_trace_warning_3",
-    "message": "<trace#242(from:.J1 > .pin4 to:.U1 > .pin2) /> is missing a name. Add a name prop to make the trace easier to identify.",
+    "message": "<trace#344(from:.J1 > .pin4 to:.U1 > .pin2) /> is missing a name. Add a name prop to make the trace easier to identify.",
     "source_trace_id": "source_trace_3",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_unnamed_trace_warning"
@@ -1609,7 +1609,7 @@
     "source_component_id": "source_component_0",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_missing_manufacturer_part_number_warning",
-    "message": "<pinheader#196 name=\".J1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
+    "message": "<pinheader#298 name=\".J1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
   },
   {
     "type": "source_missing_manufacturer_part_number_warning",
@@ -1617,7 +1617,7 @@
     "source_component_id": "source_component_1",
     "subcircuit_id": "subcircuit_source_group_0",
     "warning_type": "source_missing_manufacturer_part_number_warning",
-    "message": "<chip#207 name=\".U1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
+    "message": "<chip#309 name=\".U1\" /> is missing a manufacturer part number and could not be resolved to a supplier part. Specify mpn, manufacturerPartNumber, or mfn, provide supplierPartNumbers, or configure a parts engine to select a part. If this part will not be assembled, mark it doNotPlace."
   },
   {
     "type": "pcb_trace",

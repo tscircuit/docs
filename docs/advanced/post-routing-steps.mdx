@@ -1,0 +1,217 @@
+---
+title: Edit the PCB After Routing
+description: >-
+  Run your own code on the routed board with <pcbpostroutingstep />: add,
+  change or remove PCB elements, or let a component add its own copper in TSX,
+  before copper pours, design rule checks and export.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import {
+  drcFiles,
+  pourFiles,
+  powerWidthFiles,
+  renderFiles,
+  stackedFiles,
+  testPointsFiles,
+} from "@site/src/data/post-routing-steps/examples"
+import testPointsPreview from "@site/src/data/post-routing-steps/test-points.json"
+import powerWidthPreview from "@site/src/data/post-routing-steps/power-width.json"
+import stackedPreview from "@site/src/data/post-routing-steps/stacked.json"
+import pourPreview from "@site/src/data/post-routing-steps/pour.json"
+import drcPreview from "@site/src/data/post-routing-steps/drc.json"
+import renderPreview from "@site/src/data/post-routing-steps/render.json"
+
+Some board features depend on where the autorouter put the traces: a test pad
+placed where it fits, a label moved off a trace, a keepout around a sensitive
+net, or a design rule check of your own. `<pcbpostroutingstep />` runs your
+code at that point.
+
+A step runs once its board (or subcircuit group) is routed and teardrops are
+added, and before copper pours, via stitching and PCB design rule checks. So
+whatever it adds is poured around, checked and exported like any other copper.
+
+A step does one of two things, or both:
+
+- `fn` edits the routed board as Circuit JSON: insert, update or remove any
+  `pcb_*` element.
+- `render` returns PCB primitives as JSX (`<smtpad />`, `<platedhole />`,
+  `<silkscreenpath />`...), added beside the step. Inside a component's
+  footprint, they belong to that component, so a component can add its own
+  copper after routing.
+
+A board can hold any number of steps, anywhere in its tree. They run in
+ascending `order` (default 0); steps with the same order run in the order they
+appear.
+
+The first five examples use the same board: a 4-pin connector (J1: VCC, GND,
+SDA, SCL) routed to an SOIC-8 by the autorouter. Each one changes only the
+steps. The code tab shows the board, the steps and the entry file.
+
+## Test points where the routing left room
+
+For each connector pin, the step reads the routed traces from
+`getCircuitJson()` and tries directions around the pin. It takes the first one
+where a short stub and a round pad clear the other copper and the board edge,
+then inserts the stub trace, the pad on the pin's port (so it joins the net) and
+a silkscreen label. Each pin ends up pointing a different way, because that
+depends on where the traces went. A pin with no room gets a
+`pcb_placement_error`.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={testPointsPreview}
+  threeDImageUrl="/img/post-routing-steps/test-points-3d.png"
+  fsMap={testPointsFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Change what the router made
+
+`update` works on any `pcb_*` element, including the router's own traces. This
+step widens the VCC and GND traces to 0.4 mm after routing and leaves the
+signal traces alone. Design rule checks run after the steps, so the wider
+copper is checked too.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={powerWidthPreview}
+  threeDImageUrl="/img/post-routing-steps/power-width-3d.png"
+  fsMap={powerWidthFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Stack steps in order
+
+Both steps on one board: the power traces are widened first (`order={1}`), so
+the test points (`order={2}`) are placed around the wider copper. A later step
+sees everything earlier steps changed.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={stackedPreview}
+  threeDImageUrl="/img/post-routing-steps/stacked-3d.png"
+  fsMap={stackedFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Copper pours see the steps' copper
+
+The same board with a GND pour, plus the test-point step. The pour is computed
+after the steps, so it clears the test points on other nets, and the test point
+on the GND pin joins the pour.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={pourPreview}
+  threeDImageUrl="/img/post-routing-steps/pour-3d.png"
+  fsMap={pourFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Design rule checks catch a bad step
+
+A naive step puts every test pad 2.5 mm to the right of its pin, whatever the
+routing did. The PCB design rule checks run after the steps and report it:
+
+> PCB trace .J1 > .pin4 to .U1 > .pin2 overlaps with pcb_smtpad "J1.SDA"
+> (accidental contact)
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={drcPreview}
+  threeDImageUrl="/img/post-routing-steps/drc-3d.png"
+  fsMap={drcFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## A component that adds its own copper, in TSX
+
+`TestContact` is a press-fit contact whose footprint holds a step with
+`render`. After routing, the step measures the room around the contact in eight
+directions and returns a probe tab as an ordinary `<smtpad />`. Because the
+step sits in the footprint, `portHints={["1"]}` joins the tab to the contact's
+port and `pcbX`/`pcbY` are relative to the contact, as for any footprint
+primitive. No Circuit JSON is written, and the board that uses the component
+only writes `<TestContact />`.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={renderPreview}
+  threeDImageUrl="/img/post-routing-steps/render-3d.png"
+  fsMap={renderFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Props
+
+| prop | what it does |
+|---|---|
+| `name` | Names the step in error messages. |
+| `order` | Steps run in ascending order (default 0); equal orders run in the order they appear. |
+| `fn` | `(context) => void \| Promise<void>`: edits the routed board through the context. |
+| `render` | `(context) => ReactNode \| Promise<ReactNode>`: returns PCB primitives, added beside the step. |
+
+## The context
+
+`fn` and `render` receive the same context:
+
+| member | what it does |
+|---|---|
+| `getCircuitJson()` | A copy of the circuit as it is now: traces, vias, pads, plated holes, silkscreen, the board outline, and earlier steps' changes. |
+| `getPcbPort(selector)` | The `pcb_port` for a selector relative to the board or subcircuit, e.g. `".U1 > .pin1"`. Use its `pcb_port_id` and `pcb_component_id` to attach copper to a port's component and net. |
+| `getPcbComponent(selector)` | The `pcb_component` for a selector, e.g. `".U1"`. |
+| `insert(element)` | Adds any `pcb_*` element and returns it with its generated id. `subcircuit_id` defaults to the step's subcircuit. |
+| `update(id, patch)` | Changes fields of any `pcb_*` element, including ones made by footprints or the router. The type and id cannot change. |
+| `remove(id)` | Removes a `pcb_*` element. |
+| `subcircuitId` | The subcircuit the step runs for. |
+
+Every insert and update is checked against the
+[circuit-json](https://github.com/tscircuit/circuit-json) schema for its type,
+so a step cannot leave the board in a state that later stages or exporters
+can't read.
+
+`render` may only return PCB primitives (pads, holes, silkscreen, notes,
+courtyards, cutouts...). A component or a trace would need placement and
+routing, so it is reported as an error instead.
+
+## Async steps
+
+`fn` and `render` may be `async`. The steps after an async step wait for it,
+and copper pours, via stitching and design rule checks wait for all of them.
+Synchronous steps run inline, so a board without autorouting still renders with
+`circuit.render()`.
+
+## Subcircuits
+
+A board runs the steps in its tree, including those inside components. A
+subcircuit group runs its own steps, once that subcircuit is routed.
+
+## Running again
+
+When the board is routed again, the steps run again. Before they do, every
+change they made is undone, including the primitives a `render` added, so each
+run starts from the freshly routed board. Write steps that are deterministic and
+don't keep state between runs.
+
+Steps don't run while routing is still in progress, and they don't run if
+routing never produced a result.
+
+## Errors
+
+If a step throws, or an insert or update fails validation, the board gets a
+`pcb_autorouting_error` whose message starts with
+`<pcbpostroutingstep name="..." /> failed:`. The next step still runs.
+
+## Limits
+
+- Component bounds, 3D model positions and footprint origins are computed
+  before the steps and stay as they were.
+- Only `pcb_*` elements can be changed. Source and schematic elements are
+  read-only to the steps.
