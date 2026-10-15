@@ -1,0 +1,106 @@
+---
+title: Edit the PCB After Routing
+description: >-
+  Run your own code on the routed board with pcbPostRoutingHook: add, change or
+  remove PCB elements before copper pours, design rule checks and export.
+---
+
+Some board features depend on where the autorouter put the traces: a test pad
+placed where it fits, a label moved off a trace, a keepout around a sensitive
+net, or a design rule check of your own. `pcbPostRoutingHook` runs your code at
+that point.
+
+The hook goes on a `<board>` or a subcircuit `<group>`. It runs once the
+subcircuit is routed and teardrops are added, and before copper pours, via
+stitching and PCB design rule checks. So whatever it adds is poured around,
+checked and exported like any other copper.
+
+```tsx
+export default () => (
+  <board
+    width="16mm"
+    height="10mm"
+    pcbPostRoutingHook={(ctx) => {
+      const traces = ctx
+        .getCircuitJson()
+        .filter((e) => e.type === "pcb_trace")
+
+      // A round test pad on R1 pin 1, attached to its port so it joins the net
+      const port = ctx.getPcbPort(".R1 > .pin1")!
+      ctx.insert({
+        type: "pcb_smtpad",
+        shape: "circle",
+        x: -4,
+        y: 2,
+        radius: 0.4,
+        layer: "top",
+        port_hints: [],
+        pcb_port_id: port.pcb_port_id,
+        pcb_component_id: port.pcb_component_id,
+      })
+
+      // Your own design rule check, reported like a built-in one
+      if (traces.length > 10) {
+        ctx.insert({
+          type: "pcb_trace_error",
+          error_type: "pcb_trace_error",
+          message: "Too many traces for this connector",
+          pcb_trace_id: traces[0].pcb_trace_id,
+          source_trace_id: traces[0].source_trace_id,
+          pcb_component_ids: [],
+          pcb_port_ids: [],
+        })
+      }
+    }}
+  >
+    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-4} pcbY={0} />
+    <resistor name="R2" resistance="1k" footprint="0402" pcbX={4} pcbY={0} />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+  </board>
+)
+```
+
+## The hook's context
+
+| member | what it does |
+|---|---|
+| `getCircuitJson()` | A copy of the circuit as it is now: traces, vias, pads, plated holes, silkscreen, the board outline, and your changes so far. |
+| `getPcbPort(selector)` | The `pcb_port` for a selector relative to the board or group, e.g. `".U1 > .pin1"`. Use its `pcb_port_id` and `pcb_component_id` to attach copper to a port's component and net. |
+| `getPcbComponent(selector)` | The `pcb_component` for a selector, e.g. `".U1"`. |
+| `insert(element)` | Adds any `pcb_*` element and returns it with its generated id. `subcircuit_id` defaults to the hook's subcircuit. |
+| `update(id, patch)` | Changes fields of any `pcb_*` element, including ones made by footprints or the router. The type and id cannot change. |
+| `remove(id)` | Removes a `pcb_*` element. |
+| `subcircuitId` | The subcircuit the hook runs for. |
+
+Every insert and update is checked against the
+[circuit-json](https://github.com/tscircuit/circuit-json) schema for its type,
+so a hook cannot leave the board in a state that later stages or exporters
+can't read.
+
+## Async hooks
+
+The hook may be `async`. Copper pours, via stitching and design rule checks
+wait for it. A synchronous hook runs inline, so a board without autorouting
+still renders with `circuit.render()`.
+
+## Running again
+
+When the board is routed again, the hook runs again. Before it does, every
+change it made through the context is undone, so it always starts from the
+freshly routed board. Write hooks that are deterministic and don't keep state
+between runs.
+
+The hook doesn't run while routing is still in progress, and it doesn't run if
+routing never produced a result.
+
+## Errors
+
+If the hook throws, or an insert or update fails validation, the board gets a
+`pcb_autorouting_error` whose message starts with `pcbPostRoutingHook failed:`.
+
+## Limits
+
+- Component bounds, 3D model positions and footprint origins are computed
+  before the hook and stay as they were.
+- Only `pcb_*` elements can be changed. Source and schematic elements are
+  read-only to the hook.
