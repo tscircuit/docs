@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process"
 import { createRequire } from "node:module"
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
@@ -87,3 +88,13 @@ try {
 } finally {
   await rm(scratch, { recursive: true, force: true })
 }
+
+// The repo's format check covers the generated JSON too
+spawnSync(
+  "bunx",
+  ["biome", "format", "--write", "src/data/post-routing-hook"],
+  {
+    cwd: root,
+    stdio: "inherit",
+  },
+)
