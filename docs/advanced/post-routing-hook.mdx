@@ -5,6 +5,13 @@ description: >-
   remove PCB elements before copper pours, design rule checks and export.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { drcFiles, pourFiles, powerWidthFiles, testPointsFiles } from "@site/src/data/post-routing-hook/examples"
+import testPointsPreview from "@site/src/data/post-routing-hook/test-points.json"
+import powerWidthPreview from "@site/src/data/post-routing-hook/power-width.json"
+import pourPreview from "@site/src/data/post-routing-hook/pour.json"
+import drcPreview from "@site/src/data/post-routing-hook/drc.json"
+
 Some board features depend on where the autorouter put the traces: a test pad
 placed where it fits, a label moved off a trace, a keepout around a sensitive
 net, or a design rule check of your own. `pcbPostRoutingHook` runs your code at
@@ -15,50 +22,76 @@ subcircuit is routed and teardrops are added, and before copper pours, via
 stitching and PCB design rule checks. So whatever it adds is poured around,
 checked and exported like any other copper.
 
-```tsx
-export default () => (
-  <board
-    width="16mm"
-    height="10mm"
-    pcbPostRoutingHook={(ctx) => {
-      const traces = ctx
-        .getCircuitJson()
-        .filter((e) => e.type === "pcb_trace")
+All four examples below use the same board: a 4-pin connector (J1: VCC, GND,
+SDA, SCL) routed to an SOIC-8 by the autorouter. Each one changes only the
+hook. The code tab shows the board, the hooks and the entry file.
 
-      // A round test pad on R1 pin 1, attached to its port so it joins the net
-      const port = ctx.getPcbPort(".R1 > .pin1")!
-      ctx.insert({
-        type: "pcb_smtpad",
-        shape: "circle",
-        x: -4,
-        y: 2,
-        radius: 0.4,
-        layer: "top",
-        port_hints: [],
-        pcb_port_id: port.pcb_port_id,
-        pcb_component_id: port.pcb_component_id,
-      })
+## Test points where the routing left room
 
-      // Your own design rule check, reported like a built-in one
-      if (traces.length > 10) {
-        ctx.insert({
-          type: "pcb_trace_error",
-          error_type: "pcb_trace_error",
-          message: "Too many traces for this connector",
-          pcb_trace_id: traces[0].pcb_trace_id,
-          source_trace_id: traces[0].source_trace_id,
-          pcb_component_ids: [],
-          pcb_port_ids: [],
-        })
-      }
-    }}
-  >
-    <resistor name="R1" resistance="1k" footprint="0402" pcbX={-4} pcbY={0} />
-    <resistor name="R2" resistance="1k" footprint="0402" pcbX={4} pcbY={0} />
-    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
-  </board>
-)
-```
+For each connector pin, the hook reads the routed traces from
+`getCircuitJson()` and tries directions around the pin. It takes the first one
+where a short stub and a round pad clear the other copper and the board edge,
+then inserts the stub trace, the pad on the pin's port (so it joins the net) and
+a silkscreen label. Each pin ends up pointing a different way, because that
+depends on where the traces went. A pin with no room gets a
+`pcb_placement_error`.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={testPointsPreview}
+  threeDImageUrl="/img/post-routing-hook/test-points-3d.png"
+  fsMap={testPointsFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Change what the router made
+
+`update` works on any `pcb_*` element, including the router's own traces. This
+hook widens the VCC and GND traces to 0.4 mm after routing and leaves the
+signal traces alone. Design rule checks run after the hook, so the wider copper
+is checked too.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={powerWidthPreview}
+  threeDImageUrl="/img/post-routing-hook/power-width-3d.png"
+  fsMap={powerWidthFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Copper pours see the hook's copper
+
+The same board with a GND pour, plus the test-point hook. The pour is computed
+after the hook, so it clears the test points on other nets, and the test point on
+the GND pin joins the pour.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={pourPreview}
+  threeDImageUrl="/img/post-routing-hook/pour-3d.png"
+  fsMap={pourFiles}
+  entrypoint="index.circuit.tsx"
+/>
+
+## Design rule checks catch a bad hook
+
+A naive hook puts every test pad 2.5 mm to the right of its pin, whatever the
+routing did. The PCB design rule checks run after the hook and report it:
+
+> PCB trace .J1 > .pin4 to .U1 > .pin2 overlaps with pcb_smtpad "J1.SDA"
+> (accidental contact)
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={drcPreview}
+  threeDImageUrl="/img/post-routing-hook/drc-3d.png"
+  fsMap={drcFiles}
+  entrypoint="index.circuit.tsx"
+/>
 
 ## The hook's context
 
