@@ -41,6 +41,8 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | pitch | number \| string | "2.54mm" | Distance between pins |
 | schFacingDirection | "up" \| "down" \| "left" \| "right" | "right" | Direction the header faces in schematic view |
 | gender | "male" \| "female" | "male" | Whether the header is male or female |
+| connectsFromAbove | boolean | undefined | When `true`, mount on the top side so the mating connector approaches from above; an alias for `layer="top"` |
+| connectsFromBelow | boolean | undefined | When `true`, mount on the bottom side so the mating connector approaches from below; an alias for `layer="bottom"` |
 | showSilkscreenPinLabels | boolean | false | Whether to show pin labels in silkscreen |
 | doubleRow | boolean | false | Whether the header has two rows of pins |
 | holeDiameter | number \| string | "1mm" | Diameter of the through-hole for each pin |
@@ -52,7 +54,48 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | rotation | number | 0 | Rotation of the component in degrees |
 | id | string | auto-generated | Unique identifier for the component |
 
+An explicit `layer` takes precedence over either alias. Set at most one of
+`connectsFromAbove` and `connectsFromBelow` to `true`.
+Setting both to `true` is an error, even when `layer` is explicit. A `false`
+alias has no effect: for example, `connectsFromAbove={false}` does not select
+the bottom side. With neither alias nor `layer`, the header uses the top side.
 
+These aliases select the board side, not the direction of the pins through the
+board. The `invert` option in a
+[pinrow footprint string](../footprints/footprinter-strings.mdx#pinrow) reverses
+the header's installation on its chosen side; it does not select the opposite
+layer.
 
+<details>
+<summary>Compare top-side and bottom-side headers</summary>
 
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  code={`export default () => (
+  <board width="26mm" height="12mm" routingDisabled>
+    <pinheader
+      name="J_TOP"
+      pinCount={3}
+      pitch="2.54mm"
+      pcbX={-6}
+      connectsFromAbove
+    />
+    <pinheader
+      name="J_BOTTOM"
+      pinCount={3}
+      pitch="2.54mm"
+      pcbX={6}
+      connectsFromBelow
+    />
+  </board>
+)`}
+/>
 
+`J_TOP` mates from above the board and `J_BOTTOM` from below. Adding
+`layer="top"` to `J_BOTTOM` would override `connectsFromBelow` and mount both
+headers on top. In the PCB preview, `J_BOTTOM` has bottom-side silkscreen,
+mirrored when viewed from the top. See [`<board />`](./board.mdx) for board
+settings.
+
+</details>
