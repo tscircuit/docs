@@ -1,0 +1,196 @@
+---
+title: 'Using M.2 Connectors for SparkFun MicroMod Modules'
+description: 'Learn how to design interchangeable MicroMod processor and carrier boards in tscircuit using standard 67-pin M.2 E-Key connectors'
+icon: 'code'
+---
+
+## Overview
+
+The **SparkFun MicroMod** ecosystem uses a standardized **67-pin M.2 (NGFF) E-Key connector** (`0.5mm` pitch, `22mm x 22mm` module form factor) to make microcontrollers interchangeable across carrier boards. Instead of redesigning an entire PCB when switching from an ESP32 to an RP2040, STM32, or nRF52840, you can design:
+
+1. **A MicroMod Carrier Board** containing a female **M.2 E-Key socket** (`J1`, e.g., Amphenol `10128794-001RLF`), power regulation, sensors, and peripherals.
+2. **A MicroMod Processor Board** with an M.2 gold-finger edge connector that routes the MCU pins to the standard MicroMod bus.
+
+---
+
+## Standard MicroMod M.2 E-Key Pinout Summary
+
+The 67-pin M.2 E-Key edge connector splits pins across the **top (odd pins)** and **bottom (even pins)** of the card, with a mechanical key notch between positions `24` and `31`:
+
+| Bus / Group | Standard MicroMod M.2 Pins | Description |
+|-------------|----------------------------|-------------|
+| **Power & Ground** | `pin2`, `pin4` (`3.3V`), `pin5` (`USB_VIN`), `pin73` (`BATT_VIN/3.3V`), `pin1`, `pin33`, `pin39`, `pin57`, `pin63`, `pin75` (`GND`) | Primary `3.3V` logic rail, USB input, RTC backup, and ground return pins |
+| **Control & Boot** | `pin9` (`RESET#`), `pin11` (`BOOT`) | Active-low hardware reset and bootloader mode entry |
+| **USB Interface** | `pin3` (`USB_D+`), `pin5` (`USB_D-`) | Differential full/high-speed USB data pair |
+| **I2C Bus** | `pin12` (`I2C_SDA`), `pin14` (`I2C_SCL`), `pin16` (`I2C_INT#`) | Primary I2C bus (requires `4.7kΩ` pull-ups to `3.3V` on the carrier board) |
+| **UART1 / Debug** | `pin17` (`UART_TX1`), `pin19` (`UART_RX1`), `pin21` (`RTS1`), `pin23` (`CTS1`) | Primary hardware serial port |
+| **SPI Bus** | `pin55` (`SPI_SCK`), `pin59` (`SPI_COPI`), `pin61` (`SPI_CIPO`), `pin53` (`SPI_CS`) | High-speed SPI bus for displays, SD cards, and external flash |
+| **Analog & PWM** | `pin34` (`A0`), `pin38` (`A1`), `pin32` (`PWM0`), `pin47` (`PWM1`) | Dedicated ADC inputs and PWM outputs |
+| **Digital GPIO** | `pin10` (`D0`), `pin18` (`D1`), `pin40`–`pin48` (`G0`–`G4`) | General-purpose digital I/O |
+
+---
+
+## Designing a MicroMod Carrier Board in `tscircuit`
+
+Below is a complete `tscircuit` example showing how to define a reusable **67-pin M.2 MicroMod Carrier Socket (`J1`)** with essential `3.3V` decoupling, `I2C` pull-up resistors, a `RESET` circuit, and an I2C peripheral header:
+
+```tsx
+import { useCapacitor, useResistor } from "@tscircuit/core"
+
+export const MicroModCarrierCircuit = () => {
+  // Decoupling capacitors on the 3.3V rail near the M.2 connector
+  const C1 = useCapacitor("C1", { capacitance: "10uF", footprint: "0805" })
+  const C2 = useCapacitor("C2", { capacitance: "100nF", footprint: "0402" })
+
+  // I2C pull-up resistors (4.7kΩ to 3.3V) and Reset pull-up (10kΩ)
+  const R1 = useResistor("R1", { resistance: "4.7k", footprint: "0402" }) // SDA pull-up
+  const R2 = useResistor("R2", { resistance: "4.7k", footprint: "0402" }) // SCL pull-up
+  const R3 = useResistor("R3", { resistance: "10k", footprint: "0402" })  // RESET# pull-up
+  const R4 = useResistor("R4", { resistance: "1k", footprint: "0402" })   // Status LED limit
+
+  return (
+    <board width="65mm" height="50mm" routingDisabled>
+      <group subcircuit routingDisabled>
+        {/* J1: SparkFun MicroMod M.2 E-Key 67-Pin Socket */}
+        <chip
+          name="J1"
+          manufacturerPartNumber="10128794-001RLF"
+          schX={0}
+          schY={0}
+          schWidth={3.6}
+          schHeight={7.2}
+          schPinSpacing={0.4}
+          schPortArrangement={{
+            leftSide: {
+              pins: [
+                "pin2",
+                "pin4",
+                "pin9",
+                "pin11",
+                "pin3",
+                "pin5",
+                "pin34",
+                "pin38",
+                "pin1",
+                "pin33",
+              ],
+              direction: "top-to-bottom",
+            },
+            rightSide: {
+              pins: [
+                "pin12",
+                "pin14",
+                "pin16",
+                "pin17",
+                "pin19",
+                "pin53",
+                "pin55",
+                "pin59",
+                "pin61",
+                "pin32",
+                "pin47",
+                "pin10",
+                "pin18",
+              ],
+              direction: "top-to-bottom",
+            },
+          }}
+          pinLabels={{
+            pin1: "GND1",
+            pin2: "3V3_1",
+            pin3: "USB_DP",
+            pin4: "3V3_2",
+            pin5: "USB_DM",
+            pin9: "RESET_N",
+            pin10: "D0",
+            pin11: "BOOT",
+            pin12: "I2C_SDA",
+            pin14: "I2C_SCL",
+            pin16: "I2C_INT_N",
+            pin17: "UART_TX1",
+            pin19: "UART_RX1",
+            pin32: "PWM0",
+            pin33: "GND2",
+            pin34: "A0",
+            pin38: "A1",
+            pin47: "PWM1",
+            pin53: "SPI_CS",
+            pin55: "SPI_SCK",
+            pin59: "SPI_COPI",
+            pin61: "SPI_CIPO",
+          }}
+        />
+
+        {/* J2: Qwiic / I2C Sensor Expansion Header (4-pin JST-SH) */}
+        <chip
+          name="J2"
+          manufacturerPartNumber="SM04B-SRSS-TB"
+          schX={6.5}
+          schY={2.0}
+          schWidth={1.6}
+          schHeight={2.0}
+          schPortArrangement={{
+            leftSide: {
+              pins: ["pin1", "pin2", "pin3", "pin4"],
+              direction: "top-to-bottom",
+            },
+          }}
+          pinLabels={{
+            pin1: "GND",
+            pin2: "3V3",
+            pin3: "SDA",
+            pin4: "SCL",
+          }}
+        />
+
+        {/* Passive Placements */}
+        <C1 pos="net.V3V3" neg="net.GND" schX={-5.5} schY={2.5} schRotation="270deg" />
+        <C2 pos="net.V3V3" neg="net.GND" schX={-4.0} schY={2.5} schRotation="270deg" />
+
+        <R1 pin1="net.V3V3" pin2=".J1 .pin12" schX={3.2} schY={3.2} schRotation="90deg" />
+        <R2 pin1="net.V3V3" pin2=".J1 .pin14" schX={4.4} schY={3.2} schRotation="90deg" />
+        <R3 pin1="net.V3V3" pin2=".J1 .pin9" schX={-3.5} schY={0.5} schRotation="90deg" />
+
+        {/* Status LED on D0 */}
+        <R4 pin1=".J1 .pin10" pin2=".D1 .anode" schX={4.5} schY={-2.8} />
+        <led name="D1" color="blue" schX={6.2} schY={-2.8} />
+
+        {/* Power & Ground Connections */}
+        <trace from=".J1 .pin2" to="net.V3V3" />
+        <trace from=".J1 .pin4" to="net.V3V3" />
+        <trace from=".J1 .pin1" to="net.GND" />
+        <trace from=".J1 .pin33" to="net.GND" />
+        <trace from=".D1 .cathode" to="net.GND" />
+
+        {/* I2C Bus to Qwiic Connector (J2) */}
+        <trace from=".J2 .pin1" to="net.GND" />
+        <trace from=".J2 .pin2" to="net.V3V3" />
+        <trace from=".J1 .pin12" to=".J2 .pin3" />
+        <trace from=".J1 .pin14" to=".J2 .pin4" />
+      </group>
+    </board>
+  )
+}
+```
+
+---
+
+## Hardware Layout Best Practices for M.2 MicroMod Boards
+
+1. **Connector & Standoff Alignment:**
+   - The standard MicroMod processor card is `22mm x 22mm` (`M.2 2222`).
+   - Place the M.2 mounting standoff (`M2.5` SMD nut) exactly `22.0mm` from the datum centerline of the M.2 E-Key socket (`4.2mm` height connector recommended).
+2. **High-Speed Differential Routing (`USB_D+` / `USB_D-`):**
+   - Route `pin3` (`USB_DP`) and `pin5` (`USB_DM`) as a `90Ω` differential pair with matched trace lengths and minimal via transitions.
+3. **Power Supply & Decoupling:**
+   - Provide at least `500mA–1A` on the `3.3V` rail (`pin2`, `pin4`) for Wi-Fi/BLE processor modules (such as the MicroMod ESP32).
+   - Place the `10uF` (`C1`) and `100nF` (`C2`) decoupling capacitors within `3mm` of `pin2` and `pin4`.
+4. **Pull-Up Resistors Belong on the Carrier Board:**
+   - By MicroMod convention, `I2C_SDA` (`pin12`) and `I2C_SCL` (`pin14`) pull-ups (`4.7kΩ` to `3.3V`) are placed on the **carrier board** so they match the bus capacitance of connected sensors.
+
+---
+
+## References
+
+- [SparkFun MicroMod Interface v1.0 — Pin Descriptions (PDF)](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
+- [Designing with MicroMod Technical Guide](https://learn.sparkfun.com/tutorials/designing-with-micromod)
