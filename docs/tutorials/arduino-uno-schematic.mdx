@@ -1,0 +1,444 @@
+---
+title: 'Arduino Uno R3 (ATmega328P) Schematic Circuit'
+description: 'Create a complete schematic-only Arduino Uno R3 development board using the ATmega328P microcontroller, 16MHz crystal, 5V regulator, and standard pin headers in tscircuit'
+icon: 'code'
+---
+
+## Overview
+
+In this tutorial, we'll build the schematic for an **Arduino Uno R3** development board using **tscircuit**. Because this is a schematic-focused design (`routingDisabled`), we'll organize the circuit cleanly on the schematic canvas (`schX`, `schY`, `schPortArrangement`) with all essential subsystems:
+
+- **ATmega328P-PU Microcontroller (`U1`)** with complete Arduino pin mapping (`D0`–`D13`, `A0`–`A5`, `RESET`, `XTAL1`/`XTAL2`, `VCC`, `AVCC`, `AREF`, `GND`).
+- **16 MHz Clock Oscillator (`Y1`)** with `22pF` load capacitors (`C1`, `C2`) and `1MΩ` feedback resistor (`R1`).
+- **5V / 3.3V Power Regulation (`U2` NCP1117-5.0 & `U3` LP2985-3.3)** with input/output bulk and ceramic decoupling capacitors.
+- **Reset & Auto-Reset Circuit (`SW1`, `R2` 10kΩ pull-up, `C3` 100nF DTR coupling capacitor)**.
+- **Built-in User LED (`D1` on `D13`) & Power Indicator LED (`D2`)**.
+- **Standard Arduino Uno Headers (`J1` Power, `J2` Analog, `J3` Digital High, `J4` Digital Low)**.
+
+---
+
+## Components Overview
+
+| RefDes | Component | Value / Part Number | Role in Circuit |
+|--------|-----------|---------------------|-----------------|
+| `U1` | Microcontroller | `ATMEGA328P-PU` | Main 8-bit AVR MCU running at 16 MHz |
+| `U2` | 5V LDO Regulator | `NCP1117ST50T3G` | Regulates `VIN` (7–12V) down to `+5V` |
+| `U3` | 3.3V LDO Regulator | `LP2985-33DBVR` | Regulates `+5V` down to `+3V3` |
+| `Y1` | Crystal Resonator | `16MHz` | Primary clock source for `ATmega328P` |
+| `C1`, `C2` | Ceramic Capacitors | `22pF` | Crystal load capacitors (`XTAL1`, `XTAL2`) |
+| `C3`, `C4`, `C5`, `C6` | Ceramic Capacitors | `100nF` (`0.1uF`) | DTR auto-reset, `VCC`, `AVCC`, and `AREF` decoupling |
+| `C7`, `C8` | Electrolytic Capacitors | `47uF` | Bulk filtering on `VIN` and `+5V` rails |
+| `R1` | Resistor | `1MΩ` | Parallel feedback across `16MHz` crystal |
+| `R2` | Resistor | `10kΩ` | `RESET` pull-up resistor to `+5V` |
+| `R3`, `R4` | Resistors | `1kΩ` | Current-limiting resistors for `SCK/D13` LED and `ON` LED |
+| `D1`, `D2` | LEDs | Green / Yellow | Built-in `L` (`D13`) LED and `ON` power LED |
+| `J1`–`J4` | Pin Headers | 6-pin, 8-pin, 10-pin | Standard Arduino Uno shield headers |
+
+---
+
+## Creating the Full Arduino Uno Schematic Snippet
+
+Below is the complete, self-contained `tscircuit` snippet for the Arduino Uno schematic:
+
+```tsx
+import { useCapacitor, useResistor } from "@tscircuit/core"
+
+export const ArduinoUnoSchematic = () => {
+  // Crystal Load & Decoupling Capacitors
+  const C1 = useCapacitor("C1", { capacitance: "22pF" })
+  const C2 = useCapacitor("C2", { capacitance: "22pF" })
+  const C3 = useCapacitor("C3", { capacitance: "100nF" }) // DTR Auto-Reset
+  const C4 = useCapacitor("C4", { capacitance: "100nF" }) // VCC Decoupling
+  const C5 = useCapacitor("C5", { capacitance: "100nF" }) // AVCC Decoupling
+  const C6 = useCapacitor("C6", { capacitance: "100nF" }) // AREF Decoupling
+  const C7 = useCapacitor("C7", { capacitance: "47uF" })  // VIN Bulk
+  const C8 = useCapacitor("C8", { capacitance: "47uF" })  // +5V Bulk
+
+  // Resistors
+  const R1 = useResistor("R1", { resistance: "1M" })   // XTAL parallel feedback
+  const R2 = useResistor("R2", { resistance: "10k" })  // RESET pull-up
+  const R3 = useResistor("R3", { resistance: "1k" })   // D13 LED current limit
+  const R4 = useResistor("R4", { resistance: "1k" })   // Power ON LED current limit
+
+  return (
+    <board width="100mm" height="80mm" routingDisabled>
+      <group subcircuit routingDisabled>
+        {/* U1: ATmega328P-PU Main Microcontroller */}
+        <chip
+          name="U1"
+          manufacturerPartNumber="ATMEGA328P-PU"
+          schX={0}
+          schY={0}
+          schWidth={3.2}
+          schHeight={7.0}
+          schPinSpacing={0.4}
+          schPortArrangement={{
+            leftSide: {
+              pins: [
+                "pin1",
+                "pin9",
+                "pin10",
+                "pin23",
+                "pin24",
+                "pin25",
+                "pin26",
+                "pin27",
+                "pin28",
+              ],
+              direction: "top-to-bottom",
+            },
+            rightSide: {
+              pins: [
+                "pin2",
+                "pin3",
+                "pin4",
+                "pin5",
+                "pin6",
+                "pin11",
+                "pin12",
+                "pin13",
+                "pin14",
+                "pin15",
+                "pin16",
+                "pin17",
+                "pin18",
+                "pin19",
+              ],
+              direction: "top-to-bottom",
+            },
+            topSide: {
+              pins: ["pin7", "pin20", "pin21"],
+              direction: "left-to-right",
+            },
+            bottomSide: {
+              pins: ["pin8", "pin22"],
+              direction: "left-to-right",
+            },
+          }}
+          pinLabels={{
+            pin1: "PC6/RESET",
+            pin2: "PD0/RXD (D0)",
+            pin3: "PD1/TXD (D1)",
+            pin4: "PD2/INT0 (D2)",
+            pin5: "PD3/INT1 (D3)",
+            pin6: "PD4 (D4)",
+            pin7: "VCC",
+            pin8: "GND1",
+            pin9: "PB6/XTAL1",
+            pin10: "PB7/XTAL2",
+            pin11: "PD5 (D5)",
+            pin12: "PD6 (D6)",
+            pin13: "PD7 (D7)",
+            pin14: "PB0 (D8)",
+            pin15: "PB1 (D9)",
+            pin16: "PB2/SS (D10)",
+            pin17: "PB3/MOSI (D11)",
+            pin18: "PB4/MISO (D12)",
+            pin19: "PB5/SCK (D13)",
+            pin20: "AVCC",
+            pin21: "AREF",
+            pin22: "GND2",
+            pin23: "PC0 (A0)",
+            pin24: "PC1 (A1)",
+            pin25: "PC2 (A2)",
+            pin26: "PC3 (A3)",
+            pin27: "PC4/SDA (A4)",
+            pin28: "PC5/SCL (A5)",
+          }}
+        />
+
+        {/* Y1: 16MHz Crystal Oscillator */}
+        <chip
+          name="Y1"
+          manufacturerPartNumber="ABM3B-16.000MHZ-B2-T"
+          schX={-5.5}
+          schY={1.4}
+          schWidth={1.2}
+          schHeight={1.0}
+          schPortArrangement={{
+            rightSide: {
+              pins: ["pin1", "pin2"],
+              direction: "top-to-bottom",
+            },
+          }}
+          pinLabels={{
+            pin1: "XTAL1",
+            pin2: "XTAL2",
+          }}
+        />
+
+        {/* U2: 5V LDO Voltage Regulator (NCP1117ST50T3G) */}
+        <chip
+          name="U2"
+          manufacturerPartNumber="NCP1117ST50T3G"
+          schX={-9.5}
+          schY={6.5}
+          schWidth={1.8}
+          schHeight={1.2}
+          schPortArrangement={{
+            leftSide: { pins: ["pin3"], direction: "top-to-bottom" },
+            rightSide: { pins: ["pin2"], direction: "top-to-bottom" },
+            bottomSide: { pins: ["pin1"], direction: "left-to-right" },
+          }}
+          pinLabels={{
+            pin1: "GND",
+            pin2: "VOUT_5V",
+            pin3: "VIN",
+          }}
+        />
+
+        {/* U3: 3.3V LDO Regulator (LP2985-33DBVR) */}
+        <chip
+          name="U3"
+          manufacturerPartNumber="LP2985-33DBVR"
+          schX={-4.0}
+          schY={6.5}
+          schWidth={1.8}
+          schHeight={1.2}
+          schPortArrangement={{
+            leftSide: { pins: ["pin1", "pin3"], direction: "top-to-bottom" },
+            rightSide: { pins: ["pin5"], direction: "top-to-bottom" },
+            bottomSide: { pins: ["pin2"], direction: "left-to-right" },
+          }}
+          pinLabels={{
+            pin1: "VIN_5V",
+            pin2: "GND",
+            pin3: "ON/OFF",
+            pin5: "VOUT_3V3",
+          }}
+        />
+
+        {/* J1: Power Header (6-pin) */}
+        <chip
+          name="J1"
+          manufacturerPartNumber="HEADER-1X6"
+          schX={-9.5}
+          schY={-3.5}
+          schWidth={1.4}
+          schHeight={2.6}
+          schPortArrangement={{
+            rightSide: {
+              pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6"],
+              direction: "top-to-bottom",
+            },
+          }}
+          pinLabels={{
+            pin1: "IOREF",
+            pin2: "RESET",
+            pin3: "3V3",
+            pin4: "5V",
+            pin5: "GND1",
+            pin6: "VIN",
+          }}
+        />
+
+        {/* J2: Analog Input Header (6-pin A0-A5) */}
+        <chip
+          name="J2"
+          manufacturerPartNumber="HEADER-1X6"
+          schX={-5.5}
+          schY={-3.5}
+          schWidth={1.4}
+          schHeight={2.6}
+          schPortArrangement={{
+            rightSide: {
+              pins: ["pin1", "pin2", "pin3", "pin4", "pin5", "pin6"],
+              direction: "top-to-bottom",
+            },
+          }}
+          pinLabels={{
+            pin1: "A0",
+            pin2: "A1",
+            pin3: "A2",
+            pin4: "A3",
+            pin5: "A4/SDA",
+            pin6: "A5/SCL",
+          }}
+        />
+
+        {/* J3: Digital Low Header (D0-D7) */}
+        <chip
+          name="J3"
+          manufacturerPartNumber="HEADER-1X8"
+          schX={6.5}
+          schY={2.2}
+          schWidth={1.4}
+          schHeight={3.2}
+          schPortArrangement={{
+            leftSide: {
+              pins: [
+                "pin1",
+                "pin2",
+                "pin3",
+                "pin4",
+                "pin5",
+                "pin6",
+                "pin7",
+                "pin8",
+              ],
+              direction: "top-to-bottom",
+            },
+          }}
+          pinLabels={{
+            pin1: "D0/RX",
+            pin2: "D1/TX",
+            pin3: "D2",
+            pin4: "D3",
+            pin5: "D4",
+            pin6: "D5",
+            pin7: "D6",
+            pin8: "D7",
+          }}
+        />
+
+        {/* J4: Digital High Header (D8-D13, GND, AREF) */}
+        <chip
+          name="J4"
+          manufacturerPartNumber="HEADER-1X8"
+          schX={6.5}
+          schY={-2.5}
+          schWidth={1.4}
+          schHeight={3.2}
+          schPortArrangement={{
+            leftSide: {
+              pins: [
+                "pin1",
+                "pin2",
+                "pin3",
+                "pin4",
+                "pin5",
+                "pin6",
+                "pin7",
+                "pin8",
+              ],
+              direction: "top-to-bottom",
+            },
+          }}
+          pinLabels={{
+            pin1: "D8",
+            pin2: "D9",
+            pin3: "D10/SS",
+            pin4: "D11/MOSI",
+            pin5: "D12/MISO",
+            pin6: "D13/SCK",
+            pin7: "GND",
+            pin8: "AREF",
+          }}
+        />
+
+        {/* Passive Components Placement */}
+        <C1 pos=".Y1 .pin1" neg="net.GND" schX={-7.5} schY={2.0} schRotation="270deg" />
+        <C2 pos=".Y1 .pin2" neg="net.GND" schX={-7.5} schY={0.8} schRotation="270deg" />
+        <R1 pin1=".Y1 .pin1" pin2=".Y1 .pin2" schX={-4.0} schY={1.4} schRotation="90deg" />
+
+        <R2 pin1="net.V5V" pin2=".U1 .pin1" schX={-3.5} schY={3.8} schRotation="90deg" />
+        <C3 pos="net.DTR" neg=".U1 .pin1" schX={-5.0} schY={3.2} />
+
+        <C4 pos="net.V5V" neg="net.GND" schX={-0.8} schY={5.0} schRotation="270deg" />
+        <C5 pos="net.V5V" neg="net.GND" schX={0.8} schY={5.0} schRotation="270deg" />
+        <C6 pos=".U1 .pin21" neg="net.GND" schX={2.2} schY={5.0} schRotation="270deg" />
+        <C7 pos="net.VIN" neg="net.GND" schX={-11.5} schY={6.5} schRotation="270deg" />
+        <C8 pos="net.V5V" neg="net.GND" schX={-7.2} schY={6.5} schRotation="270deg" />
+
+        {/* Status LEDs */}
+        <R3 pin1="net.D13" pin2=".D1 .anode" schX={9.5} schY={-1.5} />
+        <led name="D1" color="yellow" schX={11.2} schY={-1.5} />
+        <R4 pin1="net.V5V" pin2=".D2 .anode" schX={9.5} schY={5.5} />
+        <led name="D2" color="green" schX={11.2} schY={5.5} />
+
+        {/* Crystal Connections */}
+        <trace from=".U1 .pin9" to=".Y1 .pin1" />
+        <trace from=".U1 .pin10" to=".Y1 .pin2" />
+
+        {/* Power Rail Connections */}
+        <trace from=".U2 .pin3" to="net.VIN" />
+        <trace from=".U2 .pin1" to="net.GND" />
+        <trace from=".U2 .pin2" to="net.V5V" />
+        <trace from=".U3 .pin1" to="net.V5V" />
+        <trace from=".U3 .pin3" to="net.V5V" />
+        <trace from=".U3 .pin2" to="net.GND" />
+        <trace from=".U3 .pin5" to="net.V3V3" />
+
+        <trace from=".U1 .pin7" to="net.V5V" />
+        <trace from=".U1 .pin20" to="net.V5V" />
+        <trace from=".U1 .pin8" to="net.GND" />
+        <trace from=".U1 .pin22" to="net.GND" />
+        <trace from=".D1 .cathode" to="net.GND" />
+        <trace from=".D2 .cathode" to="net.GND" />
+
+        {/* Power Header Nets */}
+        <trace from=".J1 .pin1" to="net.V5V" />
+        <trace from=".J1 .pin2" to=".U1 .pin1" />
+        <trace from=".J1 .pin3" to="net.V3V3" />
+        <trace from=".J1 .pin4" to="net.V5V" />
+        <trace from=".J1 .pin5" to="net.GND" />
+        <trace from=".J1 .pin6" to="net.VIN" />
+
+        {/* Analog Header Nets (A0 - A5) */}
+        <trace from=".U1 .pin23" to=".J2 .pin1" />
+        <trace from=".U1 .pin24" to=".J2 .pin2" />
+        <trace from=".U1 .pin25" to=".J2 .pin3" />
+        <trace from=".U1 .pin26" to=".J2 .pin4" />
+        <trace from=".U1 .pin27" to=".J2 .pin5" />
+        <trace from=".U1 .pin28" to=".J2 .pin6" />
+
+        {/* Digital Low Header Nets (D0 - D7) */}
+        <trace from=".U1 .pin2" to=".J3 .pin1" />
+        <trace from=".U1 .pin3" to=".J3 .pin2" />
+        <trace from=".U1 .pin4" to=".J3 .pin3" />
+        <trace from=".U1 .pin5" to=".J3 .pin4" />
+        <trace from=".U1 .pin6" to=".J3 .pin5" />
+        <trace from=".U1 .pin11" to=".J3 .pin6" />
+        <trace from=".U1 .pin12" to=".J3 .pin7" />
+        <trace from=".U1 .pin13" to=".J3 .pin8" />
+
+        {/* Digital High Header Nets (D8 - D13, GND, AREF) */}
+        <trace from=".U1 .pin14" to=".J4 .pin1" />
+        <trace from=".U1 .pin15" to=".J4 .pin2" />
+        <trace from=".U1 .pin16" to=".J4 .pin3" />
+        <trace from=".U1 .pin17" to=".J4 .pin4" />
+        <trace from=".U1 .pin18" to=".J4 .pin5" />
+        <trace from=".U1 .pin19" to=".J4 .pin6" />
+        <trace from=".U1 .pin19" to="net.D13" />
+        <trace from=".J4 .pin7" to="net.GND" />
+        <trace from=".U1 .pin21" to=".J4 .pin8" />
+      </group>
+    </board>
+  )
+}
+```
+
+---
+
+## Key Subsystems Explained
+
+### 1. ATmega328P Pin Organization (`U1`)
+
+Using `schPortArrangement`, we group the 28 pins logically by function rather than physical DIP order:
+- **Left Side:** `RESET`, `XTAL1`/`XTAL2` clock inputs, and the 6 analog inputs (`A0`–`A5`).
+- **Right Side:** All 14 digital I/O pins (`D0`–`D13`), including hardware UART (`D0`/`D1`), PWM channels, and SPI (`D10`–`D13`).
+- **Top Side:** Positive supply rails (`VCC`, `AVCC`) and analog reference (`AREF`).
+- **Bottom Side:** Ground pins (`GND1`, `GND2`).
+
+### 2. 16 MHz Clock & Reset Circuit
+
+The ATmega328P uses an external `16MHz` crystal (`Y1`) across `PB6/XTAL1` (`pin9`) and `PB7/XTAL2` (`pin10`) with two `22pF` load capacitors (`C1`, `C2`) to ground and a `1MΩ` parallel feedback resistor (`R1`).
+
+For reliable programming and operation:
+- `R2` (`10kΩ`) pulls `PC6/RESET` (`pin1`) up to `+5V`.
+- `C3` (`100nF`) couples the `DTR` line from the USB-to-serial bridge to trigger an automatic reset pulse during sketch uploads.
+
+### 3. Dual-Stage Power Regulation (`+5V` and `+3.3V`)
+
+- **`U2` (`NCP1117ST50T3G`):** Steps `VIN` (`7V–12V`) down to `+5V` with `47uF` bulk capacitors (`C7`, `C8`).
+- **`U3` (`LP2985-33DBVR`):** Generates the auxiliary `+3.3V` rail from `+5V` for low-voltage sensors and shields.
+- **`C4`, `C5`, `C6` (`100nF`):** Placed on `VCC`, `AVCC`, and `AREF` to filter high-frequency switching noise and stabilize ADC readings.
+
+---
+
+## Next Steps
+
+Try extending this Arduino Uno schematic in the [tscircuit Editor](https://tscircuit.com/editor):
+- Add an **ATmega16U2** or **CH340G** USB-to-UART bridge connected to `D0/RX`, `D1/TX`, and `net.DTR`.
+- Add an **LMV358** op-amp power-path comparator for automatic switching between `USBVCC` and `VIN`.
+- Enable PCB routing by removing `routingDisabled` and assigning footprints (`dip28`, `0603`, `sot223`) to each component.
