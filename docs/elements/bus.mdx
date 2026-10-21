@@ -9,9 +9,11 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<bus />` element tells the autorouter that two or more connections belong
+The `<bus />` element tells the autorouter that one or more connections belong
 to the same group. Each entry in `connections` can be a named [`<trace />`](./trace.mdx)
 or a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
+A singleton `<bus connections={["CS_N"]} />` is also valid when you want a single
+control net to participate in `busFanoutDirections` or phase routing alongside multi-bit buses.
 
 A bus does not electrically connect its members. It groups existing
 connections so the autorouter can apply shared constraints such as layer
@@ -111,7 +113,7 @@ least one layer remains.
 
 | Property | Description | Example |
 | -------- | ----------- | ------- |
-| `connections` | Two or more trace names or port selectors in the bus. | `["D0", "D1"]` |
+| `connections` | One or more trace names or port selectors in the bus (supports singleton control nets such as `["CS_N"]`). | `["D0", "D1"]` |
 | `name` | Optional bus name. Name the bus when referring to it from `busFanoutDirections`. | `"DATA"` |
 | `routingPhaseIndex` | Assigns every member of the bus to an autorouting phase. | `0` |
 | `maxLengthSkew` | Maximum routed-length difference between members. Raw numbers are millimeters. | `"0.2mm"` |

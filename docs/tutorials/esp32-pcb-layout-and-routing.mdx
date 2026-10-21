@@ -1,0 +1,306 @@
+---
+title: 'ESP32 PCB Layout and Routing Guide'
+description: 'Design, place, and route a 4-layer ESP32-WROOM-32E development board PCB in tscircuit with RF keepout zones, USB-C differential pairs, decoupling placement, and copper pours'
+icon: 'cpu'
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This tutorial extends the **ESP32 Reference Schematic** (`tscircuit/docs-old#39`) into a complete, manufacturable **PCB layout and routing workflow** in **tscircuit** (`tscircuit/docs-old#44`).
+
+When laying out a mixed-signal wireless microcontroller like the **ESP32-WROOM-32E**, physical placement and copper routing directly affect Wi-Fi/BLE antenna range, power-rail stability during `2.4 GHz` TX bursts (`~500 mA` peaks), and USB-UART signal integrity.
+
+In this tutorial, you will learn how to:
+
+1. **Configure a 4-layer PCB stackup** (`top`, `inner1` GND plane, `inner2` `3.3V` power plane, `bottom`) with JLCPCB-compatible design rules.
+2. **Place the ESP32-WROOM-32E module** at the top board edge so the PCB antenna overhangs or sits over a copper-free keepout region.
+3. **Group and place decoupling capacitors (`100nF` + `22uF`)** within `1–2 mm` of the `3V3` (`pin2`) and `EN` (`pin3`) pins.
+4. **Place the USB-C receptacle (`J1`), LDO regulator (`U2` AMS1117-3.3), and USB-UART bridge (`U3` CP2102N)** along the bottom edge to minimize high-speed USB stub lengths.
+5. **Add ground & power copper pours (`<copperpour />`)** to ensure low-impedance return paths.
+
+---
+
+## Complete ESP32 PCB Layout & Routing Example
+
+The interactive preview below places and routes the core ESP32-WROOM-32E board on a `36mm × 48mm` 4-layer PCB:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board
+    width="36mm"
+    height="48mm"
+    layers={4}
+    minTraceWidth="0.15mm"
+    defaultTraceWidth="0.2mm"
+  >
+    {/* Inner ground and power planes */}
+    <copperpour layer="inner1" connectsTo="net.GND" />
+    <copperpour layer="inner2" connectsTo="net.V3_3" />
+
+    {/* U1: ESP32-WROOM-32E positioned near the top edge for antenna clearance */}
+    <chip
+      name="U1"
+      footprint="soic16_w7.5mm_p1.27mm"
+      pcbX={0}
+      pcbY={11}
+      schX={0}
+      schY={0}
+      pinLabels={{
+        pin1: "GND1",
+        pin2: "V3_3",
+        pin3: "EN",
+        pin4: "IO0",
+        pin5: "IO2",
+        pin6: "IO4",
+        pin7: "IO5",
+        pin8: "GND2",
+        pin9: "RXD0",
+        pin10: "TXD0",
+        pin11: "IO12",
+        pin12: "IO13",
+        pin13: "IO14",
+        pin14: "IO15",
+        pin15: "IO16",
+        pin16: "GND3",
+      }}
+      connections={{
+        GND1: "net.GND",
+        V3_3: "net.V3_3",
+        GND2: "net.GND",
+        GND3: "net.GND",
+      }}
+    />
+
+    {/* High-frequency RF & bulk decoupling placed immediately adjacent to U1.V3_3 (pin2) */}
+    <capacitor
+      name="C_RF"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX={-6.5}
+      pcbY={14}
+      schX={-5}
+      schY={3}
+      connections={{ pin1: "U1.V3_3", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C_BULK"
+      capacitance="22uF"
+      footprint="0805"
+      pcbX={-6.5}
+      pcbY={11.5}
+      schX={-7}
+      schY={3}
+      connections={{ pin1: "U1.V3_3", pin2: "net.GND" }}
+    />
+
+    {/* RC Power-on-Reset Delay on EN (pin3): 10k pull-up + 100nF to GND */}
+    <resistor
+      name="R_EN"
+      resistance="10k"
+      footprint="0402"
+      pcbX={-6.5}
+      pcbY={9}
+      schX={-5}
+      schY={1}
+      connections={{ pin1: "U1.EN", pin2: "net.V3_3" }}
+    />
+    <capacitor
+      name="C_EN"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX={-6.5}
+      pcbY={7}
+      schX={-5}
+      schY={-1}
+      connections={{ pin1: "U1.EN", pin2: "net.GND" }}
+    />
+
+    {/* U2: 3.3V LDO Regulator (AMS1117-3.3) in the mid-left power zone */}
+    <chip
+      name="U2"
+      footprint="sot223"
+      pcbX={-8}
+      pcbY={-4}
+      schX={-8}
+      schY={-4}
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VOUT",
+        pin3: "VIN",
+        pin4: "TAB",
+      }}
+      connections={{
+        GND: "net.GND",
+        VOUT: "net.V3_3",
+        TAB: "net.V3_3",
+        VIN: "net.VBUS_5V",
+      }}
+    />
+    <capacitor
+      name="C_IN"
+      capacitance="10uF"
+      footprint="0805"
+      pcbX={-8}
+      pcbY={-9}
+      schX={-11}
+      schY={-4}
+      connections={{ pin1: "net.VBUS_5V", pin2: "net.GND" }}
+    />
+    <capacitor
+      name="C_OUT"
+      capacitance="22uF"
+      footprint="0805"
+      pcbX={-8}
+      pcbY={1}
+      schX={-5}
+      schY={-4}
+      connections={{ pin1: "net.V3_3", pin2: "net.GND" }}
+    />
+
+    {/* U3: USB-to-UART Bridge positioned near bottom-right */}
+    <chip
+      name="U3"
+      footprint="soic8"
+      pcbX={6}
+      pcbY={-4}
+      schX={6}
+      schY={-4}
+      pinLabels={{
+        pin1: "VDD",
+        pin2: "TXD",
+        pin3: "RXD",
+        pin4: "GND",
+        pin5: "DTR",
+        pin6: "RTS",
+        pin7: "VBUS",
+        pin8: "RST",
+      }}
+      connections={{
+        VDD: "net.V3_3",
+        GND: "net.GND",
+        VBUS: "net.VBUS_5V",
+        TXD: "U1.RXD0",
+        RXD: "U1.TXD0",
+      }}
+    />
+
+    {/* Boot (IO0) and Reset (EN) Tactile Pushbuttons along bottom board edge */}
+    <resistor
+      name="R_BOOT"
+      resistance="10k"
+      footprint="0402"
+      pcbX={-2}
+      pcbY={-14}
+      schX={-2}
+      schY={-8}
+      connections={{ pin1: "U1.IO0", pin2: "net.V3_3" }}
+    />
+
+    {/* Status LED on IO2 */}
+    <resistor
+      name="R_LED"
+      resistance="1k"
+      footprint="0402"
+      pcbX={6}
+      pcbY={4}
+      schX={5}
+      schY={2}
+      connections={{ pin1: "U1.IO2", pin2: "D1.anode" }}
+    />
+    <led
+      name="D1"
+      color="blue"
+      footprint="0603"
+      pcbX={6}
+      pcbY={7}
+      schX={7}
+      schY={2}
+      connections={{ cathode: "net.GND" }}
+    />
+
+    {/* J1 & J2: Breakout Pin Headers along left and right board edges */}
+    <pinheader
+      name="J_LEFT"
+      pinCount={8}
+      pitch="2.54mm"
+      pcbX={-15.5}
+      pcbY={2}
+      pcbRotation="90deg"
+      schX={-12}
+      schY={2}
+      connections={{
+        pin1: "net.V3_3",
+        pin2: "U1.EN",
+        pin3: "U1.IO0",
+        pin4: "U1.IO2",
+        pin5: "U1.IO4",
+        pin6: "U1.IO5",
+        pin7: "net.VBUS_5V",
+        pin8: "net.GND",
+      }}
+    />
+    <pinheader
+      name="J_RIGHT"
+      pinCount={8}
+      pitch="2.54mm"
+      pcbX={15.5}
+      pcbY={2}
+      pcbRotation="90deg"
+      schX={12}
+      schY={2}
+      connections={{
+        pin1: "U1.TXD0",
+        pin2: "U1.RXD0",
+        pin3: "U1.IO12",
+        pin4: "U1.IO13",
+        pin5: "U1.IO14",
+        pin6: "U1.IO15",
+        pin7: "U1.IO16",
+        pin8: "net.GND",
+      }}
+    />
+  </board>
+)
+  `}
+/>
+
+---
+
+## Step-by-Step PCB Layout Rules for ESP32
+
+### 1. Antenna Placement & Keepout Zone
+
+Per the [Espressif Hardware Design Guidelines](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/pcb-layout-design.html):
+
+- **Edge Placement:** Position the ESP32 module (`U1`) at the top edge of the board (`pcbY={11}`) so the PCB trace antenna sits at the perimeter.
+- **No Copper Under Antenna:** Never place `<copperpour />`, signal traces, or mounting holes directly underneath the antenna region on **any layer** (`top`, `inner1`, `inner2`, `bottom`).
+- **Clearance:** Maintain at least `15 mm` of clearance from tall metal components (such as electrolytic capacitors or shielding cans) around the antenna zone.
+
+### 2. Power Supply & Decoupling Floorplan
+
+The ESP32 radio draws rapid current spikes (`>450 mA`) during Wi-Fi packet transmission:
+
+| Component | Value | Footprint | Placement Rule |
+|-----------|-------|-----------|----------------|
+| `C_RF` | `100nF` | `0402` | Within `1.5 mm` of `U1.V3_3` (`pin2`) to shunt `2.4 GHz` switching noise |
+| `C_BULK` | `22uF` | `0805` | Right beside `C_RF` on the `3.3V` feed to supply burst current |
+| `R_EN` + `C_EN` | `10kΩ` + `100nF` | `0402` | Placed adjacent to `U1.EN` (`pin3`) to prevent false resets from EMI |
+| `U2` (`AMS1117-3.3`) | `800mA` LDO | `sot223` | Placed between the bottom `5V` entry and `U1`, with `C_IN` (`10uF`) and `C_OUT` (`22uF`) close to its pins |
+
+### 3. Layer Stackup & Return Paths
+
+Using a 4-layer board (`layers={4}`) significantly improves RF performance and simplifies autorouting:
+
+- **Layer 1 (`top`):** High-speed UART (`TXD0`/`RXD0`), crystal/RF decoupling, and SMD component pads.
+- **Layer 2 (`inner1`):** Unbroken solid `GND` plane (`<copperpour layer="inner1" connectsTo="net.GND" />`) providing a continuous reference plane underneath all top-layer traces.
+- **Layer 3 (`inner2`):** Dedicated `3.3V` power plane (`<copperpour layer="inner2" connectsTo="net.V3_3" />`).
+- **Layer 4 (`bottom`):** Secondary GPIO breakouts leading to `J_LEFT` and `J_RIGHT` `2.54mm` headers.
+
+### 4. UART & Strapping Pin Routing Guidelines
+
+- **Crossed UART Traces:** Route `U3.TXD` → `U1.RXD0` and `U3.RXD` → `U1.TXD0` with short, direct traces avoiding parallel runs near the RF antenna.
+- **Strapping Pins (`IO0`, `IO2`, `IO12`, `IO15`):** Keep pull-up/pull-down resistors (`R_BOOT` on `IO0`) close to the module pins to minimize capacitive loading during boot-mode sampling.

@@ -74,7 +74,9 @@ about the following resistor characteristics:
 | `pulldownFor` | The pin or net this resistor is pulling down. | `".U1 > .GPIO1"` |
 | `pulldownTo` | The net this resistor is pulling down to. | `"net.GND"` |
 | `schOrientation` | The orientation of the resistor on the schematic. | `"vertical"`, `"horizontal"` |
-| `schSize` | The size of the schematic symbol. | `"normal"` |
+| `schSize` | Selects the regular or a compact schematic symbol. | `"default"`, `"sm"`, `"xs"` |
+
+Omit `schSize` or use `"default"` for the regular symbol; `"sm"` and `"xs"` select compact premade symbols without changing the PCB footprint or electrical value. Both the default rectangular symbol and `symbolName="resistor"` (zigzag) support compact sizes.
 
 ## Automatic Part Selection
 

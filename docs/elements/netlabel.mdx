@@ -72,9 +72,15 @@ schematic alongside the example code.
 | -------- | ----------- | ------- |
 | `net` | Name of the net that the label represents | `"VCC"` |
 | `connection` | [Port selector](../guides/tscircuit-essentials/port-and-net-selectors.md) of the point the label attaches to | `"U1.VCC"` |
+| `connectsTo` | Port selector or array of selectors the label attaches to | `"U1.SDA"` |
+| `inline` | Places the label directly along a connected schematic trace instead of drawing a flag symbol (`boolean`) | `inline` |
 | `anchorSide` | Which side of the connection to place the label. One of `"top"`, `"bottom"`, `"left"`, or `"right"` | `"top"` |
 | `schX`, `schY` | Position of the label on the schematic | `0`, `-1` |
 | `text` | Custom text for the label (defaults to the net name) | `"V3_3"` |
+
+## Inline Net Labels
+
+Set `inline` on `<netlabel />` to render a compact text label directly along a routed schematic wire instead of a standalone flag symbol. When a routed wire is available for the target `connection` or `connectsTo`, tscircuit automatically positions and rotates the text along that wire segment and ignores `anchorSide`, `schX`, `schY`, and `schRotation`. If no routed wire is present (for example, an unconnected port), `<netlabel inline />` falls back to standard anchored placement.
 
 Use `<netlabel />` to clearly mark nets in your schematic, especially for
 power rails or when multiple wires join at a single connection point.
