@@ -1,0 +1,289 @@
+---
+title: Building an OR Gate with TTL Logic
+description: >-
+  Learn how to build a complete interactive OR logic gate demonstrator with a
+  74HC32 TTL chip, push buttons, status LEDs, and a USB-C power input using tscircuit.
+---
+
+## Overview
+
+In this tutorial, you will build an interactive hardware logic demonstrator using **tscircuit**. The circuit implements a digital **OR gate** using the industry-standard **74HC32** Quad 2-Input OR logic IC (from Texas Instruments and standard 7400-series TTL/CMOS families).
+
+The circuit features:
+- **Two Push Buttons (`SW1` & `SW2`)**: Representing digital inputs `A` and `B`.
+- **Four Status LEDs**:
+  - `LED1` (Yellow): Input `A` indicator — lights up when `SW1` is pressed.
+  - `LED2` (Yellow): Input `B` indicator — lights up when `SW2` is pressed.
+  - `LED3` (Green): OR Gate Output indicator — lights up when `SW1` **OR** `SW2` is pressed.
+  - `LED4` (Blue): Power indicator — lights up whenever USB-C 5V power is connected.
+- **USB-C Connector (`J1`)**: Provides 5V bus power (`VBUS`) and ground (`GND`).
+- **74HC32 Logic Chip (`U1`)**: Evaluates the digital boolean logic: `Y = A + B`.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" code={`
+import React from "react"
+import { SmdUsbC } from "@tsci/seveibar.smd-usb-c"
+
+export default () => {
+  return (
+    <board width="45mm" height="42mm">
+      {/* 1. USB-C Power Connector */}
+      <SmdUsbC
+        name="J1"
+        connections={{
+          GND1: "net.GND",
+          GND2: "net.GND",
+          VBUS1: "net.VBUS",
+          VBUS2: "net.VBUS",
+        }}
+        pcbX={0}
+        pcbY={-17}
+        schX={-8}
+        schY={-4}
+      />
+
+      {/* 2. Power Indicator LED & Resistor */}
+      <led
+        name="LED4"
+        color="blue"
+        footprint="0805"
+        pcbX={-16}
+        pcbY={-16}
+        schX={-8}
+        schY={2}
+      />
+      <resistor
+        name="R4"
+        resistance="330ohm"
+        footprint="0603"
+        pcbX={-16}
+        pcbY={-11}
+        schX={-8}
+        schY={4}
+      />
+      <trace from="net.VBUS" to=".R4 > .pin1" />
+      <trace from=".R4 > .pin2" to=".LED4 > .anode" />
+      <trace from=".LED4 > .cathode" to="net.GND" />
+
+      {/* 3. Input Pushbuttons & Pull-down Resistors */}
+      <pushbutton
+        name="SW1"
+        footprint="pushbutton"
+        pcbX={-12}
+        pcbY={0}
+        schX={-4}
+        schY={2}
+        connections={{
+          pin1: "net.VBUS",
+          pin2: "net.INPUT_A",
+        }}
+      />
+      <resistor
+        name="R_PULL1"
+        resistance="10kohm"
+        footprint="0603"
+        pcbX={-12}
+        pcbY={7}
+        schX={-4}
+        schY={-1}
+      />
+      <trace from="net.INPUT_A" to=".R_PULL1 > .pin1" />
+      <trace from=".R_PULL1 > .pin2" to="net.GND" />
+
+      <pushbutton
+        name="SW2"
+        footprint="pushbutton"
+        pcbX={12}
+        pcbY={0}
+        schX={4}
+        schY={2}
+        connections={{
+          pin1: "net.VBUS",
+          pin2: "net.INPUT_B",
+        }}
+      />
+      <resistor
+        name="R_PULL2"
+        resistance="10kohm"
+        footprint="0603"
+        pcbX={12}
+        pcbY={7}
+        schX={4}
+        schY={-1}
+      />
+      <trace from="net.INPUT_B" to=".R_PULL2 > .pin1" />
+      <trace from=".R_PULL2 > .pin2" to="net.GND" />
+
+      {/* 4. Input Indicator LEDs */}
+      <led
+        name="LED1"
+        color="yellow"
+        footprint="0805"
+        pcbX={-12}
+        pcbY={-8}
+        schX={-4}
+        schY={5}
+      />
+      <resistor
+        name="R1"
+        resistance="330ohm"
+        footprint="0603"
+        pcbX={-7}
+        pcbY={-8}
+        schX={-4}
+        schY={7}
+      />
+      <trace from="net.INPUT_A" to=".R1 > .pin1" />
+      <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+      <trace from=".LED1 > .cathode" to="net.GND" />
+
+      <led
+        name="LED2"
+        color="yellow"
+        footprint="0805"
+        pcbX={12}
+        pcbY={-8}
+        schX={4}
+        schY={5}
+      />
+      <resistor
+        name="R2"
+        resistance="330ohm"
+        footprint="0603"
+        pcbX={7}
+        pcbY={-8}
+        schX={4}
+        schY={7}
+      />
+      <trace from="net.INPUT_B" to=".R2 > .pin1" />
+      <trace from=".R2 > .pin2" to=".LED2 > .anode" />
+      <trace from=".LED2 > .cathode" to="net.GND" />
+
+      {/* 5. 74HC32 Quad OR Gate IC */}
+      <chip
+        name="U1"
+        footprint="soic14"
+        pcbX={0}
+        pcbY={2}
+        schX={0}
+        schY={0}
+        pinLabels={{
+          pin1: "1A",
+          pin2: "1B",
+          pin3: "1Y",
+          pin4: "2A",
+          pin5: "2B",
+          pin6: "2Y",
+          pin7: "GND",
+          pin8: "3Y",
+          pin9: "3A",
+          pin10: "3B",
+          pin11: "4Y",
+          pin12: "4A",
+          pin13: "4B",
+          pin14: "VCC",
+        }}
+      />
+      <trace from="net.VBUS" to=".U1 > .pin14" />
+      <trace from="net.GND" to=".U1 > .pin7" />
+      <trace from="net.INPUT_A" to=".U1 > .pin1" />
+      <trace from="net.INPUT_B" to=".U1 > .pin2" />
+
+      {/* 6. OR Output Indicator (LED3) */}
+      <led
+        name="LED3"
+        color="green"
+        footprint="0805"
+        pcbX={0}
+        pcbY={15}
+        schX={0}
+        schY={6}
+      />
+      <resistor
+        name="R3"
+        resistance="330ohm"
+        footprint="0603"
+        pcbX={0}
+        pcbY={10}
+        schX={0}
+        schY={4}
+      />
+      <trace from=".U1 > .pin3" to=".R3 > .pin1" />
+      <trace from=".R3 > .pin2" to=".LED3 > .anode" />
+      <trace from=".LED3 > .cathode" to="net.GND" />
+    </board>
+  )
+}
+`} />
+
+## 1. Truth Table of the 2-Input OR Gate
+
+The OR gate outputs HIGH (1) whenever at least one of its inputs is HIGH (1):
+
+| Input A (`SW1`) | Input B (`SW2`) | Output Y (`LED3`) | State Description |
+|:---:|:---:|:---:|:---|
+| **0** (Released) | **0** (Released) | **0 (OFF)** | Neither button pressed; output remains LOW. |
+| **1** (Pressed)  | **0** (Released) | **1 (ON)**  | Button A pressed; output drives HIGH. |
+| **0** (Released) | **1** (Pressed)  | **1 (ON)**  | Button B pressed; output drives HIGH. |
+| **1** (Pressed)  | **1** (Pressed)  | **1 (ON)**  | Both buttons pressed; output drives HIGH. |
+
+## 2. Circuit Architecture
+
+### Input Conditioning with Pull-Down Resistors
+Digital CMOS/TTL inputs must never be left floating in high-impedance (high-Z) states, which causes erratic oscillation. Each pushbutton has a dedicated **10k ohm pull-down resistor** to ground:
+- When a button is **released**, the pull-down resistor holds the logic input reliably at `0V` (Logic 0).
+- When a button is **pressed**, it connects the pin directly to `+5V` (Logic 1), overpowering the weak pull-down.
+
+```tsx
+<pushbutton
+  name="SW1"
+  footprint="pushbutton"
+  connections={{ pin1: "net.VBUS", pin2: "net.INPUT_A" }}
+/>
+<resistor
+  name="R_PULL1"
+  resistance="10kohm"
+  footprint="0603"
+/>
+<trace from="net.INPUT_A" to=".R_PULL1 > .pin1" />
+<trace from=".R_PULL1 > .pin2" to="net.GND" />
+```
+
+### The 74HC32 Quad OR Gate
+The **74HC32** is a high-speed CMOS quad 2-input OR gate in a standard SOIC-14 footprint. Gate 1 uses pins:
+- **Pin 1 (`1A`)**: First logic input connected to `net.INPUT_A`.
+- **Pin 2 (`1B`)**: Second logic input connected to `net.INPUT_B`.
+- **Pin 3 (`1Y`)**: Logic output connected to output indicator `LED3`.
+- **Pin 14 (`VCC`)**: Powered by `net.VBUS` (`+5V`).
+- **Pin 7 (`GND`)**: Return path to `net.GND`.
+
+```tsx
+<chip
+  name="U1"
+  footprint="soic14"
+  pinLabels={{
+    pin1: "1A",
+    pin2: "1B",
+    pin3: "1Y",
+    pin7: "GND",
+    pin14: "VCC",
+  }}
+/>
+<trace from="net.VBUS" to=".U1 > .pin14" />
+<trace from="net.GND" to=".U1 > .pin7" />
+<trace from="net.INPUT_A" to=".U1 > .pin1" />
+<trace from="net.INPUT_B" to=".U1 > .pin2" />
+```
+
+### Visual Feedback with 4 Distinct LEDs
+- **`LED1` (Input A)**: Visual confirmation of Button 1 status.
+- **`LED2` (Input B)**: Visual confirmation of Button 2 status.
+- **`LED3` (Output Y)**: High-visibility green LED showing the computed boolean logic result.
+- **`LED4` (Power VBUS)**: Blue power rail indicator showing active USB-C connection.
+
+Each LED has a $330\Omega$ series resistor to ensure safe forward current (`IF ~ 10mA` at `5V`).
+
+## Summary
+
+In this tutorial, you constructed a physical TTL logic gate demonstration board using **tscircuit**. By combining reactive pushbuttons, pull-down bias resistors, 7400-series IC logic, and visual LED feedback, you created an educational, clean PCB ready for fabrication and interactive classroom demonstration.
