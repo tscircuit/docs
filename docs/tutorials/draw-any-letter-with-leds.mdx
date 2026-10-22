@@ -1,0 +1,344 @@
+---
+title: Draw Any Letter with LEDs
+description: >-
+  Learn how to create a reusable <LedLetter /> component in tscircuit that
+  renders any letter or number using a 5x7 LED dot matrix.
+---
+
+## Overview
+
+In this tutorial, you will learn how to build a generative `<LedLetter />` component in tscircuit. With this component, you can display any alphabet character or digit on a PCB using standard SMD LEDs arranged in a 5x7 dot-matrix grid.
+
+Because tscircuit components are standard React components, you can use JavaScript data structures (like arrays, loops, and font matrices) to programmatically generate PCB layouts and schematic diagrams.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview defaultView="pcb" code={`
+import React from "react"
+
+const FONT_5X7 = {
+  A: [
+    " ### ",
+    "#   #",
+    "#   #",
+    "#####",
+    "#   #",
+    "#   #",
+    "#   #",
+  ],
+  B: [
+    "#### ",
+    "#   #",
+    "#   #",
+    "#### ",
+    "#   #",
+    "#   #",
+    "#### ",
+  ],
+  C: [
+    " ####",
+    "#    ",
+    "#    ",
+    "#    ",
+    "#    ",
+    "#    ",
+    " ####",
+  ],
+  D: [
+    "#### ",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#### ",
+  ],
+  T: [
+    "#####",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+  ],
+  S: [
+    " ####",
+    "#    ",
+    "#    ",
+    " ### ",
+    "    #",
+    "    #",
+    "#### ",
+  ],
+}
+
+interface LedLetterProps {
+  name?: string
+  letter: string
+  power: string
+  gnd: string
+  pcbX?: number
+  pcbY?: number
+  spacing?: number
+  ledFootprint?: string
+  ledColor?: string
+}
+
+export const LedLetter = ({
+  name = "L1",
+  letter = "A",
+  power,
+  gnd,
+  pcbX = 0,
+  pcbY = 0,
+  spacing = 2.5,
+  ledFootprint = "0805",
+  ledColor = "red",
+}: LedLetterProps) => {
+  const pattern = FONT_5X7[letter.toUpperCase()] || FONT_5X7["A"]
+  const rows = pattern.length
+  const cols = pattern[0].length
+
+  const activePixels: Array<{ col: number; row: number; id: string }> = []
+  pattern.forEach((rowStr, rowIndex) => {
+    for (let colIndex = 0; colIndex < rowStr.length; colIndex++) {
+      if (rowStr[colIndex] === "#") {
+        activePixels.push({
+          col: colIndex,
+          row: rowIndex,
+          id: \`\${name}_LED_r\${rowIndex}_c\${colIndex}\`,
+        })
+      }
+    }
+  })
+
+  // Calculate grid offsets to center the letter around (pcbX, pcbY)
+  const xOffset = pcbX - ((cols - 1) * spacing) / 2
+  const yOffset = pcbY + ((rows - 1) * spacing) / 2
+
+  return (
+    <group name={name}>
+      {activePixels.map(({ col, row, id }) => {
+        const x = xOffset + col * spacing
+        const y = yOffset - row * spacing
+        const resId = \`\${id}_R\`
+
+        return (
+          <group key={id}>
+            <led
+              name={id}
+              color={ledColor}
+              footprint={ledFootprint}
+              pcbX={x}
+              pcbY={y}
+              schX={col * 2}
+              schY={-row * 2}
+            />
+            <resistor
+              name={resId}
+              resistance="220ohm"
+              footprint="0603"
+              pcbX={x}
+              pcbY={y - 1.2}
+              schX={col * 2}
+              schY={-row * 2 - 1}
+            />
+            <trace from={power} to={\`.\${id} > .anode\`} />
+            <trace from={\`.\${id} > .cathode\`} to={\`.\${resId} > .pin1\`} />
+            <trace from={\`.\${resId} > .pin2\`} to={gnd} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="25mm" height="30mm">
+    <LedLetter
+      letter="A"
+      power="net.V5"
+      gnd="net.GND"
+      pcbX={0}
+      pcbY={0}
+      spacing={2.8}
+    />
+  </board>
+)
+`} />
+
+## 1. What is a 5x7 Dot Matrix?
+
+A 5x7 dot-matrix font is a standard typography resolution used in digital displays, scoreboards, and character LCDs. Each letter is composed of 5 columns and 7 rows:
+
+- **Columns (5)**: horizontal pixel locations across the character width.
+- **Rows (7)**: vertical pixel locations allowing clear differentiation between ascenders, crossbars, and descenders.
+
+By representing active pixels as `#` and blank spaces as empty strings or ` `, we can represent letters concisely:
+
+```ts
+const LETTER_A = [
+  " ### ", // Row 0
+  "#   #", // Row 1
+  "#   #", // Row 2
+  "#####", // Row 3: crossbar
+  "#   #", // Row 4
+  "#   #", // Row 5
+  "#   #", // Row 6
+]
+```
+
+## 2. Designing the `<LedLetter />` Component
+
+The `<LedLetter />` component accepts the desired character, coordinate offsets, and power/ground net identifiers:
+
+```tsx
+interface LedLetterProps {
+  name?: string
+  letter: string
+  power: string
+  gnd: string
+  pcbX?: number
+  pcbY?: number
+  spacing?: number
+  ledFootprint?: string
+  ledColor?: string
+}
+```
+
+### Centering and Coordinate Offsets
+
+To make positioning intuitive, we center the letter around the provided `(pcbX, pcbY)` position:
+
+```ts
+// Center the 5x7 grid around the anchor position
+const xOffset = pcbX - ((cols - 1) * spacing) / 2
+const yOffset = pcbY + ((rows - 1) * spacing) / 2
+
+// For each row and column:
+const x = xOffset + col * spacing
+const y = yOffset - row * spacing
+```
+
+## 3. Circuit Topologies: Direct Drive with Current-Limiting Resistors
+
+When illuminating LEDs on a PCB, each LED needs adequate current limiting to prevent overcurrent damage. In this example, each active LED in the matrix has a dedicated 220Ω resistor:
+
+- **Anode**: connected to the `power` rail (such as `net.V5` or `net.V3_3`).
+- **Cathode**: connected to pin 1 of the segment resistor.
+- **Resistor Pin 2**: connected to the common ground rail `gnd`.
+
+```tsx
+<led
+  name={id}
+  color={ledColor}
+  footprint={ledFootprint}
+  pcbX={x}
+  pcbY={y}
+/>
+<resistor
+  name={resId}
+  resistance="220ohm"
+  footprint="0603"
+  pcbX={x}
+  pcbY={y - 1.2}
+/>
+<trace from={power} to={`.\${id} > .anode`} />
+<trace from={`.\${id} > .cathode`} to={`.\${resId} > .pin1`} />
+<trace from={`.\${resId} > .pin2`} to={gnd} />
+```
+
+## 4. Multi-Letter Display Example
+
+By combining multiple `<LedLetter />` components and adjusting their `pcbX` positions, you can spell out words and logos on a single board:
+
+<CircuitPreview defaultView="pcb" code={`
+import React from "react"
+
+const FONT_5X7 = {
+  T: [
+    "#####",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+    "  #  ",
+  ],
+  S: [
+    " ####",
+    "#    ",
+    "#    ",
+    " ### ",
+    "    #",
+    "    #",
+    "#### ",
+  ],
+  C: [
+    " ####",
+    "#    ",
+    "#    ",
+    "#    ",
+    "#    ",
+    "#    ",
+    " ####",
+  ],
+}
+
+export const LedLetter = ({
+  name,
+  letter,
+  power,
+  gnd,
+  pcbX = 0,
+  pcbY = 0,
+  spacing = 2,
+}) => {
+  const pattern = FONT_5X7[letter] || FONT_5X7["T"]
+  const rows = pattern.length
+  const cols = pattern[0].length
+
+  const xOffset = pcbX - ((cols - 1) * spacing) / 2
+  const yOffset = pcbY + ((rows - 1) * spacing) / 2
+
+  const leds = []
+  pattern.forEach((rowStr, r) => {
+    for (let c = 0; c < rowStr.length; c++) {
+      if (rowStr[c] === "#") {
+        leds.push({ c, r, id: \`\${name}_\${r}_\${c}\` })
+      }
+    }
+  })
+
+  return (
+    <group name={name}>
+      {leds.map(({ c, r, id }) => (
+        <React.Fragment key={id}>
+          <led
+            name={id}
+            color="blue"
+            footprint="0603"
+            pcbX={xOffset + c * spacing}
+            pcbY={yOffset - r * spacing}
+          />
+          <trace from={power} to={\`.\${id} > .anode\`} />
+          <trace from={\`.\${id} > .cathode\`} to={gnd} />
+        </React.Fragment>
+      ))}
+    </group>
+  )
+}
+
+export default () => (
+  <board width="50mm" height="25mm">
+    <LedLetter name="L_T" letter="T" power="net.V5" gnd="net.GND" pcbX={-15} pcbY={0} spacing={2} />
+    <LedLetter name="L_S" letter="S" power="net.V5" gnd="net.GND" pcbX={0} pcbY={0} spacing={2} />
+    <LedLetter name="L_C" letter="C" power="net.V5" gnd="net.GND" pcbX={15} pcbY={0} spacing={2} />
+  </board>
+)
+`} />
+
+## Summary
+
+With tscircuit, generating repetitive electronic structures like LED matrices, alphanumeric displays, and sensor arrays requires only standard React programming paradigms. By encapsulating layout math into reusable components like `<LedLetter />`, you can design expressive, customized circuit boards with clean, maintainable code.
