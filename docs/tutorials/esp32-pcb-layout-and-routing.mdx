@@ -1,0 +1,219 @@
+---
+title: ESP32 PCB Layout and Routing
+description: >-
+  Learn how to lay out and route a production-ready ESP32 microcontroller board in tscircuit following
+  Espressif PCB design guidelines, including RF keepout zones, decoupling placement, and low-impedance power routing.
+---
+
+## Overview
+
+In this tutorial, you will convert an ESP32 schematic into a physical **PCB layout with real trace routing** following the official [Espressif Hardware Design Guidelines](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/pcb-layout-design.html).
+
+While schematic capture defines logical connectivity, high-frequency microcontrollers like the ESP32 require careful physical layout to prevent RF detuning, transient brownouts, and clock jitter.
+
+Key PCB layout objectives covered in this guide:
+1. **RF Antenna Keepout Zone**: Placing the ESP32 module antenna overhanging or flush with the board edge, free of copper and ground planes.
+2. **Low-Impedance Power Decoupling**: Placing ceramic capacitors (`C1` and `C2`) directly adjacent to the `3V3` and `GND` pins to minimize parasitic loop inductance.
+3. **Power-On Reset (EN) Trace Protection**: Routing the high-impedance `EN` trace away from high-speed switching nets (SPI, clock lines, RF output).
+4. **Ergonomic Peripheral Placement**: Positioning the boot switch (`SW_BOOT`), reset button (`SW_RESET`), and UART programming header along accessible board boundaries.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview alwaysShowCode defaultView="pcb" code={`
+import React from "react"
+
+export default () => (
+  <board width="55mm" height="50mm">
+    {/* 1. ESP32 Core Module positioned near top edge for RF clearance */}
+    <chip
+      name="U1"
+      footprint="qfn38"
+      pcbX={0}
+      pcbY={5}
+      schX={0}
+      schY={0}
+      pinLabels={{
+        pin1: "GND1",
+        pin2: "3V3",
+        pin3: "EN",
+        pin4: "SENSOR_VP",
+        pin5: "SENSOR_VN",
+        pin6: "IO34",
+        pin7: "IO35",
+        pin8: "IO32",
+        pin9: "IO33",
+        pin10: "IO25",
+        pin11: "IO26",
+        pin12: "IO27",
+        pin13: "IO14",
+        pin14: "IO12",
+        pin15: "GND2",
+        pin16: "IO13",
+        pin23: "IO15",
+        pin24: "IO2",
+        pin25: "IO0",
+        pin26: "IO4",
+        pin27: "IO16",
+        pin28: "IO17",
+        pin29: "IO5",
+        pin30: "IO18",
+        pin31: "IO19",
+        pin33: "IO21",
+        pin34: "RXD0",
+        pin35: "TXD0",
+        pin36: "IO22",
+        pin37: "IO23",
+        pin38: "GND3",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["3V3", "EN", "IO0", "IO2", "SENSOR_VP", "SENSOR_VN", "GND1"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["TXD0", "RXD0", "IO21", "IO22", "IO18", "IO19", "GND3"],
+        },
+      }}
+    />
+
+    {/* 2. Decoupling Capacitors placed directly against 3V3 and GND pins */}
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0805"
+      pcbX={-14}
+      pcbY={9}
+      schX={-14}
+      schY={6}
+    />
+    <capacitor
+      name="C2"
+      capacitance="0.1uF"
+      footprint="0603"
+      pcbX={-14}
+      pcbY={5}
+      schX={-10}
+      schY={6}
+    />
+    <trace from="net.3V3" to=".U1 > .3V3" />
+    <trace from="net.3V3" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from="net.3V3" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to="net.GND" />
+
+    {/* 3. EN Reset Timing Filter (RC Circuit + Tactile Switch) */}
+    <resistor
+      name="R_EN"
+      resistance="10kohm"
+      footprint="0603"
+      pcbX={-14}
+      pcbY={0}
+      schX={-14}
+      schY={1}
+    />
+    <capacitor
+      name="C_EN"
+      capacitance="1uF"
+      footprint="0603"
+      pcbX={-14}
+      pcbY={-4}
+      schX={-10}
+      schY={1}
+    />
+    <pushbutton
+      name="SW_RESET"
+      footprint="pushbutton"
+      pcbX={-16}
+      pcbY={-14}
+      schX={-10}
+      schY={-3}
+      connections={{
+        pin1: ".U1 > .EN",
+        pin2: "net.GND",
+      }}
+    />
+    <trace from="net.3V3" to=".R_EN > .pin1" />
+    <trace from=".R_EN > .pin2" to=".U1 > .EN" />
+    <trace from=".U1 > .EN" to=".C_EN > .pin1" />
+    <trace from=".C_EN > .pin2" to="net.GND" />
+
+    {/* 4. Boot Selection Strapping Circuit (GPIO0) */}
+    <resistor
+      name="R_BOOT"
+      resistance="10kohm"
+      footprint="0603"
+      pcbX={14}
+      pcbY={0}
+      schX={-14}
+      schY={-7}
+    />
+    <pushbutton
+      name="SW_BOOT"
+      footprint="pushbutton"
+      pcbX={16}
+      pcbY={-14}
+      schX={-10}
+      schY={-7}
+      connections={{
+        pin1: ".U1 > .IO0",
+        pin2: "net.GND",
+      }}
+    />
+    <trace from="net.3V3" to=".R_BOOT > .pin1" />
+    <trace from=".R_BOOT > .pin2" to=".U1 > .IO0" />
+
+    {/* 5. UART Flashing & Debug Header along bottom board edge */}
+    <pinheader
+      name="J_UART"
+      pinCount={4}
+      footprint="pinrow4"
+      pcbX={0}
+      pcbY={-18}
+      schX={14}
+      schY={4}
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "TXD",
+        pin3: "RXD",
+        pin4: "GND",
+      }}
+    />
+    <trace from="net.3V3" to=".J_UART > .pin1" />
+    <trace from=".U1 > .TXD0" to=".J_UART > .pin3" />
+    <trace from=".U1 > .RXD0" to=".J_UART > .pin2" />
+    <trace from="net.GND" to=".J_UART > .pin4" />
+
+    {/* 6. Module Ground Returns */}
+    <trace from=".U1 > .GND1" to="net.GND" />
+    <trace from=".U1 > .GND3" to="net.GND" />
+  </board>
+)
+`} />
+
+## Essential PCB Layout Rules for ESP32
+
+When laying out physical PCB traces for the ESP32, adhere to the following core engineering rules:
+
+### 1. RF Antenna Keepout Zone
+The on-board PCB meandered inverted-F antenna (MIFA) generates high-frequency electromagnetic fields:
+- **No Ground Plane Under Antenna**: Ensure the top and bottom copper layers beneath the antenna area contain **no copper fills, traces, or vias**.
+- **Edge Alignment**: Position the module such that the antenna extends either beyond the PCB edge or flush with the outer perimeter. Never surround the antenna with copper pours or enclosure mounting screws.
+
+### 2. High-Frequency Decoupling Placement
+During 2.4 GHz Wi-Fi transmissions, current demands spike abruptly up to 500mA within nanoseconds:
+- Place the **0.1µF ceramic capacitor** (`C2`) physically closest to the `3V3` power pin (within 2mm to 3mm).
+- Place the **10µF bulk capacitor** (`C1`) directly adjacent to `C2`.
+- Keep the loop area between the capacitor ground pad and the module's ground pin as small as possible to minimize parasitic inductance (inductive L · di/dt voltage drops).
+
+### 3. EN Pin Noise Immunity
+The `EN` (CHIP_PU) pin controls the internal voltage regulator:
+- Keep the traces connecting `R_EN`, `C_EN`, and the `EN` pin short and compact.
+- Do not route the `EN` net parallel to high-speed switching traces (such as UART TX/RX lines or external flash traces) to prevent capacitive coupling and spontaneous MCU resets.
+
+### 4. Power Trace Widths
+Standard signal traces typically measure 0.15mm to 0.2mm (6-8 mil). However, the 3.3V power feeder track should be widened to at least **0.5mm (20 mil)** or routed via a dedicated power plane to minimize DC resistance and maintain voltage stability during RF packet bursts.
+
+## Summary
+
+Laying out an ESP32 board requires balancing ergonomic user controls with strict RF and signal integrity principles. By placing decoupling capacitors directly beside power pins, isolating the EN reset network, and maintaining clear RF antenna boundaries, your custom ESP32 board will deliver rock-solid wireless stability and reliable boots.
