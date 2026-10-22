@@ -1,0 +1,115 @@
+---
+title: User-Facing Tools Overview
+description: A complete guide to the primary user-facing tools in the tscircuit ecosystem, including the Web Editor, CLI, PCB and Schematic viewers, Runframe, and CAD converters.
+sidebar_position: 5
+---
+
+# User-Facing Tools Overview
+
+The **tscircuit** ecosystem provides a modular suite of tools designed to make designing, visualizing, and manufacturing printed circuit boards intuitive from code. Whether developing in the cloud, locally in a terminal, or embedding interactive circuits into documentation, these tools form the core user experience.
+
+---
+
+## 1. Web Editor & Playground
+
+- **URL:** [tscircuit.com/editor](https://tscircuit.com/editor) | [tscircuit.com/playground](https://tscircuit.com/playground)
+- **Primary Use:** Rapid prototyping, sharing circuit snippets, and AI-assisted circuit generation in the browser.
+
+The **tscircuit Web Editor** is a full-featured browser-based development environment. It features:
+- **Instant Live Preview:** Split-screen layout displaying TypeScript/React code alongside real-time Schematic, PCB, and 3D renders.
+- **AI Circuit Generation:** Natural language prompting to scaffold circuits, select components, and place footprints.
+- **Cloud Packaging & Sharing:** Publish packages directly to the tscircuit registry, fork community designs, and embed live circuit previews anywhere.
+
+---
+
+## 2. Command Line Interface (`tsci`)
+
+- **Package:** `@tscircuit/cli`
+- **Installation:** `npm install -g tsci` or `bun add -g tsci`
+- **Documentation:** [CLI Reference](../command-line/tsci-dev.md)
+
+The **`tsci` CLI** brings the power of tscircuit to your local code editor (VS Code, Cursor, Neovim) and CI/CD pipelines.
+
+### Core Commands:
+- `tsci dev`: Starts a local development server with instant hot module reloading and interactive canvas preview.
+- `tsci export`: Exports your circuit to production formats, including:
+  - Gerber files (`.zip`)
+  - Bill of Materials (`bom.csv`)
+  - Pick-and-Place centroid files (`pnp.csv`)
+  - KiCad PCB (`.kicad_pcb`)
+  - 3D STEP & GLB models
+- `tsci publish`: Publishes your reusable circuit module to the registry.
+
+---
+
+## 3. Runframe
+
+- **Package:** `@tscircuit/runframe`
+- **Primary Use:** Interactive execution environment and embeddable iframe widget.
+
+**Runframe** is the engine that compiles and executes React-based circuit code client-side. It takes React components using `<board>`, `<resistor>`, `<chip>`, and `<trace>`, runs them through `@tscircuit/core`, and feeds the resulting Circuit JSON into visualization engines. It is used inside the Web Editor, the CLI dev server, and documentation sites.
+
+---
+
+## 4. PCB Viewer
+
+- **Package:** `@tscircuit/pcb-viewer`
+- **Live Demo:** [pcb.tscircuit.com](https://pcb.tscircuit.com)
+- **Source:** [GitHub - tscircuit/pcb-viewer](https://github.com/tscircuit/pcb-viewer)
+
+The **PCB Viewer** is a high-performance 2D canvas/WebGL viewer dedicated to board layout inspection. Key features include:
+- **Multi-layer Visualization:** Inspect top/bottom copper, silkscreen, solder mask, drill holes, and inner layers with independent layer toggles.
+- **Interactive Net Highlighting:** Hover over any trace, via, or pad to highlight all connected copper paths in the same net.
+- **DRC Error Inspection:** Visual overlays marking design rule check clearances and short circuits.
+
+---
+
+## 5. Schematic Viewer
+
+- **Package:** `@tscircuit/schematic-viewer`
+- **Source:** [GitHub - tscircuit/schematic-viewer](https://github.com/tscircuit/schematic-viewer)
+
+The **Schematic Viewer** renders clean, professional electronics schematics from Circuit JSON:
+- **Interactive Wire Inspection:** Highlights connected nets and fades unrelated circuitry when hovering pins or wires.
+- **Multi-Sheet Navigation:** Seamlessly jump across hierarchical sheets in multi-page designs.
+- **Vector Quality:** High-DPI SVG rendering ensures schematics remain sharp at any zoom level.
+
+---
+
+## 6. Autorouting.com
+
+- **URL:** [autorouting.com](https://autorouting.com)
+- **Primary Use:** Cloud-assisted trace routing, benchmark datasets, and algorithm testing.
+
+**Autorouting.com** hosts tscircuit's automated routing services. It allows engineers to submit unrouted board layouts and run advanced pathfinding engines (including Specctra DSN algorithms and multi-layer gridless routers) to connect nets with optimal clearance and minimal via counts.
+
+---
+
+## 7. Format Converters
+
+tscircuit bridges traditional ECAD software and code-first electronics through dedicated converters:
+
+| Tool | Package | Function |
+| :--- | :--- | :--- |
+| **DSN Converter** | `@tscircuit/dsn-converter` | Converts Specctra `.dsn` autorouter files to and from Circuit JSON. Inspect live at [dsn.tscircuit.com](https://dsn.tscircuit.com). |
+| **Gerber Converter** | `@tscircuit/circuit-json-to-gerber` | Generates standard RS-274X Gerber and Excellon drill files for manufacturing. |
+| **KiCad Converter** | `@tscircuit/kicad-mod-converter` | Converts KiCad footprints (`.kicad_mod`) and symbols (`.kicad_sym`) into reusable tscircuit definitions. |
+| **Netlist Converter** | `@tscircuit/circuit-json-to-readable-netlist` | Outputs human-readable netlists for debugging circuit connectivity. |
+
+---
+
+## 8. JLCSearch
+
+- **URL:** [jlcsearch.tscircuit.com](https://jlcsearch.tscircuit.com)
+- **Source:** [GitHub - tscircuit/jlcsearch](https://github.com/tscircuit/jlcsearch)
+
+**JLCSearch** is an ultra-fast component catalog and search engine indexing over 400,000 components from JLCPCB. It helps circuit designers find parts with real-time stock levels, pricing, Basic vs. Extended library classifications, and EasyEDA footprint mappings.
+
+---
+
+## 9. Core Engine (`@tscircuit/core`)
+
+- **Package:** `@tscircuit/core`
+- **Primary Use:** Declarative component evaluation and Circuit JSON generation.
+
+While often running behind the scenes in the CLI and Web Editor, `@tscircuit/core` is also used directly by advanced users for programmatic scripting and batch generation. It resolves React JSX trees into normalized Circuit JSON elements without requiring browser APIs.
