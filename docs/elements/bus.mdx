@@ -9,13 +9,16 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<bus />` element tells the autorouter that two or more connections belong
-to the same group. Each entry in `connections` can be a named [`<trace />`](./trace.mdx)
-or a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
+The `<bus />` element tells the autorouter that one or more connections belong
+to the same group. Each entry in `connections` can be a named
+[`<trace />`](./trace.mdx) or a
+[port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
 
 A bus does not electrically connect its members. It groups existing
 connections so the autorouter can apply shared constraints such as layer
 selection, trace width, and maximum length skew.
+A singleton bus can apply layer, width, or fanout constraints to one control
+signal.
 
 For recommendations on dividing DDR signals into buses and fanning them out of
 opposing packages, see [Routing DDR](../guides/routing-ddr.mdx).
@@ -29,7 +32,7 @@ fall back to another layer.
 
 This four-layer BGA example allows the `DATA` bus to escape only on `inner2` or
 `bottom`. The bus name is also used by `busFanoutDirections` to send every
-member toward the right side of the package.
+member toward the right side of the package using canonical edge-first naming.
 
 <CircuitPreview verticalStack defaultView="pcb" code={`
 const innerPinNumbers = [6, 7, 10, 11]
@@ -62,7 +65,7 @@ export default () => (
   >
     <autoroutingphase
       autorouter="fanout"
-      busFanoutDirections={{ DATA: { direction: "center_right" } }}
+      busFanoutDirections={{ DATA: { direction: "rightside_center" } }}
       fanoutBoundaryPadding={{ right: "1.2mm" }}
     />
 
@@ -107,11 +110,26 @@ export default () => (
 set, the fanout solver uses the intersection of the two sets, so make sure at
 least one layer remains.
 
+## Singleton Control-Net Bus
+
+A bus can also contain a single connection. This allows constraining escape
+routing on individual high-speed or critical traces (such as clock or reset lines)
+without needing a multi-wire group:
+
+```tsx
+<bus
+  name="CLK_ESC"
+  connections={[".U1 > .CLK"]}
+  preferredLayer="bottom"
+  pcbTraceWidth="0.25mm"
+/>
+```
+
 ## Bus Properties
 
 | Property | Description | Example |
 | -------- | ----------- | ------- |
-| `connections` | Two or more trace names or port selectors in the bus. | `["D0", "D1"]` |
+| `connections` | One or more trace names or port selectors in the bus. | `["D0"]`, `["D0", "D1"]` |
 | `name` | Optional bus name. Name the bus when referring to it from `busFanoutDirections`. | `"DATA"` |
 | `routingPhaseIndex` | Assigns every member of the bus to an autorouting phase. | `0` |
 | `maxLengthSkew` | Maximum routed-length difference between members. Raw numbers are millimeters. | `"0.2mm"` |
