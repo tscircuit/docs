@@ -1,0 +1,196 @@
+---
+title: Building a Class D Stereo Audio Amplifier HAT
+description: >-
+  Learn how to design a high-efficiency 3W stereo Class D audio amplifier Raspberry
+  Pi HAT using the PAM8403 amplifier chip in tscircuit.
+---
+
+## Overview
+
+This tutorial walks through designing a high-efficiency stereo audio amplifier Raspberry Pi HAT (Hardware Attached on Top) using **tscircuit**. The design utilizes the **PAM8403** filterless Class D audio amplifier IC, capable of delivering up to 3W per channel into 4Ω speakers directly from the Raspberry Pi 5V power rail.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import TscircuitIframe from "@site/src/components/TscircuitIframe"
+
+<TscircuitIframe defaultView="3d" code={`
+import { RaspberryPiHatBoard } from "@tscircuit/common"
+
+export default () => (
+  <RaspberryPiHatBoard name="AUDIO_HAT">
+    {/* PAM8403 Class D Stereo Audio Amplifier IC (SOP-16) */}
+    <chip
+      name="U1"
+      footprint="soic16"
+      manufacturerPartNumber="PAM8403"
+      pcbX={0}
+      pcbY={5}
+      pinLabels={{
+        pin1: ["+OUT_L"],
+        pin2: ["PGND_L"],
+        pin3: ["-OUT_L"],
+        pin4: ["PVDD_L"],
+        pin5: ["MUTE"],
+        pin6: ["VDD"],
+        pin7: ["INL"],
+        pin8: ["VREF"],
+        pin9: ["NC"],
+        pin10: ["INR"],
+        pin11: ["GND"],
+        pin12: ["SHDN"],
+        pin13: ["PVDD_R"],
+        pin14: ["-OUT_R"],
+        pin15: ["PGND_R"],
+        pin16: ["+OUT_R"],
+      }}
+    />
+
+    {/* Input DC-blocking capacitors (0.47uF ceramic) */}
+    <capacitor name="C1" capacitance="0.47uF" footprint="0603" pcbX={-15} pcbY={12} />
+    <capacitor name="C2" capacitance="0.47uF" footprint="0603" pcbX={-15} pcbY={-2} />
+
+    {/* Bulk and bypass decoupling capacitors */}
+    <capacitor name="C3" capacitance="10uF" footprint="0805" pcbX={-5} pcbY={20} />
+    <capacitor name="C4" capacitance="0.1uF" footprint="0402" pcbX={5} pcbY={20} />
+
+    {/* Volume control pull-up resistors for SHDN and MUTE */}
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={10} pcbY={12} />
+    <resistor name="R2" resistance="10k" footprint="0402" pcbX={10} pcbY={-2} />
+
+    {/* Left Speaker Screw Terminal */}
+    <chip
+      name="J1"
+      footprint="pinrow2"
+      manufacturerPartNumber="Terminal Block 2-Pin 3.5mm"
+      pinLabels={{
+        pin1: ["SPK_L_POS"],
+        pin2: ["SPK_L_NEG"],
+      }}
+      pcbX={-25}
+      pcbY={20}
+    />
+
+    {/* Right Speaker Screw Terminal */}
+    <chip
+      name="J2"
+      footprint="pinrow2"
+      manufacturerPartNumber="Terminal Block 2-Pin 3.5mm"
+      pinLabels={{
+        pin1: ["SPK_R_POS"],
+        pin2: ["SPK_R_NEG"],
+      }}
+      pcbX={25}
+      pcbY={20}
+    />
+
+    {/* 5V Power Rails from Raspberry Pi 40-pin header */}
+    <trace from=".AUDIO_HAT_chip .V5_1" to=".C3 > .pin1" />
+    <trace from=".C3 > .pin1" to=".C4 > .pin1" />
+    <trace from=".C4 > .pin1" to=".U1 .VDD" />
+    <trace from=".U1 .VDD" to=".U1 .PVDD_L" />
+    <trace from=".U1 .VDD" to=".U1 .PVDD_R" />
+
+    {/* Ground connections */}
+    <trace from=".AUDIO_HAT_chip .GND_1" to=".C3 > .pin2" />
+    <trace from=".C3 > .pin2" to=".C4 > .pin2" />
+    <trace from=".C4 > .pin2" to=".U1 .GND" />
+    <trace from=".U1 .GND" to=".U1 .PGND_L" />
+    <trace from=".U1 .GND" to=".U1 .PGND_R" />
+
+    {/* SHDN and MUTE tied high to VDD for active operation */}
+    <trace from=".U1 .VDD" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 .SHDN" />
+    <trace from=".U1 .VDD" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".U1 .MUTE" />
+
+    {/* Audio Inputs from Raspberry Pi PWM Audio (GPIO18 left, GPIO19 right) */}
+    <trace from=".AUDIO_HAT_chip .GPIO_18" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".U1 .INL" />
+
+    <trace from=".AUDIO_HAT_chip .GPIO_19" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to=".U1 .INR" />
+
+    {/* Left Speaker Outputs (Bridge-Tied Load) */}
+    <trace from=".U1 .+OUT_L" to=".J1 .SPK_L_POS" />
+    <trace from=".U1 .-OUT_L" to=".J1 .SPK_L_NEG" />
+
+    {/* Right Speaker Outputs (Bridge-Tied Load) */}
+    <trace from=".U1 .+OUT_R" to=".J2 .SPK_R_POS" />
+    <trace from=".U1 .-OUT_R" to=".J2 .SPK_R_NEG" />
+  </RaspberryPiHatBoard>
+)
+`} />
+
+---
+
+## How Class D Amplification Works
+
+Traditional linear audio amplifiers (Class A or Class AB) operate transistors in their active region, dissipating up to 50% or more of power as heat. On a compact Raspberry Pi HAT, excessive heat limits audio power and requires large heatsinks.
+
+Class D amplifiers achieve **85% to 90% power efficiency** by using pulse-width modulation (PWM):
+1. **Switching Topology**: Output MOSFETs operate strictly as binary switches—either fully ON or fully OFF. Power dissipation ($P = I^2 \times R_{DS(\text{on})}$) remains minimal because voltage drop across an ON switch is small, and current through an OFF switch is zero.
+2. **Bridge-Tied Load (BTL)**: The PAM8403 drives each speaker differentially between `+OUT` and `-OUT`. This quadruples effective output power compared to single-ended outputs for the same supply rail ($V_{\text{peak-to-peak}} = 2 \times V_{DD}$).
+3. **Filterless Design**: The speaker voice coil inductance acts as a natural low-pass filter, recovering the audible analog waveform from high-frequency switching pulses without requiring external bulky inductors.
+
+---
+
+## Key Hardware Components
+
+| Reference | Component | Function | Footprint |
+|:---|:---|:---|:---|
+| **U1** | PAM8403 | 2-channel 3W filterless Class D audio power amplifier | SOIC-16 |
+| **C1, C2** | 0.47 µF Ceramic | Input DC blocking capacitors (high-pass cutoff ~33 Hz) | 0603 |
+| **C3** | 10 µF Electrolytic / X5R | Bulk energy storage to buffer transient bass peaks | 0805 |
+| **C4** | 0.1 µF Ceramic | High-frequency noise bypass filter placed adjacent to VDD | 0402 |
+| **R1, R2** | 10 kΩ | Pull-up resistors for active-high `SHDN` and `MUTE` pins | 0402 |
+| **J1, J2** | 2-pin Screw Terminal (3.5mm) | Speaker wire terminals for Left and Right 4Ω/8Ω channels | Through-hole |
+
+---
+
+## Raspberry Pi Audio Configuration
+
+To output stereo analog audio through Raspberry Pi GPIO pins, configure the hardware PWM overlay.
+
+### 1. Enable Dual-Channel PWM Audio
+
+Open `/boot/firmware/config.txt` (or `/boot/config.txt` on older Raspberry Pi OS versions) in your text editor:
+
+```bash
+sudo nano /boot/firmware/config.txt
+```
+
+Add the following device-tree overlay:
+
+```ini
+# Enable dual PWM audio output on GPIO18 (Left) and GPIO19 (Right)
+dtoverlay=audremap,pins_18_19
+```
+
+Reboot the Raspberry Pi:
+
+```bash
+sudo reboot
+```
+
+### 2. Verify ALSA Audio Output
+
+List available sound cards:
+
+```bash
+aplay -l
+```
+
+Test the stereo amplifier using the built-in speaker test utility:
+
+```bash
+speaker-test -t wav -c 2
+```
+
+You should clearly hear the voice announcements: *"Front Center"*, *"Front Left"*, and *"Front Right"* through the connected stereo speakers.
+
+---
+
+## Assembly & Testing Checklist
+
+1. **Supply Voltage**: Ensure power from the 5V rail does not exceed 5.5V. The PAM8403 has an absolute maximum rating of 6.0V.
+2. **Never Short Speaker Outputs to Ground**: Because the PAM8403 uses a Bridge-Tied Load (BTL) output, neither `+OUT` nor `-OUT` is connected to circuit ground. Never connect speaker negative terminals to GND.
+3. **Decoupling Proximity**: Keep capacitor `C4` as close as possible to pin 6 (`VDD`) to minimize switching EMI.
