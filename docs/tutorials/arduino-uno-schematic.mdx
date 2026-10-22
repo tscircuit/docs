@@ -1,0 +1,282 @@
+---
+title: Creating an Arduino Uno Schematic
+description: Step-by-step tutorial on modeling a complete Arduino Uno Rev3 circuit in tscircuit using schematic-only components, power regulation, oscillator, and breakout headers.
+---
+
+## Overview
+
+The Arduino Uno Rev3 is the reference open-source microcontroller board built around the Microchip **ATmega328P** 8-bit AVR microcontroller. Modeling an Arduino Uno schematic in tscircuit allows you to visualize, simulate, and export netlists directly using TypeScript and React components.
+
+This tutorial walks through building the full Arduino Uno core circuit:
+
+1. **Power Regulation Block**: 5V LDO regulation, barrel jack input, and 3.3V auxiliary rail.
+2. **Microcontroller Core (ATmega328P)**: Pin definitions, power rails, and active-low reset circuitry.
+3. **16 MHz Clock Oscillator**: Crystal resonator with dual 22pF load capacitors.
+4. **Header Breakouts**: Standard 8-pin and 6-pin female socket strips for GPIO, analog ADC, and SPI.
+5. **Status Indicator**: Built-in Pin 13 test LED with current-limiting resistor.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Complete Arduino Uno Schematic
+
+The interactive circuit below models the complete schematic using tscircuit primitives:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="68.6mm" height="53.4mm">
+    {/* ======================================================== */}
+    {/* 1. ATmega328P Microcontroller Core                       */}
+    {/* ======================================================== */}
+    <chip
+      name="U1"
+      footprint="dip28"
+      manufacturerPartNumber="ATMEGA328P-PU"
+      pinLabels={{
+        pin1: "RESET",
+        pin2: "RXD_D0",
+        pin3: "TXD_D1",
+        pin4: "INT0_D2",
+        pin5: "OC2B_D3",
+        pin6: "XCK_D4",
+        pin7: "VCC",
+        pin8: "GND",
+        pin9: "XTAL1",
+        pin10: "XTAL2",
+        pin11: "T1_D5",
+        pin12: "AIN0_D6",
+        pin13: "AIN1_D7",
+        pin14: "ICP1_D8",
+        pin15: "OC1A_D9",
+        pin16: "SS_D10",
+        pin17: "MOSI_D11",
+        pin18: "MISO_D12",
+        pin19: "SCK_D13",
+        pin20: "AVCC",
+        pin21: "AREF",
+        pin22: "GND2",
+        pin23: "ADC0",
+        pin24: "ADC1",
+        pin25: "ADC2",
+        pin26: "ADC3",
+        pin27: "ADC4_SDA",
+        pin28: "ADC5_SCL",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VCC", "AVCC", "RESET", "XTAL1", "XTAL2", "AREF"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: [
+            "RXD_D0", "TXD_D1", "INT0_D2", "OC2B_D3", "XCK_D4", "T1_D5",
+            "AIN0_D6", "AIN1_D7", "ICP1_D8", "OC1A_D9", "SS_D10", "MOSI_D11",
+            "MISO_D12", "SCK_D13"
+          ],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["ADC0", "ADC1", "ADC2", "ADC3", "ADC4_SDA", "ADC5_SCL", "GND", "GND2"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    {/* ======================================================== */}
+    {/* 2. 16 MHz Crystal Oscillator & Load Capacitors            */}
+    {/* ======================================================== */}
+    <chip
+      name="Y1"
+      footprint="crystal_hc49"
+      pinLabels={{
+        pin1: "OSC_IN",
+        pin2: "OSC_OUT",
+      }}
+      schX={-28}
+      schY={0}
+    />
+
+    <capacitor
+      name="C1"
+      capacitance="22pF"
+      footprint="0603"
+      schX={-35}
+      schY={-8}
+    />
+
+    <capacitor
+      name="C2"
+      capacitance="22pF"
+      footprint="0603"
+      schX={-22}
+      schY={-8}
+    />
+
+    {/* ======================================================== */}
+    {/* 3. Reset Pullup & Decoupling Filter                      */}
+    {/* ======================================================== */}
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0603"
+      schX={-28}
+      schY={14}
+    />
+
+    <capacitor
+      name="C3"
+      capacitance="100nF"
+      footprint="0603"
+      schX={-14}
+      schY={14}
+    />
+
+    {/* ======================================================== */}
+    {/* 4. Power Regulation: 5V LDO & Filter Capacitors          */}
+    {/* ======================================================== */}
+    <chip
+      name="U2"
+      footprint="sot223"
+      manufacturerPartNumber="NCP1117ST50T3G"
+      pinLabels={{
+        pin1: "GND",
+        pin2: "VOUT",
+        pin3: "VIN",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VIN"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["VOUT"],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["GND"],
+        },
+      }}
+      schX={-28}
+      schY={30}
+    />
+
+    <capacitor
+      name="C4"
+      capacitance="47uF"
+      footprint="c_elec_6.3x5.4"
+      schX={-38}
+      schY={30}
+    />
+
+    <capacitor
+      name="C5"
+      capacitance="47uF"
+      footprint="c_elec_6.3x5.4"
+      schX={-18}
+      schY={30}
+    />
+
+    {/* ======================================================== */}
+    {/* 5. Built-in Pin 13 Test LED Indicator                    */}
+    {/* ======================================================== */}
+    <resistor
+      name="R2"
+      resistance="1k"
+      footprint="0603"
+      schX={28}
+      schY={16}
+    />
+
+    <led
+      name="D1"
+      color="yellow"
+      footprint="0805"
+      schX={38}
+      schY={16}
+    />
+
+    {/* ======================================================== */}
+    {/* 6. Standard Arduino Pin Headers                          */}
+    {/* ======================================================== */}
+    {/* Digital High Header (D8 - D13, GND, AREF, SDA, SCL) */}
+    <pinheader
+      name="J1"
+      pinCount={10}
+      footprint="pinrow10"
+      pinLabels={[
+        "SCL", "SDA", "AREF", "GND",
+        "D13_SCK", "D12_MISO", "D11_MOSI", "D10_SS", "D9", "D8"
+      ]}
+      showSilkscreenPinLabels
+      schX={36}
+      schY={2}
+    />
+
+    {/* Digital Low Header (D0 - D7) */}
+    <pinheader
+      name="J2"
+      pinCount={8}
+      footprint="pinrow8"
+      pinLabels={["D7", "D6", "D5", "D4", "D3", "D2", "TX_D1", "RX_D0"]}
+      showSilkscreenPinLabels
+      schX={36}
+      schY={-16}
+    />
+
+    {/* Analog In Header (A0 - A5) */}
+    <pinheader
+      name="J3"
+      pinCount={6}
+      footprint="pinrow6"
+      pinLabels={["A0", "A1", "A2", "A3", "A4", "A5"]}
+      showSilkscreenPinLabels
+      schX={10}
+      schY={-30}
+    />
+
+    {/* Power Header (NC, IOREF, RESET, 3V3, 5V, GND, GND, VIN) */}
+    <pinheader
+      name="J4"
+      pinCount={8}
+      footprint="pinrow8"
+      pinLabels={["NC", "IOREF", "RESET", "3V3", "5V", "GND1", "GND2", "VIN"]}
+      showSilkscreenPinLabels
+      schX={-15}
+      schY={-30}
+    />
+  </board>
+)
+`} />
+
+## Architectural Breakdown
+
+### 1. ATmega328P Pin Configuration
+The `ATMEGA328P-PU` organizes all essential signals across three logical banks:
+- **Port B (PB0–PB5)**: Digital pins 8 to 13, including hardware SPI pins (`MOSI`, `MISO`, `SCK`).
+- **Port C (PC0–PC5)**: Analog ADC inputs 0 to 5, where `ADC4` doubles as `SDA` and `ADC5` doubles as `SCL` (I2C).
+- **Port D (PD0–PD7)**: Digital pins 0 to 7, including UART `RX`/`TX` on pins 0/1 and external interrupts `INT0`/`INT1`.
+
+### 2. Clock Generation (16 MHz)
+The AVR core requires an external high-speed clock for deterministic execution:
+- Crystal **Y1** connects across `XTAL1` (pin 9) and `XTAL2` (pin 10).
+- Load capacitors **C1** and **C2** (22 pF) stabilize frequency jitter and ensure clean clock transitions.
+
+### 3. Power Supply and Voltage Regulators
+- **VIN (7V–12V)** feeds into the linear regulator `NCP1117ST50T3G` to step down cleanly to **+5V**.
+- Bulk electrolytic capacitors **C4** and **C5** (47 µF) filter voltage ripple on both input and output sides.
+- A **100 nF** ceramic capacitor **C3** placed adjacent to the `VCC` and `AVCC` pins decouples high-frequency switching noise.
+
+### 4. Standard Arduino Shield Compatibility
+The schematic exports all connections to the canonical Arduino Rev3 2.54 mm pitch headers:
+- **J1 (10-pin)**: Digital high and I2C lines (`D8`–`D13`, `GND`, `AREF`, `SDA`, `SCL`).
+- **J2 (8-pin)**: Digital low and UART lines (`D0`–`D7`).
+- **J3 (6-pin)**: Analog sensor lines (`A0`–`A5`).
+- **J4 (8-pin)**: Power rail and system control lines (`VIN`, `5V`, `3V3`, `RESET`, `GND`).
+
+## References
+
+- [Arduino Uno Rev3 Official Schematic](https://docs.arduino.cc/resources/schematics/A000066-schematics.pdf)
+- [Microchip ATmega328P Complete Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf)
+- [ON Semiconductor NCP1117 LDO Voltage Regulator](https://www.onsemi.com/pdf/datasheet/ncp1117-d.pdf)
