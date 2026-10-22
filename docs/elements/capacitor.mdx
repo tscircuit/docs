@@ -104,10 +104,7 @@ Valid orientation values are:
 | `bypassTo` | The net this capacitor is bypassing to. | `"net.GND"` |
 | `maxDecouplingTraceLength` | Maximum allowable trace length (in mm) for decoupling connection. | `10` |
 | `schOrientation` | The orientation of the capacitor on the schematic. | `"vertical"`, `"horizontal"`, `"pos_top"` |
-| `schSize` | The size of the schematic symbol. | `"normal"`, `"small"` |
+| `schSize` | Accepts `Distance \| "xs" \| "sm" \| "default" \| "md"`. Only `"sm"` and `"xs"` select compact non-polarized symbols; all other accepted values use the standard symbol. | `"sm"`, `"xs"`, `"default"` |
 | `connections` | Map of pin names/aliases to net names or selectors. | `{{ pos: "net.POS", neg: "net.NEG" }}` |
 | `supplierPartNumbers` | Map of supplier names to supplier part numbers. | `{{ jlcpcb: ["C1525"] }}` |
 | `manufacturerPartNumber` | Manufacturer part number for exact component selection. | `"GRM188R71C105KA12D"` |
-
-
-
