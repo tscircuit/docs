@@ -1,0 +1,206 @@
+---
+title: ESP32 Reference Schematic
+description: >-
+  Learn how to create a production-grade ESP32 reference schematic in tscircuit following
+  official Espressif hardware design guidelines with power decoupling, strapping pin controls, and instant rendering via routingDisabled.
+---
+
+## Overview
+
+In this tutorial, you will build an **ESP32 reference schematic** following official [Espressif Hardware Design Guidelines](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/schematic-checklist.html).
+
+Designing a reliable microcontroller schematic requires properly addressing:
+1. **Power Supply & Decoupling**: Regulated 3.3V rail with high-frequency ceramic capacitors to absorb Wi-Fi RF power bursts.
+2. **Power-On Reset (EN / CHIP_PU)**: RC timing filter (10k ohm resistor + 1uF capacitor) to guarantee smooth, monotonic power ramps and prevent brownout hangs.
+3. **Boot Strapping Circuit (GPIO0)**: Dual-state pull-up configuration enabling normal SPI flash execution and UART firmware flashing mode.
+4. **Fast Schematic Rendering**: Using `routingDisabled` on the `<board />` element to bypass PCB trace calculation when focusing purely on schematic capture.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview alwaysShowCode defaultView="schematic" code={`
+import React from "react"
+
+export default () => (
+  <board width="65mm" height="55mm" routingDisabled>
+    {/* 1. ESP32-WROOM-32 Core Module */}
+    <chip
+      name="U1"
+      footprint="qfn38"
+      schX={0}
+      schY={0}
+      pinLabels={{
+        pin1: "GND1",
+        pin2: "3V3",
+        pin3: "EN",
+        pin4: "SENSOR_VP",
+        pin5: "SENSOR_VN",
+        pin6: "IO34",
+        pin7: "IO35",
+        pin8: "IO32",
+        pin9: "IO33",
+        pin10: "IO25",
+        pin11: "IO26",
+        pin12: "IO27",
+        pin13: "IO14",
+        pin14: "IO12",
+        pin15: "GND2",
+        pin16: "IO13",
+        pin23: "IO15",
+        pin24: "IO2",
+        pin25: "IO0",
+        pin26: "IO4",
+        pin27: "IO16",
+        pin28: "IO17",
+        pin29: "IO5",
+        pin30: "IO18",
+        pin31: "IO19",
+        pin33: "IO21",
+        pin34: "RXD0",
+        pin35: "TXD0",
+        pin36: "IO22",
+        pin37: "IO23",
+        pin38: "GND3",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["3V3", "EN", "IO0", "IO2", "SENSOR_VP", "SENSOR_VN", "GND1"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["TXD0", "RXD0", "IO21", "IO22", "IO18", "IO19", "GND3"],
+        },
+      }}
+    />
+
+    {/* 2. Power Rail Decoupling (3.3V) */}
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0805"
+      schX={-14}
+      schY={6}
+    />
+    <capacitor
+      name="C2"
+      capacitance="0.1uF"
+      footprint="0603"
+      schX={-10}
+      schY={6}
+    />
+    <trace from="net.3V3" to=".U1 > .3V3" />
+    <trace from="net.3V3" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to="net.GND" />
+    <trace from="net.3V3" to=".C2 > .pin1" />
+    <trace from=".C2 > .pin2" to="net.GND" />
+
+    {/* 3. Power-On Reset Circuit (EN Pin with RC Delay) */}
+    <resistor
+      name="R_EN"
+      resistance="10kohm"
+      footprint="0603"
+      schX={-14}
+      schY={1}
+    />
+    <capacitor
+      name="C_EN"
+      capacitance="1uF"
+      footprint="0603"
+      schX={-10}
+      schY={1}
+    />
+    <pushbutton
+      name="SW_RESET"
+      footprint="pushbutton"
+      schX={-10}
+      schY={-3}
+      connections={{
+        pin1: ".U1 > .EN",
+        pin2: "net.GND",
+      }}
+    />
+    <trace from="net.3V3" to=".R_EN > .pin1" />
+    <trace from=".R_EN > .pin2" to=".U1 > .EN" />
+    <trace from=".U1 > .EN" to=".C_EN > .pin1" />
+    <trace from=".C_EN > .pin2" to="net.GND" />
+
+    {/* 4. Boot Strapping Circuit (GPIO0) */}
+    <resistor
+      name="R_BOOT"
+      resistance="10kohm"
+      footprint="0603"
+      schX={-14}
+      schY={-7}
+    />
+    <pushbutton
+      name="SW_BOOT"
+      footprint="pushbutton"
+      schX={-10}
+      schY={-7}
+      connections={{
+        pin1: ".U1 > .IO0",
+        pin2: "net.GND",
+      }}
+    />
+    <trace from="net.3V3" to=".R_BOOT > .pin1" />
+    <trace from=".R_BOOT > .pin2" to=".U1 > .IO0" />
+
+    {/* 5. UART Communication & Programming Header */}
+    <pinheader
+      name="J_UART"
+      pinCount={4}
+      footprint="pinrow4"
+      schX={14}
+      schY={4}
+      pinLabels={{
+        pin1: "3V3",
+        pin2: "TXD",
+        pin3: "RXD",
+        pin4: "GND",
+      }}
+    />
+    <trace from="net.3V3" to=".J_UART > .pin1" />
+    <trace from=".U1 > .TXD0" to=".J_UART > .pin3" />
+    <trace from=".U1 > .RXD0" to=".J_UART > .pin2" />
+    <trace from="net.GND" to=".J_UART > .pin4" />
+
+    {/* 6. Module Grounds */}
+    <trace from=".U1 > .GND1" to="net.GND" />
+    <trace from=".U1 > .GND3" to="net.GND" />
+  </board>
+)
+`} />
+
+## Critical Hardware Design Rules
+
+According to the Espressif Hardware Design Guidelines, four fundamental considerations must be maintained in every ESP32 schematic:
+
+### 1. Power-On Reset (EN / CHIP_PU) Timing
+The `EN` (Chip Power Up) pin must not reach logic HIGH until the power supply rail has stabilized above 2.8V. 
+- To prevent glitch resets during power-up ramps, Espressif specifies an **RC timing circuit**: a 10kΩ pull-up resistor (`R_EN`) paired with a 1µF capacitor (`C_EN`) to ground.
+- Pressing `SW_RESET` grounds the `EN` pin, allowing manual hardware resets without power cycling.
+
+### 2. Boot Strapping Configuration (GPIO0 & GPIO2)
+The ESP32 samples strapping pins upon reset release to determine the boot mode:
+- **Normal SPI Flash Boot**: `GPIO0` must be pulled HIGH (`1`).
+- **UART Download Flashing Boot**: `GPIO0` must be pulled LOW (`0`).
+- By adding a 10kΩ pull-up resistor to 3.3V and a momentary pushbutton (`SW_BOOT`) to ground, the ESP32 defaults to normal boot while allowing download mode at the press of a button.
+
+### 3. Decoupling Capacitors for Wi-Fi Transients
+During Wi-Fi transmit bursts, the ESP32 internal power amplifier can draw instantaneous current pulses exceeding 500mA.
+- Place a **10µF bulk capacitor** (`C1`) alongside a **0.1µF ceramic capacitor** (`C2`) directly beside the `3V3` pin.
+- The 0.1µF capacitor suppresses high-frequency switching noise, while the 10µF capacitor prevents rail drops during RF transmission.
+
+### 4. Fast Schematic Iteration with `routingDisabled`
+When drafting complex microcontroller schematics with dozens of nets and passive subcircuits, PCB autorouting can consume unnecessary build cycles.
+By adding the `routingDisabled` property to the root `<board />` element:
+```tsx
+<board width="65mm" height="55mm" routingDisabled>
+  {/* Components and schematic layout */}
+</board>
+```
+tscircuit compiles the schematic instantly, letting you design, review, and iterate on circuit topologies at maximum speed.
+
+## Summary
+
+Following official hardware reference guidelines ensures your ESP32 circuits boot reliably under all operating conditions. With tscircuit's declarative React syntax and the `routingDisabled` property, you can capture professional schematics with complete timing and decoupling integrity in minutes.
