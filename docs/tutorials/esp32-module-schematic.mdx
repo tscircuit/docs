@@ -1,0 +1,296 @@
+---
+title: Designing an ESP32 Module Circuit Schematic
+description: Step-by-step schematic guide for creating an ESP32-WROOM-32 circuit with 3.3V power regulation, auto-programming circuitry, and GPIO breakouts in tscircuit.
+---
+
+## Overview
+
+The **ESP32-WROOM-32** is an industry-standard Wi-Fi and Bluetooth module powered by the dual-core Tensilica Xtensa LX6 microprocessor. Creating an ESP32 schematic requires careful attention to power rails, strapping pin states, and the auto-programming circuit needed for seamless flashing from the Arduino IDE or ESP-IDF.
+
+This tutorial guides you through building a complete, production-ready ESP32 module circuit in tscircuit:
+
+1. **ESP32-WROOM-32 Pinout & Bank Mapping**: Power, antenna keepout, RF matching, and strapping pins.
+2. **Stable 3.3V High-Current Power Rail**: LDO selection and bulk filtering to survive 500mA Wi-Fi current bursts.
+3. **Automatic Bootloader & Reset Circuit**: Dual-transistor (`DTR`/`RTS`) logic for automated USB flashing.
+4. **Boot/Reset Pushbuttons**: Manual hardware overrides with debouncing capacitors.
+5. **Breakout Headers**: Clean access to I2C, SPI, ADC, and UART peripherals.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Complete ESP32 Module Schematic
+
+The interactive schematic below models the full core circuitry in tscircuit:
+
+<CircuitPreview defaultView="schematic" code={`
+export default () => (
+  <board width="55mm" height="40mm">
+    {/* ======================================================== */}
+    {/* 1. ESP32-WROOM-32E Core Module                            */}
+    {/* ======================================================== */}
+    <chip
+      name="U1"
+      footprint="esp32-wroom-32"
+      manufacturerPartNumber="ESP32-WROOM-32E"
+      pinLabels={{
+        pin1: "GND1",
+        pin2: "3V3",
+        pin3: "EN",
+        pin4: "SENSOR_VP",
+        pin5: "SENSOR_VN",
+        pin6: "IO34",
+        pin7: "IO35",
+        pin8: "IO32",
+        pin9: "IO33",
+        pin10: "IO25",
+        pin11: "IO26",
+        pin12: "IO27",
+        pin13: "IO14",
+        pin14: "IO12",
+        pin15: "GND2",
+        pin16: "IO13",
+        pin23: "IO15",
+        pin24: "IO2",
+        pin25: "IO0",
+        pin26: "IO4",
+        pin27: "IO16",
+        pin28: "IO17",
+        pin29: "IO5",
+        pin30: "IO18",
+        pin31: "IO19",
+        pin33: "IO21",
+        pin34: "RXD0",
+        pin35: "TXD0",
+        pin36: "IO22",
+        pin37: "IO23",
+        pin38: "GND3",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["3V3", "EN", "SENSOR_VP", "SENSOR_VN", "IO34", "IO35", "IO32", "IO33", "IO25", "IO26"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["TXD0", "RXD0", "IO21", "IO22", "IO23", "IO19", "IO18", "IO5", "IO17", "IO16"],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["IO0", "IO2", "IO12", "IO13", "IO14", "IO15", "GND1", "GND2", "GND3"],
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    {/* ======================================================== */}
+    {/* 2. 3.3V LDO Power Supply (AP2112K-3.3 - 600mA low-noise)  */}
+    {/* ======================================================== */}
+    <chip
+      name="U2"
+      footprint="sot23-5"
+      manufacturerPartNumber="AP2112K-3.3"
+      pinLabels={{
+        pin1: "VIN",
+        pin2: "GND",
+        pin3: "EN",
+        pin4: "NC",
+        pin5: "VOUT",
+      }}
+      schPinArrangement={{
+        leftSide: {
+          direction: "top-to-bottom",
+          pins: ["VIN", "EN"],
+        },
+        rightSide: {
+          direction: "top-to-bottom",
+          pins: ["VOUT"],
+        },
+        bottomSide: {
+          direction: "left-to-right",
+          pins: ["GND"],
+        },
+      }}
+      schX={-30}
+      schY={25}
+    />
+
+    {/* Input Bulk & Bypass Capacitors */}
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0805"
+      schX={-40}
+      schY={25}
+    />
+    <capacitor
+      name="C2"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-35}
+      schY={15}
+    />
+
+    {/* Output Filter & Low-ESR Decoupling Capacitors */}
+    <capacitor
+      name="C3"
+      capacitance="22uF"
+      footprint="0805"
+      schX={-20}
+      schY={25}
+    />
+    <capacitor
+      name="C4"
+      capacitance="100nF"
+      footprint="0402"
+      schX={-15}
+      schY={15}
+    />
+
+    {/* ======================================================== */}
+    {/* 3. EN Pin Power-On RC Delay Circuit                      */}
+    {/* ======================================================== */}
+    <resistor
+      name="R1"
+      resistance="10k"
+      footprint="0402"
+      schX={-22}
+      schY={0}
+    />
+    <capacitor
+      name="C5"
+      capacitance="1uF"
+      footprint="0603"
+      schX={-22}
+      schY={-10}
+    />
+
+    {/* ======================================================== */}
+    {/* 4. Auto-Download Circuit (Dual NPN Transistors)          */}
+    {/* ======================================================== */}
+    <chip
+      name="Q1"
+      footprint="sot23"
+      manufacturerPartNumber="MMBT3904"
+      pinLabels={{
+        pin1: "BASE",
+        pin2: "EMITTER",
+        pin3: "COLLECTOR",
+      }}
+      schX={25}
+      schY={22}
+    />
+
+    <chip
+      name="Q2"
+      footprint="sot23"
+      manufacturerPartNumber="MMBT3904"
+      pinLabels={{
+        pin1: "BASE",
+        pin2: "EMITTER",
+        pin3: "COLLECTOR",
+      }}
+      schX={25}
+      schY={10}
+    />
+
+    <resistor
+      name="R2"
+      resistance="10k"
+      footprint="0402"
+      schX={15}
+      schY={22}
+    />
+
+    <resistor
+      name="R3"
+      resistance="10k"
+      footprint="0402"
+      schX={15}
+      schY={10}
+    />
+
+    {/* ======================================================== */}
+    {/* 5. Boot (IO0) and Reset Buttons                          */}
+    {/* ======================================================== */}
+    <chip
+      name="SW1"
+      footprint="button_smd_3x4"
+      pinLabels={{
+        pin1: "IO0",
+        pin2: "GND",
+      }}
+      schX={-5}
+      schY={-25}
+    />
+
+    <chip
+      name="SW2"
+      footprint="button_smd_3x4"
+      pinLabels={{
+        pin1: "EN",
+        pin2: "GND",
+      }}
+      schX={-20}
+      schY={-25}
+    />
+
+    {/* ======================================================== */}
+    {/* 6. Breakout Pin Headers                                  */}
+    {/* ======================================================== */}
+    <pinheader
+      name="J1"
+      pinCount={6}
+      footprint="pinrow6"
+      pinLabels={["3V3", "GND", "TX0", "RX0", "DTR", "RTS"]}
+      showSilkscreenPinLabels
+      schX={35}
+      schY={-5}
+    />
+
+    <pinheader
+      name="J2"
+      pinCount={8}
+      footprint="pinrow8"
+      pinLabels={["IO21_SDA", "IO22_SCL", "IO19_MISO", "IO18_SCK", "IO23_MOSI", "IO5", "IO4", "IO2"]}
+      showSilkscreenPinLabels
+      schX={35}
+      schY={-25}
+    />
+  </board>
+)
+`} />
+
+## Critical Engineering Guidelines
+
+### 1. Power Supply Sizing & Wi-Fi Current Spikes
+The ESP32 module can draw momentary current spikes exceeding **450–500 mA** during Wi-Fi calibration and RF transmission.
+- Never power the module from a 100mA or 150mA regulator.
+- The `AP2112K-3.3` provides up to **600 mA** with ultra-low dropout (250mV at 600mA).
+- Place a **22 µF bulk ceramic capacitor (C3)** directly adjacent to the ESP32 `3V3` pin to absorb transient dips and prevent brownout resets (`Brownout detector was triggered`).
+
+### 2. The EN Pin Power-On Timing Requirement
+Espressif hardware guidelines mandate that the `3V3` power rail must reach at least **2.3V** before the `EN` (chip enable) pin rises above **1.6V**.
+- An RC delay circuit with a **10 kΩ pullup (R1)** and **1 µF capacitor (C5)** guarantees this monotonic rise delay.
+- Omitting the 1 µF capacitor on `EN` is the #1 cause of cold-boot crashes on custom ESP32 boards.
+
+### 3. Automatic Download Logic Table
+The cross-coupled transistor pair (`Q1` & `Q2`) allows USB-UART converters (`CH340`, `CP2102`, `FT232`) to toggle `EN` and `IO0` into ROM bootloader mode without manual button pressing:
+
+| DTR State | RTS State | Q1 State | Q2 State | EN Pin | IO0 Pin | Mode |
+| :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| High (1) | High (1) | OFF | OFF | High | High | Normal Execution |
+| Low (0) | High (1) | OFF | ON | High | **Low (0)** | Bootloader Ready |
+| High (1) | Low (0) | ON | OFF | **Low (0)** | High | Chip Reset |
+| Low (0) | Low (0) | OFF | OFF | High | High | Interlock (No Reset) |
+
+### 4. Strapping Pins to Keep Safe
+- **IO0**: Must be pulled High during normal boot; pulled Low only during flashing.
+- **IO2**: Must be floating or pulled Low during flashing; has an internal pulldown.
+- **IO12**: Controls internal flash voltage (MTDI). Must be kept Low to avoid locking flash to 1.8V on standard 3.3V modules.
+- **IO15**: Controls boot message silencing. Defaults to High.
+
+## References
+
+- [Espressif ESP32-WROOM-32E Official Datasheet](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf)
+- [Espressif ESP32 Hardware Design Guidelines](https://docs.espressif.com/projects/espressif-esp-hardware-design-guidelines/en/latest/esp32/schematic-checklist.html)
+- [Diodes Incorporated AP2112K-3.3 Low-Dropout Regulator](https://www.diodes.com/assets/Datasheets/AP2112.pdf)
