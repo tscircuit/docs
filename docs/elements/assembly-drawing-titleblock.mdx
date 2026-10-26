@@ -1,0 +1,33 @@
+---
+title: <assembly.drawing.titleblock />
+description: Add identification, revision, ownership, and sheet metadata to a drawing page.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { carrierDrawingCode } from "@site/src/data/drawing-previews/carrier-code"
+import carrierPreview from "@site/src/data/drawing-previews/carrier.json"
+
+Add one `assembly.drawing.titleblock` directly inside an [`assembly.drawing.page`](./assembly-drawing-page.mdx). It renders a fixed title block at the lower right of the sheet, using fields based on ISO 7200.
+
+<CircuitPreview wrapCode code={carrierDrawingCode} circuitJson={carrierPreview} defaultView="3d" hideSchematicTab />
+
+![Carrier inspection drawing with identification number, revision A, owner, creator, and sheet 1 of 1](/img/elements/assembly-drawing-carrier.svg)
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `title` | Required drawing title. |
+| `name` | Optional element name. |
+| `identificationNumber` | Drawing or document number. |
+| `revisionIndex` | Revision label, such as `"A"`. |
+| `legalOwner` | Organization that owns the document. |
+| `creator` | Drawing creator. |
+| `approvalPerson` | Approver or a preliminary status label. |
+| `dateOfIssue` | Issue-date text, for example `"2026-10-26"`. |
+| `sheetNumber` | Positive integer for this sheet. |
+| `numberOfSheets` | Positive integer for the document's total sheet count. Must be at least `sheetNumber` when both are supplied. |
+
+Only `title` is required. Omitted metadata is left blank. The title block does not automatically number pages or reserve space for part views: keep the lower-right area clear when placing viewports. The current exporter needs a sheet at least 190 mm wide and 50 mm high for a title block.
+
+Exporting the containing page includes its title block automatically; see [`tsci export`](/command-line/tsci-export#exporting-drawing-sheets).

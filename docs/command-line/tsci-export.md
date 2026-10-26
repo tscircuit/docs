@@ -28,6 +28,7 @@ tsci export <file> [options]
 ### Options
 - `-f, --format <format>`: Output format (defaults to "json")
 - `-o, --output <path>`: Custom output file path
+- `--drawing <name-or-filename>`: Select a configured drawing page; implies `--format drawing-svg` when the format is omitted.
 - `--disable-parts-engine`: Disable the parts engine during circuit evaluation
 - `--show-courtyards`: Show courtyard outlines in PCB images
 - `--layer <layer>`: Choose `top` or `bottom`; during X-Ray, this layer is drawn in front
@@ -46,6 +47,7 @@ The following export formats are supported:
 | `pcb-svg` | PCB layout as SVG |
 | `pcb-png` | PCB layout as PNG |
 | `assembly-svg` | Assembly view as SVG |
+| `drawing-svg` | One configured assembly drawing sheet, including its part views and title block |
 | `gerbers` | Gerber fabrication files (zipped) |
 | `readable-netlist` | Human-readable netlist |
 | `specctra-dsn` | Specctra DSN format for autorouting |
@@ -137,3 +139,24 @@ By default, the exported file will be saved in the same directory as the input f
 - Default output: `my-circuit-pcb.svg`
 
 You can override the output location using the `-o` or `--output` option.
+
+## Exporting drawing sheets
+
+Add [`assembly.drawing.page`](/elements/assembly-drawing-page) elements to your circuit. Select a page by its `name` or generated SVG filename:
+
+```bash
+tsci export carrier.circuit.tsx --format drawing-svg --drawing carrier-inspection
+tsci export carrier.circuit.tsx --drawing carrier-inspection.svg --output inspection.svg
+```
+
+Without `--output`, the first command writes `carrier-inspection.svg` beside the source file. Relative output paths are also resolved from the input file's directory; absolute paths are preserved. Create destination directories before exporting.
+
+You can export an already-built Circuit JSON file too:
+
+```bash
+tsci export dist/carrier/circuit.json --drawing carrier-inspection -o /tmp/inspection.svg
+```
+
+A single drawing page needs no selector: `tsci export carrier.circuit.tsx -f drawing-svg`. Multiple pages require `--drawing`; unknown or ambiguous names fail with an error. Page names become safe SVG filenames, and unnamed pages use `drawing-1.svg`, `drawing-2.svg`, etc.
+
+`drawing-svg` renders the configured paper sheet. For a PCB assembly illustration instead, use `assembly-svg`. To export every drawing page into the build directory, use [`tsci build --drawings`](/command-line/tsci-build#drawing-sheets).

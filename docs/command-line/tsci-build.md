@@ -58,6 +58,8 @@ For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 - `--schematic-only` – generate only `schematic.svg` from the selected SVG outputs.
 - `--preview-gltf` – generate a GLTF file from the preview entrypoint.
 - `--glbs` – generate GLB 3D model files for every successful build output.
+- `--drawings` – export all configured drawing pages as SVGs.
+- `--drawing <name-or-filename>` – export a drawing selected by page name or generated SVG filename.
 - `--show-courtyards` – show courtyard outlines in PCB SVG outputs.
 
 ##### KiCad Export
@@ -189,3 +191,34 @@ dist
 
 2 directories, 4 files
 ```
+
+## Drawing sheets
+
+Define [`assembly.drawing.page`](/elements/assembly-drawing-page) elements in your circuit, then build every sheet:
+
+```bash
+tsci build carrier.circuit.tsx --drawings
+```
+
+Each successful circuit writes its pages to `dist/<outputDir>/drawings/<page-name>.svg`. For example, a page named `carrier-inspection` in `carrier.circuit.tsx` produces `dist/carrier/drawings/carrier-inspection.svg`.
+
+Select one page by its name or generated SVG filename:
+
+```bash
+tsci build carrier.circuit.tsx --drawing carrier-inspection
+tsci build carrier.circuit.tsx --drawing carrier-inspection.svg --concurrency 2
+```
+
+With multiple circuit files, selection exports matching pages from successful builds and fails if none match. These options also work with worker builds. `--drawings` skips circuits without drawing pages; `--drawing` reports a missing selection.
+
+Set defaults in `tscircuit.config.json`:
+
+```json
+{
+  "build": {
+    "drawings": true
+  }
+}
+```
+
+Use `build.drawing` to select a named page instead. A CLI `--drawing` overrides that configured selection; `--ignore-config` ignores project defaults. To choose a custom output file path, use [`tsci export`](/command-line/tsci-export#exporting-drawing-sheets).
