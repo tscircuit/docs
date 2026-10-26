@@ -4,12 +4,12 @@ description: Add identification, revision, ownership, and sheet metadata to a dr
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import { carrierDrawingCode } from "@site/src/data/drawing-previews/carrier-code"
+import { carrierDrawingCode, carrierDrawingPages } from "@site/src/data/drawing-previews/carrier-code"
 import carrierPreview from "@site/src/data/drawing-previews/carrier.json"
 
 Add one `assembly.drawing.titleblock` directly inside an [`assembly.drawing.page`](./assembly-drawing-page.mdx). It renders a fixed title block at the lower right of the sheet, using fields based on ISO 7200.
 
-<CircuitPreview wrapCode code={carrierDrawingCode} circuitJson={carrierPreview} defaultView="3d" hideSchematicTab />
+<CircuitPreview wrapCode code={carrierDrawingCode} circuitJson={carrierPreview} drawingPages={carrierDrawingPages} defaultView="drawing" hideSchematicTab />
 
 ![Carrier inspection drawing with identification number, revision A, owner, creator, and sheet 1 of 1](/img/elements/assembly-drawing-carrier.svg)
 

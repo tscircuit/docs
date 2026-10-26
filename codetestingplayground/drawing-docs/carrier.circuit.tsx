@@ -37,7 +37,34 @@ export default () => (
         creator="tscircuit"
         approvalPerson="PRELIMINARY"
         sheetNumber={1}
-        numberOfSheets={1}
+        numberOfSheets={2}
+      />
+    </assembly.drawing.page>
+    <assembly.drawing.page name="carrier-section" size="iso_a4">
+      <assembly.drawing.partview
+        partRef=".carrier"
+        name="section"
+        displayName="SECTION THROUGH H3 AND H4"
+        direction="y+"
+        width="220mm"
+        height="65mm"
+        centerY="25mm"
+        section={{
+          axis: "y",
+          offset: "20mm",
+          keepSide: "less",
+          hatchSpacing: "1mm",
+        }}
+      />
+      <assembly.drawing.titleblock
+        title="CONTROLLER CARRIER - MOUNTING HOLE SECTION"
+        identificationNumber="CTRL-CARRIER-002"
+        revisionIndex="A"
+        legalOwner="tscircuit"
+        creator="tscircuit"
+        approvalPerson="PRELIMINARY"
+        sheetNumber={2}
+        numberOfSheets={2}
       />
     </assembly.drawing.page>
   </assembly.device>

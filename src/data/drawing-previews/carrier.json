@@ -149,10 +149,54 @@
     "creator": "tscircuit",
     "approval_person": "PRELIMINARY",
     "sheet_number": 1,
-    "number_of_sheets": 1
+    "number_of_sheets": 2
+  },
+  {
+    "type": "drawing_page",
+    "drawing_page_id": "drawing_page_1",
+    "name": "carrier-section",
+    "width": 297,
+    "height": 210,
+    "page_size": "iso_a4",
+    "orientation": "landscape"
+  },
+  {
+    "type": "drawing_part_view",
+    "drawing_part_view_id": "drawing_part_view_2",
+    "drawing_page_id": "drawing_page_1",
+    "source_group_id": "source_group_0",
+    "name": "section",
+    "display_name": "SECTION THROUGH H3 AND H4",
+    "direction": "y_positive",
+    "center": {
+      "x": 0,
+      "y": 25
+    },
+    "width": 220,
+    "height": 65,
+    "show_hidden_edges": false,
+    "section": {
+      "axis": "y",
+      "offset": 20,
+      "keep_side": "less",
+      "hatch_spacing": 1
+    }
+  },
+  {
+    "type": "drawing_page_title_block",
+    "drawing_page_title_block_id": "drawing_page_title_block_1",
+    "drawing_page_id": "drawing_page_1",
+    "title": "CONTROLLER CARRIER - MOUNTING HOLE SECTION",
+    "legal_owner": "tscircuit",
+    "identification_number": "CTRL-CARRIER-002",
+    "revision_index": "A",
+    "creator": "tscircuit",
+    "approval_person": "PRELIMINARY",
+    "sheet_number": 2,
+    "number_of_sheets": 2
   },
   {
     "type": "source_project_metadata",
-    "source_filesystem_md5_hash": "0b1f85fe0ff439dd10ae1ac1a6b70509"
+    "source_filesystem_md5_hash": "9a36dffe18f9c3c26ed587682c7a1cdb"
   }
 ]

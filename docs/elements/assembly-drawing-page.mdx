@@ -4,12 +4,14 @@ description: Configure a named drawing sheet with part views and a title block.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import { carrierDrawingCode } from "@site/src/data/drawing-previews/carrier-code"
+import { carrierDrawingCode, carrierDrawingPages } from "@site/src/data/drawing-previews/carrier-code"
 import carrierPreview from "@site/src/data/drawing-previews/carrier.json"
 
 `assembly.drawing.page` defines a paper sheet for outline drawings of an assembly or board. Give each page a unique `name` to select it during CLI export.
 
-<CircuitPreview wrapCode code={carrierDrawingCode} circuitJson={carrierPreview} defaultView="3d" hideSchematicTab />
+<CircuitPreview wrapCode code={carrierDrawingCode} circuitJson={carrierPreview} drawingPages={carrierDrawingPages} defaultView="drawing" hideSchematicTab />
+
+Use the Drawing tab to inspect each sheet. The arrows below it switch between the inspection and section pages.
 
 The exported sheet shows the carrier's outline and four mounting holes:
 
