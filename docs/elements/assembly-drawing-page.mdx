@@ -1,0 +1,50 @@
+---
+title: <assembly.drawing.page />
+description: Configure a named drawing sheet with part views and a title block.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { carrierDrawingCode, carrierDrawingPages } from "@site/src/data/drawing-previews/carrier-code"
+import carrierPreview from "@site/src/data/drawing-previews/carrier.json"
+
+`assembly.drawing.page` defines a paper sheet for outline drawings of an assembly or board. Give each page a unique `name` to select it during CLI export.
+
+<CircuitPreview wrapCode code={carrierDrawingCode} circuitJson={carrierPreview} drawingPages={carrierDrawingPages} defaultView="drawing" hideSchematicTab />
+
+Use the Drawing tab to inspect each sheet. The arrows below it switch between the inspection and section pages.
+
+The exported sheet shows the carrier's outline and four mounting holes:
+
+![A4 carrier-board inspection sheet with plan and isometric views and a title block](/img/elements/assembly-drawing-carrier.svg)
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `name` | Page name used by `tsci build --drawing` and `tsci export --drawing`. |
+| `displayName` | Optional human-readable page label. |
+| `size` | Standard paper size: `iso_a0` through `iso_a4`, or `ansi_a` through `ansi_e`. |
+| `orientation` | `landscape` (default) or `portrait`, when using `size`. |
+| `width`, `height` | Both required for a custom sheet. Numbers are millimetres; unit strings such as `"210mm"` also work. Use these instead of `size` and `orientation`. |
+| `children` | One or more [`assembly.drawing.partview`](./assembly-drawing-partview.mdx) elements and optionally one [`assembly.drawing.titleblock`](./assembly-drawing-titleblock.mdx). |
+
+Choose either a standard `size` or custom `width` and `height`. Page dimensions describe paper, not the physical assembly. A page needs at least one part view to export.
+
+## Export the page
+
+Save the example as `carrier.circuit.tsx`:
+
+```bash
+tsci build carrier.circuit.tsx --drawings
+tsci export carrier.circuit.tsx --drawing carrier-inspection
+```
+
+Build writes `dist/carrier/drawings/carrier-inspection.svg`. Export writes `carrier-inspection.svg` beside the input file. To select by generated filename and choose a destination:
+
+```bash
+tsci export carrier.circuit.tsx --drawing carrier-inspection.svg --output inspection.svg
+```
+
+`name` is the page identity, not a path. The CLI makes a safe SVG filename from it, replacing spaces and other unsupported filename characters with hyphens. Unnamed pages use `drawing-1.svg`, `drawing-2.svg`, and so on, in page order. Use unique page names; colliding filenames are rejected.
+
+See [`tsci build`](/command-line/tsci-build#drawing-sheets) for exporting every page and [`tsci export`](/command-line/tsci-export#exporting-drawing-sheets) for single-page selection and output paths.

@@ -14,6 +14,8 @@ import CodeBlock from "@theme/CodeBlock"
 import { useWindowSize } from "@docusaurus/theme-common"
 import TscircuitIframe from "../TscircuitIframe"
 import styles from "./styles.module.css"
+import DrawingPreview from "./DrawingPreview"
+import { hasDrawingPages, type DrawingPreviewPage } from "./drawing-urls"
 import GlbPreview from "./GlbPreview"
 import { create3dAssetUrls } from "./create-3d-asset-urls"
 import { PreviewCodeSourceContext } from "./preview-code-source-context"
@@ -25,6 +27,7 @@ type CircuitPreviewView =
   | "schematic"
   | "3d"
   | "runframe"
+  | "drawing"
   | "pinout"
 
 const Tab = ({
@@ -122,6 +125,8 @@ export default function CircuitPreview({
   pcbImageUrl,
   schematicImageUrl,
   threeDImageUrl,
+  drawingPages,
+  showDrawingTab,
   showTabs = true,
   defaultView = "pcb",
   splitView = true,
@@ -156,6 +161,8 @@ export default function CircuitPreview({
   pcbImageUrl?: string
   schematicImageUrl?: string
   threeDImageUrl?: string
+  drawingPages?: DrawingPreviewPage[]
+  showDrawingTab?: boolean
   showTabs?: boolean
   defaultView?: CircuitPreviewView
   splitView?: boolean
@@ -240,6 +247,19 @@ export default function CircuitPreview({
   const [view, setView] = useState<CircuitPreviewView>(
     rightView ?? _defaultView,
   )
+  const hasDrawings =
+    showDrawingTab ??
+    Boolean(
+      drawingPages?.length ||
+        defaultView === "drawing" ||
+        leftView === "drawing" ||
+        rightView === "drawing" ||
+        hasDrawingPages({
+          circuitJson,
+          code: normalizedCode,
+          fsMap: normalizedFsMap,
+        }),
+    )
   const hasMultipleFiles = Object.keys(normalizedFsMap ?? {}).length > 1
   const fsMapOrCode = hasMultipleFiles
     ? normalizedFsMap || normalizedCode
@@ -317,6 +337,11 @@ export default function CircuitPreview({
     showSimulationGraph,
     schematicImageUrl,
   ])
+  const drawingSourceUrl = useMemo(() => {
+    const url = new URL(configurePreviewUrl(createSvgUrl(fsMapOrCode, "pcb")))
+    url.searchParams.set("project_base_url", projectBaseUrl)
+    return url.toString()
+  }, [fsMapOrCode, mainComponentPath, circuitJson, projectBaseUrl])
   const pinoutUrl = useMemo(
     () => configurePreviewUrl(createSvgUrl(fsMapOrCode, "pinout")),
     [fsMapOrCode, mainComponentPath, circuitJson],
@@ -541,6 +566,13 @@ export default function CircuitPreview({
               onClick={() => setView("schematic")}
             />
           )}
+          {hasDrawings && (
+            <Tab
+              label="Drawing"
+              active={view === "drawing"}
+              onClick={() => setView("drawing")}
+            />
+          )}
           {showPinoutTab && (
             <Tab
               label="Pinout"
@@ -617,23 +649,27 @@ export default function CircuitPreview({
         >
           {(hasPreviewHeader || showSimulationSelector) &&
             previewHeaderElm(false)}
-          {renderPreviewImage({
-            src,
-            alt:
-              v === "schematic" && selectedSimulationExperimentName
-                ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
-                : `${v.toUpperCase()} Circuit Preview`,
-            hasHeader: hasPreviewHeader || showSimulationSelector,
-            imageClassName: `w-full m-0 object-contain ${
-              v === "pcb"
-                ? "bg-black flex items-center justify-center"
-                : v === "schematic"
-                  ? "bg-[#F5F1ED]"
-                  : v === "pinout"
-                    ? "bg-white"
-                    : "bg-white"
-            }`,
-          })}
+          {v === "drawing" ? (
+            <DrawingPreview sourceUrl={drawingSourceUrl} pages={drawingPages} />
+          ) : (
+            renderPreviewImage({
+              src,
+              alt:
+                v === "schematic" && selectedSimulationExperimentName
+                  ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
+                  : `${v.toUpperCase()} Circuit Preview`,
+              hasHeader: hasPreviewHeader || showSimulationSelector,
+              imageClassName: `w-full m-0 object-contain ${
+                v === "pcb"
+                  ? "bg-black flex items-center justify-center"
+                  : v === "schematic"
+                    ? "bg-[#F5F1ED]"
+                    : v === "pinout"
+                      ? "bg-white"
+                      : "bg-white"
+              }`,
+            })
+          )}
         </div>
       )
     }
@@ -666,7 +702,8 @@ export default function CircuitPreview({
     view === "schematic" ||
     view === "3d" ||
     view === "runframe" ||
-    view === "pinout") && (
+    view === "pinout" ||
+    view === "drawing") && (
     <div
       className={`${tw(
         `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
@@ -703,6 +740,15 @@ export default function CircuitPreview({
         hasHeader: imageViewHasHeader,
         imageClassName: "w-full m-0 object-contain bg-white",
       })}
+      {view === "drawing" && (
+        <div
+          className={tw(
+            `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
+          )}
+        >
+          <DrawingPreview sourceUrl={drawingSourceUrl} pages={drawingPages} />
+        </div>
+      )}
       {view === "3d" && (
         <div
           className={tw(

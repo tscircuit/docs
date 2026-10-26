@@ -1,0 +1,202 @@
+[
+  {
+    "type": "source_group",
+    "source_group_id": "source_group_0",
+    "name": "carrier",
+    "is_subcircuit": true,
+    "was_automatically_named": false,
+    "subcircuit_id": "subcircuit_source_group_0"
+  },
+  {
+    "type": "source_board",
+    "source_board_id": "source_board_0",
+    "source_group_id": "source_group_0",
+    "title": "carrier"
+  },
+  {
+    "type": "schematic_group",
+    "schematic_group_id": "schematic_group_0",
+    "is_subcircuit": true,
+    "subcircuit_id": "subcircuit_source_group_0",
+    "name": "carrier",
+    "center": {
+      "x": 0,
+      "y": 0
+    },
+    "width": 0,
+    "height": 0,
+    "schematic_component_ids": [],
+    "source_group_id": "source_group_0",
+    "show_as_schematic_box": false
+  },
+  {
+    "type": "pcb_board",
+    "pcb_board_id": "pcb_board_0",
+    "source_board_id": "source_board_0",
+    "subcircuit_id": "subcircuit_source_group_0",
+    "center": {
+      "x": 0,
+      "y": 0
+    },
+    "thickness": 1.6,
+    "num_layers": 2,
+    "width": 80,
+    "height": 50,
+    "material": "fr4",
+    "min_trace_width": 0.1,
+    "min_via_hole_diameter": 0.2,
+    "min_via_pad_diameter": 0.3,
+    "min_via_hole_edge_to_via_hole_edge_clearance": 0.1,
+    "min_trace_to_hole_edge_clearance": 0.2,
+    "min_trace_to_pad_edge_clearance": 0.1,
+    "min_pad_edge_to_pad_edge_clearance": 0.1,
+    "min_plated_hole_drill_edge_to_drill_edge_clearance": 0.15,
+    "min_board_edge_clearance": 0.2
+  },
+  {
+    "type": "pcb_hole",
+    "pcb_hole_id": "pcb_hole_0",
+    "pcb_component_id": null,
+    "hole_shape": "circle",
+    "hole_diameter": 3.2,
+    "x": -35,
+    "y": -20,
+    "is_covered_with_solder_mask": false,
+    "subcircuit_id": "subcircuit_source_group_0"
+  },
+  {
+    "type": "pcb_hole",
+    "pcb_hole_id": "pcb_hole_1",
+    "pcb_component_id": null,
+    "hole_shape": "circle",
+    "hole_diameter": 3.2,
+    "x": 35,
+    "y": -20,
+    "is_covered_with_solder_mask": false,
+    "subcircuit_id": "subcircuit_source_group_0"
+  },
+  {
+    "type": "pcb_hole",
+    "pcb_hole_id": "pcb_hole_2",
+    "pcb_component_id": null,
+    "hole_shape": "circle",
+    "hole_diameter": 3.2,
+    "x": 35,
+    "y": 20,
+    "is_covered_with_solder_mask": false,
+    "subcircuit_id": "subcircuit_source_group_0"
+  },
+  {
+    "type": "pcb_hole",
+    "pcb_hole_id": "pcb_hole_3",
+    "pcb_component_id": null,
+    "hole_shape": "circle",
+    "hole_diameter": 3.2,
+    "x": -35,
+    "y": 20,
+    "is_covered_with_solder_mask": false,
+    "subcircuit_id": "subcircuit_source_group_0"
+  },
+  {
+    "type": "drawing_page",
+    "drawing_page_id": "drawing_page_0",
+    "name": "carrier-inspection",
+    "width": 297,
+    "height": 210,
+    "page_size": "iso_a4",
+    "orientation": "landscape"
+  },
+  {
+    "type": "drawing_part_view",
+    "drawing_part_view_id": "drawing_part_view_0",
+    "drawing_page_id": "drawing_page_0",
+    "source_group_id": "source_group_0",
+    "name": "plan",
+    "display_name": "PLAN",
+    "direction": "z_positive",
+    "center": {
+      "x": -70,
+      "y": 30
+    },
+    "width": 110,
+    "height": 85,
+    "show_hidden_edges": false
+  },
+  {
+    "type": "drawing_part_view",
+    "drawing_part_view_id": "drawing_part_view_1",
+    "drawing_page_id": "drawing_page_0",
+    "source_group_id": "source_group_0",
+    "name": "overview",
+    "display_name": "ISOMETRIC",
+    "direction": "isometric",
+    "center": {
+      "x": 40,
+      "y": 30
+    },
+    "width": 110,
+    "height": 85,
+    "show_hidden_edges": false
+  },
+  {
+    "type": "drawing_page_title_block",
+    "drawing_page_title_block_id": "drawing_page_title_block_0",
+    "drawing_page_id": "drawing_page_0",
+    "title": "CONTROLLER CARRIER - INSPECTION",
+    "legal_owner": "tscircuit",
+    "identification_number": "CTRL-CARRIER-001",
+    "revision_index": "A",
+    "creator": "tscircuit",
+    "approval_person": "PRELIMINARY",
+    "sheet_number": 1,
+    "number_of_sheets": 2
+  },
+  {
+    "type": "drawing_page",
+    "drawing_page_id": "drawing_page_1",
+    "name": "carrier-section",
+    "width": 297,
+    "height": 210,
+    "page_size": "iso_a4",
+    "orientation": "landscape"
+  },
+  {
+    "type": "drawing_part_view",
+    "drawing_part_view_id": "drawing_part_view_2",
+    "drawing_page_id": "drawing_page_1",
+    "source_group_id": "source_group_0",
+    "name": "section",
+    "display_name": "SECTION THROUGH H3 AND H4",
+    "direction": "y_positive",
+    "center": {
+      "x": 0,
+      "y": 25
+    },
+    "width": 220,
+    "height": 65,
+    "show_hidden_edges": false,
+    "section": {
+      "axis": "y",
+      "offset": 20,
+      "keep_side": "less",
+      "hatch_spacing": 1
+    }
+  },
+  {
+    "type": "drawing_page_title_block",
+    "drawing_page_title_block_id": "drawing_page_title_block_1",
+    "drawing_page_id": "drawing_page_1",
+    "title": "CONTROLLER CARRIER - MOUNTING HOLE SECTION",
+    "legal_owner": "tscircuit",
+    "identification_number": "CTRL-CARRIER-002",
+    "revision_index": "A",
+    "creator": "tscircuit",
+    "approval_person": "PRELIMINARY",
+    "sheet_number": 2,
+    "number_of_sheets": 2
+  },
+  {
+    "type": "source_project_metadata",
+    "source_filesystem_md5_hash": "9a36dffe18f9c3c26ed587682c7a1cdb"
+  }
+]

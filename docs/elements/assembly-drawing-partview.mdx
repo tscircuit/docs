@@ -1,0 +1,60 @@
+---
+title: <assembly.drawing.partview />
+description: Place an orthographic, isometric, or section view on an assembly drawing sheet.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { carrierDrawingCode, carrierDrawingPages } from "@site/src/data/drawing-previews/carrier-code"
+import carrierPreview from "@site/src/data/drawing-previews/carrier.json"
+
+`assembly.drawing.partview` selects a board or mechanical part and places a view of it inside an [`assembly.drawing.page`](./assembly-drawing-page.mdx). The example places an isometric view to the right of the carrier's plan view.
+
+<CircuitPreview wrapCode code={carrierDrawingCode} circuitJson={carrierPreview} drawingPages={carrierDrawingPages} defaultView="drawing" hideSchematicTab />
+
+![Carrier plan and isometric views on the exported drawing sheet](/img/elements/assembly-drawing-carrier.svg)
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `partRef` | Required selector for exactly one board, assembly group, or part, such as `".carrier"`. Selection is scoped to the containing assembly. |
+| `name` | View name used by sibling placement selectors. |
+| `displayName` | Optional caption; otherwise the view's name is used. |
+| `direction` | Required: `"x+"`, `"x-"`, `"y+"`, `"y-"`, `"z+"`, `"z-"`, or `"isometric"`. Axis directions describe where the camera is, looking toward the part. |
+| `width`, `height` | Required viewport dimensions on paper, in millimetres or unit strings. The exporter fits the selected geometry into the viewport. |
+| `centerX`, `centerY` | Viewport center relative to the sheet center. Default: `0` on each axis. Positive X is right; positive Y is up. |
+| `leftOfRef`, `rightOfRef` | Place beside a sibling view using a selector such as `".plan"`. This infers `centerX`. |
+| `aboveRef`, `belowRef` | Place above or below a sibling view. This infers `centerY`. |
+| `showHiddenEdges` | Draw hidden edges as dashed lines. Default: `false`. |
+| `section` | Optional cut plane; see below. |
+
+Paper coordinates do not move the model. Model directions and section planes use CAD world coordinates: millimetres, +Z up.
+
+## Relative placement
+
+Relative placement makes the two **viewport edges** meet, using both views' dimensions. It does not align their visible geometry bounds or add a gap. Use an explicit center on the other axis when aligning views:
+
+```tsx
+<assembly.drawing.partview
+  partRef=".carrier" name="side" direction="x+"
+  width="60mm" height="85mm"
+  rightOfRef=".plan" centerY="30mm"
+/>
+```
+
+Choose either an explicit center or a relative reference for each axis. Sibling references can point forward to a later view. Self-references, ambiguous selectors, and placement cycles are errors.
+
+## Section views
+
+```tsx
+<assembly.drawing.partview
+  partRef=".carrier" name="section" displayName="CENTRAL SECTION"
+  direction="y-" width="110mm" height="40mm"
+  centerX="-70mm" centerY="-35mm"
+  section={{ axis: "y", offset: "0mm", keepSide: "less", hatchSpacing: "1mm" }}
+/>
+```
+
+`axis` is `"x"`, `"y"`, or `"z"`. `offset` places the cutting plane on that axis in CAD world millimetres. `keepSide="less"` retains coordinates below the offset; `"greater"` retains coordinates above it. `hatchSpacing` controls the diagonal hatch spacing in CAD model millimetres.
+
+Views produce outline SVGs through [`tsci export`](/command-line/tsci-export#exporting-drawing-sheets). Their `FIT` caption indicates automatic fitting; do not infer a manufacturing scale or dimensions from the viewport size.
