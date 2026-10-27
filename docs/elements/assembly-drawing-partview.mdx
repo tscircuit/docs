@@ -27,6 +27,7 @@ import carrierPreview from "@site/src/data/drawing-previews/carrier.json"
 | `aboveRef`, `belowRef` | Place above or below a sibling view. This infers `centerY`. |
 | `showHiddenEdges` | Draw hidden edges as dashed lines. Default: `false`. |
 | `section` | Optional cut plane; see below. |
+| `children` | Optional [`assembly.drawing.dimension`](./assembly-drawing-dimension.mdx) elements for view extents, named outlines, and hole-to-hole or edge-to-hole measurements. |
 
 Paper coordinates do not move the model. Model directions and section planes use CAD world coordinates: millimetres, +Z up.
 
@@ -58,3 +59,7 @@ Choose either an explicit center or a relative reference for each axis. Sibling 
 `axis` is `"x"`, `"y"`, or `"z"`. `offset` places the cutting plane on that axis in CAD world millimetres. `keepSide="less"` retains coordinates below the offset; `"greater"` retains coordinates above it. `hatchSpacing` controls the diagonal hatch spacing in CAD model millimetres.
 
 Views produce outline SVGs through [`tsci export`](/command-line/tsci-export#exporting-drawing-sheets). Their `FIT` caption indicates automatic fitting; do not infer a manufacturing scale or dimensions from the viewport size.
+
+## Dimensions
+
+Add [`assembly.drawing.dimension`](./assembly-drawing-dimension.mdx) children to annotate physical measurements. For example, `widthOfView` measures the selected geometry's width, while paired `fromRef` and `toRef` selectors measure hole spacing or an edge-to-hole offset. Anchors are optional and inferred from the referenced geometry.
