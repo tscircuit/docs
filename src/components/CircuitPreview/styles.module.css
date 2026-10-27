@@ -1,3 +1,32 @@
+.previewClip {
+  /* Unlike overflow: hidden, clip does not create a sticky scroll container. */
+  overflow: clip;
+}
+
+.previewContent {
+  height: 100%;
+}
+
+@media (min-width: 997px) {
+  .previewContentWithHeader {
+    height: calc(100% - 46px);
+  }
+}
+
+/* Keep only the image visible beside long code examples. The pane
+   bounds sticky movement, so the preview leaves with the end of the example. */
+@media (min-width: 997px) and (min-height: 600px) {
+  .stickyPreview .previewContent {
+    --preview-height: min(480px, calc(100dvh - var(--ifm-navbar-height) - 2rem));
+    position: sticky;
+    top: max(
+      calc(var(--ifm-navbar-height) + 1rem),
+      calc((100dvh + var(--ifm-navbar-height) - var(--preview-height)) / 2)
+    );
+    height: var(--preview-height);
+  }
+}
+
 .codePane pre {
   font-size: 0.8125rem;
   line-height: 1.6;
@@ -51,6 +80,7 @@
 }
 
 .drawingPreview {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -70,11 +100,21 @@
 }
 
 .drawingPagination {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 8px;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: white;
+  color: #334155;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  white-space: nowrap;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
@@ -83,7 +123,7 @@
   border: 0;
   border-radius: 4px;
   padding: 2px 8px;
-  background: #f1f5f9;
+  background: transparent;
   color: inherit;
   cursor: pointer;
 }
