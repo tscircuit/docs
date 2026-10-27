@@ -24,7 +24,7 @@ The steps below explain how to do this yourself and refine the result.
 
 ## Manual installation
 
-You can install the tscircuit CLI by running `npm install -g tscircuit`.
+You can install the tscircuit CLI by running `npm install -g tscircuit`. For a distribution with the runtime included, see the [standalone binary guide](../guides/running-tscircuit/standalone-binary.md).
 
 ## Create a new Project
 
