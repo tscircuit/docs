@@ -638,49 +638,54 @@ export default function CircuitPreview({
       return (
         <div
           className={`${tw(
-            `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
+            `flex-1 basis-1/2 min-w-0 m-0 p-0 ${
               v === "pcb"
                 ? "bg-black"
                 : v === "schematic"
                   ? "bg-[#F5F1ED]"
                   : "bg-white"
             }`,
-          )} circuit-preview-pane circuit-preview-pane-${v}`}
+          )} ${styles.previewClip} circuit-preview-pane circuit-preview-pane-${v}`}
         >
-          {(hasPreviewHeader || showSimulationSelector) &&
-            previewHeaderElm(false)}
-          {v === "drawing" ? (
-            <DrawingPreview sourceUrl={drawingSourceUrl} pages={drawingPages} />
-          ) : (
-            renderPreviewImage({
-              src,
-              alt:
-                v === "schematic" && selectedSimulationExperimentName
-                  ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
-                  : `${v.toUpperCase()} Circuit Preview`,
-              hasHeader: hasPreviewHeader || showSimulationSelector,
-              imageClassName: `w-full m-0 object-contain ${
-                v === "pcb"
-                  ? "bg-black flex items-center justify-center"
-                  : v === "schematic"
-                    ? "bg-[#F5F1ED]"
-                    : v === "pinout"
-                      ? "bg-white"
-                      : "bg-white"
-              }`,
-            })
-          )}
+          <div className={styles.previewContent}>
+            {(hasPreviewHeader || showSimulationSelector) &&
+              previewHeaderElm(false)}
+            {v === "drawing" ? (
+              <DrawingPreview
+                sourceUrl={drawingSourceUrl}
+                pages={drawingPages}
+              />
+            ) : (
+              renderPreviewImage({
+                src,
+                alt:
+                  v === "schematic" && selectedSimulationExperimentName
+                    ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
+                    : `${v.toUpperCase()} Circuit Preview`,
+                hasHeader: hasPreviewHeader || showSimulationSelector,
+                imageClassName: `w-full m-0 object-contain ${
+                  v === "pcb"
+                    ? "bg-black flex items-center justify-center"
+                    : v === "schematic"
+                      ? "bg-[#F5F1ED]"
+                      : v === "pinout"
+                        ? "bg-white"
+                        : "bg-white"
+                }`,
+              })
+            )}
+          </div>
         </div>
       )
     }
 
     return (
       <div
-        className={tw(
-          `shadow-lg pt-0 pb-0 pl-0 pr-0 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8 overflow-hidden`,
-        )}
+        className={`${styles.previewClip} ${tw(
+          `shadow-lg pt-0 pb-0 pl-0 pr-0 border ${!isDarkTheme ? "border-gray-100" : "border-gray-800"} rounded-lg mb-8`,
+        )}`}
       >
-        <div className={tw(`h-full overflow-hidden flex m-0 p-0`)}>
+        <div className={`${tw("h-full flex m-0 p-0")} ${styles.stickyPreview}`}>
           {renderView(leftView || "code", "left")}
           {renderView(rightView || "schematic", "right")}
         </div>
@@ -706,98 +711,100 @@ export default function CircuitPreview({
     view === "drawing") && (
     <div
       className={`${tw(
-        `flex-1 basis-1/2 min-w-0 overflow-hidden m-0 p-0 ${
+        `flex-1 basis-1/2 min-w-0 m-0 p-0 ${
           view === "pcb"
             ? "bg-black"
             : view === "schematic"
               ? "bg-[#F5F1ED]"
               : "bg-white"
         }`,
-      )} circuit-preview-pane circuit-preview-pane-${view}`}
+      )} ${styles.previewClip} circuit-preview-pane circuit-preview-pane-${view}`}
     >
-      {imageViewHasHeader && previewHeaderElm(_showTabs)}
-      {renderPreviewImage({
-        src: pcbUrl,
-        alt: "PCB Circuit Preview",
-        hidden: view !== "pcb",
-        hasHeader: imageViewHasHeader,
-        imageClassName:
-          "w-full m-0 object-contain bg-black flex items-center justify-center",
-      })}
-      {renderPreviewImage({
-        src: schUrl,
-        alt: selectedSimulationExperimentName
-          ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
-          : "Schematic Circuit Preview",
-        hidden: view !== "schematic",
-        hasHeader: imageViewHasHeader,
-        imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
-      })}
-      {renderPreviewImage({
-        src: pinoutUrl,
-        alt: "Pinout Circuit Preview",
-        hidden: view !== "pinout",
-        hasHeader: imageViewHasHeader,
-        imageClassName: "w-full m-0 object-contain bg-white",
-      })}
-      {view === "drawing" && (
-        <div
-          className={tw(
-            `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
-          )}
-        >
-          <DrawingPreview sourceUrl={drawingSourceUrl} pages={drawingPages} />
-        </div>
-      )}
-      {view === "3d" && (
-        <div
-          className={tw(
-            `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
-          )}
-        >
-          <GlbPreview
-            imageUrl={threeDImage}
-            glbUrl={glbUrl}
-            cameraPreset={cameraPreset}
-          />
-        </div>
-      )}
-      {showRunFrame && view === "runframe" && (
-        <div
-          className={tw(
-            `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
-          )}
-        >
-          <TscircuitIframe
-            code={normalizedCode}
-            fsMap={normalizedFsMap}
-            entrypoint={entrypoint}
-          />
-        </div>
-      )}
+      <div className={styles.previewContent}>
+        {imageViewHasHeader && previewHeaderElm(_showTabs)}
+        {renderPreviewImage({
+          src: pcbUrl,
+          alt: "PCB Circuit Preview",
+          hidden: view !== "pcb",
+          hasHeader: imageViewHasHeader,
+          imageClassName:
+            "w-full m-0 object-contain bg-black flex items-center justify-center",
+        })}
+        {renderPreviewImage({
+          src: schUrl,
+          alt: selectedSimulationExperimentName
+            ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
+            : "Schematic Circuit Preview",
+          hidden: view !== "schematic",
+          hasHeader: imageViewHasHeader,
+          imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
+        })}
+        {renderPreviewImage({
+          src: pinoutUrl,
+          alt: "Pinout Circuit Preview",
+          hidden: view !== "pinout",
+          hasHeader: imageViewHasHeader,
+          imageClassName: "w-full m-0 object-contain bg-white",
+        })}
+        {view === "drawing" && (
+          <div
+            className={tw(
+              `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
+            )}
+          >
+            <DrawingPreview sourceUrl={drawingSourceUrl} pages={drawingPages} />
+          </div>
+        )}
+        {view === "3d" && (
+          <div
+            className={tw(
+              `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
+            )}
+          >
+            <GlbPreview
+              imageUrl={threeDImage}
+              glbUrl={glbUrl}
+              cameraPreset={cameraPreset}
+            />
+          </div>
+        )}
+        {showRunFrame && view === "runframe" && (
+          <div
+            className={tw(
+              `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
+            )}
+          >
+            <TscircuitIframe
+              code={normalizedCode}
+              fsMap={normalizedFsMap}
+              entrypoint={entrypoint}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 
   return (
     <div
-      className={tw(
+      className={`${styles.previewClip} ${tw(
         `shadow-lg pt-0 pb-0 pl-0 pr-0 border ${
           !isDarkTheme ? "border-gray-100" : "border-gray-800"
-        } rounded-lg mb-8 overflow-hidden`,
-      )}
+        } rounded-lg mb-8`,
+      )}`}
     >
       {((_showTabs && !shouldSplitCode) ||
         (editorUrl && !shouldSplitCode) ||
         (showSimulationSelector && !shouldSplitCode)) &&
         previewHeaderElm(_showTabs)}
       <div
-        className={tw(
-          `h-full overflow-hidden flex m-0 p-0 ${
+        className={`${shouldSplitCode && !verticalStack ? styles.stickyPreview : ""} ${tw(
+          `h-full flex m-0 p-0 ${
             (!_showTabs && windowSize === "mobile") || verticalStack
               ? "flex-col"
               : ""
           }`,
-        )}
+        )}`}
       >
         {verticalStack ? (
           <>

@@ -1,3 +1,26 @@
+.previewClip {
+  /* Unlike overflow: hidden, clip does not create a sticky scroll container. */
+  overflow: clip;
+}
+
+.previewContent {
+  height: 100%;
+}
+
+/* Keep the image and its controls visible beside long code examples. The pane
+   bounds sticky movement, so the preview leaves with the end of the example. */
+@media (min-width: 997px) and (min-height: 600px) {
+  .stickyPreview .previewContent {
+    --preview-height: min(480px, calc(100dvh - var(--ifm-navbar-height) - 2rem));
+    position: sticky;
+    top: max(
+      calc(var(--ifm-navbar-height) + 1rem),
+      calc((100dvh + var(--ifm-navbar-height) - var(--preview-height)) / 2)
+    );
+    height: var(--preview-height);
+  }
+}
+
 .codePane pre {
   font-size: 0.8125rem;
   line-height: 1.6;
