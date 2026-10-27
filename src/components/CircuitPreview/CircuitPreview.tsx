@@ -455,9 +455,6 @@ export default function CircuitPreview({
     currentFile,
   })
 
-  const getPreviewContentHeightCss = (hasHeader: boolean) =>
-    hasHeader && windowSize !== "mobile" ? "h-[calc(100%-46px)]" : "h-full"
-
   const renderCodePane = (borderCss = "border-r") => (
     <div className={tw(`flex flex-col flex-1 basis-1/2 min-w-0`)}>
       {hasMultipleFiles && fileTabsElm}
@@ -489,22 +486,14 @@ export default function CircuitPreview({
     alt,
     imageClassName,
     hidden = false,
-    hasHeader = false,
   }: {
     src: string
     alt: string
     imageClassName: string
     hidden?: boolean
-    hasHeader?: boolean
   }) => {
     return (
-      <div
-        className={tw(
-          `relative w-full ${getPreviewContentHeightCss(hasHeader)} ${
-            hidden ? "hidden" : ""
-          }`,
-        )}
-      >
+      <div className={tw(`relative w-full h-full ${hidden ? "hidden" : ""}`)}>
         <img src={src} alt={alt} className={tw(`${imageClassName} h-full`)} />
       </div>
     )
@@ -647,9 +636,11 @@ export default function CircuitPreview({
             }`,
           )} ${styles.previewClip} circuit-preview-pane circuit-preview-pane-${v}`}
         >
-          <div className={styles.previewContent}>
-            {(hasPreviewHeader || showSimulationSelector) &&
-              previewHeaderElm(false)}
+          {(hasPreviewHeader || showSimulationSelector) &&
+            previewHeaderElm(false)}
+          <div
+            className={`${styles.previewContent} ${hasPreviewHeader || showSimulationSelector ? styles.previewContentWithHeader : ""}`}
+          >
             {v === "drawing" ? (
               <DrawingPreview
                 sourceUrl={drawingSourceUrl}
@@ -662,7 +653,6 @@ export default function CircuitPreview({
                   v === "schematic" && selectedSimulationExperimentName
                     ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
                     : `${v.toUpperCase()} Circuit Preview`,
-                hasHeader: hasPreviewHeader || showSimulationSelector,
                 imageClassName: `w-full m-0 object-contain ${
                   v === "pcb"
                     ? "bg-black flex items-center justify-center"
@@ -720,13 +710,14 @@ export default function CircuitPreview({
         }`,
       )} ${styles.previewClip} circuit-preview-pane circuit-preview-pane-${view}`}
     >
-      <div className={styles.previewContent}>
-        {imageViewHasHeader && previewHeaderElm(_showTabs)}
+      {imageViewHasHeader && previewHeaderElm(_showTabs)}
+      <div
+        className={`${styles.previewContent} ${imageViewHasHeader ? styles.previewContentWithHeader : ""}`}
+      >
         {renderPreviewImage({
           src: pcbUrl,
           alt: "PCB Circuit Preview",
           hidden: view !== "pcb",
-          hasHeader: imageViewHasHeader,
           imageClassName:
             "w-full m-0 object-contain bg-black flex items-center justify-center",
         })}
@@ -736,31 +727,21 @@ export default function CircuitPreview({
             ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
             : "Schematic Circuit Preview",
           hidden: view !== "schematic",
-          hasHeader: imageViewHasHeader,
           imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
         })}
         {renderPreviewImage({
           src: pinoutUrl,
           alt: "Pinout Circuit Preview",
           hidden: view !== "pinout",
-          hasHeader: imageViewHasHeader,
           imageClassName: "w-full m-0 object-contain bg-white",
         })}
         {view === "drawing" && (
-          <div
-            className={tw(
-              `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
-            )}
-          >
+          <div className={tw(`relative w-full h-full`)}>
             <DrawingPreview sourceUrl={drawingSourceUrl} pages={drawingPages} />
           </div>
         )}
         {view === "3d" && (
-          <div
-            className={tw(
-              `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
-            )}
-          >
+          <div className={tw(`relative w-full h-full`)}>
             <GlbPreview
               imageUrl={threeDImage}
               glbUrl={glbUrl}
@@ -769,11 +750,7 @@ export default function CircuitPreview({
           </div>
         )}
         {showRunFrame && view === "runframe" && (
-          <div
-            className={tw(
-              `relative w-full ${getPreviewContentHeightCss(imageViewHasHeader)}`,
-            )}
-          >
+          <div className={tw(`relative w-full h-full`)}>
             <TscircuitIframe
               code={normalizedCode}
               fsMap={normalizedFsMap}
