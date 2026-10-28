@@ -4,6 +4,7 @@ import {
   createDrawingUrl,
   type DrawingPreviewPage,
 } from "./drawing-urls"
+import PreviewPagination from "./PreviewPagination"
 import styles from "./styles.module.css"
 
 export default function DrawingPreview({
@@ -71,36 +72,15 @@ export default function DrawingPreview({
             />
           )}
           {available.length > 1 && (
-            <nav
-              aria-label="Drawing pages"
-              className={styles.drawingPagination}
-            >
-              <button
-                type="button"
-                aria-label="Previous drawing page"
-                disabled={index === 0}
-                onClick={() => {
-                  setError(undefined)
-                  setSelected({ source: sourceUrl, index: index - 1 })
-                }}
-              >
-                {"<"}
-              </button>
-              <span aria-live="polite" aria-atomic="true">
-                {index + 1}/{available.length}
-              </span>
-              <button
-                type="button"
-                aria-label="Next drawing page"
-                disabled={index === available.length - 1}
-                onClick={() => {
-                  setError(undefined)
-                  setSelected({ source: sourceUrl, index: index + 1 })
-                }}
-              >
-                {">"}
-              </button>
-            </nav>
+            <PreviewPagination
+              kind="Drawing"
+              index={index}
+              count={available.length}
+              onChange={(nextIndex) => {
+                setError(undefined)
+                setSelected({ source: sourceUrl, index: nextIndex })
+              }}
+            />
           )}
         </>
       )}
