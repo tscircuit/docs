@@ -4,7 +4,6 @@ description: Route selected PCB connections in ordered passes, then optionally r
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import generateTestPointsPreview from "@site/src/data/autoroutingphase-previews/generate-test-points.json"
 
 export const routeSpecificConnectionsFirstCode = `export default () => (
   <board width="18mm" height="18mm">
@@ -455,11 +454,7 @@ for bed-of-nails or flying-probe testing. Each selected routed trace gets one
 circular pad that is electrically connected to it, rerouting locally when the
 trace needs to detour to reach a legal pad location.
 
-<CircuitPreview
-  defaultView="pcb"
-  code={generateTestPointsCode}
-  circuitJson={generateTestPointsPreview}
-/>
+<CircuitPreview defaultView="pcb" code={generateTestPointsCode} />
 
 The short form below targets every routed trace:
 
