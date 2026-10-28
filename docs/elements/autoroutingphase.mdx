@@ -4,6 +4,7 @@ description: Route selected PCB connections in ordered passes, then optionally r
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import generateTestPointsPreview from "@site/src/data/autoroutingphase-previews/generate-test-points.json"
 
 export const routeSpecificConnectionsFirstCode = `export default () => (
   <board width="18mm" height="18mm">
@@ -22,6 +23,24 @@ export const routeSpecificConnectionsFirstCode = `export default () => (
     <trace name="H_TOP" from="TP_H1.pin1" to="TP_H2.pin1" />
     <trace name="H_BOTTOM" from="TP_H3.pin1" to="TP_H4.pin1" />
     <trace name="V_CENTER" from="TP_V1.pin1" to="TP_V2.pin1" />
+  </board>
+)`
+
+export const generateTestPointsCode = `export default () => (
+  <board width="20mm" height="14mm">
+    <chip name="U1" footprint="soic8" pcbX={-4} />
+    <resistor name="R1" resistance="10k" footprint="0603" pcbX={5} pcbY={3} />
+    <resistor name="R2" resistance="10k" footprint="0603" pcbX={5} pcbY={-3} />
+    <trace name="SDA" from="U1.pin1" to="R1.pin1" />
+    <trace name="SCL" from="U1.pin8" to="R2.pin1" />
+
+    <autoroutingphase
+      reroute
+      connections={["U1.pin1", "U1.pin8"]}
+      addTestPoints
+      testPointLayer="top"
+      testPointMaxDetour="3mm"
+    />
   </board>
 )`
 
@@ -359,50 +378,6 @@ Use `connections` to target more than one previously routed connection:
 />
 ```
 
-### Generate Test Points
-
-Add `addTestPoints` to a final `reroute` phase to generate exposed probe pads
-for bed-of-nails or flying-probe testing. Each selected routed trace gets one
-circular pad that is electrically connected to it, rerouting locally when the
-trace needs to detour to reach a legal pad location.
-
-```tsx
-<autoroutingphase reroute addTestPoints testPointMaxDetour="10mm" />
-```
-
-Without `connection` or `connections`, every routed trace receives a test
-point. Use selectors to choose specific traces and the `testPoint*` props to
-control placement:
-
-```tsx
-<autoroutingphase
-  name="Probe access"
-  reroute
-  connections={["U1.pin3", "U1.pin4"]}
-  addTestPoints
-  testPointLayer="bottom"
-  testPointDiameter="1mm"
-  testPointClearance="0.2mm"
-  testPointMinProbeSpacing="2.54mm"
-  testPointMaxDetour="1mm"
-/>
-```
-
-Generated pads are named `TP_AUTO_<phase>_<n>` and appear as test-point
-components with uncovered (no solder mask) circular SMT copper and no solder
-paste. Component bodies are treated as keepouts so probes can reach each pad.
-
-- The test-point phase must be the last phase, so later rerouting cannot
-  detach its pads. Request all pads in that one phase so probe spacing is
-  checked across the whole set.
-- Every selected trace must have a legal pad location on `testPointLayer`
-  within `testPointMaxDetour`; otherwise the phase fails without adding
-  partial output. Increase the detour or switch layers if a request fails.
-- Vias are not added to bring inner-layer-only signals to the surface, and
-  fixed or manually routed traces cannot receive generated test points.
-- Pad positions are in board coordinates. Bottom-side positions are not
-  mirrored, so mirror them yourself when designing a test fixture.
-
 ## Route bus lanes without layer changes
 
 Use `autorouter="bus_lanes"` on `<autoroutingphase />` to route selected bus
@@ -472,3 +447,54 @@ successful solve is not complete DDR timing verification.
 See [AM3352-to-DDR3 routing](../guides/routing-ddr.mdx#am3352-bus-lanes)
 for the complete TSX, routed layer previews, power escapes, and required core
 integration. Hosted evaluators may not yet include these integrated features.
+
+## Generate Test Points
+
+Add `addTestPoints` to a final `reroute` phase to generate exposed probe pads
+for bed-of-nails or flying-probe testing. Each selected routed trace gets one
+circular pad that is electrically connected to it, rerouting locally when the
+trace needs to detour to reach a legal pad location.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={generateTestPointsCode}
+  circuitJson={generateTestPointsPreview}
+/>
+
+The short form below targets every routed trace:
+
+```tsx
+<autoroutingphase reroute addTestPoints testPointMaxDetour="10mm" />
+```
+
+Use `connection` or `connections` to choose specific traces, and the
+`testPoint*` props to control placement:
+
+```tsx
+<autoroutingphase
+  name="Probe access"
+  reroute
+  connections={["U1.pin3", "U1.pin4"]}
+  addTestPoints
+  testPointLayer="bottom"
+  testPointDiameter="1mm"
+  testPointClearance="0.2mm"
+  testPointMinProbeSpacing="2.54mm"
+  testPointMaxDetour="1mm"
+/>
+```
+
+Generated pads are named `TP_AUTO_<phase>_<n>` and appear as test-point
+components with uncovered (no solder mask) circular SMT copper and no solder
+paste. Component bodies are treated as keepouts so probes can reach each pad.
+
+- The test-point phase must be the last phase, so later rerouting cannot
+  detach its pads. Request all pads in that one phase so probe spacing is
+  checked across the whole set.
+- Every selected trace must have a legal pad location on `testPointLayer`
+  within `testPointMaxDetour`; otherwise the phase fails without adding
+  partial output. Increase the detour or switch layers if a request fails.
+- Vias are not added to bring inner-layer-only signals to the surface, and
+  fixed or manually routed traces cannot receive generated test points.
+- Pad positions are in board coordinates. Bottom-side positions are not
+  mirrored, so mirror them yourself when designing a test fixture.
