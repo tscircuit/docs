@@ -2,17 +2,19 @@
 title: Installation
 ai_start: true
 sidebar_position: 2
-description: Install tscircuit CLI globally or per-project to start building electronic circuits with TypeScript.
+description: Install the standalone tscircuit CLI, or use npm or Bun globally or per project.
 ---
 
 If your AI can install and run tools, ask it to “use tscircuit” and let it handle setup.
 The instructions below are for installing the tools yourself.
 
-## Dependencies
+## Standalone CLI
 
-To use tscircuit, you'll need to have [npm](https://npmjs.com) or [bun](https://bun.sh) installed. We recommend using [bun](https://bun.sh) for its speed and ease of use.
+Install the [standalone CLI](../guides/running-tscircuit/standalone-binary.md) on macOS, Linux, or Windows without installing Node.js or Bun.
 
-## Installing tscircuit
+## Install with npm or Bun
+
+For package-manager installation, you'll need [npm](https://npmjs.com) or [Bun](https://bun.sh). We recommend Bun for its speed and ease of use.
 
 To install tscircuit's command line tool, just run:
 

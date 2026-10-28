@@ -1,13 +1,14 @@
 ---
-title: Standalone binary
+title: Install tscircuit standalone
+sidebar_label: Standalone CLI
 description: Install the standalone tscircuit CLI and run a local circuit preview.
 ---
 
-The standalone distribution packages the tscircuit CLI and JavaScript runtime in a binary. You do not need a separate Node.js or Bun installation. This is different from the [browser script-tag build](./running-tscircuit-standalone.mdx).
+[`tscircuit-standalone`](https://github.com/tscircuit/tscircuit-standalone) bundles the tscircuit CLI and runtime. No Node.js or Bun installation is required. For the browser bundle, see the [script-tag guide](./running-tscircuit-standalone.mdx).
 
 ## Download and install
 
-Install the latest published release from a terminal:
+These commands install the newest published release, including development prereleases.
 
 **macOS / Linux**
 
@@ -15,19 +16,27 @@ Install the latest published release from a terminal:
 curl -fsSL https://raw.githubusercontent.com/tscircuit/tscircuit-standalone/main/scripts/install.sh | sh
 ```
 
+Supports macOS Apple Silicon/Intel and Linux x64/arm64. Installs `tsci` in `/usr/local/bin` and may request administrator approval. Linux requires `curl`, `tar`, `sha256sum` (or `shasum`), and either `jq` or Python 3.
+
+The Linux installer refuses to replace an unrelated `tsci` installation.
+
 **Windows (PowerShell)**
 
 ```powershell
 curl.exe -fsSL https://raw.githubusercontent.com/tscircuit/tscircuit-standalone/main/scripts/install-windows.ps1 | Out-String | iex
 ```
 
+Supports Windows x64. Follow the setup wizard; no administrator access is needed. Setup asks before taking precedence over an existing command.
+
 Alternatively, download an installer or archive from the [standalone releases](https://github.com/tscircuit/tscircuit-standalone/releases):
 
-- **macOS:** Download the `.pkg` for Apple Silicon (arm64) or Intel (x64), open it and follow the installer. Administrator approval is required. The installers are signed and notarized.
-- **Windows x64:** Download `tscircuit-standalone-windows-x64-setup.exe` and run it. Open a new terminal after installation. Setup asks before taking precedence over an existing `tsci` command.
-- **Linux x64 or arm64:** Download the matching `.tar.gz`, extract it and run `./tsci --version` from the extracted directory. Put `tsci` on your PATH if desired.
+- **macOS:** Open the `.pkg` for Apple Silicon (arm64) or Intel (x64).
+- **Windows:** Run `tscircuit-standalone-windows-x64-setup.exe`.
+- **Linux:** Extract the matching x64 or arm64 `.tar.gz` and run `./tsci --version`.
 
-The [release instructions](https://github.com/tscircuit/tscircuit-standalone/blob/main/docs/releases.md) cover portable binaries, checksum verification, installation details and platform test coverage. Keep the accompanying license and notice files when redistributing the binary.
+See the [release instructions](https://github.com/tscircuit/tscircuit-standalone/blob/main/docs/releases.md) for portable installation and checksum verification.
+
+## Verify installation
 
 Open a new terminal and check the installed version:
 
