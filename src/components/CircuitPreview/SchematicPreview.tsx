@@ -10,9 +10,12 @@ import styles from "./styles.module.css"
 export default function SchematicPreview({
   src,
   alt,
+  pages: providedPages,
 }: {
   src: string
   alt: string
+  /** Prerendered sheets; skips the hosted manifest request. */
+  pages?: SchematicPreviewPage[]
 }) {
   const [loaded, setLoaded] = useState<{
     source: string
@@ -20,10 +23,12 @@ export default function SchematicPreview({
   }>()
   const [selected, setSelected] = useState({ source: src, index: 0 })
   const index = selected.source === src ? selected.index : 0
-  const pages = loaded?.source === src ? loaded.pages : undefined
+  const pages =
+    providedPages ?? (loaded?.source === src ? loaded.pages : undefined)
 
   useEffect(() => {
     setSelected({ source: src, index: 0 })
+    if (providedPages) return
     const controller = new AbortController()
     fetch(createSchematicManifestUrl(src), { signal: controller.signal })
       .then(async (response) => {
@@ -44,7 +49,7 @@ export default function SchematicPreview({
         if (!controller.signal.aborted) setLoaded({ source: src, pages: [] })
       })
     return () => controller.abort()
-  }, [src])
+  }, [src, providedPages])
 
   const current = pages && pages.length > 1 ? pages[index] : undefined
   return (

@@ -18,7 +18,10 @@ import DrawingPreview from "./DrawingPreview"
 import { hasDrawingPages, type DrawingPreviewPage } from "./drawing-urls"
 import GlbPreview from "./GlbPreview"
 import SchematicPreview from "./SchematicPreview"
-import { hasSchematicSheets } from "./schematic-sheets"
+import {
+  hasSchematicSheets,
+  type SchematicPreviewPage,
+} from "./schematic-sheets"
 import { create3dAssetUrls } from "./create-3d-asset-urls"
 import { PreviewCodeSourceContext } from "./preview-code-source-context"
 import { createCircuitPreviewEditorUrl } from "./create-editor-url"
@@ -128,6 +131,7 @@ export default function CircuitPreview({
   schematicImageUrl,
   threeDImageUrl,
   drawingPages,
+  schematicPages,
   showDrawingTab,
   showTabs = true,
   defaultView = "pcb",
@@ -164,6 +168,8 @@ export default function CircuitPreview({
   schematicImageUrl?: string
   threeDImageUrl?: string
   drawingPages?: DrawingPreviewPage[]
+  /** Prerendered schematic sheets, shown with a pager. */
+  schematicPages?: SchematicPreviewPage[]
   showDrawingTab?: boolean
   showTabs?: boolean
   defaultView?: CircuitPreviewView
@@ -265,13 +271,14 @@ export default function CircuitPreview({
   // Multi-sheet schematics are split into pages client-side; custom images and
   // simulation views stay single images.
   const pageSchematicSheets =
-    !schematicImageUrl &&
-    !showSimulationGraph &&
-    hasSchematicSheets({
-      circuitJson,
-      code: normalizedCode,
-      fsMap: normalizedFsMap,
-    })
+    Boolean(schematicPages?.length) ||
+    (!schematicImageUrl &&
+      !showSimulationGraph &&
+      hasSchematicSheets({
+        circuitJson,
+        code: normalizedCode,
+        fsMap: normalizedFsMap,
+      }))
   const hasMultipleFiles = Object.keys(normalizedFsMap ?? {}).length > 1
   const fsMapOrCode = hasMultipleFiles
     ? normalizedFsMap || normalizedCode
@@ -659,7 +666,11 @@ export default function CircuitPreview({
                 pages={drawingPages}
               />
             ) : v === "schematic" && pageSchematicSheets ? (
-              <SchematicPreview src={schUrl} alt="SCHEMATIC Circuit Preview" />
+              <SchematicPreview
+                src={schUrl}
+                alt="SCHEMATIC Circuit Preview"
+                pages={schematicPages}
+              />
             ) : (
               renderPreviewImage({
                 src,
@@ -741,7 +752,11 @@ export default function CircuitPreview({
               `relative w-full h-full ${view !== "schematic" ? "hidden" : ""}`,
             )}
           >
-            <SchematicPreview src={schUrl} alt="Schematic Circuit Preview" />
+            <SchematicPreview
+              src={schUrl}
+              alt="Schematic Circuit Preview"
+              pages={schematicPages}
+            />
           </div>
         ) : (
           renderPreviewImage({

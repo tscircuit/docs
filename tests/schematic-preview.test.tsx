@@ -74,6 +74,26 @@ test("Schematic preview pages through hosted schematic sheets", async () => {
       assert.equal(imageSrc(), fallbackSrc)
     }
 
+    // Prerendered pages skip the manifest request.
+    const requestCount = requests.length
+    await act(async () =>
+      root.render(
+        <SchematicPreview
+          src="https://svg.tscircuit.com/?svg_type=schematic&code=prerendered"
+          alt="Schematic"
+          pages={[
+            { name: "Controller", url: "/sheet-1.svg" },
+            { name: "Motor", url: "/sheet-2.svg" },
+          ]}
+        />,
+      ),
+    )
+    assert.equal(requests.length, requestCount)
+    assert.equal(counter(), "1/2")
+    await act(async () => next().click())
+    assert.equal(imageSrc(), "/sheet-2.svg")
+    assert.match(host.querySelector("nav")!.textContent!, /Motor/)
+
     assert.equal(
       new URL(
         createSchematicManifestUrl(createSchematicSheetUrl(src, 2)),
