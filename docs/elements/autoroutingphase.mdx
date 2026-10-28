@@ -163,8 +163,14 @@ connections route around them.
 | `fanoutRoutingLayers` | `LayerRef[]` | Layers available to boundary-terminated fanout connections. |
 | `fanoutPourNetMap` | `Record<LayerRef, string \| string[]>` | Maps dedicated plane layers to the power or ground nets that should terminate on them during fanout. |
 | `busFanoutDirections` | `Record<string, BusFanoutDirection>` | Controls the boundary exit direction for each named bus during fanout. |
-| `reroute` | `boolean` | Reroutes traces produced by earlier phases instead of routing newly assigned traces. Requires `region`, `connection`, or `connections`. |
+| `reroute` | `boolean` | Reroutes traces produced by earlier phases instead of routing newly assigned traces. Requires `region`, `connection`, or `connections`, unless `addTestPoints` is set. |
 | `region` | `{ shape?: "rect"; minX: number; maxX: number; minY: number; maxY: number }` | Rectangular PCB region to reconsider in a reroute phase. |
+| `addTestPoints` | `boolean` | In a final `reroute` phase, adds one exposed probe pad to each selected routed trace. See [Generate Test Points](#generate-test-points). |
+| `testPointLayer` | `"top" \| "bottom"` | Outer layer for generated test-point pads. Defaults to `"bottom"`. |
+| `testPointDiameter` | `Length` | Diameter of each generated circular pad. Defaults to `1mm`. |
+| `testPointClearance` | `Length` | Copper clearance around generated pads. Defaults to `0.2mm`. |
+| `testPointMinProbeSpacing` | `Length` | Minimum center-to-center spacing between generated pads. Defaults to `2.54mm`. |
+| `testPointMaxDetour` | `Length` | Maximum distance a trace may detour to reach its pad. Defaults to `1mm`. |
 
 ## Route Specific Connections First
 
@@ -352,6 +358,50 @@ Use `connections` to target more than one previously routed connection:
   connections={["M1.pin1", "B1.pin1"]}
 />
 ```
+
+### Generate Test Points
+
+Add `addTestPoints` to a final `reroute` phase to generate exposed probe pads
+for bed-of-nails or flying-probe testing. Each selected routed trace gets one
+circular pad that is electrically connected to it, rerouting locally when the
+trace needs to detour to reach a legal pad location.
+
+```tsx
+<autoroutingphase reroute addTestPoints testPointMaxDetour="10mm" />
+```
+
+Without `connection` or `connections`, every routed trace receives a test
+point. Use selectors to choose specific traces and the `testPoint*` props to
+control placement:
+
+```tsx
+<autoroutingphase
+  name="Probe access"
+  reroute
+  connections={["U1.pin3", "U1.pin4"]}
+  addTestPoints
+  testPointLayer="bottom"
+  testPointDiameter="1mm"
+  testPointClearance="0.2mm"
+  testPointMinProbeSpacing="2.54mm"
+  testPointMaxDetour="1mm"
+/>
+```
+
+Generated pads are named `TP_AUTO_<phase>_<n>` and appear as test-point
+components with uncovered (no solder mask) circular SMT copper and no solder
+paste. Component bodies are treated as keepouts so probes can reach each pad.
+
+- The test-point phase must be the last phase, so later rerouting cannot
+  detach its pads. Request all pads in that one phase so probe spacing is
+  checked across the whole set.
+- Every selected trace must have a legal pad location on `testPointLayer`
+  within `testPointMaxDetour`; otherwise the phase fails without adding
+  partial output. Increase the detour or switch layers if a request fails.
+- Vias are not added to bring inner-layer-only signals to the surface, and
+  fixed or manually routed traces cannot receive generated test points.
+- Pad positions are in board coordinates. Bottom-side positions are not
+  mirrored, so mirror them yourself when designing a test fixture.
 
 ## Route bus lanes without layer changes
 
