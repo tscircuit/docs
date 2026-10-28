@@ -17,6 +17,11 @@ import styles from "./styles.module.css"
 import DrawingPreview from "./DrawingPreview"
 import { hasDrawingPages, type DrawingPreviewPage } from "./drawing-urls"
 import GlbPreview from "./GlbPreview"
+import SchematicPreview from "./SchematicPreview"
+import {
+  hasSchematicSheets,
+  type SchematicPreviewPage,
+} from "./schematic-sheets"
 import { create3dAssetUrls } from "./create-3d-asset-urls"
 import { PreviewCodeSourceContext } from "./preview-code-source-context"
 import { createCircuitPreviewEditorUrl } from "./create-editor-url"
@@ -126,6 +131,7 @@ export default function CircuitPreview({
   schematicImageUrl,
   threeDImageUrl,
   drawingPages,
+  schematicPages,
   showDrawingTab,
   showTabs = true,
   defaultView = "pcb",
@@ -162,6 +168,8 @@ export default function CircuitPreview({
   schematicImageUrl?: string
   threeDImageUrl?: string
   drawingPages?: DrawingPreviewPage[]
+  /** Prerendered schematic sheets, shown with a pager. */
+  schematicPages?: SchematicPreviewPage[]
   showDrawingTab?: boolean
   showTabs?: boolean
   defaultView?: CircuitPreviewView
@@ -260,6 +268,17 @@ export default function CircuitPreview({
           fsMap: normalizedFsMap,
         }),
     )
+  // Multi-sheet schematics are split into pages client-side; custom images and
+  // simulation views stay single images.
+  const pageSchematicSheets =
+    Boolean(schematicPages?.length) ||
+    (!schematicImageUrl &&
+      !showSimulationGraph &&
+      hasSchematicSheets({
+        circuitJson,
+        code: normalizedCode,
+        fsMap: normalizedFsMap,
+      }))
   const hasMultipleFiles = Object.keys(normalizedFsMap ?? {}).length > 1
   const fsMapOrCode = hasMultipleFiles
     ? normalizedFsMap || normalizedCode
@@ -646,6 +665,12 @@ export default function CircuitPreview({
                 sourceUrl={drawingSourceUrl}
                 pages={drawingPages}
               />
+            ) : v === "schematic" && pageSchematicSheets ? (
+              <SchematicPreview
+                src={schUrl}
+                alt="SCHEMATIC Circuit Preview"
+                pages={schematicPages}
+              />
             ) : (
               renderPreviewImage({
                 src,
@@ -721,14 +746,28 @@ export default function CircuitPreview({
           imageClassName:
             "w-full m-0 object-contain bg-black flex items-center justify-center",
         })}
-        {renderPreviewImage({
-          src: schUrl,
-          alt: selectedSimulationExperimentName
-            ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
-            : "Schematic Circuit Preview",
-          hidden: view !== "schematic",
-          imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
-        })}
+        {pageSchematicSheets ? (
+          <div
+            className={tw(
+              `relative w-full h-full ${view !== "schematic" ? "hidden" : ""}`,
+            )}
+          >
+            <SchematicPreview
+              src={schUrl}
+              alt="Schematic Circuit Preview"
+              pages={schematicPages}
+            />
+          </div>
+        ) : (
+          renderPreviewImage({
+            src: schUrl,
+            alt: selectedSimulationExperimentName
+              ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
+              : "Schematic Circuit Preview",
+            hidden: view !== "schematic",
+            imageClassName: "w-full m-0 object-contain bg-[#F5F1ED]",
+          })
+        )}
         {renderPreviewImage({
           src: pinoutUrl,
           alt: "Pinout Circuit Preview",

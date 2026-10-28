@@ -27,15 +27,27 @@ and USB-PD power ports, and winding-current and temperature sensing on a
 motor driver, power supplies, and sensing circuits into one board design.
 
 {/* Published renders from imrishabh18/rp2040-motor-controller v1.0.42,
-    release e8d285f7-c3d8-46f5-9a54-344fdde0124e.
-    The schematic preview shows the controller sheet, not every project sheet. */}
+    release e8d285f7-c3d8-46f5-9a54-344fdde0124e. The release only publishes
+    the first schematic sheet, so each sheet in static/img/examples was
+    rendered from its dist/index/circuit.json with circuit-to-svg 0.0.445. */}
 
 <CircuitPreview
   defaultView="3d"
   splitView={false}
   hideCodeTab
   pcbImageUrl="https://api.tscircuit.com/package_files/view?package_release_id=e8d285f7-c3d8-46f5-9a54-344fdde0124e&file_path=dist%2Findex%2Fpcb.svg"
-  schematicImageUrl="https://api.tscircuit.com/package_files/view?package_release_id=e8d285f7-c3d8-46f5-9a54-344fdde0124e&file_path=dist%2Findex%2Fschematic.svg"
+  schematicPages={[
+    { name: "RP2040 Controller", url: "/img/examples/rp2040-motor-controller-schematic-1.svg" },
+    { name: "Programming USB-C & QSPI", url: "/img/examples/rp2040-motor-controller-schematic-2.svg" },
+    { name: "Stepper Motor Driver", url: "/img/examples/rp2040-motor-controller-schematic-3.svg" },
+    { name: "USB-C PD Motor Power", url: "/img/examples/rp2040-motor-controller-schematic-4.svg" },
+    { name: "Temperature Telemetry", url: "/img/examples/rp2040-motor-controller-schematic-5.svg" },
+    { name: "Optional Encoder & Audible Alarm", url: "/img/examples/rp2040-motor-controller-schematic-6.svg" },
+    { name: "Winding Current Measurement", url: "/img/examples/rp2040-motor-controller-schematic-7.svg" },
+    { name: "RGB Status Indicator", url: "/img/examples/rp2040-motor-controller-schematic-8.svg" },
+    { name: "PD Voltage Selection", url: "/img/examples/rp2040-motor-controller-schematic-9.svg" },
+    { name: "Controller Controls, Status & SWD", url: "/img/examples/rp2040-motor-controller-schematic-10.svg" },
+  ]}
   threeDImageUrl="https://api.tscircuit.com/package_files/view?package_release_id=e8d285f7-c3d8-46f5-9a54-344fdde0124e&file_path=dist%2Findex%2F3d.png"
 />
 

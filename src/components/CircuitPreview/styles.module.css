@@ -99,7 +99,7 @@
   object-fit: contain;
 }
 
-.drawingPagination {
+.previewPagination {
   position: absolute;
   bottom: 12px;
   left: 50%;
@@ -119,7 +119,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.drawingPagination button {
+.previewPagination button {
   border: 0;
   border-radius: 4px;
   padding: 2px 8px;
@@ -128,7 +128,26 @@
   cursor: pointer;
 }
 
-.drawingPagination button:disabled {
+.previewPagination button:disabled {
   opacity: 0.3;
   cursor: default;
+}
+
+.previewPageName {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.schematicPreview {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  height: 100%;
+  background: #f5f1ed;
+  color: #334155;
 }
