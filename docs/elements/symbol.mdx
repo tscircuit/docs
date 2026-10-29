@@ -190,6 +190,50 @@ export default () => (
   `}
 />
 
+## Sizing a Symbol
+
+Give a `<symbol />` a `width` and / or `height` to draw it at that size in the schematic. How the drawing is fitted
+to that size:
+
+- `fit="fill"` (the default) and `fit="stretch"` scale each axis separately, so a drawing can stretch. With only
+  `width` (or only `height`), only that axis is scaled.
+- `fit="contain"` scales both axes by one factor, the largest at which the drawing fits, so it keeps its
+  proportions.
+- `viewbox={{ minX, maxX, minY, maxY }}` names the region of the symbol's own coordinates (mm, +X right, +Y up)
+  that is fitted, and its centre goes to the symbol's position. Without it, the region is the measured extent of
+  everything in the symbol, port stubs included, so the drawing itself comes out a little smaller than the size you
+  asked for.
+
+Use the lowercase prop names `fit` and `viewbox`. A viewbox requires all four bounds: `minX`, `maxX`, `minY`, and `maxY`; `{ x, y, width, height }` is not a supported viewbox shape.
+
+<CircuitPreview
+  hide3DTab
+  hidePCBTab
+  defaultView="schematic"
+  code={`
+const Contact = (props) => (
+  <symbol {...props}>
+    <schematicpath svgPath="M -0.5 0 A 0.5 0.5 0 1 0 0.5 0 A 0.5 0.5 0 1 0 -0.5 0 Z" strokeWidth={0.05} />
+    <schematicline x1={-0.35} y1={0} x2={0.35} y2={0} strokeWidth={0.05} />
+    <schematicline x1={0} y1={-0.35} x2={0} y2={0.35} strokeWidth={0.05} />
+    <port name="1" direction="right" schX={1} schY={0} schStemLength={0.5} />
+  </symbol>
+)
+
+export default () => (
+  <board width="10mm" height="10mm">
+    {/* stretched: width 2, height 1, each axis scaled separately */}
+    <chip name="J1" schX={-3} symbol={<Contact width={2} height={1} />} />
+    {/* round: one factor, the drawing exactly 1 mm across */}
+    <chip
+      name="J2"
+      schX={3}
+      symbol={<Contact width={1} height={1} fit="contain" viewbox={{ minX: -0.5, maxX: 0.5, minY: -0.5, maxY: 0.5 }} />}
+    />
+  </board>
+)
+`} />
+
 ## Available Schematic Drawing Components
 
 Within a `<symbol />`, you can use the following primitive components to draw your custom schematic representation:
