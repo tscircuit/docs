@@ -1,0 +1,101 @@
+---
+title: <assembly.explosion.stage />
+description: Author ordered assembly explosion stages and play them from Circuit JSON.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { explosionExample } from "@site/src/data/assembly-explosion/example"
+import preview from "@site/src/data/assembly-previews/assembly-explosion.json"
+
+`assembly.explosion.stage` names a step in an exploded assembly view. Put stages inside an [`assembly.device`](./assembly-device.mdx) or [`assembly.subassembly`](./assembly-subassembly.mdx), with one or more [`assembly.explosion.move`](./assembly-explosion-move.mdx) children.
+
+## Lift the cover and bolts together
+
+The first stage below lifts the cover and every part targeted by `remove-bolts`. The second stage then pulls the bolts farther out. The PCB stays fixed. The cylinders stand in for the two fasteners in this small example.
+
+<CircuitPreview
+  code={explosionExample}
+  circuitJson={preview}
+  threeDImageUrl="/img/elements/assembly-explosion-assembled.png"
+  defaultView="3d"
+  hideSchematicTab
+  wrapCode
+/>
+
+Targeting another stage selects its members; it does not execute that stage's instructions or change playback order. A stage can be referenced before its declaration, as `remove-bolts` is here.
+
+## Stage properties
+
+| Property | Description |
+|----------|-------------|
+| `name` | Required stage name, unique in its assembly scope. |
+| `prevStageRef` | Stage that must finish before this one. |
+| `nextStageRef` | Stage that must start after this one. |
+| `children` | Ordered `assembly.explosion.move` elements. |
+
+Ordering references resolve relative to the owning assembly. Use a qualified path, such as `case.remove-bolts`, when addressing another scope. Stages without ordering constraints follow stable depth-first TSX order. Unknown references, duplicate stage paths, ordering cycles, and cyclic stage membership are errors.
+
+## Play the exported Circuit JSON
+
+Core renders the assembled geometry and explosion program together:
+
+```tsx
+import { Circuit } from "@tscircuit/core"
+import { CadViewer } from "@tscircuit/3d-viewer"
+import Assembly from "./assembly"
+
+const circuit = new Circuit()
+circuit.add(<Assembly />)
+await circuit.renderUntilSettled()
+const circuitJson = circuit.getCircuitJson()
+
+// The viewer only needs the generated JSON.
+;<CadViewer circuitJson={circuitJson} />
+```
+
+In the 3D viewer, right-click and select **Advanced → Exploded view…**. Scrub the slider through each stage, use **Reset** to return to the assembled pose, or close the panel to restore it. The embedded preview above shows the assembled geometry; use the full 3D viewer for explosion controls.
+
+The JSON contains `cad_explosion_stage` records with resolved order and explicit member IDs, plus `cad_explosion_move` records with targets and world-space translations. A live TSX tree or a separate exploded JSON file is not needed for playback.
+
+Use the same supported core version for both the TSX imports and the `Circuit` renderer. A CLI that bundles an older renderer can build the assembled geometry while omitting the explosion records; check the exported JSON for both record types.
+
+## Sample a stage or export each frame
+
+```ts
+import { getCircuitJsonAssemblyExplosion } from "@tscircuit/core"
+import {
+  convertCircuitJsonToGltf,
+  getAssemblyExplosionFrames,
+} from "circuit-json-to-gltf"
+
+const halfway = getCircuitJsonAssemblyExplosion(circuitJson, {
+  throughStageRef: "case.remove-bolts",
+  stageProgress: 0.5,
+})
+
+for (const frame of getAssemblyExplosionFrames(circuitJson)) {
+  const glb = await convertCircuitJsonToGltf(circuitJson, {
+    format: "glb",
+    explosion: frame.explosion,
+  })
+  // Save/render glb, keep one camera, and label it with frame.name.
+}
+```
+
+`stageProgress` ranges from `0` to `1`, dividing the selected stage equally among its sequential moves. Earlier stages stay complete. Each evaluation starts from the original assembled positions, so backward scrubbing does not accumulate movement. Derived pose JSON omits the instructions to prevent applying them twice; keep the original document for further playback.
+
+`getAssemblyExplosionFrames` returns the assembled frame and every completed stage in order. Each exported GLB is a static pose, not an animation track.
+
+## Real RP2040 / NEMA17 assembly
+
+This example uses the routed [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller), a NEMA17, four spacers, bolts, and a cover. The cover and bolts first lift together, followed by separate bolt, motor, and spacer removal. The sheet includes each completed stage and a halfway bolt-removal pose beside its authored TSX.
+
+![TSX and six views of the real RP2040 assembly: assembled, cover and bolts lifted, bolts halfway removed, bolts removed, motor separated, and spacers separated.](/img/elements/rp2040-explosion-stages.png)
+
+The [complete TSX and reproduction instructions](https://github.com/tscircuit/3d-viewer/tree/main/stories/fixtures/rp2040-motor-assembly) preserve the original board's routed copper and document its pinned build dependencies.
+
+## Supported versions and limits
+
+Use `@tscircuit/core` **0.0.2234+**, `circuit-json` **0.0.539+**, and `@tscircuit/3d-viewer` **0.0.637+**. Native GLTF stage export requires `circuit-json-to-gltf` **0.0.159+**.
+
+Explosion moves currently translate mechanical CAD and reference surfaces. Targets containing PCB or cable geometry are rejected; rotation instructions and swept collision checks are not supported. Guide lines show the requested motion, not verified assembly clearance.
