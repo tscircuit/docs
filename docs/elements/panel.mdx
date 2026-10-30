@@ -4,14 +4,15 @@ description: Arrange multiple PCBs in a manufacturing panel with grid layout and
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import sharedProgrammerPreview from "@site/src/data/panel-previews/shared-programmer.json"
 
 The `<panel />` element arranges multiple [`<board />`](./board.mdx) elements
 in one manufacturing panel. It must be the root element, and only one panel
 is allowed per circuit. Use [`<subpanel />`](./subpanel.mdx) for nested groups
 of boards.
 
-Panels can contain only boards and subpanels. Place components and traces
-inside a board. Every panel or subpanel must contain at least one board,
+Panels can contain boards, subpanels, and traces. Place components inside a
+board; place traces between boards directly inside the panel. Every panel or subpanel must contain at least one board,
 either directly or through a nested subpanel.
 
 ## Example
@@ -53,6 +54,119 @@ export default () => (
 
 The panel automatically sizes to 53mm × 43mm: two boards per axis, one 3mm
 gap, and 5mm padding on each edge.
+
+## Panel traces: a shared programmer
+
+A trace placed directly inside `<panel>` can connect ports on different boards.
+Prefix each port selector with its board name, such as
+`".PROGRAMMER .SELECT_IO .TARGET1"` and `"board.TARGET1 .DEBUG .SWDIO"`.
+The panel autorouter resolves these ports after arranging the boards, so the
+connections follow the final grid positions. Traces inside a board still route
+locally; panel traces carry the electrical connections between boards.
+
+For example, keep one shared programmer connection on a reusable board at the
+edge of the panel and route its programming signals to two target boards. This
+example uses an external SWD probe connected to `PROBE` on `PROGRAMMER`.
+`DEBUG` represents each target microcontroller's programming interface.
+
+The center pin of each three-pin selector connects to the probe. Fit shunts from
+`COMMON` to `TARGET1` on **both** `SELECT_IO` and `SELECT_CLK` to program the first
+board; move both shunts to `TARGET2` for the second. The target signal branches
+remain separate, while ground is shared. The removable shunts are not modeled
+as permanent copper connections in this example.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  circuitJson={sharedProgrammerPreview}
+  code={`
+const TargetBoard = ({ name }) => (
+  <board name={name} width={20} height={18}>
+    <pinheader
+      name="DEBUG"
+      pinCount={3}
+      pinLabels={["SWDIO", "SWCLK", "GND"]}
+      showSilkscreenPinLabels
+    />
+    <pcbnotetext text={name} pcbY={6} fontSize={1} />
+  </board>
+)
+
+export default () => (
+  <panel
+    layoutMode="grid"
+    col={3}
+    boardGap={3}
+    edgePadding={5}
+    panelizationMethod="none"
+    autorouter="auto-local"
+  >
+    <board name="PROGRAMMER" width={26} height={18}>
+      <pinheader
+        name="PROBE"
+        pinCount={3}
+        pcbX={-8}
+        pinLabels={["SWDIO", "SWCLK", "GND"]}
+      />
+      <pinheader
+        name="SELECT_IO"
+        pinCount={3}
+        pcbX={3}
+        pcbY={4}
+        pinLabels={["TARGET1", "COMMON", "TARGET2"]}
+      />
+      <pinheader
+        name="SELECT_CLK"
+        pinCount={3}
+        pcbX={3}
+        pcbY={-4}
+        pinLabels={["TARGET1", "COMMON", "TARGET2"]}
+      />
+      <trace name="probe_data" from=".PROBE .SWDIO" to=".SELECT_IO .COMMON" />
+      <trace name="probe_clock" from=".PROBE .SWCLK" to=".SELECT_CLK .COMMON" />
+      <pcbnotetext text="Shared programmer" pcbY={-7} fontSize={0.8} />
+    </board>
+    <TargetBoard name="TARGET1" />
+    <TargetBoard name="TARGET2" />
+    {["TARGET1", "TARGET2"].map((target) => (
+      <trace
+        key={target + "_SWDIO"}
+        name={target + "_SWDIO"}
+        from={".PROGRAMMER .SELECT_IO ." + target}
+        to={"board." + target + " .DEBUG .SWDIO"}
+      />
+    ))}
+    {["TARGET1", "TARGET2"].map((target) => (
+      <trace
+        key={target + "_SWCLK"}
+        name={target + "_SWCLK"}
+        from={".PROGRAMMER .SELECT_CLK ." + target}
+        to={"board." + target + " .DEBUG .SWCLK"}
+      />
+    ))}
+    <trace
+      name="programming_ground"
+      path={[
+        ".PROGRAMMER .PROBE .GND",
+        "board.TARGET1 .DEBUG .GND",
+        "board.TARGET2 .DEBUG .GND",
+      ]}
+    />
+  </panel>
+)
+`}
+/>
+
+This is a programming-interconnect example, not a complete programmer or target
+microcontroller circuit. Supply the target boards and connect the probe's voltage
+reference and reset signals as required by your programmer and MCU. Select one
+target at a time; ordinary SWD targets must not all drive the shared data line.
+
+`panelizationMethod="none"` deliberately leaves continuous panel material under
+these traces. If you add routed cutouts or mouse bites, leave intact tabs for the
+connections and check the routed paths. Cutting the panel traces during separation
+disconnects the programmer board from each target. The individual board schematics
+remain separate; use the PCB view to see panel connections.
 
 ## Properties
 

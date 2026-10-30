@@ -17,7 +17,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 - `<panel>` must be the root element if present
 - Only one `<panel>` is allowed per circuit
-- `<panel>` and `<subpanel>` can only contain `<board>` or `<subpanel>`
+- `<panel>` and `<subpanel>` can contain `<board>`, `<subpanel>`, or `<trace>`; see [panel traces](../../elements/panel.mdx#panel-traces-a-shared-programmer) for connections between boards
 - Each panel/subpanel must contain at least one `<board>`, directly or through nesting
 
 ## Basic panel with explicit positions
