@@ -87,3 +87,5 @@ The driver package and headers demonstrate board placement, without a routed dri
 References resolve within the nearest `assembly.device`, and declaration order does not matter. A connected assembly can have one PCB anchor. Missing or ambiguous targets, cycles, and a PCB mounted to a tilted face report errors. For assemblies containing a face-mounted motor, author rotation in the reference geometry rather than using board `mountRotation` or `mountRotationAnchor`.
 
 These examples require `@tscircuit/core` 0.0.2088 or later, with `@tscircuit/props` 0.0.687 or later. For all available props, see [`assembly.motor`](../elements/assembly-motor.mdx) and [`assembly.printedpart`](../elements/assembly-printedpart.mdx).
+
+For staged disassembly, see [`assembly.explosion.stage`](../elements/assembly-explosion-stage.mdx): lift a cover and its bolts together, then remove the parts separately.

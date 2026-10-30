@@ -27,6 +27,7 @@
     "@mdx-js/react": "^3.0.0",
     "anser": "^2.3.5",
     "clsx": "^2.1.1",
+    "fflate": "^0.8.3",
     "fs-extra": "^11.2.0",
     "lucide-static": "^0.545.0",
     "prettier": "3.6.2",

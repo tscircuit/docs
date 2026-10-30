@@ -151,3 +151,65 @@
   background: #f5f1ed;
   color: #334155;
 }
+
+.threeDStages {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.explosionControls {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  color: #1e293b;
+  background: #f8fafc;
+  font-size: 0.85rem;
+}
+
+.explosionControls select {
+  min-width: 0;
+  max-width: 70%;
+}
+
+.explosionControls button,
+.explosionControls select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.25rem;
+  color: #1e293b;
+  background: white;
+}
+
+.explosionControls button:disabled {
+  opacity: 0.4;
+}
+
+/* Keep assembly previews compact alongside long TSX examples. */
+.assemblyStages {
+  aspect-ratio: 4 / 3;
+  height: auto;
+  max-height: 100%;
+}
+
+/* Share the available height with the controls instead of adding 100% to it. */
+.threeDStages .glbPreview {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+.threeDStages .previewImage,
+.threeDStages .modelViewer {
+  min-height: 0;
+}
+
+@media (min-width: 997px) and (min-height: 600px) {
+  .stickyPreview .previewContent:has(.assemblyStages) {
+    top: calc(var(--ifm-navbar-height) + 1rem);
+  }
+}

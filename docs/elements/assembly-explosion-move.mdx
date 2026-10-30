@@ -1,0 +1,42 @@
+---
+title: <assembly.explosion.move />
+description: Move named assembly parts or all members of another explosion stage.
+---
+
+`assembly.explosion.move` describes one straight translation inside an [`assembly.explosion.stage`](./assembly-explosion-stage.mdx). See that page for a complete runnable example and playback controls.
+
+```tsx
+<assembly.explosion.stage name="lift-cover">
+  <assembly.explosion.move
+    targetRefs={["cover", "remove-bolts"]}
+    offZ="12mm"
+  />
+</assembly.explosion.stage>
+<assembly.explosion.stage name="remove-bolts" prevStageRef="lift-cover">
+  <assembly.explosion.move targetRefs="bolt1, bolt2" offZ="10mm" />
+</assembly.explosion.stage>
+```
+
+## Move properties
+
+| Property | Description |
+|----------|-------------|
+| `targetRefs` | An array of names or a comma-separated string selecting parts, subassemblies, or other explosion stages. |
+| `targetRef` | Singular alternative to `targetRefs`. Supply exactly one of them. |
+| `offX`, `offY`, `offZ` | Translation along each axis. Numbers are millimetres; unit strings such as `"12mm"` are also accepted. Omitted axes are zero. |
+
+References resolve relative to the stage's owning assembly. A qualified path can address a nested part, such as `cover.window`. Blank, missing, ambiguous, or cyclic targets are errors.
+
+## Whole-stage movement
+
+In the example, `remove-bolts` identifies all parts targeted by that stage. They move with the cover by 12 mm before their own stage adds another 10 mm. Targeting a stage preserves earlier displacement and does not replay its moves. Use `prevStageRef` or `nextStageRef` on the stage to control timing.
+
+A part included directly and through a subassembly or stage moves only once per instruction. Separate instructions accumulate, including when they target the same part.
+
+## Axes and sequential moves
+
+Offsets are directions in the owning assembly's resolved local frame, measured in millimetres. An unrotated assembly uses right-handed circuit coordinates: +X right, +Y top, +Z above the PCB. Mounting can rotate those local axes. Core resolves each direction into a world-space vector before writing Circuit JSON.
+
+The axes supplied on one move act simultaneously. Two moves execute sequentially: an `offZ` move followed by an `offX` move makes a lift-then-slide path. During partial playback, each move receives an equal portion of its stage's progress.
+
+Selected subassemblies move all descendant CAD and reference-surface centers. Surface axes do not rotate. Movement of a target containing PCB or cable geometry is unsupported, and no collision clearance is verified.
