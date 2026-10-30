@@ -45,6 +45,7 @@ test("stage selector shows each pose, supports backwards playback, and resets fo
         />,
       ),
     )
+    assert.equal(image().searchParams.get("show_infinite_grid"), "false")
     assert.equal(button("Previous explosion stage").disabled, true)
     assert.equal(image().searchParams.has("explosion_stage"), false)
     await act(async () => button("Next explosion stage").click())

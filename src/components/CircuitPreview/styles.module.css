@@ -160,6 +160,7 @@
 }
 
 .explosionControls {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -186,4 +187,29 @@
 
 .explosionControls button:disabled {
   opacity: 0.4;
+}
+
+/* Keep assembly previews compact alongside long TSX examples. */
+.assemblyStages {
+  aspect-ratio: 4 / 3;
+  height: auto;
+  max-height: 100%;
+}
+
+/* Share the available height with the controls instead of adding 100% to it. */
+.threeDStages .glbPreview {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+.threeDStages .previewImage,
+.threeDStages .modelViewer {
+  min-height: 0;
+}
+
+@media (min-width: 997px) and (min-height: 600px) {
+  .stickyPreview .previewContent:has(.assemblyStages) {
+    top: calc(var(--ifm-navbar-height) + 1rem);
+  }
 }

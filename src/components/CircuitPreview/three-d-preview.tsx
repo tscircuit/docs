@@ -31,14 +31,23 @@ export default function ThreeDPreview({
   const select = (index: number) =>
     setSelection({ sourceUrl, stagesKey, index })
   const pose = stages.length ? stages[index]?.explosion : explosion
+  const assemblyPreview = stages.length > 0 || Boolean(explosion)
+  const renderSource = new URL(sourceUrl)
+  // The PCB plane cuts through motors and spacers in an exploded assembly.
+  if (assemblyPreview)
+    renderSource.searchParams.set("show_infinite_grid", "false")
+  const effectiveCameraPreset =
+    cameraPreset ?? (assemblyPreview ? "assembly" : undefined)
   const assets = create3dAssetUrls(
-    sourceUrl,
+    renderSource.toString(),
     cameraPreset,
     pose ? undefined : imageOverride,
     pose,
   )
   return (
-    <div className={styles.threeDStages}>
+    <div
+      className={`${styles.threeDStages} ${assemblyPreview ? styles.assemblyStages : ""}`}
+    >
       {stages.length > 1 && (
         <nav
           className={styles.explosionControls}
@@ -78,7 +87,7 @@ export default function ThreeDPreview({
       )}
       <GlbPreview
         {...assets}
-        cameraPreset={cameraPreset}
+        cameraPreset={effectiveCameraPreset}
         alt={
           stages[index]?.name
             ? `Assembly: ${stages[index].name}`
