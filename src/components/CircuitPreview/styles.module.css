@@ -151,3 +151,39 @@
   background: #f5f1ed;
   color: #334155;
 }
+
+.threeDStages {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.explosionControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  color: #1e293b;
+  background: #f8fafc;
+  font-size: 0.85rem;
+}
+
+.explosionControls select {
+  min-width: 0;
+  max-width: 70%;
+}
+
+.explosionControls button,
+.explosionControls select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.25rem;
+  color: #1e293b;
+  background: white;
+}
+
+.explosionControls button:disabled {
+  opacity: 0.4;
+}

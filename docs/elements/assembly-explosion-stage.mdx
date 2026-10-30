@@ -5,6 +5,7 @@ description: Author ordered assembly explosion stages and play them from Circuit
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 import { explosionExample } from "@site/src/data/assembly-explosion/example"
+import rp2040Preview from "@site/src/data/assembly-explosion/rp2040/assembled.circuit.json"
 import preview from "@site/src/data/assembly-previews/assembly-explosion.json"
 
 `assembly.explosion.stage` names a step in an exploded assembly view. Put stages inside an [`assembly.device`](./assembly-device.mdx) or [`assembly.subassembly`](./assembly-subassembly.mdx), with one or more [`assembly.explosion.move`](./assembly-explosion-move.mdx) children.
@@ -16,7 +17,12 @@ The first stage below lifts the cover and every part targeted by `remove-bolts`.
 <CircuitPreview
   code={explosionExample}
   circuitJson={preview}
-  threeDImageUrl="/img/elements/assembly-explosion-assembled.png"
+  explosionStages={[
+    { name: "Assembled" },
+    { name: "Lift cover and bolts", explosion: { throughStageRef: "case.lift-cover" } },
+    { name: "Bolts halfway out", explosion: { throughStageRef: "case.remove-bolts", stageProgress: 0.5 } },
+    { name: "Remove bolts", explosion: { throughStageRef: "case.remove-bolts" } },
+  ]}
   defaultView="3d"
   hideSchematicTab
   wrapCode
@@ -53,7 +59,7 @@ const circuitJson = circuit.getCircuitJson()
 ;<CadViewer circuitJson={circuitJson} />
 ```
 
-In the 3D viewer, right-click and select **Advanced → Exploded view…**. Scrub the slider through each stage, use **Reset** to return to the assembled pose, or close the panel to restore it. The embedded preview above shows the assembled geometry; use the full 3D viewer for explosion controls.
+In the 3D viewer, right-click and select **Advanced → Exploded view…**. Scrub the slider through each stage, use **Reset** to return to the assembled pose, or close the panel to restore it. Use the stage selector above to compare rendered poses, or click an image to rotate that pose. The full 3D viewer also supports continuous scrubbing.
 
 The JSON contains `cad_explosion_stage` records with resolved order and explicit member IDs, plus `cad_explosion_move` records with targets and world-space translations. A live TSX tree or a separate exploded JSON file is not needed for playback.
 
@@ -86,9 +92,47 @@ for (const frame of getAssemblyExplosionFrames(circuitJson)) {
 
 `getAssemblyExplosionFrames` returns the assembled frame and every completed stage in order. Each exported GLB is a static pose, not an animation track.
 
+## Render explosion images in CircuitPreview
+
+Pass `explosion={{ throughStageRef: "case.remove-bolts", stageProgress: 0.5 }}` for one pose, or `explosionStages` for a named image sequence:
+
+```tsx
+<CircuitPreview
+  code={assemblyTsx}
+  circuitJson={exportedCircuitJson}
+  defaultView="3d"
+  explosionStages={[
+    { name: "Assembled" },
+    { name: "Lift cover", explosion: { throughStageRef: "case.lift-cover" } },
+    { name: "Remove bolts", explosion: { throughStageRef: "case.remove-bolts" } },
+  ]}
+/>
+```
+
+Each selected image and its rotatable model use the same pose. The image service accepts `explosion_stage` and `explosion_progress` for 3D PNG, SVG, and GLB output. Omit both for the assembled pose. See the [image service API](https://github.com/tscircuit/svg.tscircuit.com#assembly-explosion-images).
+
 ## Real RP2040 / NEMA17 assembly
 
-This example uses the routed [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller), a NEMA17, four spacers, bolts, and a cover. The cover and bolts first lift together, followed by separate bolt, motor, and spacer removal. The sheet includes each completed stage and a halfway bolt-removal pose beside its authored TSX.
+This example uses the routed [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller), a NEMA17, four spacers, bolts, and a cover. The cover and bolts first lift together, followed by separate bolt, motor, and spacer removal. The preview renders its original TSX-generated Circuit JSON. Step through each completed stage or the halfway bolt-removal pose; click the image to rotate it.
+
+<CircuitPreview
+  circuitJson={rp2040Preview}
+  defaultView="3d"
+  splitView={false}
+  hideCodeTab
+  hidePCBTab
+  hideSchematicTab
+  explosionStages={[
+    { name: "Assembled" },
+    { name: "Lift cover and bolts", explosion: { throughStageRef: "RP2040_NEMA17.lift-cover" } },
+    { name: "Bolts halfway out", explosion: { throughStageRef: "RP2040_NEMA17.remove-bolts", stageProgress: 0.5 } },
+    { name: "Remove bolts", explosion: { throughStageRef: "RP2040_NEMA17.remove-bolts" } },
+    { name: "Separate motor", explosion: { throughStageRef: "RP2040_NEMA17.separate-motor" } },
+    { name: "Separate spacers", explosion: { throughStageRef: "RP2040_NEMA17.separate-spacers" } },
+  ]}
+/>
+
+The overview below pairs the authored stages with all six poses:
 
 ![TSX and six views of the real RP2040 assembly: assembled, cover and bolts lifted, bolts halfway removed, bolts removed, motor separated, and spacers separated.](/img/elements/rp2040-explosion-stages.png)
 
