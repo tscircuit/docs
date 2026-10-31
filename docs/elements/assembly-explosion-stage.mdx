@@ -146,4 +146,6 @@ The [complete TSX and reproduction instructions](https://github.com/tscircuit/3d
 
 Use `@tscircuit/core` **0.0.2234+**, `circuit-json` **0.0.539+**, and `@tscircuit/3d-viewer` **0.0.637+**. Native GLTF stage export requires `circuit-json-to-gltf` **0.0.159+**.
 
+For automatic movement-guide overlays in a local renderer, use `circuit-json-to-gltf` **0.0.160+** and `poppygl` **0.0.38+**. The hosted image service used by CircuitPreview includes this support.
+
 Explosion moves translate mechanical CAD and reference surfaces. Targets containing PCB or cable geometry are rejected, and rotation instructions are not supported. Guide lines show the requested motion; an exploded image does not verify assembly clearance. Continuous collision diagnostics are being added separately in [core #5011](https://github.com/tscircuit/core/pull/5011).
