@@ -10,6 +10,8 @@ import preview from "@site/src/data/assembly-previews/assembly-explosion.json"
 
 `assembly.explosion.stage` names a step in an exploded assembly view. Put stages inside an [`assembly.device`](./assembly-device.mdx) or [`assembly.subassembly`](./assembly-subassembly.mdx), with one or more [`assembly.explosion.move`](./assembly-explosion-move.mdx) children.
 
+Import `assembly` from `@tscircuit/core`. Use `assembly.explosion.stage` and `assembly.explosion.move` directly; there is no `<assembly.explosion>` wrapper.
+
 ## Lift the cover and bolts together
 
 The first stage below lifts the cover and every part targeted by `remove-bolts`. The second stage then pulls the bolts farther out. The PCB stays fixed. The cylinders stand in for the two fasteners in this small example.
@@ -111,6 +113,8 @@ Pass `explosion={{ throughStageRef: "case.remove-bolts", stageProgress: 0.5 }}` 
 
 Each selected image and its rotatable model use the same pose. The image service accepts `explosion_stage` and `explosion_progress` for 3D PNG, SVG, and GLB output. Omit both for the assembled pose. See the [image service API](https://github.com/tscircuit/svg.tscircuit.com#assembly-explosion-images).
 
+Movement guides are included automatically when exporting an exploded pose from the original Circuit JSON. There is no `showExplosionLines` prop to add to the TSX. Keep the original `cad_explosion_stage` and `cad_explosion_move` records when requesting images so the renderer can derive the guides as well as the displaced parts.
+
 ## Real RP2040 / NEMA17 assembly
 
 This example uses the routed [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller), a NEMA17, four spacers, bolts, and a cover. The cover and bolts first lift together, followed by separate bolt, motor, and spacer removal. The preview renders its original TSX-generated Circuit JSON. Step through each completed stage or the halfway bolt-removal pose; click the image to rotate it.
@@ -142,4 +146,4 @@ The [complete TSX and reproduction instructions](https://github.com/tscircuit/3d
 
 Use `@tscircuit/core` **0.0.2234+**, `circuit-json` **0.0.539+**, and `@tscircuit/3d-viewer` **0.0.637+**. Native GLTF stage export requires `circuit-json-to-gltf` **0.0.159+**.
 
-Explosion moves currently translate mechanical CAD and reference surfaces. Targets containing PCB or cable geometry are rejected; rotation instructions and swept collision checks are not supported. Guide lines show the requested motion, not verified assembly clearance.
+Explosion moves translate mechanical CAD and reference surfaces. Targets containing PCB or cable geometry are rejected, and rotation instructions are not supported. Guide lines show the requested motion; an exploded image does not verify assembly clearance. Continuous collision diagnostics are being added separately in [core #5011](https://github.com/tscircuit/core/pull/5011).

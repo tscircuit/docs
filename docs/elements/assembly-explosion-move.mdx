@@ -25,11 +25,18 @@ description: Move named assembly parts or all members of another explosion stage
 | `targetRef` | Singular alternative to `targetRefs`. Supply exactly one of them. |
 | `offX`, `offY`, `offZ` | Translation along each axis. Numbers are millimetres; unit strings such as `"12mm"` are also accepted. Omitted axes are zero. |
 
+Supply at least one of `offX`, `offY`, or `offZ`. Negative values move in the opposite direction.
+
 References resolve relative to the stage's owning assembly. A qualified path can address a nested part, such as `cover.window`. Blank, missing, ambiguous, or cyclic targets are errors.
 
 ## Whole-stage movement
 
 In the example, `remove-bolts` identifies all parts targeted by that stage. They move with the cover by 12 mm before their own stage adds another 10 mm. Targeting a stage preserves earlier displacement and does not replay its moves. Use `prevStageRef` or `nextStageRef` on the stage to control timing.
+
+| Completed stage | Cover displacement | Each bolt's displacement |
+|-----------------|--------------------|--------------------------|
+| `lift-cover` | +12 mm Z | +12 mm Z |
+| `remove-bolts` | +12 mm Z | +22 mm Z |
 
 A part included directly and through a subassembly or stage moves only once per instruction. Separate instructions accumulate, including when they target the same part.
 
