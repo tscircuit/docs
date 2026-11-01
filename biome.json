@@ -17,6 +17,7 @@
       "cosmos-export",
       "dist",
       "package.json",
+      "src/data/assembly-explosion/rp2040/assembled.circuit.json",
       "!./codetestingplayground"
     ]
   },

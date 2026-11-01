@@ -1,5 +1,6 @@
 // Directions used by svg3's image renderer, in the GLB's Y-up coordinates.
 const cameraDirections: Record<string, [number, number, number]> = {
+  assembly: [0.7, 0.5, -0.8],
   "top-down": [1e-8, 1, -1e-3],
   "top-down-ortho": [1e-8, 1, -1e-3],
   "top-left-corner": [0.7, 1.2, -0.8],

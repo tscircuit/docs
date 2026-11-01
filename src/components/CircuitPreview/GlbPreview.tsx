@@ -1,4 +1,5 @@
 import { createElement, useEffect, useRef, useState } from "react"
+import { useRenderedAsset } from "./use-rendered-asset"
 import { getCameraOrbit } from "./camera-orbit"
 import styles from "./styles.module.css"
 
@@ -29,22 +30,35 @@ export default function GlbPreview({
   imageUrl,
   glbUrl,
   cameraPreset,
+  requestBody,
+  imageRequestBody,
+  alt = "3D Circuit Preview",
 }: {
   imageUrl: string
   glbUrl: string
   cameraPreset?: string
+  requestBody?: string
+  imageRequestBody?: string
+  alt?: string
 }) {
   const [interactive, setInteractive] = useState(false)
   const [ready, setReady] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
   const viewer = useRef<HTMLElement>(null)
+  const image = useRenderedAsset(imageUrl, imageRequestBody)
+  const model = useRenderedAsset(
+    glbUrl,
+    requestBody,
+    interactive,
+    "model/gltf-binary",
+  )
   useEffect(() => {
     setInteractive(false)
     setReady(false)
     setLoaded(false)
     setError(false)
-  }, [glbUrl])
+  }, [glbUrl, requestBody])
   useEffect(() => {
     if (!interactive) return
     let cancelled = false
@@ -71,14 +85,14 @@ export default function GlbPreview({
       element.removeEventListener("load", onLoad)
       element.removeEventListener("error", onError)
     }
-  }, [ready, interactive])
+  }, [ready, interactive, model.src])
 
   return (
     <div className={styles.glbPreview}>
-      {interactive && ready && !error ? (
+      {interactive && ready && model.src && !error && !model.error ? (
         createElement("model-viewer", {
           ref: viewer,
-          src: glbUrl,
+          src: model.src,
           alt: "Interactive 3D circuit model",
           "camera-controls": "",
           "camera-orbit": getCameraOrbit(cameraPreset),
@@ -88,29 +102,30 @@ export default function GlbPreview({
           className: styles.modelViewer,
         })
       ) : interactive ? (
-        <img
-          src={imageUrl}
-          alt="3D Circuit Preview"
-          className={styles.previewImage}
-        />
+        <img src={image.src} alt={alt} className={styles.previewImage} />
       ) : (
         <button
           type="button"
           className={styles.previewImageButton}
           aria-label="Rotate the 3D circuit model"
+          disabled={!image.src}
           onClick={() => setInteractive(true)}
         >
-          <img
-            src={imageUrl}
-            alt="3D Circuit Preview"
-            className={styles.previewImage}
-          />
+          <img src={image.src} alt={alt} className={styles.previewImage} />
         </button>
       )}
-      {interactive && !loaded && !error && (
+      {!image.src && !image.error && !interactive && (
+        <output className={styles.modelStatus}>Rendering assembly…</output>
+      )}
+      {image.error && !interactive && (
+        <span className={styles.modelStatus} role="alert">
+          Could not render the assembly. Reload the page to try again.
+        </span>
+      )}
+      {interactive && !loaded && !error && !model.error && (
         <output className={styles.modelStatus}>Loading 3D model…</output>
       )}
-      {interactive && error && (
+      {interactive && (error || model.error) && (
         <span className={styles.modelStatus} role="alert">
           Could not load the 3D model. Reload the page to try again.
         </span>

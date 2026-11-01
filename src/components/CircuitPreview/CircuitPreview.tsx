@@ -16,13 +16,14 @@ import TscircuitIframe from "../TscircuitIframe"
 import styles from "./styles.module.css"
 import DrawingPreview from "./DrawingPreview"
 import { hasDrawingPages, type DrawingPreviewPage } from "./drawing-urls"
-import GlbPreview from "./GlbPreview"
+import ThreeDPreview, { type ExplosionStagePreview } from "./three-d-preview"
 import SchematicPreview from "./SchematicPreview"
 import {
   hasSchematicSheets,
   type SchematicPreviewPage,
 } from "./schematic-sheets"
-import { create3dAssetUrls } from "./create-3d-asset-urls"
+import { encodeCircuitJson } from "./encode-circuit-json"
+import type { ExplosionPose } from "./create-3d-asset-urls"
 import { PreviewCodeSourceContext } from "./preview-code-source-context"
 import { createCircuitPreviewEditorUrl } from "./create-editor-url"
 
@@ -130,6 +131,8 @@ export default function CircuitPreview({
   pcbImageUrl,
   schematicImageUrl,
   threeDImageUrl,
+  explosion,
+  explosionStages,
   drawingPages,
   schematicPages,
   showDrawingTab,
@@ -167,6 +170,10 @@ export default function CircuitPreview({
   pcbImageUrl?: string
   schematicImageUrl?: string
   threeDImageUrl?: string
+  /** A single sampled 3D pose. Omit for the assembled view. */
+  explosion?: ExplosionPose
+  /** Named poses to step through as images and matching rotatable models. */
+  explosionStages?: ExplosionStagePreview[]
   drawingPages?: DrawingPreviewPage[]
   /** Prerendered schematic sheets, shown with a pager. */
   schematicPages?: SchematicPreviewPage[]
@@ -286,15 +293,16 @@ export default function CircuitPreview({
       Object.values(normalizedFsMap ?? {})[0] ||
       normalizedCode
 
+  const encodedCircuitJson = useMemo(
+    () => (circuitJson ? encodeCircuitJson(circuitJson) : undefined),
+    [circuitJson],
+  )
   const configurePreviewUrl = (url: string) => {
     if (circuitJson) {
       const previewUrl = new URL(url)
       previewUrl.searchParams.delete("code")
       previewUrl.searchParams.delete("fs_map")
-      previewUrl.searchParams.set(
-        "circuit_json",
-        getCompressedBase64SnippetString(JSON.stringify(circuitJson)),
-      )
+      previewUrl.searchParams.set("circuit_json", encodedCircuitJson!)
       return previewUrl.toString()
     }
     if (!mainComponentPath || typeof fsMapOrCode === "string") return url
@@ -426,10 +434,14 @@ export default function CircuitPreview({
     projectBaseUrl,
   ])
 
-  const { imageUrl: threeDImage, glbUrl } = create3dAssetUrls(
-    threeDUrl,
-    cameraPreset,
-    threeDImageUrl,
+  const threeDPreview = (
+    <ThreeDPreview
+      sourceUrl={threeDUrl}
+      cameraPreset={cameraPreset}
+      imageOverride={threeDImageUrl}
+      explosion={explosion}
+      stages={explosionStages}
+    />
   )
 
   const shouldSplitCode = _splitView && windowSize !== "mobile"
@@ -511,8 +523,9 @@ export default function CircuitPreview({
     imageClassName: string
     hidden?: boolean
   }) => {
+    if (hidden) return null
     return (
-      <div className={tw(`relative w-full h-full ${hidden ? "hidden" : ""}`)}>
+      <div className={tw("relative w-full h-full")}>
         <img src={src} alt={alt} className={tw(`${imageClassName} h-full`)} />
       </div>
     )
@@ -665,6 +678,8 @@ export default function CircuitPreview({
                 sourceUrl={drawingSourceUrl}
                 pages={drawingPages}
               />
+            ) : v === "3d" ? (
+              threeDPreview
             ) : v === "schematic" && pageSchematicSheets ? (
               <SchematicPreview
                 src={schUrl}
@@ -780,13 +795,7 @@ export default function CircuitPreview({
           </div>
         )}
         {view === "3d" && (
-          <div className={tw(`relative w-full h-full`)}>
-            <GlbPreview
-              imageUrl={threeDImage}
-              glbUrl={glbUrl}
-              cameraPreset={cameraPreset}
-            />
-          </div>
+          <div className={tw(`relative w-full h-full`)}>{threeDPreview}</div>
         )}
         {showRunFrame && view === "runframe" && (
           <div className={tw(`relative w-full h-full`)}>
