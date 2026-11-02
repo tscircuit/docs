@@ -1,6 +1,6 @@
 ---
 title: <assembly.cable />
-description: Connect assembly endpoints with an inferred or explicitly selected physical cable and 3D connector models.
+description: Connect assembly endpoints with physical cables, 3D connectors, and waypoint-guided routes.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
@@ -124,6 +124,41 @@ define a bullet connector model. The two cable ends must have the same contact
 count. An explicit model also supports other combinations, such as
 `adaptercable_a(jst_sh_pins4)_b(jst_ph_pins4)`.
 
+## Route a cable through waypoints
+
+Use `waypoints` to guide a cable around nearby parts. Core creates a smooth curve through the points while preserving the connector exit directions. Each point contains numeric `x`, `y`, and `z` offsets in millimetres.
+
+<CircuitPreview
+  wrapCode
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly } from "tscircuit"
+
+export default () => (
+  <assembly.device>
+    <board width={60} height={40} thickness={1.6} routingDisabled>
+      <connector name="J1" standard="jst_ph" pinCount={3}
+        footprint="jst3_ph" pcbX={-20} />
+      <connector name="J2" standard="jst_ph" pinCount={3}
+        footprint="jst3_ph" pcbX={20} />
+    </board>
+    <assembly.cable name="HARNESS" from=".J1" to=".J2"
+      waypointAnchor="start"
+      waypointAxisOrientation="board_at_start"
+      waypoints={[
+        { x: 0, y: 15, z: 15 },
+        { x: 40, y: 15, z: 15 },
+      ]} />
+  </assembly.device>
+)`}
+/>
+
+`waypointAnchor="start"` makes the `from` connector's mating center the origin; `"end"` uses the `to` connector's mating center. `waypointAxisOrientation` independently selects the orientation of the board at either end. The example uses J1's board axes, not the connector's rotation, and detours toward +Y and above the PCB.
+
+Supply both `waypointAnchor` and `waypointAxisOrientation` whenever `waypoints` is defined, including `waypoints={[]}`. Omit `waypoints`, or pass an empty array, to keep automatic routing. Avoid coincident consecutive points and 180° direction reversals; invalid routes report an error.
+
+Waypoints guide the route but do not check collisions, minimum physical bend radius, or the wire length needed for motion. Inspect the complete assembly before choosing a cable or cutting wires.
+
 ## Cable properties
 
 | Property | Type | Description |
@@ -133,9 +168,12 @@ count. An explicit model also supports other combinations, such as
 | `to` | `string` | Required ending endpoint, distinct from `from`. |
 | `model` | `string` | Optional explicit cable model, including different-ended adapter cables. Omit to infer the model from the endpoints. |
 | `standard` | `"usb_c"` | Optional USB-C preset. Omit to infer USB-C, JST SH (1 mm pitch), or JST PH (2 mm pitch) from the endpoints. |
+| `waypoints` | `{ x: number; y: number; z: number }[]` | Optional ordered waypoint offsets in mm. Omitted or empty means automatic routing. |
+| `waypointAnchor` | `"start" \| "end"` | Origin for waypoint offsets: the `from` or `to` connector's mating center. Required when `waypoints` is defined. |
+| `waypointAxisOrientation` | `"board_at_start" \| "board_at_end"` | Board orientation used for waypoint axes, independently of the anchor. Required when `waypoints` is defined. |
 
 When `model` is omitted, both JST connectors must have the same standard and `pinCount`. Select a matching footprint, such as `jst6_ph` for a six-pin PH header. Inferred cables reject incompatible standards or pin counts. Missing or ambiguous endpoints report errors with either mode. Endpoints resolve within the nearest `assembly.device`, including components declared later.
 
-Add one `assembly.cable` for each physical cable; several cables can share a device. Each produces an independent `cad_cable` path in Circuit JSON. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There are no length or route-hint props.
+Add one `assembly.cable` for each physical cable; several cables can share a device. Each produces an independent `cad_cable` path in Circuit JSON. Without waypoints, the route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There is no cable-length prop.
 
-These examples require `@tscircuit/core` 0.0.2088 or later and `circuit-json-to-gltf` 0.0.144 or later. The explicit `model` example requires `@tscircuit/core` 0.0.2110 or later, `@tscircuit/props` 0.0.695 or later, and `circuit-json-to-gltf` 0.0.148 or later. `tscircuit` 0.0.2764 includes these versions.
+The automatic-routing examples require `@tscircuit/core` 0.0.2088 or later and `circuit-json-to-gltf` 0.0.144 or later. The explicit `model` example requires `@tscircuit/core` 0.0.2110 or later, `@tscircuit/props` 0.0.695 or later, and `circuit-json-to-gltf` 0.0.148 or later. `tscircuit` 0.0.2764 includes these versions. The waypoint example requires `@tscircuit/core` 0.0.2236 or later and `@tscircuit/props` 0.0.715 or later.
