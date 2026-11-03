@@ -1,7 +1,11 @@
 import { systemblock } from "tscircuit"
 
 export default () => (
-  <systemblock.page name="overview" displayName="Wireless sensor node">
+  <systemblock.page
+    name="overview"
+    displayName="Wireless sensor node"
+    direction="down"
+  >
     <systemblock.group name="processing" displayName="Sensing and processing">
       <systemblock.component
         name="sensor"
