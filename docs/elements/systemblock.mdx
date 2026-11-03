@@ -72,8 +72,9 @@ are errors, and referenced PCB output must be enabled and present.
 
 ## Render an SVG
 
-Requires `@tscircuit/core` 0.0.2261 or later and `circuit-to-svg` 0.0.455 or later.
-The `tscircuit` package re-exports core's `systemblock` namespace.
+Use `tscircuit` 0.0.3066 or later and `circuit-to-svg` 0.0.455 or later.
+The `tscircuit` package re-exports core's `systemblock` namespace; direct core
+consumers need `@tscircuit/core` 0.0.2261 or later.
 
 ```tsx
 import { Circuit } from "tscircuit"
