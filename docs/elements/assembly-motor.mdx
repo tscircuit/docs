@@ -71,6 +71,8 @@ For a printed spacer between the motor and controller, see the [complete motorâ€
 
 Pair `mountedTo` with `mountFace` to attach the motor to a named face on another part. Use `mountFace="frontface"` for the shaft-side body plane or `mountFace="backface"` for the opposite body plane. The mating faces determine position and orientation, so omit `shaftFacingDirection` when mounting the motor.
 
+Use `mountOffset` to adjust along the target face's local tangents and `mountGap` for normal clearance. Motor children also inherit a containing part or group's mounted frame. See [`assembly.referencesurface`](./assembly-referencesurface.mdx#offset-a-mounted-part) for frame directions.
+
 See [Advanced Assembly](../guides/advanced-assembly.mdx) for complete CircuitPreview examples of a NEMA17 mounted to a printed L bracket, then a controller mounted to the same base.
 
 ## Motor properties
@@ -83,8 +85,9 @@ See [Advanced Assembly](../guides/advanced-assembly.mdx) for complete CircuitPre
 | `model` | `string` | Custom modelprinter specification. The current motor renderer accepts NEMA specifications. |
 | `shaftFacingDirection` | `"x+" \| "x-" \| "y+" \| "y-" \| "z+" \| "z-"` | Optional shaft direction for an unmounted motor; defaults to `"z+"`. Omit when mounted. |
 | `wireConnection` | `"jst-ph-6" \| "stubs" \| "none"` | Motor wire termination; use `"jst-ph-6"` for the `wireside` cable endpoint. |
-| `mountedTo` | `string` | Target assembly face, such as `"BRACKET.motor"`; supply together with `mountFace`. |
+| `mountedTo` | `string` | Target face selector, such as `.BRACKET > .motor`, or compact path `BRACKET.motor`; supply together with `mountFace`. |
 | `mountFace` | `string` | This motor's mating face: `"frontface"` or `"backface"`. |
+| `mountOffset` | `{ x?, y? }` | Signed target-face tangent distances in mm or unit strings; omitted axes are zero. Requires `mountedTo`. |
 | `mountGap` | `string \| number` | Nonnegative face clearance in mm or a distance string; requires `mountedTo`. Omitted means zero. |
 
 Supply exactly one of `standard` or `model`. With a custom `model`, specify the wire termination in the string (for example, `nema17_backfaceholes_jstph6`) instead of passing `wireConnection`. A built-in standard selects representative dimensions; choose a custom `model` when your motor has a different body or shaft length.
@@ -136,6 +139,6 @@ All six directions render motor models. Board backface mounting currently suppor
 | `mountedTo` | `string` | Motor face reference, such as `"NEMA17.backface"`. |
 | `mountGap` | `string \| number` | Nonnegative distance in millimetres, such as `"6mm"` or `6`. Defaults to zero when mounted; only meaningful with `mountedTo`. |
 
-Mount references resolve by exact motor name within the nearest `assembly.device`, regardless of declaration order. Names in sibling devices remain independent. Missing or duplicate targets, unsupported faces, and multiple boards trying to position one motor report errors.
+Mount references accept CSS selectors such as `.NEMA17 > .backface` as well as compact paths such as `NEMA17.backface`. They resolve within the nearest `assembly.device`, regardless of declaration order. Names in sibling devices remain independent. Missing or duplicate targets, unsupported faces, and multiple boards trying to position one motor report errors.
 
 An unmounted motor's origin is at the world origin on its shaft-side mounting face. Its backface lies one body length behind that face, so changing `bodylength` also changes the placement needed for a mounted board.

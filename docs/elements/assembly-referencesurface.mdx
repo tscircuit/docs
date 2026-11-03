@@ -1,0 +1,78 @@
+---
+title: <assembly.referencesurface />
+description: Name a local mounting frame on a mechanical part or a group without creating solid geometry.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { bearingMountFiles } from "@site/src/data/assembly-mounting/examples"
+import preview from "@site/src/data/assembly-previews/assembly-bearing-mount.json"
+
+`assembly.referencesurface` defines a named attachment frame inside an [`assembly.part`](./assembly-part.mdx), [`assembly.printedpart`](./assembly-printedpart.mdx), [`assembly.subassembly`](./assembly-subassembly.mdx), or [`assembly.bolt`](./assembly-bolt.mdx). It adds no solid material.
+
+## Define a seat on a mechanical part
+
+The blue housing has a 22.2 mm bearing pocket whose floor is at local Z = 4 mm. `bearingSeat` marks that floor. The 8 × 22 × 7 mm bearing model supplies a `base` reference at its own bottom. A second datum sits on the housing's actual 3.2 mm screw hole at `[22, 12, 6]`.
+
+<CircuitPreview
+  fsMap={bearingMountFiles}
+  entrypoint="index.tsx"
+  mainComponentPath="index.tsx"
+  circuitJson={preview}
+  threeDImageUrl="/img/elements/assembly-bearing-mount.png"
+  defaultView="3d"
+  hidePCBTab
+  hideSchematicTab
+  wrapCode
+/>
+
+Open `models.tsx` for the complete housing and bearing geometry. The bolt uses an existing JSCAD Electronics model. The reference surfaces describe where those models attach; they do not create the pocket or screw hole.
+
+## Select and mate faces
+
+`mountedTo=".HOUSING > .bearingSeat"` selects the target. `mountFace="base"` selects a face on the mounted part; `.base` also works. Core makes the outward normals oppose and aligns the in-plane X directions. A generic part or subassembly supplies `mountedTo` and `mountFace` together; a bolt has an implicit mating origin.
+
+CSS selectors are supported, including `.HOUSING > .bearingSeat`, `assemblyreferencesurface.bearingSeat`, and attribute selectors. `HOUSING.bearingSeat` is the compact named-path form. Names must be unique within the owning part, and a target selector must match exactly one face in the nearest `assembly.device`. Declaration order does not matter.
+
+## Planes and local axes
+
+Coordinates use the owning part's right-handed local frame, in millimetres. A parent mount carries these frames with its children. A CAD model's `positionOffset` or `rotationOffset` aligns its mesh without moving its child reference surfaces.
+
+| `plane` | Default outward normal | Local face X | Local face Y |
+|---------|------------------------|--------------|--------------|
+| `xy` | `z+` | part +X | part +Y |
+| `xz` | `y+` | part +X | part −Z |
+| `yz` | `x+` | part +Y | part +Z |
+
+`normalDirection` may reverse the normal on the selected plane. The X tangent stays fixed; the Y tangent reverses so the frame remains right-handed. For example, `plane="xz" normalDirection="y-"` has local face Y along part +Z.
+
+## Offset a mounted part
+
+```tsx
+<assembly.subassembly
+  name="MODULE"
+  mountedTo=".BASE > .mount"
+  mountFace="base"
+  mountOffset={{ x: "6mm", y: "-4mm" }}
+  mountGap="2mm"
+>
+  <assembly.referencesurface name="base" normalDirection="z-" />
+  {/* Parts inherit the complete mounted frame. */}
+</assembly.subassembly>
+```
+
+`mountOffset.x/y` follows the **target face's** local tangents, not world X/Y. Omitted axes are zero; either axis can be negative. `mountGap` acts along the target's outward normal, defaults to zero, and cannot be negative. There is no `mountOffset.z`. See the complete [mounted group example](./assembly-subassembly.mdx#mount-a-group-with-relative-offsets).
+
+## Reference surface properties
+
+| Property | Description |
+|----------|-------------|
+| `name` | Local reference name; defaults to `anchor`. |
+| `shape` | `rect`, the default and current supported shape. |
+| `plane` | `xy` (default), `xz`, or `yz`. |
+| `normalDirection` | Perpendicular outward direction: `z+`/`z-` for XY, `y+`/`y-` for XZ, `x+`/`x-` for YZ. Defaults to the positive direction. |
+| `centerXOffset`, `centerYOffset`, `centerZOffset` | Signed local origin coordinates in mm or unit strings; each defaults to zero. |
+| `width`, `height` | Optional positive rectangular extents. Supply both together. Mounting uses the center, not an edge. |
+
+A printed part can also define mounting faces with transformed [`jscad.rectangle reference`](./assembly-printedpart.mdx#name-a-mounting-face-in-jscad) elements. Explicit reference surfaces are useful for imported CAD models and groups with no geometry of their own. Choose a name distinct from any JSCAD datum on the same part.
+
+The examples on this page are validated with `tscircuit` 0.0.3064.

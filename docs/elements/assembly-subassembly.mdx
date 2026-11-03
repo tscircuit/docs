@@ -1,41 +1,35 @@
 ---
 title: <assembly.subassembly />
-description: Import and group mechanical 3D models alongside a board.
+description: Group mechanical parts and place them together using reference faces and relative offsets.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import preview1 from "@site/src/data/assembly-previews/assembly-subassembly-1.json"
-import preview2 from "@site/src/data/assembly-previews/assembly-subassembly-2.json"
+import { relativeModuleFiles } from "@site/src/data/assembly-mounting/examples"
+import preview from "@site/src/data/assembly-previews/assembly-relative-module.json"
 
-`assembly.subassembly` groups mechanical models alongside a board. It can have its own model, CAD children, or both.
+`assembly.subassembly` groups mechanical parts in one local frame. It can have its own CAD model, children, or both. A group with no geometry can still define mounting faces and move all its children together. [`assembly.cadassembly`](./assembly-cadassembly.mdx) is an alias with the same props.
+
+## Mount a group with relative offsets
+
+The base's `mount` face is at Z = 6 mm. `MODULE` mates its `base` to that face, moves 6 mm along the face's X tangent and −4 mm along its Y tangent, and leaves a 2 mm inspection gap. The blue housing and steel bearing inherit the group frame.
 
 <CircuitPreview
-  wrapCode
-  circuitJson={preview1}
+  fsMap={relativeModuleFiles}
+  entrypoint="index.tsx"
+  mainComponentPath="index.tsx"
+  circuitJson={preview}
+  threeDImageUrl="/img/elements/assembly-relative-module.png"
   defaultView="3d"
+  hidePCBTab
   hideSchematicTab
-  browser3dView={false}
-  code={`import { assembly } from "@tscircuit/core"
-
-export default () => (
-  <assembly.device name="product">
-    <board
-      width="40mm"
-      height="30mm"
-      thickness="1.6mm"
-    />
-    <assembly.subassembly
-      name="housing"
-      model="https://docs.tscircuit.com/models/assembly/housing.glb"
-    >
-      <cadmodel
-        model="https://docs.tscircuit.com/models/assembly/cover.glb"
-        pcbZ={4}
-      />
-    </assembly.subassembly>
-  </assembly.device>
-)`}
+  wrapCode
 />
+
+`MODULE` has no model of its own. Its origin resolves to `[6, -4, 8]` mm. The bearing's bottom is another 4 mm above that origin, at its housing's pocket floor. Change the outer mount to reposition the complete module; the child parts' internal face constraints stay the same.
+
+Offsets use the target face's local axes. Rotating a target frame changes the directions followed by `mountOffset.x/y`; `mountGap` always follows its outward normal. See [`assembly.referencesurface`](./assembly-referencesurface.mdx#planes-and-local-axes) for XY, XZ and YZ frame directions.
+
+## Subassembly properties
 
 | Property | Description |
 |----------|-------------|
@@ -43,42 +37,19 @@ export default () => (
 | `displayName` | Optional display label. |
 | `model` | Modelprinter string or HTTP(S) model URL. |
 | `modelUrl` | Imported CAD model URL. |
-| `cadModel` | Model with advanced options; see [`cadmodel`](./cadmodel.mdx). |
-| `children` | CAD models or nested subassemblies. |
+| `cadModel` | Model with advanced alignment options; see [`cadmodel`](./cadmodel.mdx). |
+| `mountedTo` | Target reference face selector, such as `.BASE > .mount`. Compact paths such as `BASE.mount` also work. |
+| `mountFace` | Named reference face on this group; supply with `mountedTo`. |
+| `mountOffset` | Optional signed target-local `{ x?, y? }` distances. Omitted axes are zero. Requires `mountedTo`. |
+| `mountGap` | Optional nonnegative normal clearance, default zero. Requires `mountedTo`. |
+| `children` | Reference surfaces, nested assembly elements, or CAD models. |
 
-Choose one of `model`, `modelUrl`, or `cadModel`. Omit all three for a group with no model of its own.
+Choose at most one of `model`, `modelUrl`, or `cadModel`. Omit all three for a group with no model. Reference surfaces can be children of either kind of group.
 
-## Positioning models
+## Group placement and model alignment
 
-Use `cadModel` for offsets and rotation:
+A mount determines the group's full rigid frame, including tilt, and its children inherit that frame. Unmounted groups inherit their containing assembly's placement; a standalone unmounted group starts at the world origin. References resolve within the nearest `assembly.device`; qualify selectors when several groups contain parts with the same name.
 
-<CircuitPreview
-  wrapCode
-  circuitJson={preview2}
-  defaultView="3d"
-  hideSchematicTab
-  browser3dView={false}
-  code={`import { assembly } from "@tscircuit/core"
+`cadModel.positionOffset` and `rotationOffset` affect only the group's own mesh. Use them to align an imported asset's origin to its authored reference surfaces. Use a face mount to position the group and its children together.
 
-export default () => (
-  <assembly.device name="product">
-    <board
-      width="40mm"
-      height="30mm"
-      thickness="1.6mm"
-    />
-    <assembly.subassembly
-      name="bracket"
-      cadModel={{
-        glbUrl: "https://docs.tscircuit.com/models/assembly/bracket.glb",
-        positionOffset: { x: 10, y: 0, z: 0.8 },
-        rotationOffset: { x: 0, y: 0, z: 90 },
-      }}
-    />
-  </assembly.device>
-)`}
-/>
-
-Coordinates are in millimetres. The board's center is Z = 0, so the top of a 1.6 mm board is Z = 0.8 mm. A model's offset moves only that model, not its children; position CAD children with `pcbX`, `pcbY`, and `pcbZ`.
-
-See [Mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx) for screws aligned with holes, or [`assembly.screen`](./assembly-screen.mdx) for connector-relative placement.
+For fasteners that follow actual PCB holes or mechanical hole datums, use [`assembly.bolt`](./assembly-bolt.mdx). For a connector-relative display, use [`assembly.screen`](./assembly-screen.mdx).

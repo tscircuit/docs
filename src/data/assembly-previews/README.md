@@ -54,3 +54,18 @@ Each example's `threeDImageUrl` is rendered from its own Circuit JSON.
 
 Cable PNGs use PoppyGL 0.0.32 or later for realistic lighting. The core
 checkout used for regeneration must resolve that renderer version.
+
+The face-mounting, reference-surface, subassembly and bolt examples share
+`src/data/assembly-mounting/examples.ts`. Their CircuitPreview editor links,
+Circuit JSON and PNGs all use those complete sources. Regenerate with a core
+checkout containing CSS face mounts and `assembly.bolt` (0.0.2260 validated):
+
+```sh
+bun scripts/generate-mounting-previews.ts /path/to/tscircuit/core
+bunx biome format --write src/data/assembly-previews/assembly-{bearing-mount,relative-module,bolt-board}.json
+```
+
+The fasteners use existing JSCAD Electronics models from modelcdn; the bearing
+and housing use authored JSCAD plans. No GLB assets are added here. The bolt preview includes a second camera
+for its underside. Validate the original sources in `codetestingplayground`
+with `tsci build` when changing the mounting API or example geometry.

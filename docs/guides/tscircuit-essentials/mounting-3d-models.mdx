@@ -1,64 +1,35 @@
 ---
 title: Mounting 3D models to a board
-description: Import screws and other mechanical models and align them with PCB mounting holes.
+description: Attach bolt models to named PCB holes and choose their mounting surfaces.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import preview1 from "@site/src/data/assembly-previews/mounting-3d-models-1.json"
+import { pcbFasteningCode } from "@site/src/data/assembly-mounting/examples"
+import preview from "@site/src/data/assembly-previews/assembly-bolt-board.json"
 
-To show a screw mounted in a board, align its model with a mounting hole and place the underside of its head on the board surface.
-
-This example uses a GLB model in millimetres, with its origin under the screw head and its shaft pointing down (−Z). Replace the URL with your own model, using the same origin or adjusting its [CAD options](../../elements/cadmodel.mdx).
+Name a PCB mounting hole, then point an [`assembly.bolt`](../../elements/assembly-bolt.mdx) at it with `fastenedTo`. Core positions and orients the bolt from the hole's finalized PCB geometry, so it follows layout changes without manually copying the hole's coordinates or calculating the board's surface height.
 
 <CircuitPreview
-  wrapCode
-  circuitJson={preview1}
+  code={pcbFasteningCode}
+  circuitJson={preview}
+  threeDImageUrl="/img/elements/assembly-bolt-board.png"
   defaultView="3d"
   hideSchematicTab
-  browser3dView={false}
-  code={`import { assembly } from "@tscircuit/core"
-
-const boardThickness = 1.6
-const mounts = [
-  { name: "left", x: -15, y: 0 },
-  { name: "right", x: 15, y: 0 },
-]
-
-export default () => (
-  <assembly.device name="mounted-board">
-    <board
-      name="B1"
-      width="40mm"
-      height="30mm"
-      thickness={boardThickness}
-    >
-      {mounts.map(({ name, x, y }) => (
-        <hole
-          key={name}
-          diameter="3.2mm"
-          pcbX={x}
-          pcbY={y}
-        />
-      ))}
-    </board>
-    <assembly.subassembly name="hardware">
-      {mounts.map(({ name, x, y }) => (
-        <cadmodel
-          key={name}
-          model="https://docs.tscircuit.com/models/assembly/screw.glb"
-          modelUnitToMmScale={1}
-          pcbX={x}
-          pcbY={y}
-          pcbZ={boardThickness / 2}
-        />
-      ))}
-    </assembly.subassembly>
-  </assembly.device>
-)`}
+  wrapCode
 />
 
-The shared `mounts` array keeps each screw centered on its hole. The board is centered at Z = 0, so `pcbZ={boardThickness / 2}` seats each head on its top surface.
+The example uses the canonical `hexsocketbolt_m3_l10mm` model: an M3 × 10 mm socket-head bolt. The plain and plated holes are both 3.2 mm in diameter. Each hole creates the physical PCB cutout; each bolt adds its own CAD model.
 
-The model provides the 3D screw; `<hole>` creates the actual board cutout. Choose the hole diameter to match your hardware.
+- `.CONTROL > .H1` selects H1's top surface. B1's head sits above the board and its shaft points down.
+- `.CONTROL > .H2 > .bottom` selects H2's bottom surface. B2's head sits underneath and its shaft points up.
+- `.top` explicitly selects a hole's top surface. A compact path such as `CONTROL.H1` also works.
 
-Use [`assembly.subassembly`](../../elements/assembly-subassembly.mdx) for other mechanical parts, or [`assembly.screen`](../../elements/assembly-screen.mdx) for a display attached to a connector.
+The 1.6 mm PCB remains centered at Z = 0. Bolt seating planes are at Z = 0.8 mm and Z = −0.8 mm, and their XY positions come from the rotated, translated holes. The same references continue to work if the board or a footprint containing the holes moves.
+
+## Adjust or import a fastener
+
+Add `mountGap="2mm"` for clearance along the selected surface normal. `mountOffset={{ x: "1mm", y: "-2mm" }}` moves along its local tangents; this is useful for adjustment within a slot. Choose dimensions and clearances for the actual hardware: mounting does not cut a countersink, determine engagement, or check interference.
+
+For custom hardware, use `modelUrl` or `cadModel`. Author the asset's seating plane at its local origin, with its shaft pointing down (−Z), or provide a named `mountFace` on the bolt. See [`assembly.bolt`](../../elements/assembly-bolt.mdx) for dimensional bolts and custom mating faces.
+
+For bearings, brackets and other mechanical parts, define [`assembly.referencesurface`](../../elements/assembly-referencesurface.mdx) datums and pair `mountedTo` with `mountFace`. A mounted [`assembly.subassembly`](../../elements/assembly-subassembly.mdx) carries a complete group through one relative constraint. `cadModel` offsets remain available to align an imported mesh within its part's local frame.

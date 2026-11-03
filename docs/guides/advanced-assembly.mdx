@@ -76,6 +76,7 @@ The driver package and headers demonstrate board placement, without a routed dri
 
 | Change | How |
 |--------|-----|
+| Slide a part along its mounting face | Add signed `mountOffset={{ x: "5mm", y: "-2mm" }}` distances. These follow the target face's local tangents. |
 | Separate a motor from its bracket | Add `mountGap="2mm"` to `assembly.motor`. The gap follows the target face's outward normal. |
 | Use the rear of the motor | Set `mountFace="backface"` and provide a bracket with the appropriate rear mounting geometry. |
 | Change the motor's direction or rotation around the shaft | Rotate the bracket's reference rectangle. JSCAD angles are in radians. |
@@ -84,8 +85,10 @@ The driver package and headers demonstrate board placement, without a routed dri
 
 `frontface` is the shaft-side body plane, excluding the pilot and shaft. `backface` is the body plane opposite the shaft. Face mounting does not generate screw holes or check collisions; model the required holes and clearances in the printed part.
 
-References resolve within the nearest `assembly.device`, and declaration order does not matter. A connected assembly can have one PCB anchor. Missing or ambiguous targets, cycles, and a PCB mounted to a tilted face report errors. For assemblies containing a face-mounted motor, author rotation in the reference geometry rather than using board `mountRotation` or `mountRotationAnchor`.
+References accept CSS selectors such as `.BRACKET > .motor` as well as compact paths such as `BRACKET.motor`. They resolve within the nearest `assembly.device`, and declaration order does not matter. A connected assembly can have one PCB anchor. Missing or ambiguous targets, cycles, and a PCB mounted to a tilted face report errors. For assemblies containing a face-mounted motor, author rotation in the reference geometry rather than using board `mountRotation` or `mountRotationAnchor`.
 
-These examples require `@tscircuit/core` 0.0.2088 or later, with `@tscircuit/props` 0.0.687 or later. For all available props, see [`assembly.motor`](../elements/assembly-motor.mdx) and [`assembly.printedpart`](../elements/assembly-printedpart.mdx).
+These examples require `@tscircuit/core` 0.0.2088 or later, with `@tscircuit/props` 0.0.687 or later. CSS selectors and `mountOffset` need core 0.0.2253 and props 0.0.716 or later. For all available props, see [`assembly.motor`](../elements/assembly-motor.mdx) and [`assembly.printedpart`](../elements/assembly-printedpart.mdx).
 
 For staged disassembly, see [`assembly.explosion.stage`](../elements/assembly-explosion-stage.mdx): lift a cover and its bolts together, then remove the parts separately.
+
+For imported parts or a group with no model, author [`assembly.referencesurface`](../elements/assembly-referencesurface.mdx) children. A [mounted subassembly](../elements/assembly-subassembly.mdx#mount-a-group-with-relative-offsets) carries its children through the same frame. Use [`assembly.bolt`](../elements/assembly-bolt.mdx) to fasten hardware to actual PCB holes or named mechanical hole datums.

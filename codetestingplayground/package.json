@@ -14,7 +14,8 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.8",
-    "tscircuit": "^0.0.2764"
+    "tscircuit": "^0.0.3064",
+    "jscad-fiber": "^0.0.93"
   },
   "dependencies": {
     "@tscircuit/common": "^0.0.33"

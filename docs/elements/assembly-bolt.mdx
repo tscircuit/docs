@@ -1,0 +1,71 @@
+---
+title: <assembly.bolt />
+description: Fasten standard bolt models to PCB holes or named mechanical mounting faces.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { pcbFasteningCode } from "@site/src/data/assembly-mounting/examples"
+import preview from "@site/src/data/assembly-previews/assembly-bolt-board.json"
+
+`assembly.bolt` places a fastener at a named hole or mounting face. Use a canonical modelprinter string such as `hexsocketbolt_m3_l10mm`, or supply `diameter` and `length` to choose a standard bolt by dimensions.
+
+## Fasten to a PCB hole
+
+Name the actual [`hole`](./hole.mdx) or [`platedhole`](../footprints/platedhole.mdx), then select it with `fastenedTo`. A bare hole target seats the head on the PCB's top surface. Add `.bottom` to seat it underneath, with the shaft pointing up through the board.
+
+<CircuitPreview
+  code={pcbFasteningCode}
+  circuitJson={preview}
+  threeDImageUrl="/img/elements/assembly-bolt-board.png"
+  defaultView="3d"
+  hideSchematicTab
+  wrapCode
+/>
+
+The plain hole holds B1 from above; the plated hole holds B2 from below. Bolts follow the holes' finalized positions when the board or footprint moves or rotates. There is no second set of bolt coordinates to maintain. Both are M3 × 10 mm socket-head bolts; the 3.2 mm holes provide clearance.
+
+![Underside of the same PCB: B2's socket head sits on the plated hole, while B1's shaft extends below its plain hole.](/img/elements/assembly-bolt-board-bottom.png)
+
+The head's seating plane is the bolt's default mating origin. Socket, hex and pan models place that origin under the head; countersunk models place it at the top of the head. Model strings select the existing modelprinter geometry and modelcdn asset directly.
+
+## Choose a head and length
+
+```tsx
+<assembly.bolt
+  name="B3"
+  diameter="3mm"
+  length="10mm"
+  headType="socket"
+  fastenedTo=".CONTROL > .H1"
+/>
+```
+
+`headType` supports `socket` (the dimensional default), `hex`, `pan`, and `countersunk`. Length excludes the head for socket, hex and pan; countersunk length includes it. Dimensional bolts use the sizes supported by the corresponding modelprinter model. Socket-head bolts use its standard coarse thread pitch; a different thread or custom geometry requires your own CAD model.
+
+## Mechanical holes and mounting faces
+
+For a hole or slot in a mechanical part, author an [`assembly.referencesurface`](./assembly-referencesurface.mdx) at its physical seating location, then use a selector such as `fastenedTo=".HOUSING > .boltSeat"`. See the [bearing housing example](./assembly-referencesurface.mdx#define-a-seat-on-a-mechanical-part). Imported CAD meshes do not automatically provide named hole datums.
+
+`mountGap` separates the head from the target along the target's outward normal. `mountOffset={{ x: "2mm", y: "-1mm" }}` moves along the target face's local tangents; use it to adjust a bolt within a slot. An explicit `mountFace` selects a custom mating face on the bolt. Ordinary PCB targets also support `.top` explicitly, for example `.CONTROL > .H1 > .top`.
+
+References must select one target within the nearest `assembly.device`. CSS selectors such as `.CONTROL > .H1` and compact paths such as `CONTROL.H1` work; targets may be declared later. Bolts can be selected by name in [assembly explosion stages](./assembly-explosion-stage.mdx).
+
+## Bolt properties
+
+| Property | Description |
+|----------|-------------|
+| `name` | Required fastener name. |
+| `model` | Canonical modelprinter string, for example `hexsocketbolt_m3_l10mm`, or a model URL. |
+| `modelUrl`, `cadModel` | Alternative imported CAD source. Supply at most one CAD source. |
+| `diameter`, `length` | Required together when no CAD source is supplied. Distances in mm or unit strings. |
+| `headType` | Optional dimensional head style; defaults to `socket`. |
+| `threadPitch` | Optional dimensional pitch in mm or a unit string; must be supported by the selected model. |
+| `fastenedTo` | Target PCB hole, hole surface, or named mechanical reference face. |
+| `mountedTo` | Alias for `fastenedTo`. If both are supplied, their trimmed strings must match. |
+| `mountFace` | Optional named mating face on this bolt; omitted uses its authored seating origin. |
+| `mountGap` | Nonnegative normal clearance, default zero. Requires a target. |
+| `mountOffset` | Signed target-local `{ x?, y? }` distances, each defaulting to zero. Requires a target. |
+
+Dimensions, `headType`, and `threadPitch` cannot be combined with `model`, `modelUrl`, or `cadModel`. Mounting places the fastener; create the physical hole separately and choose appropriate clearances, thread engagement and countersinks. It does not cut a hole or check collisions.
+
+The examples on this page are validated with `tscircuit` 0.0.3064.
