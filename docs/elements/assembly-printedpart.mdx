@@ -146,7 +146,7 @@ The rectangle's center is the attachment point, its local +Z is the outward dire
 
 On the printed part, `mountedTo="NEMA17.backface"` chooses the target face and `mountFace="motor"` chooses its own face. Supply these two props together. The faces meet with opposing outward directions and aligned in-plane X directions. A board only needs `mountedTo="SPACER.board"`; it does not need a `mountFace` prop.
 
-Mounting keeps the PCB's existing XY layout and its center plane at Z = 0, moving the attached parts to meet it. Board mounting requires a target face parallel to XY; motor–spacer–board chains support shaft directions `z+` and `z-`. One board can anchor each connected chain of parts. Targets resolve by name inside the same `assembly.device`, including targets declared later.
+Mounting keeps the PCB's existing XY layout and its center plane at Z = 0, moving the attached parts to meet it. Board mounting requires a target face parallel to XY; motor–spacer–board chains support shaft directions `z+` and `z-`. One board can anchor each connected chain of parts. Targets resolve inside the same `assembly.device`, including targets declared later. CSS selectors such as `.NEMA17 > .backface` and `.SPACER > .board` work as well as the compact named paths shown above.
 
 ## Use an existing CAD model
 
@@ -166,7 +166,7 @@ Provide exactly one of `jscad`, `model`, `modelUrl`, or `cadModel`:
 
 Use your own asset paths. `model` accepts a modelprinter/footprinter specification or a model URL. `cadModel` accepts the existing CAD model formats and transforms described in [mounting 3D models](../guides/tscircuit-essentials/mounting-3d-models.mdx).
 
-Imported models do not automatically provide named mounting faces. For the face-based mounting shown above, author the reference rectangles through the `jscad` prop.
+Imported models do not automatically provide named mounting faces. Add [`assembly.referencesurface`](./assembly-referencesurface.mdx) children at the model's physical mounting locations, or author reference rectangles through the `jscad` prop. Both forms use part-local coordinates and move with the mounted part. CAD model offsets align the mesh without moving these datums.
 
 ## Printed part properties
 
@@ -178,8 +178,9 @@ Imported models do not automatically provide named mounting faces. For the face-
 | `model` | `string` | Model specification or model URL. |
 | `modelUrl` | `string` | URL or asset path for an existing CAD model. |
 | `cadModel` | `CadModelProp` | Existing CAD model configuration or CAD JSX. |
-| `mountedTo` | `string` | Target part and face, such as `NEMA17.backface`. |
+| `mountedTo` | `string` | Target face selector, such as `.NEMA17 > .backface`, or compact path `NEMA17.backface`. |
 | `mountFace` | `string` | This part's named reference face; supply together with `mountedTo`. |
+| `mountOffset` | `{ x?, y? }` | Signed distances in mm or unit strings along the target face's local X/Y tangents; omitted axes are zero. Requires `mountedTo`. |
 | `mountGap` | `string \| number` | Nonnegative surface clearance in mm or a unit string. Defaults to zero; requires `mountedTo`. |
 
 JSCAD JSX can contain synchronous function components, fragments, and arrays. Hooks, async components, and raw JSCAD kernel geometry are not supported in the `jscad` prop.

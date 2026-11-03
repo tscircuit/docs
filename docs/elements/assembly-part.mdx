@@ -1,36 +1,33 @@
 ---
 title: <assembly.part />
-description: Add a generic mechanical component to an assembly with optional CAD geometry.
+description: Mount purchased mechanical models and generic CAD geometry using named reference faces.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import preview1 from "@site/src/data/assembly-previews/assembly-part-1.json"
+import { bearingMountFiles } from "@site/src/data/assembly-mounting/examples"
+import preview from "@site/src/data/assembly-previews/assembly-bearing-mount.json"
 
-`assembly.part` is a generic component of an assembly, such as a bracket, cover, or purchased mechanical part. Give it a stable `name` and optionally supply a CAD model. It has no PCB footprint, schematic symbol, or electrical ports.
+`assembly.part` is a generic mechanical component, such as a bearing, bracket, or cover. Give it a stable `name` and optionally supply a CAD model. It has no PCB footprint, schematic symbol, or electrical ports.
+
+## Mount a bearing model
+
+This example seats an 8 × 22 × 7 mm bearing in a printed housing. `mountedTo=".HOUSING > .bearingSeat"` selects the pocket floor; `mountFace="base"` selects the bearing's authored bottom reference. The bearing's origin is at that bottom face, so no CAD offset is needed.
 
 <CircuitPreview
-  wrapCode
-  circuitJson={preview1}
-  threeDImageUrl="/img/elements/assembly-part-bracket.png"
+  fsMap={bearingMountFiles}
+  entrypoint="index.tsx"
+  mainComponentPath="index.tsx"
+  circuitJson={preview}
+  threeDImageUrl="/img/elements/assembly-bearing-mount.png"
   defaultView="3d"
+  hidePCBTab
   hideSchematicTab
-  code={`import { assembly } from "@tscircuit/core"
-
-export default () => (
-  <assembly.device name="product">
-    <board width="40mm" height="30mm" thickness="1.6mm" />
-    <assembly.part
-      name="bracket"
-      displayName="Mounting bracket"
-      cadModel={{
-        glbUrl: "https://docs.tscircuit.com/models/assembly/bracket.glb",
-        positionOffset: { x: 10, y: 0, z: 0.8 },
-        rotationOffset: { x: 0, y: 0, z: 90 },
-      }}
-    />
-  </assembly.device>
-)`}
+  wrapCode
 />
+
+The housing, bearing races and recessed shields are modeled in `models.tsx`; the bolt uses an existing JSCAD Electronics model. [`assembly.referencesurface`](./assembly-referencesurface.mdx) adds attachment frames to these parts without adding material. The bolt uses its own [`fastenedTo`](./assembly-bolt.mdx) prop.
+
+For a purchased bearing CAD file, replace `cadModel={bearingModel}` with `modelUrl="./bearing.glb"` and keep the references at the asset's physical mounting locations. This example's authored model has its bottom at local Z = 0.
 
 ## Part properties
 
@@ -40,16 +37,20 @@ export default () => (
 | `displayName` | Optional human-facing name. |
 | `model` | Modelprinter/footprinter specification or an HTTP(S) model URL. |
 | `modelUrl` | Imported model URL or asset path. |
-| `cadModel` | Existing CAD formats and transforms, including CAD JSX; see [`cadmodel`](./cadmodel.mdx). |
+| `cadModel` | Existing CAD formats and model-alignment transforms, including CAD JSX; see [`cadmodel`](./cadmodel.mdx). |
+| `mountedTo` | Target face selector, such as `.HOUSING > .bearingSeat`, or compact path `HOUSING.bearingSeat`. |
+| `mountFace` | This part's named mating face. Supply with `mountedTo`. |
+| `mountOffset` | Signed distances along the target face's local X/Y tangents: `{ x?, y? }`. Omitted axes are zero. |
+| `mountGap` | Nonnegative clearance along the target's outward normal, default zero. |
 
-Supply at most one of `model`, `modelUrl`, or `cadModel`. Omit all three for a part with no geometry. `cadModel={null}` also keeps the part's identity without rendering a model; it cannot be combined with another model source.
+Supply at most one of `model`, `modelUrl`, or `cadModel`. Omit all three for a part with no geometry. `cadModel={null}` also keeps the identity without rendering a model; it cannot be combined with another model source. For a `jscad` JSX prop, use [`assembly.printedpart`](./assembly-printedpart.mdx).
 
-## Placement
+## Placement and CAD alignment
 
-Standalone parts use the world origin. Nested parts inherit the nearest assembly's placement. `cadModel.positionOffset` moves the model in that local frame; `rotationOffset` rotates it. A model's offsets do not move the assembly origin used by other elements.
+Standalone unmounted parts use the world origin. Nested parts inherit the nearest assembly's full placement, including tilt. A face mount sets the complete position and orientation; its children and reference surfaces follow that frame. Use `mountOffset` for in-plane adjustment and `mountGap` for separation. Both require `mountedTo`.
 
-Coordinates are in millimetres in a right-handed frame: +X right, +Y top, and +Z above the board. In the example, the top of the 1.6 mm board is at Z = 0.8 mm. These model transforms do not attach the bracket to mounting holes or create fasteners.
+`cadModel.positionOffset` and `rotationOffset` align the mesh within that frame. They do not move the assembly origin, its children, or its reference surfaces. An imported model needs authored reference surfaces; core does not infer mounting faces from its mesh.
 
-An [`assembly.screen`](./assembly-screen.mdx) can target the part's identity with `connectsTo=".bracket"`. This uses the part's assembly origin, not the model's offset, and does not create electrical connections. `pcbDisabled` suppresses part CAD geometry.
+Coordinates are in millimetres in a right-handed frame: +X right, +Y top, and +Z above. Target selectors resolve within the nearest `assembly.device`, including targets declared later. A selector must match exactly one face; missing or ambiguous references and mounting cycles report errors.
 
-Use [`assembly.printedpart`](./assembly-printedpart.mdx) for printable JSCAD geometry with named mounting faces, or [`assembly.subassembly`](./assembly-subassembly.mdx) to group nested assembly elements. A generic part has no `mountedTo`, `mountFace`, or `jscad` prop.
+An [`assembly.screen`](./assembly-screen.mdx) can target the part's identity with `connectsTo=".BEARING"`; this uses its assembly origin and creates no electrical connections. Use [`assembly.subassembly`](./assembly-subassembly.mdx) to move a group through one mounting constraint.
