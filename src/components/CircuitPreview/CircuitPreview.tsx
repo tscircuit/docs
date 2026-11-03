@@ -34,6 +34,7 @@ type CircuitPreviewView =
   | "3d"
   | "runframe"
   | "drawing"
+  | "system"
   | "pinout"
 
 const Tab = ({
@@ -130,6 +131,7 @@ export default function CircuitPreview({
   circuitJson,
   pcbImageUrl,
   schematicImageUrl,
+  systemImageUrl,
   threeDImageUrl,
   explosion,
   explosionStages,
@@ -169,6 +171,8 @@ export default function CircuitPreview({
   circuitJson?: Record<string, unknown>[]
   pcbImageUrl?: string
   schematicImageUrl?: string
+  /** Pre-rendered system diagram while hosted System rendering rolls out. */
+  systemImageUrl?: string
   threeDImageUrl?: string
   /** A single sampled 3D pose. Omit for the assembled view. */
   explosion?: ExplosionPose
@@ -594,6 +598,13 @@ export default function CircuitPreview({
               onClick={() => setView("drawing")}
             />
           )}
+          {systemImageUrl && (
+            <Tab
+              label="System"
+              active={view === "system"}
+              onClick={() => setView("system")}
+            />
+          )}
           {showPinoutTab && (
             <Tab
               label="Pinout"
@@ -648,13 +659,15 @@ export default function CircuitPreview({
       const hasPreviewHeader = Boolean(editorUrl)
 
       const src =
-        v === "pcb"
-          ? pcbUrl
-          : v === "schematic"
-            ? schUrl
-            : v === "pinout"
-              ? pinoutUrl
-              : threeDUrl
+        v === "system"
+          ? (systemImageUrl ?? "")
+          : v === "pcb"
+            ? pcbUrl
+            : v === "schematic"
+              ? schUrl
+              : v === "pinout"
+                ? pinoutUrl
+                : threeDUrl
 
       return (
         <div
@@ -738,7 +751,8 @@ export default function CircuitPreview({
     view === "3d" ||
     view === "runframe" ||
     view === "pinout" ||
-    view === "drawing") && (
+    view === "drawing" ||
+    view === "system") && (
     <div
       className={`${tw(
         `flex-1 basis-1/2 min-w-0 m-0 p-0 ${
@@ -754,6 +768,13 @@ export default function CircuitPreview({
       <div
         className={`${styles.previewContent} ${imageViewHasHeader ? styles.previewContentWithHeader : ""}`}
       >
+        {systemImageUrl &&
+          renderPreviewImage({
+            src: systemImageUrl,
+            alt: "System block diagram",
+            hidden: view !== "system",
+            imageClassName: "w-full m-0 object-contain bg-white",
+          })}
         {renderPreviewImage({
           src: pcbUrl,
           alt: "PCB Circuit Preview",
