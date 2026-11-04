@@ -3,15 +3,15 @@ title: <systemblock.connection />
 description: Show a signal or power interface between system blocks.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { systemBlockConnectionExample } from "@site/src/data/system-block-element-examples"
+
 `systemblock.connection` connects two
 [`systemblock.component`](./systemblock-component.mdx) elements on the same
 [`systemblock.page`](./systemblock-page.mdx). It represents a functional interface
 without creating electrical traces or nets.
 
-```tsx
-<systemblock.connection from="supply" to="controller" kind="power" label="3.3 V" />
-<systemblock.connection from="sensor" to="controller" label="I2C" direction="both" />
-```
+<CircuitPreview code={systemBlockConnectionExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />
 
 See the [system block diagrams guide](../guides/tscircuit-essentials/system-block-diagrams.mdx)
 for connections in a complete, rendered diagram.

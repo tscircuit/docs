@@ -18,14 +18,14 @@ to collect related functions. Connect the blocks with
 [`systemblock.connection`](../../elements/systemblock-connection.mdx) elements
 that name the interfaces between them.
 
-<CircuitPreview code={systemBlockExample} systemImageUrl="/img/elements/system-blocks.svg" defaultView="system" hidePCBTab hideSchematicTab hide3DTab />
+<CircuitPreview code={systemBlockExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />
 
 Here, the sensor and microcontroller belong to the same subsystem. The I2C and
 SPI connections have arrows at both ends to indicate two-way communication.
 The page's `direction="down"` arranges the flow vertically. Core chooses block
 sizes, positions, routes, and label positions automatically.
 
-The preview is generated from this TSX using `circuit-to-svg`. Exported System
+The preview is rendered from this TSX by svg.tscircuit.com using `circuit-to-svg`. Exported System
 SVGs work independently of the editor's available tabs. Save the example as
 `system-blocks.circuit.tsx` to use it in the export below.
 

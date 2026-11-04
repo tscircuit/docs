@@ -3,20 +3,13 @@ title: <systemblock.page />
 description: Define a system block diagram and its layout direction.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { systemBlockPageExample } from "@site/src/data/system-block-element-examples"
+
 `systemblock.page` contains one system block diagram. It can stand alone or appear
 inside a board or subcircuit. Each page has its own layout and name scope.
 
-```tsx
-import { systemblock } from "tscircuit"
-
-export default () => (
-  <systemblock.page name="overview" displayName="Wireless sensor node" direction="down">
-    <systemblock.component name="sensor" displayName="Environment sensor" />
-    <systemblock.component name="mcu" displayName="Microcontroller" />
-    <systemblock.connection from="sensor" to="mcu" label="I2C" direction="both" />
-  </systemblock.page>
-)
-```
+<CircuitPreview code={systemBlockPageExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />
 
 For a rendered example and SVG export, see the
 [system block diagrams guide](../guides/tscircuit-essentials/system-block-diagrams.mdx).

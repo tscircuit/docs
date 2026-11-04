@@ -132,6 +132,7 @@ export default function CircuitPreview({
   pcbImageUrl,
   schematicImageUrl,
   systemImageUrl,
+  showSystemTab,
   threeDImageUrl,
   explosion,
   explosionStages,
@@ -171,8 +172,9 @@ export default function CircuitPreview({
   circuitJson?: Record<string, unknown>[]
   pcbImageUrl?: string
   schematicImageUrl?: string
-  /** Pre-rendered system diagram while hosted System rendering rolls out. */
+  /** Optional pre-rendered System diagram override. */
   systemImageUrl?: string
+  showSystemTab?: boolean
   threeDImageUrl?: string
   /** A single sampled 3D pose. Omit for the assembled view. */
   explosion?: ExplosionPose
@@ -338,6 +340,20 @@ export default function CircuitPreview({
     circuitJson,
     pcbImageUrl,
   ])
+  const systemTabEnabled =
+    showSystemTab ??
+    Boolean(
+      systemImageUrl ||
+        defaultView === "system" ||
+        leftView === "system" ||
+        rightView === "system",
+    )
+  const systemUrl = useMemo(() => {
+    if (systemImageUrl) return systemImageUrl
+    const url = new URL(configurePreviewUrl(createSvgUrl(fsMapOrCode, "pcb")))
+    url.searchParams.set("svg_type", "system")
+    return url.toString()
+  }, [fsMapOrCode, mainComponentPath, circuitJson, systemImageUrl])
   const schUrl = useMemo(() => {
     if (schematicImageUrl) return schematicImageUrl
     const baseUrl = configurePreviewUrl(
@@ -598,7 +614,7 @@ export default function CircuitPreview({
               onClick={() => setView("drawing")}
             />
           )}
-          {systemImageUrl && (
+          {systemTabEnabled && (
             <Tab
               label="System"
               active={view === "system"}
@@ -660,7 +676,7 @@ export default function CircuitPreview({
 
       const src =
         v === "system"
-          ? (systemImageUrl ?? "")
+          ? systemUrl
           : v === "pcb"
             ? pcbUrl
             : v === "schematic"
@@ -739,6 +755,7 @@ export default function CircuitPreview({
   const CodeView =
     (view === "code" ||
       shouldSplitCode ||
+      (verticalStack && hideCodeTab) ||
       (!_showTabs && windowSize === "mobile")) &&
     renderCodePane("border-r")
 
@@ -768,9 +785,9 @@ export default function CircuitPreview({
       <div
         className={`${styles.previewContent} ${imageViewHasHeader ? styles.previewContentWithHeader : ""}`}
       >
-        {systemImageUrl &&
+        {systemTabEnabled &&
           renderPreviewImage({
-            src: systemImageUrl,
+            src: systemUrl,
             alt: "System block diagram",
             hidden: view !== "system",
             imageClassName: "w-full m-0 object-contain bg-white",

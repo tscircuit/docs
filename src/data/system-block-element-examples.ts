@@ -1,0 +1,14 @@
+export const systemBlockComponentExample =
+  'import { systemblock } from "tscircuit"\n\nexport default () => (\n  <systemblock.page name="overview">\n    <systemblock.component\n      name="sensor"\n      displayName="Environment sensor"\n      description="Measures temperature and humidity"\n    />\n  </systemblock.page>\n)\n'
+
+export const systemBlockConnectionExample =
+  'import { systemblock } from "tscircuit"\n\nexport default () => (\n  <systemblock.page name="overview" direction="down">\n    <systemblock.component name="supply" displayName="3.3 V supply" />\n    <systemblock.component name="sensor" displayName="Sensor" />\n    <systemblock.component name="controller" displayName="Controller" />\n    <systemblock.connection\n      from="supply"\n      to="controller"\n      kind="power"\n      label="3.3 V"\n    />\n    <systemblock.connection\n      from="sensor"\n      to="controller"\n      label="I2C"\n      direction="both"\n    />\n  </systemblock.page>\n)\n'
+
+export const systemBlockGroupExample =
+  'import { systemblock } from "tscircuit"\n\nexport default () => (\n  <systemblock.page name="overview" direction="down">\n    <systemblock.group name="processing" displayName="Sensing and processing">\n      <systemblock.component name="sensor" displayName="Environment sensor" />\n      <systemblock.component name="mcu" displayName="Microcontroller" />\n      <systemblock.connection from="sensor" to="mcu" label="I2C" />\n    </systemblock.group>\n  </systemblock.page>\n)\n'
+
+export const systemBlockPageExample =
+  'import { systemblock } from "tscircuit"\n\nexport default () => (\n  <systemblock.page\n    name="overview"\n    displayName="Wireless sensor node"\n    direction="down"\n  >\n    <systemblock.component name="sensor" displayName="Environment sensor" />\n    <systemblock.component name="mcu" displayName="Microcontroller" />\n    <systemblock.connection\n      from="sensor"\n      to="mcu"\n      label="I2C"\n      direction="both"\n    />\n  </systemblock.page>\n)\n'
+
+export const systemBlockPcbAssociationExample =
+  'import { systemblock } from "tscircuit"\n\nexport default () => (\n  <board width="30mm" height="20mm" routingDisabled>\n    <group name="power" subcircuit>\n      <chip name="U1" footprint="soic8" pcbX={-5} />\n      <inductor name="L1" inductance="10uH" footprint="0805" pcbX={2} />\n      <capacitor name="C1" capacitance="10uF" footprint="0805" pcbX={6} />\n      <capacitor name="C2" capacitance="10uF" footprint="0805" pcbX={10} />\n    </group>\n    <systemblock.page name="power-overview">\n      <systemblock.component\n        name="regulator"\n        displayName="3.3 V regulator"\n        pcbComponentNames={["U1", "L1", "C1", "C2"]}\n        pcbSubcircuitName="power"\n      />\n    </systemblock.page>\n  </board>\n)\n'

@@ -3,18 +3,15 @@ title: <systemblock.component />
 description: Represent a function or component in a system block diagram.
 ---
 
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { systemBlockComponentExample, systemBlockPcbAssociationExample } from "@site/src/data/system-block-element-examples"
+
 `systemblock.component` represents one functional block inside a
 [`systemblock.page`](./systemblock-page.mdx) or
 [`systemblock.group`](./systemblock-group.mdx). Core sizes the block from its
 label and description and places it automatically.
 
-```tsx
-<systemblock.component
-  name="sensor"
-  displayName="Environment sensor"
-  description="Measures temperature and humidity"
-/>
-```
+<CircuitPreview code={systemBlockComponentExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />
 
 See the [system block diagrams guide](../guides/tscircuit-essentials/system-block-diagrams.mdx)
 for this block in a complete, rendered diagram.
@@ -45,11 +42,4 @@ output must be enabled and present.
 
 For example, associate a regulator block with its physical circuit:
 
-```tsx
-<systemblock.component
-  name="regulator"
-  displayName="3.3 V regulator"
-  pcbComponentNames={["U1", "L1", "C1", "C2"]}
-  pcbSubcircuitName="power"
-/>
-```
+<CircuitPreview code={systemBlockPcbAssociationExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />
