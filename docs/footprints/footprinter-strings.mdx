@@ -9,11 +9,24 @@ description: >-
 ## Overview
 
 You can quickly specify the footprint and 3d model for any element by setting
-the `footprint` property to a string. 
+the `footprint` property to a string. Footprinter strings use a compact underscore-separated syntax (`<package><pins>_<param><value>`) to customize pitch, pad dimensions, body width, drill sizes, and thermal pads.
 
 import FootprintPreview from "@site/src/components/FootprintPreview"
 
 <FootprintPreview footprint="0402" />
+
+### Common Parameter Modifiers
+
+| Modifier | Example | Meaning |
+| --- | --- | --- |
+| `p<length>` | `soic8_p1.27mm` | Center-to-center pin pitch |
+| `w<length>` | `soic8_w3.9mm` | Package body width |
+| `h<length>` | `qfn16_w3mm_h3mm` | Package body height |
+| `pw<length>` | `0603_pw0.8mm` | Individual SMD pad width |
+| `pl<length>` | `0603_pl0.9mm` | Individual SMD pad length |
+| `id<length>` | `dip8_id0.8mm` | Plated hole inner (drill) diameter |
+| `od<length>` | `dip8_od1.6mm` | Plated hole outer (annular ring) diameter |
+| `thermalpad` | `qfn32_thermalpad3.1x3.1mm` | Centered exposed thermal pad (default or `WxH`) |
 
 ## dip
 
@@ -51,6 +64,18 @@ Examples:
 | `p`       | `"2.54mm"` | Pitch. Space between pins |
 | `id`      | `"0.7mm"`  | Inner diameter (hole diameter) of plated holes |
 | `od`      | `"1mm"`    | Outer diameter (copper diameter) of plated holes |
+
+## 01005
+
+Ultra-miniature imperial 01005 (metric 0402) two-pad SMD package. `0.4mm × 0.2mm`
+
+<FootprintPreview footprint="01005" />
+
+## 0201
+
+Sub-miniature imperial 0201 (metric 0603) two-pad SMD package. `0.6mm × 0.3mm`
+
+<FootprintPreview footprint="0201" />
 
 ## 0402
 
@@ -139,6 +164,38 @@ Parameters:
 | `p` | `"0.65mm"` | Pin pitch (center-to-center distance between adjacent pins) |
 | `pw` | _calculated_ | Pin width (calculated from pitch if not specified) |
 | `pl` | _calculated_ | Pin length (calculated from pin width if not specified) |
+
+## msop
+
+Mini Small Outline Package (MSOP) footprint for compact dual-row surface-mount ICs.
+
+<FootprintPreview footprints={["msop8", "msop10"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `8` | Number of pins in the package (commonly `8` or `10`) |
+| `w` | `"3.0mm"` | Overall package body width |
+| `p` | `"0.65mm"` | Pin pitch (`0.65mm` for MSOP-8, `0.5mm` for MSOP-10) |
+| `pw` | _calculated_ | Pad width |
+| `pl` | _calculated_ | Pad length |
+
+## dfn
+
+Dual Flat No-Lead (DFN) surface-mount package with flush side pads.
+
+<FootprintPreview footprints={["dfn8", "dfn8_w3mm_p0.5mm"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `8` | Number of pins (even number split across left and right sides) |
+| `w` | `"3.0mm"` | Package body width |
+| `p` | `"0.5mm"` | Pin pitch |
+| `pw` | `"0.3mm"` | Pad width |
+| `pl` | `"0.8mm"` | Pad length |
 
 ## tqfp
 
@@ -371,6 +428,113 @@ Parameters:
 | `pw` | `"0.7mm"` | Pin width |
 | `pl` | `"0.8mm"` | Pin length |
 
+## sot363
+
+6-pin Small Outline Transistor (SOT-363 / SC-88) footprint.
+
+<FootprintPreview footprint="sot363" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `6` | Fixed at 6 pins |
+| `w` | `"2.1mm"` | Overall width across pads |
+| `p` | `"0.65mm"` | Pin pitch |
+| `pw` | `"0.3mm"` | Pad width |
+| `pl` | `"0.7mm"` | Pad length |
+
+## sot563
+
+Ultra-compact 6-pin Small Outline Transistor (SOT-563) footprint.
+
+<FootprintPreview footprint="sot563" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `6` | Fixed at 6 pins |
+| `w` | `"1.6mm"` | Package width |
+| `p` | `"0.5mm"` | Pin pitch |
+| `pw` | `"0.3mm"` | Pad width |
+| `pl` | `"0.55mm"` | Pad length |
+
+## sot723
+
+Ultra-small 3-pin Small Outline Transistor (SOT-723) footprint.
+
+<FootprintPreview footprint="sot723" />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `3` | Fixed at 3 pins |
+| `w` | `"1.2mm"` | Package body width |
+| `h` | `"1.2mm"` | Package body height |
+| `pl` | `"0.4mm"` | Pad length |
+| `pw` | `"0.32mm"` | Pad width |
+
+## sot89
+
+Medium-power Small Outline Transistor (SOT-89) footprint with 3 or 5 pins.
+
+<FootprintPreview footprints={["sot89", "sot89_5"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `num_pins` | `3` | Number of pins (`3` or `5`) |
+| `w` | `"4.5mm"` | Package body width |
+| `p` | `"1.5mm"` | Pin pitch |
+
+## sod123 & sod323
+
+Small Outline Diode (SOD-123 and SOD-323) two-pad SMD diode footprints.
+
+<FootprintPreview footprints={["sod123", "sod323"]} />
+
+Parameters:
+
+| Parameter | Default (`sod123` / `sod323`) | Description |
+|-----------|-------------------------------|-------------|
+| `w` | `"3.65mm"` / `"2.5mm"` | Overall width across pads |
+| `h` | `"1.6mm"` / `"1.25mm"` | Package body height |
+| `pw` | `"1.22mm"` / `"0.6mm"` | Pad width |
+| `pl` | `"0.91mm"` / `"0.6mm"` | Pad length |
+
+## sma, smb, & smc
+
+DO-214 surface-mount power diode packages (`sma` / DO-214AC, `smb` / DO-214AA, and `smc` / DO-214AB).
+
+<FootprintPreview footprints={["sma", "smb", "smc"]} />
+
+Parameters:
+
+| Package | Default Pitch (`p`) | Default Pad Width (`pw`) | Default Pad Length (`pl`) |
+|---------|---------------------|--------------------------|---------------------------|
+| `sma` | `"4.0mm"` | `"1.5mm"` | `"1.7mm"` |
+| `smb` | `"4.3mm"` | `"2.2mm"` | `"2.5mm"` |
+| `smc` | `"6.85mm"` | `"3.2mm"` | `"2.2mm"` |
+
+## pushbutton
+
+4-pin tactile pushbutton switch footprint with configurable width, height, and internally shorted pin pairs.
+
+<FootprintPreview footprints={["pushbutton", "pushbutton_id1.2mm_od2mm"]} />
+
+Parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `w` | `"6.5mm"` | Horizontal spacing between switch pins |
+| `h` | `"4.5mm"` | Vertical spacing between switch pins |
+| `id` | `"1.0mm"` | Inner drill diameter of plated holes |
+| `od` | `"1.8mm"` | Outer copper diameter of plated holes |
+| `tllabel` / `trlabel` / `bllabel` / `brlabel` | _optional_ | Silkscreen labels for top-left, top-right, bottom-left, and bottom-right pins |
+
 ## pinrow
 
 Row of pins suitable for male or female pin headers. If `_male` or `_female`
@@ -403,36 +567,19 @@ Parameters:
 | `doublesidedpinlabel` | false | Add silkscreen pins in top and bottom layers |
 | `bottomsidepinlabel` | false | Place silkscreen reference text on bottom layer |
 
-## micromelf
+## melf, micromelf, & minimelf
 
-Micro MELF (Metal Electrode Leadless Face) package.
+MELF (Metal Electrode Leadless Face) cylindrical surface-mount packages (`melf`, `micromelf`, and `minimelf`).
 
-<FootprintPreview footprint="micromelf" />
+<FootprintPreview footprints={["melf", "micromelf", "minimelf"]} />
 
-Parameters:
+Parameters (`micromelf` / `minimelf`):
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `num_pins` | `2` | Number of pins (fixed at 2) |
-| `w` | `"3.0mm"` | Package width |
-| `h` | `"1.80mm"` | Package height |
-| `pl` | `"0.80mm"` | Pad length |
-| `pw` | `"1.20mm"` | Pad width |
-| `p` | `"1.6mm"` | Pin pitch |
-
-## minimelf
-
-Mini MELF (Metal Electrode Leadless Face) package.
-
-<FootprintPreview footprint="minimelf" />
-
-Parameters:
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `num_pins` | `2` | Number of pins (fixed at 2) |
-| `w` | `"5.40mm"` | Package width |
-| `h` | `"2.30mm"` | Package height |
-| `pl` | `"1.30mm"` | Pad length |
-| `pw` | `"1.70mm"` | Pad width |
-| `p` | `"3.5mm"` | Pin pitch |
+| Parameter | `micromelf` Default | `minimelf` Default | Description |
+|-----------|---------------------|--------------------|-------------|
+| `num_pins` | `2` | `2` | Number of pins (fixed at 2) |
+| `w` | `"3.0mm"` | `"5.40mm"` | Package width |
+| `h` | `"1.80mm"` | `"2.30mm"` | Package height |
+| `pl` | `"0.80mm"` | `"1.30mm"` | Pad length |
+| `pw` | `"1.20mm"` | `"1.70mm"` | Pad width |
+| `p` | `"1.6mm"` | `"3.5mm"` | Pin pitch |

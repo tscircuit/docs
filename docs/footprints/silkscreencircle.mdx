@@ -1,25 +1,65 @@
 ---
 title: <silkscreencircle />
-description: Silkscreen circles are often used to indicate "pin1" on a chip.
+description: Silkscreen circles are used to draw circular outlines or Pin 1 indicator dots on the PCB silkscreen layer.
 ---
-
-## Overview
-
-Silkscreen circles are often used to indicate "pin1" on a chip.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
-<CircuitPreview 
+## Overview
+
+The `<silkscreencircle />` element draws a circle on the PCB silkscreen layer. It is most commonly used to mark **Pin 1** on IC footprints, outline round components (such as radial electrolytic capacitors, buzzers, or coin-cell holders), or place circular alignment fiducials on the silkscreen.
+
+<CircuitPreview
   defaultView="pcb"
   hideSchematicTab
   code={`
-  export default () => (
-  <board width="5mm" height="5mm">
-    <group>
-      <footprint>
-        <silkscreencircle pcbX={0} pcbY={0} radius={1} />
-      </footprint>
-    </group>
+export default () => (
+  <board width="10mm" height="8mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad portHints={["1"]} shape="rect" width="1mm" height="0.5mm" pcbX="-1.8mm" pcbY="0.65mm" />
+          <smtpad portHints={["2"]} shape="rect" width="1mm" height="0.5mm" pcbX="-1.8mm" pcbY="-0.65mm" />
+          <smtpad portHints={["3"]} shape="rect" width="1mm" height="0.5mm" pcbX="1.8mm" pcbY="-0.65mm" />
+          <smtpad portHints={["4"]} shape="rect" width="1mm" height="0.5mm" pcbX="1.8mm" pcbY="0.65mm" />
+          <silkscreenrect pcbX={0} pcbY={0} width="2.2mm" height="2.4mm" strokeWidth="0.12mm" />
+          <silkscreencircle pcbX="-2.6mm" pcbY="0.65mm" radius="0.25mm" isFilled />
+        </footprint>
+      }
+    />
   </board>
-  )
-`} />
+)
+`}
+/>
+
+## Properties
+
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `pcbX` | `length` | `0` | X coordinate of the circle center on the PCB silkscreen |
+| `pcbY` | `length` | `0` | Y coordinate of the circle center on the PCB silkscreen |
+| `radius` | `length` | *required* | Radius of the silkscreen circle |
+| `strokeWidth` | `length` | `"0.1mm"` | Line thickness of the circle outline |
+| `isFilled` | `boolean` | `false` | When `true`, renders a solid filled silkscreen dot |
+| `isStrokeDashed` | `boolean` | `false` | When `true`, renders the circle outline with a dashed stroke |
+| `layer` | `"top" \| "bottom"` | `"top"` | PCB layer on which to draw the silkscreen circle |
+
+## Outlined vs. Filled Circles
+
+Set `isFilled` to create a solid Pin 1 indicator dot, or omit `isFilled` and adjust `strokeWidth` to draw a circular component body outline:
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="14mm" height="8mm">
+    <footprint>
+      <silkscreencircle pcbX={-3} pcbY={0} radius="2mm" strokeWidth="0.2mm" />
+      <silkscreencircle pcbX={3} pcbY={0} radius="1.2mm" isFilled />
+    </footprint>
+  </board>
+)
+`}
+/>

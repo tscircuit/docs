@@ -1,22 +1,23 @@
 ---
 title: Footprint Elements vs Strings
-description: Compare using footprint elements and footprinter strings when defining components
+description: Compare using footprint elements and footprinter strings when defining components, with a complete reference of available footprint primitives
 sidebar_position: 1
 ---
 
-When setting the `footprint` property for an element, you can either
-use [footprinter strings](./footprinter-strings.mdx) or use the [`<footprint />`](../elements/footprint.mdx)
-element and manually specify pad positions.
+import CircuitPreview from "@site/src/components/CircuitPreview"
 
-Footprinter strings are often quicker, more concise, and have the benefit of often
-mapping to a 3d model.
+## Overview
 
-To simplify an existing footprint with explicit pads, use
+When setting the `footprint` property for a component in tscircuit, you can choose between two main approaches:
+
+1. **Footprint Strings** — Pass a concise string such as `"0402"`, `"soic8"`, `"qfn32_w5mm_p0.5mm"`, [`"jlcpcb:C2040"`](./jlcpcb-footprints.mdx), or [`"kicad:Resistor_SMD/R_0402_1005Metric"`](./kicad-footprints.mdx).
+2. **Custom `<footprint />` Elements** — Compose a [`<footprint />`](../elements/footprint.mdx) element from low-level PCB primitives such as [`<smtpad />`](./smtpad.mdx), [`<platedhole />`](./platedhole.mdx), and silkscreen elements.
+
+Footprinter strings are quicker, more concise, and automatically attach a matching 3D CAD model for standard packages. Custom `<footprint />` elements give you exact pad-by-pad, silkscreen, and fabrication-layer control for proprietary or non-standard parts.
+
+To simplify an existing footprint with explicit pads into a compact footprinter string, use
 [`tsci convert --footprinter`](../command-line/tsci-convert.md#discover-a-compact-footprinter-string).
 Review the discovery report and verify geometry and electrical pin mapping before replacing it.
-
-
-import CircuitPreview from "@site/src/components/CircuitPreview"
 
 <CircuitPreview code={`
   export default () => (
@@ -39,3 +40,74 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
     </group>
   )
 `} />
+
+## Footprint String Sources
+
+| Prefix / Syntax | Example | Description |
+| --- | --- | --- |
+| [Footprinter Strings](./footprinter-strings.mdx) | `"0603"`, `"soic8_w3.9mm"`, `"qfn24_p0.5mm_thermalpad"` | Parametric package generator supporting passives, ICs, headers, transistors, and crystals |
+| [`jlcpcb:`](./jlcpcb-footprints.mdx) | `"jlcpcb:C2040"` | Loads the verified PCB footprint and 3D model directly from JLCPCB / EasyEDA |
+| [`kicad:`](./kicad-footprints.mdx) | `"kicad:Package_SO/SOIC-8_3.9x4.9mm_P1.27mm"` | Loads an official KiCad `.kicad_mod` footprint by `<Library>/<FootprintName>` |
+
+## Available `<footprint />` Child Elements
+
+When building a custom [`<footprint />`](../elements/footprint.mdx), you can combine any of the following copper, drill, silkscreen, fabrication, and constraint elements:
+
+### Copper & Drill Elements
+
+| Element | Description |
+| --- | --- |
+| [`<smtpad />`](./smtpad.mdx) | Surface-mount copper pad (`rect`, `circle`, `pill`, or `polygon`) with `portHints` for electrical connection |
+| [`<platedhole />`](./platedhole.mdx) | Plated through-hole pad (`circle`, `oval`, `pill`, `circular_hole_with_rect_pad`, `pill_hole_with_rect_pad`, or `hole_with_polygon_pad`) |
+| [`<hole />`](../elements/hole.mdx) | Non-plated mechanical drill hole or alignment boss cutout |
+| [`<fiducial />`](../elements/fiducial.mdx) | Optical alignment mark for automated pick-and-place assembly |
+
+### Silkscreen Elements
+
+| Element | Description |
+| --- | --- |
+| [`<silkscreentext />`](./silkscreentext.mdx) | Silkscreen text label; supports `{REF}` / `{NAME}` placeholders for dynamic reference designators and `isKnockout` |
+| [`<silkscreenrect />`](./silkscreenrect.mdx) | Rectangular silkscreen outline or filled marker block |
+| [`<silkscreencircle />`](./silkscreencircle.mdx) | Circular silkscreen outline or filled Pin 1 indicator dot |
+| [`<silkscreenline />`](./silkscreenline.mdx) | Straight silkscreen line segment between `(x1, y1)` and `(x2, y2)` |
+| [`<silkscreenpath />`](./silkscreenpath.mdx) | Multi-point polyline path drawn on the silkscreen layer |
+| [`<silkscreengraphic />`](./silkscreengraphic.mdx) | Custom SVG or PNG artwork (logos, icons, QR codes) rendered onto the silkscreen layer |
+
+### Fabrication Note & Layout Constraint Elements
+
+| Element | Description |
+| --- | --- |
+| [`<fabricationnotetext />`](./fabricationnotetext.mdx) | Text annotation on the PCB fabrication drawing layer for assembly instructions |
+| [`<fabricationnoterect />`](./fabricationnoterect.mdx) | Rectangular callout box or highlight region on the fabrication layer |
+| [`<fabricationnotepath />`](./fabricationnotepath.mdx) | Multi-point polyline or arrow drawn on the fabrication layer |
+| [`<constraint />`](./constraint.mdx) | Declarative geometric constraint (`centerToCenter`, `edgeToEdge`, `sameX`, `sameY`) between pads and holes |
+
+## Complete Custom Footprint Example
+
+The example below combines `<smtpad />`, `<hole />`, `<silkscreenrect />`, `<silkscreencircle />`, `<silkscreentext />`, and `<fabricationnotetext />` inside a single reusable `<footprint />`:
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="16mm" height="14mm">
+    <chip
+      name="U1"
+      footprint={
+        <footprint>
+          <smtpad portHints={["1", "VCC"]} shape="rect" width="1.2mm" height="0.6mm" pcbX="-2.2mm" pcbY="0.65mm" />
+          <smtpad portHints={["2", "GND"]} shape="rect" width="1.2mm" height="0.6mm" pcbX="-2.2mm" pcbY="-0.65mm" />
+          <smtpad portHints={["3", "SDA"]} shape="rect" width="1.2mm" height="0.6mm" pcbX="2.2mm" pcbY="-0.65mm" />
+          <smtpad portHints={["4", "SCL"]} shape="rect" width="1.2mm" height="0.6mm" pcbX="2.2mm" pcbY="0.65mm" />
+          <silkscreenrect pcbX={0} pcbY={0} width="2.8mm" height="2.8mm" strokeWidth="0.15mm" />
+          <silkscreencircle pcbX="-1.0mm" pcbY="1.0mm" radius="0.25mm" isFilled />
+          <silkscreentext text="{REF}" pcbX={0} pcbY="2.4mm" fontSize="0.9mm" />
+          <fabricationnotetext text="Pin 1 top-left" pcbX={0} pcbY="-2.6mm" fontSize="0.7mm" />
+        </footprint>
+      }
+    />
+  </board>
+)
+`}
+/>
