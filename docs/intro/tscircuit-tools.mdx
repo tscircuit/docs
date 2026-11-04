@@ -1,0 +1,175 @@
+---
+title: tscircuit Tools Overview
+description: Explore the different user-facing tools in the tscircuit ecosystem for designing, previewing, and manufacturing PCBs.
+sidebar_position: 5
+---
+
+tscircuit provides a suite of tools for every stage of the electronics design workflow. Whether you prefer working in the browser, from the command line, or embedding circuit previews in your own app, there's a tool for you.
+
+## Online Editor
+
+**[tscircuit.com](https://tscircuit.com)**
+
+The online editor at [tscircuit.com](https://tscircuit.com) is the fastest way to get started with tscircuit. It provides a full-featured IDE in your browser where you can write React/TypeScript circuit code, see live schematic and PCB previews, and export fabrication files — no installation required.
+
+- Live schematic, PCB, and 3D previews
+- AI-assisted circuit generation
+- Package registry and snippet sharing
+- One-click export to fabrication files (Gerber, BOM, CPL, KiCad)
+
+## Command Line Interface (CLI)
+
+**[`tsci` (`@tscircuit/cli`)](https://github.com/tscircuit/cli)**
+
+The `tsci` CLI lets you develop tscircuit projects locally with your preferred editor and tooling. It provides a development server with hot-reload, package management, and export capabilities.
+
+```bash
+# Install globally
+npm install -g @tscircuit/cli
+
+# Start development server
+tsci dev
+
+# Export fabrication files
+tsci export
+```
+
+Key commands:
+
+| Command | Description |
+| --- | --- |
+| `tsci dev` | Start local dev server with live preview |
+| `tsci init` | Initialize a new tscircuit project |
+| `tsci add` | Add a dependency or package |
+| `tsci build` | Build Circuit JSON for your project |
+| `tsci export` | Export to Gerber, BOM, KiCad, or other formats |
+| `tsci push` | Publish a package to the registry |
+| `tsci clone` | Clone a package from the registry |
+
+## Core Library
+
+**[`@tscircuit/core`](https://github.com/tscircuit/core)**
+
+`@tscircuit/core` is the runtime engine that renders React circuit elements (`<board />`, `<chip />`, `<resistor />`, `<trace />`, etc.) into Circuit JSON, computes schematic and PCB layout, and orchestrates autorouting.
+
+```tsx
+import { RootCircuit } from "@tscircuit/core"
+
+const circuit = new RootCircuit()
+circuit.add(
+  <board width="10mm" height="10mm">
+    <resistor name="R1" resistance="1k" footprint="0402" />
+  </board>,
+)
+await circuit.renderUntilSettled()
+const circuitJson = circuit.getCircuitJson()
+```
+
+## RunFrame
+
+**[`@tscircuit/runframe`](https://github.com/tscircuit/runframe)**
+
+RunFrame is an all-in-one React component that combines the editor, schematic viewer, PCB viewer, and 3D viewer into a single embeddable frame. It's the same component that powers the online editor and local `tsci dev` preview.
+
+```tsx
+import { RunFrame } from "@tscircuit/runframe"
+
+function MyComponent() {
+  return <RunFrame code={circuitCode} />
+}
+```
+
+RunFrame handles code evaluation, circuit compilation, and rendering automatically.
+
+## PCB Viewer
+
+**[`@tscircuit/pcb-viewer`](https://github.com/tscircuit/pcb-viewer)**
+
+A React component for rendering interactive PCB layouts. Use it to embed PCB previews in your own web applications.
+
+```tsx
+import { PCBViewer } from "@tscircuit/pcb-viewer"
+
+function MyComponent() {
+  return <PCBViewer circuitJson={circuitJson} />
+}
+```
+
+Features:
+
+- Interactive pan and zoom
+- Layer visibility controls
+- Component highlighting, RatsNest overlay, and DRC error inspection
+- Focus-on-hover for subcircuits
+
+## Schematic Viewer
+
+**[`@tscircuit/schematic-viewer`](https://github.com/tscircuit/schematic-viewer)**
+
+A React component for rendering interactive schematics from Circuit JSON with pan/zoom navigation, net highlighting, and pin inspection.
+
+```tsx
+import { SchematicViewer } from "@tscircuit/schematic-viewer"
+
+function MyComponent() {
+  return <SchematicViewer circuitJson={circuitJson} />
+}
+```
+
+## 3D Viewer
+
+**[`@tscircuit/3d-viewer`](https://github.com/tscircuit/3d-viewer)**
+
+A React component for rendering 3D previews of PCBs. It renders STEP/OBJ models, parametric component bodies, copper layers, and board outlines in an interactive viewport.
+
+```tsx
+import { CadViewer } from "@tscircuit/3d-viewer"
+
+function MyComponent() {
+  return <CadViewer circuitJson={circuitJson} />
+}
+```
+
+## Autorouting
+
+**[autorouting.com](https://autorouting.com) / [`@tscircuit/infgrid-ijump-astar`](https://github.com/tscircuit/tscircuit-autorouter)**
+
+The tscircuit autorouter automatically routes traces on your PCB. It's integrated into `@tscircuit/core`, the online editor, and the CLI, and also powers [autorouting.com](https://autorouting.com).
+
+The autorouter supports:
+
+- Single-layer and multi-layer PCB routing
+- BGA/QFP fanout and bus routing phases
+- Custom or cloud-hosted Specctra DSN autorouters
+
+## Circuit JSON Converters
+
+tscircuit uses **Circuit JSON** as its intermediate representation. Several converter tools transform Circuit JSON into fabrication and CAD formats (or import external formats into tscircuit):
+
+| Converter | Direction / Output | Use Case |
+| --- | --- | --- |
+| [`circuit-json-to-gerber`](https://github.com/tscircuit/circuit-json-to-gerber) | Gerber & Excellon drill files | PCB fabrication |
+| [`circuit-json-to-kicad`](https://github.com/tscircuit/circuit-json-to-kicad) | `.kicad_pcb`, `.kicad_sch`, `.kicad_pro` | Interop with KiCad |
+| [`circuit-json-to-step`](https://github.com/tscircuit/circuit-json-to-step) | STEP 3D model | Mechanical CAD integration |
+| [`circuit-to-svg`](https://github.com/tscircuit/circuit-to-svg) | Schematic, PCB, and Assembly SVGs | Documentation, snapshots, and web display |
+| [`easyeda-converter`](https://github.com/tscircuit/easyeda-converter) | EasyEDA / JLCPCB to tscircuit | Import parts from JLCPCB / LCSC |
+| [`dsn-converter`](https://github.com/tscircuit/dsn-converter) | Specctra DSN / SES | External autorouter interoperability |
+
+These converters are used internally by the CLI and online editor and can also be used programmatically.
+
+## Package Registry & JLCsearch
+
+- **[Package Registry (`tscircuit.com`)](https://tscircuit.com)**: Hosts reusable circuit packages (`tsci add @tsci/...` and `tsci push`).
+- **[JLCsearch (`jlcsearch.tscircuit.com`)](https://jlcsearch.tscircuit.com)**: Search engine and API for finding JLCPCB/LCSC components by footprint, package, resistance, capacitance, or electrical specifications.
+
+## Choosing the Right Tool
+
+| Goal | Recommended Tool |
+| --- | --- |
+| Quick browser prototyping | [Online Editor (`tscircuit.com`)](https://tscircuit.com) |
+| Local development & CI builds | [CLI (`tsci`)](https://github.com/tscircuit/cli) |
+| Embedding full editor + preview in a web app | [`@tscircuit/runframe`](https://github.com/tscircuit/runframe) |
+| Embedding standalone PCB / Schematic / 3D views | [`@tscircuit/pcb-viewer`](https://github.com/tscircuit/pcb-viewer), [`@tscircuit/schematic-viewer`](https://github.com/tscircuit/schematic-viewer), [`@tscircuit/3d-viewer`](https://github.com/tscircuit/3d-viewer) |
+| Programmatic Circuit JSON compilation | [`@tscircuit/core`](https://github.com/tscircuit/core) |
+| Exporting to KiCad or Gerber | [`circuit-json-to-kicad`](https://github.com/tscircuit/circuit-json-to-kicad), [`circuit-json-to-gerber`](https://github.com/tscircuit/circuit-json-to-gerber), or `tsci export` |
+| Finding JLCPCB parts | [JLCsearch](https://jlcsearch.tscircuit.com) |
