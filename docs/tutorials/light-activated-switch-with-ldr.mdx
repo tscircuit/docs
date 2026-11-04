@@ -1,0 +1,495 @@
+---
+title: Building a Light-Activated Switch with an LDR
+description: >-
+  Learn how to design and build an automatic light-activated (and dark-activated)
+  switch circuit in tscircuit using an LDR photoresistor, a voltage divider, and
+  an NPN transistor.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+A **light-activated switch** (or dark-activated night light) is a classic analog sensing circuit that automatically switches a load—such as an LED, buzzer, or relay—on or off based on ambient light levels. By combining a **Light Dependent Resistor (LDR)** with a fixed resistor (or potentiometer) in a voltage divider and feeding the output into the base of an **NPN bipolar junction transistor (BJT)**, you can build a reliable threshold switch without requiring a microcontroller.
+
+In this tutorial, you will learn how the LDR voltage divider works, calculate component values for reliable switching around the transistor's `0.7V` base-emitter threshold, and design both schematic and PCB layouts in **tscircuit**.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="36mm" height="26mm">
+    {/* 9V Power Input Header */}
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pitch="2.54mm"
+      footprint="pinrow2"
+      pinLabels={["VCC", "GND"]}
+      pcbX={-13}
+      pcbY={0}
+      schX={-6}
+      schY={0}
+    />
+
+    {/* LDR (Photoresistor) modeled as top leg in dark-activated divider */}
+    <resistor
+      name="R_BIAS"
+      resistance="10k"
+      footprint="0805"
+      pcbX={-5}
+      pcbY={6}
+      schX={-2}
+      schY={3}
+    />
+    <resistor
+      name="R_LDR"
+      resistance="100k"
+      footprint="axial_p5.08mm"
+      pcbX={-5}
+      pcbY={-6}
+      schX={-2}
+      schY={-3}
+    />
+
+    {/* Base Protection Resistor */}
+    <resistor
+      name="R_BASE"
+      resistance="1k"
+      footprint="0805"
+      pcbX={1}
+      pcbY={0}
+      schX={1}
+      schY={0}
+    />
+
+    {/* NPN Switching Transistor (e.g., 2N2222 / MMBT2222A / BC547) */}
+    <transistor
+      name="Q1"
+      type="npn"
+      footprint="sot23"
+      pcbX={7}
+      pcbY={-2}
+      schX={4}
+      schY={-1}
+    />
+
+    {/* LED Load and Current-Limiting Resistor */}
+    <resistor
+      name="R_LED"
+      resistance="330"
+      footprint="0805"
+      pcbX={7}
+      pcbY={7}
+      schX={4}
+      schY={4}
+    />
+    <led
+      name="D1"
+      color="yellow"
+      footprint="0805"
+      pcbX={13}
+      pcbY={3}
+      schX={4}
+      schY={2}
+    />
+
+    {/* Power Nets */}
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+
+    {/* Voltage Divider Wiring */}
+    <trace from=".R_BIAS > .pin1" to="net.VCC" />
+    <trace from=".R_BIAS > .pin2" to="net.VDIV" />
+    <trace from=".R_LDR > .pin1" to="net.VDIV" />
+    <trace from=".R_LDR > .pin2" to="net.GND" />
+
+    {/* Transistor Base Drive */}
+    <trace from="net.VDIV" to=".R_BASE > .pin1" />
+    <trace from=".R_BASE > .pin2" to=".Q1 > .base" />
+
+    {/* Collector LED Load Path */}
+    <trace from=".R_LED > .pin1" to="net.VCC" />
+    <trace from=".R_LED > .pin2" to=".D1 > .anode" />
+    <trace from=".D1 > .cathode" to=".Q1 > .collector" />
+
+    {/* Transistor Emitter to Ground */}
+    <trace from=".Q1 > .emitter" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+---
+
+## Components Needed
+
+| Reference | Component | Typical Value / Part | Role in Circuit |
+| --- | --- | --- | --- |
+| `J1` | 2-Pin Header | `2.54mm` pitch (`pinrow2`) | Connects `5V`–`9V` DC supply (`VCC` and `GND`) |
+| `R_LDR` | Light Dependent Resistor (LDR) | GL5528 (`~1kΩ` bright light to `>100kΩ` dark) | Varies resistance inversely with ambient light intensity |
+| `R_BIAS` | Fixed Bias Resistor (or Potentiometer) | `10kΩ` – `50kΩ` (`0805` or `pinrow3` trimpot) | Forms a voltage divider with `R_LDR` to set the light threshold |
+| `R_BASE` | Base Current-Limiting Resistor | `1kΩ` (`0805`) | Limits maximum base current into `Q1` when `R_LDR` is high |
+| `Q1` | NPN Bipolar Junction Transistor | 2N2222, BC547, or SMD `MMBT2222A` (`sot23`) | Acts as a low-side electronic switch for the load |
+| `R_LED` | LED Series Resistor | `330Ω` – `470Ω` (`0805`) | Limits current through the indicator LED to safe levels (`~15mA`) |
+| `D1` | Indicator LED | Red, Yellow, or White LED (`0805`) | Illuminates when the transistor switch turns on |
+
+---
+
+## How the Circuit Works
+
+### 1. The LDR and Voltage Divider
+
+A **Light Dependent Resistor (LDR)**, or photoresistor, is made of a high-resistance semiconductor such as cadmium sulfide (CdS). When photons strike the photosensitive surface, bound electrons jump into the conduction band, dramatically lowering the component's resistance:
+
+- **In bright light:** `R_LDR` drops to a few hundred ohms or `1kΩ–2kΩ`.
+- **In darkness:** `R_LDR` rises to `100kΩ–1MΩ`.
+
+To convert this resistance change into a control voltage, we pair `R_LDR` with a fixed resistor `R_BIAS` across the supply rails (`VCC` and `GND`). Using the standard voltage divider equation, the voltage at the midpoint (`V_DIV`) when `R_BIAS` is connected to `VCC` and `R_LDR` is connected to `GND` is:
+
+```text
+V_DIV = V_CC * (R_LDR / (R_BIAS + R_LDR))
+```
+
+### 2. NPN Transistor Threshold (`V_BE ≈ 0.7V`)
+
+An NPN transistor (`Q1`) remains **OFF** (cut-off region) as long as its base-to-emitter voltage (`V_BE`) stays below approximately `0.6V–0.7V`. Once `V_DIV` exceeds `0.7V`, current flows into the base terminal, driving `Q1` into saturation so current can flow from its **collector** to its **emitter** and illuminate the LED (`D1`).
+
+Let's verify both operating states with `V_CC = 9V` and `R_BIAS = 10kΩ` (Dark-Activated Night Light configuration):
+
+1. **Bright Environment (`R_LDR ≈ 500Ω`):**
+   ```text
+   V_DIV = 9V * (500 / (10000 + 500)) ≈ 0.43V
+   ```
+   Because `0.43V < 0.7V`, transistor `Q1` stays **OFF** and the LED remains **OFF**.
+
+2. **Dark Environment (`R_LDR ≈ 100kΩ`):**
+   ```text
+   V_DIV = 9V * (100000 / (10000 + 100000)) ≈ 8.18V (clamped to ~0.7V at Q1 base)
+   ```
+   Because the open-circuit divider voltage is well above `0.7V`, base current flows through `R_BIAS` and `R_BASE` into `Q1`, saturating the transistor and turning the LED **ON**.
+
+---
+
+## Step-by-Step Circuit Design in tscircuit
+
+### Step 1: Build the LDR Voltage Divider
+
+We start by placing a 2-pin power header (`J1`), the upper pull-up bias resistor (`R_BIAS`), and the lower photoresistor (`R_LDR`) connected between `net.VCC`, `net.VDIV`, and `net.GND`. Because an LDR is a two-terminal resistive sensor, we use a `<resistor />` with a through-hole axial footprint (`axial_p5.08mm`) so a standard 5mm photoresistor can be soldered directly onto the board.
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="30mm" height="24mm">
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pitch="2.54mm"
+      footprint="pinrow2"
+      pinLabels={["VCC", "GND"]}
+      schX={-5}
+      schY={0}
+    />
+    <resistor
+      name="R_BIAS"
+      resistance="10k"
+      footprint="0805"
+      schX={0}
+      schY={2.5}
+    />
+    <resistor
+      name="R_LDR"
+      resistance="100k"
+      footprint="axial_p5.08mm"
+      schX={0}
+      schY={-2.5}
+    />
+
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".R_BIAS > .pin1" to="net.VCC" />
+    <trace from=".R_BIAS > .pin2" to="net.VDIV" />
+    <trace from=".R_LDR > .pin1" to="net.VDIV" />
+    <trace from=".R_LDR > .pin2" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+### Step 2: Add the NPN Transistor and LED Load
+
+Next, we add the `<transistor />` element (`Q1`) configured as `type="npn"` with a surface-mount `sot23` footprint, a `1kΩ` base protection resistor (`R_BASE`), and the collector load consisting of a `330Ω` current-limiting resistor (`R_LED`) in series with an LED (`D1`).
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="36mm" height="26mm">
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pitch="2.54mm"
+      footprint="pinrow2"
+      pinLabels={["VCC", "GND"]}
+      schX={-6}
+      schY={0}
+    />
+    <resistor name="R_BIAS" resistance="10k" footprint="0805" schX={-2} schY={3} />
+    <resistor name="R_LDR" resistance="100k" footprint="axial_p5.08mm" schX={-2} schY={-3} />
+    <resistor name="R_BASE" resistance="1k" footprint="0805" schX={1} schY={0} />
+    <transistor name="Q1" type="npn" footprint="sot23" schX={4} schY={-1} />
+    <resistor name="R_LED" resistance="330" footprint="0805" schX={4} schY={4} />
+    <led name="D1" color="yellow" footprint="0805" schX={4} schY={2} />
+
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".R_BIAS > .pin1" to="net.VCC" />
+    <trace from=".R_BIAS > .pin2" to="net.VDIV" />
+    <trace from=".R_LDR > .pin1" to="net.VDIV" />
+    <trace from=".R_LDR > .pin2" to="net.GND" />
+
+    <trace from="net.VDIV" to=".R_BASE > .pin1" />
+    <trace from=".R_BASE > .pin2" to=".Q1 > .base" />
+
+    <trace from=".R_LED > .pin1" to="net.VCC" />
+    <trace from=".R_LED > .pin2" to=".D1 > .anode" />
+    <trace from=".D1 > .cathode" to=".Q1 > .collector" />
+    <trace from=".Q1 > .emitter" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+### Step 3: Add Adjustable Sensitivity with a Potentiometer
+
+Ambient lighting conditions vary widely between indoor rooms and outdoor twilight. By replacing or pairing the fixed `R_BIAS` resistor with a `<potentiometer />` (`R_POT`, `50kΩ`), you can fine-tune the exact light level that triggers the transistor switch.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="40mm" height="28mm">
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pitch="2.54mm"
+      footprint="pinrow2"
+      pinLabels={["VCC", "GND"]}
+      pcbX={-15}
+      pcbY={0}
+      schX={-6}
+      schY={0}
+    />
+
+    {/* 50k Sensitivity Trimpot in series with a 4.7k minimum stop resistor */}
+    <resistor
+      name="R_STOP"
+      resistance="4.7k"
+      footprint="0805"
+      pcbX={-7}
+      pcbY={8}
+      schX={-2}
+      schY={4.5}
+    />
+    <potentiometer
+      name="R_POT"
+      maxResistance="50k"
+      pinVariant="two_pin"
+      footprint="pinrow2"
+      pcbX={-7}
+      pcbY={2}
+      schX={-2}
+      schY={2}
+    />
+    <resistor
+      name="R_LDR"
+      resistance="100k"
+      footprint="axial_p5.08mm"
+      pcbX={-7}
+      pcbY={-6}
+      schX={-2}
+      schY={-3}
+    />
+
+    <resistor
+      name="R_BASE"
+      resistance="1k"
+      footprint="0805"
+      pcbX={1}
+      pcbY={0}
+      schX={1}
+      schY={0}
+    />
+    <transistor
+      name="Q1"
+      type="npn"
+      footprint="sot23"
+      pcbX={8}
+      pcbY={-3}
+      schX={4}
+      schY={-1}
+    />
+    <resistor
+      name="R_LED"
+      resistance="330"
+      footprint="0805"
+      pcbX={8}
+      pcbY={7}
+      schX={4}
+      schY={4}
+    />
+    <led
+      name="D1"
+      color="yellow"
+      footprint="0805"
+      pcbX={14}
+      pcbY={2}
+      schX={4}
+      schY={2}
+    />
+
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+
+    <trace from=".R_STOP > .pin1" to="net.VCC" />
+    <trace from=".R_STOP > .pin2" to=".R_POT > .pin1" />
+    <trace from=".R_POT > .pin2" to="net.VDIV" />
+    <trace from=".R_LDR > .pin1" to="net.VDIV" />
+    <trace from=".R_LDR > .pin2" to="net.GND" />
+
+    <trace from="net.VDIV" to=".R_BASE > .pin1" />
+    <trace from=".R_BASE > .pin2" to=".Q1 > .base" />
+
+    <trace from=".R_LED > .pin1" to="net.VCC" />
+    <trace from=".R_LED > .pin2" to=".D1 > .anode" />
+    <trace from=".D1 > .cathode" to=".Q1 > .collector" />
+    <trace from=".Q1 > .emitter" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+### Step 4: PCB Layout and Routing
+
+Below is the complete PCB view with explicit component coordinates (`pcbX`, `pcbY`) arranged cleanly from left (power input and sensor divider) to right (transistor switch and LED indicator):
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="36mm" height="26mm">
+    <pinheader
+      name="J1"
+      pinCount={2}
+      pitch="2.54mm"
+      footprint="pinrow2"
+      pinLabels={["VCC", "GND"]}
+      pcbX={-13}
+      pcbY={0}
+      schX={-6}
+      schY={0}
+    />
+    <resistor
+      name="R_BIAS"
+      resistance="10k"
+      footprint="0805"
+      pcbX={-5}
+      pcbY={6}
+      schX={-2}
+      schY={3}
+    />
+    <resistor
+      name="R_LDR"
+      resistance="100k"
+      footprint="axial_p5.08mm"
+      pcbX={-5}
+      pcbY={-6}
+      schX={-2}
+      schY={-3}
+    />
+    <resistor
+      name="R_BASE"
+      resistance="1k"
+      footprint="0805"
+      pcbX={1}
+      pcbY={0}
+      schX={1}
+      schY={0}
+    />
+    <transistor
+      name="Q1"
+      type="npn"
+      footprint="sot23"
+      pcbX={7}
+      pcbY={-2}
+      schX={4}
+      schY={-1}
+    />
+    <resistor
+      name="R_LED"
+      resistance="330"
+      footprint="0805"
+      pcbX={7}
+      pcbY={7}
+      schX={4}
+      schY={4}
+    />
+    <led
+      name="D1"
+      color="yellow"
+      footprint="0805"
+      pcbX={13}
+      pcbY={3}
+      schX={4}
+      schY={2}
+    />
+
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".R_BIAS > .pin1" to="net.VCC" />
+    <trace from=".R_BIAS > .pin2" to="net.VDIV" />
+    <trace from=".R_LDR > .pin1" to="net.VDIV" />
+    <trace from=".R_LDR > .pin2" to="net.GND" />
+    <trace from="net.VDIV" to=".R_BASE > .pin1" />
+    <trace from=".R_BASE > .pin2" to=".Q1 > .base" />
+    <trace from=".R_LED > .pin1" to="net.VCC" />
+    <trace from=".R_LED > .pin2" to=".D1 > .anode" />
+    <trace from=".D1 > .cathode" to=".Q1 > .collector" />
+    <trace from=".Q1 > .emitter" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+---
+
+## Circuit Modifications & Enhancements
+
+### 1. Reversing Operation (Bright-Activated Switch)
+
+To make the LED turn **ON in bright light** and **OFF in darkness** (for example, a solar tracker wakeup trigger or laser tripwire receiver), simply swap the positions of `R_LDR` and `R_BIAS` in the voltage divider:
+
+- Connect `R_LDR` between `VCC` and `net.VDIV`.
+- Connect `R_BIAS` (`10kΩ`) between `net.VDIV` and `GND`.
+
+Now, when bright light lowers `R_LDR` to `~1kΩ`, `V_DIV` rises to `9V * (10k / 11k) ≈ 8.18V`, saturating `Q1` and turning on the load.
+
+### 2. Adding Hysteresis (Preventing Twilight Flicker)
+
+When ambient light changes slowly at dusk or dawn, a single transistor stage enters its linear active region and may cause the LED to dim gradually or flicker due to shadow noise. You can eliminate this by feeding `net.VDIV` into an op-amp comparator (such as an LM393) or Schmitt trigger IC (74HC14) with positive feedback before driving `Q1`.
+
+### 3. Driving Heavy Loads with a Relay
+
+To switch high-power AC lamps or 12V DC strips, replace `D1` and `R_LED` with a 5V/9V relay coil between `VCC` and `.Q1 > .collector`. Always place a **flyback diode** (such as a `1N4148` or `1N4007`) in reverse parallel across the relay coil (`cathode` to `VCC`, `anode` to `.Q1 > .collector`) to clamp inductive voltage spikes when the transistor turns off.
+
+## Practical Applications
+
+- **Automatic Night Lights & Garden Lamps:** Automatically illuminate pathways and solar garden LEDs after sunset.
+- **Street Light Controllers:** Switch outdoor lighting grids on at dusk and off at daybreak.
+- **Optical Beam-Break Alarms:** Pair a laser diode pointed at `R_LDR` to trigger an alarm buzzer whenever an object interrupts the beam.
+- **Camera Exposure & Day/Night Mode Triggers:** Switch security cameras between IR night-vision LEDs and daytime color filters.
