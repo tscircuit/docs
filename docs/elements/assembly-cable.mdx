@@ -141,5 +141,3 @@ count. An explicit model also supports other combinations, such as
 When `model` is omitted, both JST connectors must have the same standard and `pinCount`. Select a matching footprint, such as `jst6_ph` for a six-pin PH header. Inferred cables reject incompatible standards or pin counts. Missing or ambiguous endpoints report errors with either mode. Endpoints resolve within the nearest `assembly.device`, including components declared later.
 
 Add one `assembly.cable` for each physical cable; several cables can share a device. Each produces an independent `cad_cable` path in Circuit JSON. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There are no length or route-hint props.
-
-These examples require `@tscircuit/core` 0.0.2088 or later and `circuit-json-to-gltf` 0.0.144 or later. The explicit `model` example requires `@tscircuit/core` 0.0.2110 or later, `@tscircuit/props` 0.0.695 or later, and `circuit-json-to-gltf` 0.0.148 or later. `tscircuit` 0.0.2764 includes these versions.

@@ -10,8 +10,6 @@ import cadPreview from "@site/src/data/drawing-previews/dimensions-cad.json"
 
 Place `assembly.drawing.dimension` inside an [`assembly.drawing.partview`](./assembly-drawing-partview.mdx) to measure its selected geometry. Labels report physical model distances in millimetres, independent of the viewport size or drawing scale. Dimension lines and witness lines are placed automatically.
 
-The examples use `@tscircuit/core` 0.0.2209 and `@tscircuit/props` 0.0.712 or newer, including hole references and inferred anchors.
-
 ## PCB holes and board edges
 
 Use `fromRef` and `toRef` to measure between mounting-hole or plated-hole centers. Set `axis="x"` for horizontal separation or `axis="y"` for vertical separation in the drawing view.
