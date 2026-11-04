@@ -8,6 +8,20 @@ description: Configure and run SPICE simulations for a tscircuit board.
 `<analogsimulation />` enables SPICE simulation for a `<board />` and sets the simulation parameters, such as duration and time step. Place this element inside
 your board alongside sources and probes to generate simulation results.
 
+For the namespaced API, see [`<analog.transientsimulation />`](./analog-transientsimulation.mdx).
+Other analyses have their own element pages:
+
+- [`<analog.dcoperatingpointsimulation />`](./analog-dcoperatingpointsimulation.mdx)
+- [`<analog.dcsweepsimulation />`](./analog-dcsweepsimulation.mdx)
+- [`<analog.acsweepsimulation />`](./analog-acsweepsimulation.mdx)
+- [`<analog.sweepparameter />`](./analog-sweepparameter.mdx)
+- [`<analog.digitalstimulus />`](./analog-digitalstimulus.mdx)
+- [`<analog.eyediagram />`](./analog-eyediagram.mdx)
+
+For PCB return-current analysis, see
+[`<simulation.pcbreturncurrentsimulation />`](./simulation-pcbreturncurrentsimulation.mdx)
+and [`<simulation.pcbreturncurrentexcitation />`](./simulation-pcbreturncurrentexcitation.mdx).
+
 If you're new to simulation workflows, check out the [SPICE simulation guide](/category/spice-simulation) for step-by-step examples.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"

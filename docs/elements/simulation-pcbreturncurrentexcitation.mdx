@@ -1,0 +1,64 @@
+---
+title: <simulation.pcbreturncurrentexcitation />
+description: Select the signal route, peak current, and physical ground terminals of a return-current experiment.
+---
+
+`<simulation.pcbreturncurrentexcitation />` defines one signal driver/load pair
+and its ground return contacts. Import `simulation` from `"tscircuit"` and nest
+this element inside
+[`<simulation.pcbreturncurrentsimulation />`](./simulation-pcbreturncurrentsimulation.mdx).
+It selects existing PCB connections; it does not connect pins or route traces.
+
+## Example
+
+The [parent experiment example](./simulation-pcbreturncurrentsimulation.mdx)
+provides the complete PCB for this declaration:
+
+```tsx
+import { simulation } from "tscircuit"
+
+export const SignalReturn = () => (
+  <simulation.pcbreturncurrentsimulation name="Signal return">
+    <simulation.pcbreturncurrentexcitation
+      source=".U1 > .OUT"
+      load=".U2 > .IN"
+      trace=".SIGNAL"
+      ground="net.GND"
+      current="5mA"
+      sourceImpedance="25ohm"
+      loadImpedance="100ohm"
+      returnSource=".U2 > .GND"
+      returnSink=".U1 > .GND"
+    />
+  </simulation.pcbreturncurrentsimulation>
+)
+```
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `source` | Required selector for the signal driver PCB port. |
+| `load` | Required selector for the signal receiver PCB port. |
+| `ground` | Required ground net selector, such as `"net.GND"`. Its connections and copper must already exist. |
+| `current` | Required positive, in-phase peak current. Numbers are amperes, not RMS; unit strings such as `"5mA"` are accepted. |
+| `returnSource` | Required load-side ground port where positive return current enters the ground conductor. |
+| `returnSink` | Required driver-side ground port where positive return current leaves the ground conductor. |
+| `sourceImpedance` | Required positive real driver-port resistance. Numbers are ohms; strings such as `"25ohm"` are accepted. |
+| `loadImpedance` | Required positive real receiver-port resistance. Complex impedances are unsupported. |
+| `trace` | Optional trace selector to disambiguate routes. May be omitted when exactly one complete routed trace connects the signal ports. |
+| `returnSourceLayer` | Contact layer when the load-side ground port spans multiple copper layers. |
+| `returnSinkLayer` | Contact layer when the driver-side ground port spans multiple copper layers. |
+| `name` | Optional diagnostic name; not stored on the excitation's Circuit JSON record. |
+
+For positive signal current from `source` to `load`, ground return current flows
+from the load-side `returnSource` back to the driver-side `returnSink`.
+
+Both ground contacts must be real component PCB pads or plated-hole ports
+connected to `ground`. For a multilayer port, explicitly select a layer present
+on that port. Standalone vias and copper pours cannot be used as contact
+selectors. Signal and ground terminals must be distinct physical ports; nearby
+ground pads and plane projections are not inferred. Split or branched signal
+routes are rejected.
+
+The flat `<pcbreturncurrentexcitation />` form accepts the same properties.

@@ -1,0 +1,64 @@
+---
+title: <analog.dcsweepsimulation />
+description: Sweep an independent source through a range of DC values.
+---
+
+`<analog.dcsweepsimulation />` repeats DC analysis while varying one independent
+voltage or current source. Import `analog` from `"tscircuit"`. Select the source
+with `sweepSource` and add probes for the quantities to graph.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  showSimulationGraph
+  code={`
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" acMagnitude="1V" schX={-3} />
+    <resistor name="R1" resistance="1k" schY={2} />
+    <resistor name="R2" resistance="1k" schX={3} />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe
+      name="VOUT"
+      connectsTo=".R2 > .pin1"
+      referenceTo=".V1 > .pin2"
+    />
+    <analog.dcsweepsimulation
+      name="Supply sweep"
+      sweepSource=".V1"
+      sweepStart="0V"
+      sweepStop="5V"
+      sweepStep="0.5V"
+      spiceEngine="ngspice"
+    />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `sweepSource` | Required selector for an independent voltage or current source. |
+| `sweepStart` | Required first source value. Numbers are volts or amperes according to the source. |
+| `sweepStop` | Required last source value. |
+| `sweepStep` | Required nonzero increment directed from `sweepStart` toward `sweepStop`. Use a negative step for a descending sweep. |
+| `name` | Optional experiment name. Use a unique name for each experiment. |
+| `spiceEngine` | Engine to run the analysis, such as `"ngspice"`. Defaults to `"spicey"`; the selected engine must support the analysis. |
+| `spiceOptions` | Solver options: `method` (`"trap"` or `"gear"`), `reltol`, `abstol`, and `vntol`. |
+| `graphIndependentAxes` | Give each probe channel an independent vertical scale. |
+| `children` | An optional [`<analog.sweepparameter />`](./analog-sweepparameter.mdx) for repeated runs. |
+
+Use matching unit strings such as `"0V"`, `"5V"`, and `"0.5V"` for a voltage
+source, or `"0mA"`, `"10mA"`, and `"1mA"` for a current source.
+To vary a component value instead, use
+[`<analog.sweepparameter />`](./analog-sweepparameter.mdx) inside an analysis.

@@ -1,0 +1,73 @@
+---
+title: <analog.sweepparameter />
+description: Repeat an analog analysis across component or source values.
+---
+
+`<analog.sweepparameter />` repeats its parent analysis for an ordered set of
+values. Nest it **directly** inside an `analog.transientsimulation`,
+`analog.dcoperatingpointsimulation`, `analog.dcsweepsimulation`, or
+`analog.acsweepsimulation`. Import `analog` from `"tscircuit"`.
+
+Each run changes only the simulation value; the original component value remains
+unchanged. This example compares the divider output for three values of `R1`.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  showSimulationGraph
+  code={`
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" acMagnitude="1V" schX={-3} />
+    <resistor name="R1" resistance="1k" schY={2} />
+    <resistor name="R2" resistance="1k" schX={3} />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe
+      name="VOUT"
+      connectsTo=".R2 > .pin1"
+      referenceTo=".V1 > .pin2"
+    />
+    <analog.dcoperatingpointsimulation name="Resistor sweep" spiceEngine="ngspice">
+      <analog.sweepparameter
+        parameterType="resistance"
+        resistorRef=".R1"
+        values={["1k", "2k", "3k"]}
+      />
+    </analog.dcoperatingpointsimulation>
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Optional sweep name. |
+| `parameterType` | Required quantity to vary; see the target selectors below. |
+| `values` | Nonempty array of explicit values, in run order. Cannot be combined with `start`, `stop`, or `step`. |
+| `start`, `stop`, `step` | Alternative to `values`. Supply all three; `step` must be nonzero and move from `start` toward `stop`. |
+
+| `parameterType` | Required target property | Numeric unit |
+| --- | --- | --- |
+| `"resistance"` | `resistorRef`, such as `".R1"` | Ohms |
+| `"capacitance"` | `capacitorRef`, such as `".C1"` | Farads |
+| `"inductance"` | `inductorRef`, such as `".L1"` | Henries |
+| `"voltage"` | `net`, such as `"net.VCC"` | Volts |
+| `"current"` | `currentSourceRef`, such as `".I1"` | Amperes |
+
+Only provide the target property corresponding to `parameterType`. Unit strings
+such as `"1k"`, `"100nF"`, and `"5V"` are accepted. A voltage sweep targets a net;
+a DC source sweep instead selects the source with
+[`sweepSource`](./analog-dcsweepsimulation.mdx).
+
+Use one sweep parameter per experiment. To compare a different parameter, create
+another named experiment.

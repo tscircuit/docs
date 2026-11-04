@@ -1,0 +1,65 @@
+---
+title: <analog.acsweepsimulation />
+description: Measure small-signal response across a frequency range.
+---
+
+`<analog.acsweepsimulation />` runs small-signal AC analysis over a frequency
+range. Import `analog` from `"tscircuit"`. Set the source's `acMagnitude` (and
+optionally `acPhase`) to define its AC excitation; `voltage` sets its DC bias.
+The equal-resistor divider below has a constant voltage ratio of one half.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  showSimulationGraph
+  code={`
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" acMagnitude="1V" schX={-3} />
+    <resistor name="R1" resistance="1k" schY={2} />
+    <resistor name="R2" resistance="1k" schX={3} />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe
+      name="VOUT"
+      connectsTo=".R2 > .pin1"
+      referenceTo=".V1 > .pin2"
+    />
+    <analog.acsweepsimulation
+      name="Frequency response"
+      sweepType="decade"
+      startFrequency="10Hz"
+      stopFrequency="1MHz"
+      samplesPerInterval={20}
+      spiceEngine="ngspice"
+    />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `sweepType` | Required frequency spacing: `"linear"`, `"decade"`, or `"octave"`. |
+| `startFrequency` | Required positive starting frequency. Numbers are hertz. |
+| `stopFrequency` | Required ending frequency, greater than `startFrequency`. |
+| `samplesPerInterval` | Required positive integer samples per decade or octave. Omit for linear sweeps. |
+| `sampleCount` | Required positive integer total samples for linear sweeps. Omit for decade and octave sweeps. |
+| `name` | Optional experiment name. Use a unique name for each experiment. |
+| `spiceEngine` | Engine to run the analysis, such as `"ngspice"`. Defaults to `"spicey"`; the selected engine must support the analysis. |
+| `spiceOptions` | Solver options: `method` (`"trap"` or `"gear"`), `reltol`, `abstol`, and `vntol`. |
+| `graphIndependentAxes` | Give each probe channel an independent vertical scale. |
+| `children` | An optional [`<analog.sweepparameter />`](./analog-sweepparameter.mdx) for repeated runs. |
+
+For example, a linear sweep uses `sweepType="linear"` and `sampleCount={100}`
+in place of `samplesPerInterval`. Add voltage probes or ammeters to obtain
+magnitude and phase results.

@@ -1,0 +1,55 @@
+---
+title: <analog.dcoperatingpointsimulation />
+description: Calculate the steady-state DC operating point.
+---
+
+`<analog.dcoperatingpointsimulation />` computes steady-state DC voltages and
+currents without a time or frequency sweep. Import `analog` from `"tscircuit"`.
+Place voltage probes or ammeters in the experiment's board or group to select
+results. This equal-resistor divider produces a 2.5 V output from a 5 V source.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  showSimulationGraph
+  code={`
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" acMagnitude="1V" schX={-3} />
+    <resistor name="R1" resistance="1k" schY={2} />
+    <resistor name="R2" resistance="1k" schX={3} />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe
+      name="VOUT"
+      connectsTo=".R2 > .pin1"
+      referenceTo=".V1 > .pin2"
+    />
+    <analog.dcoperatingpointsimulation
+      name="Bias point"
+      spiceEngine="ngspice"
+    />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Optional experiment name. Use a unique name for each experiment. |
+| `spiceEngine` | Engine to run the analysis, such as `"ngspice"`. Defaults to `"spicey"`; the selected engine must support the analysis. |
+| `spiceOptions` | Solver options: `method` (`"trap"` or `"gear"`), `reltol`, `abstol`, and `vntol`. |
+| `graphIndependentAxes` | Give each probe channel an independent vertical scale. |
+| `children` | An optional [`<analog.sweepparameter />`](./analog-sweepparameter.mdx) for repeated runs. |
+
+For a range of source voltages or currents, use
+[`<analog.dcsweepsimulation />`](./analog-dcsweepsimulation.mdx).
