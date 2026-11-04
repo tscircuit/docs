@@ -51,9 +51,27 @@ const config: Config = {
             defaultSidebarItemsGenerator,
             ...args
           }) => {
+            // Sort element labels alphabetically, including pages with legacy positions.
+            const elementPositions = new Map(
+              args.docs
+                .filter((doc) => doc.id.startsWith("elements/"))
+                .sort((a, b) =>
+                  (a.frontMatter.sidebar_label ?? a.title).localeCompare(
+                    b.frontMatter.sidebar_label ?? b.title,
+                    "en",
+                  ),
+                )
+                .map((doc, index) => [doc.id, index]),
+            )
             const items = await defaultSidebarItemsGenerator({
               ...args,
-              docs: args.docs.filter((doc) => !doc.frontMatter.unlisted),
+              docs: args.docs
+                .filter((doc) => !doc.frontMatter.unlisted)
+                .map((doc) =>
+                  elementPositions.has(doc.id)
+                    ? { ...doc, sidebarPosition: elementPositions.get(doc.id) }
+                    : doc,
+                ),
             })
             return items.map((item) =>
               item.type === "category" && item.label === "Intro"
