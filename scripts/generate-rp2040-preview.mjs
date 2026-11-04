@@ -1,7 +1,7 @@
 /**
  * Usage: bun scripts/generate-rp2040-preview.mjs /path/to/render-runtime
  * In that runtime, install with:
- * bun add circuit-json-to-3d-png@0.0.12 circuit-json-to-gltf@0.0.152 poppygl@0.0.37
+ * bun add circuit-json-to-3d-png@0.0.12 circuit-json-to-gltf@0.0.152 circuit-to-svg@0.0.445 poppygl@0.0.37
  * Matches svg.tscircuit.com's lib/render3dPng.ts at a44009a2567ff906444015d8a0b88e035903e5c3.
  * Render locally because the full Circuit JSON exceeds the service's 1 MB limit.
  */
@@ -30,6 +30,10 @@ const [glb, camera] = await Promise.all([
   convertCircuitJsonTo3dGlb(circuitJson),
   getDefaultCameraForCircuitJson(circuitJson),
 ])
+await Bun.write(
+  new URL("../static/models/rp2040-motor-controller.glb", import.meta.url),
+  glb,
+)
 const png = await renderGLTFToPNGFromGLB(glb, {
   ...camera,
   width: 1600,

@@ -18,6 +18,87 @@ const stages = [
   },
 ]
 
+test("prebuilt models load on click without POSTing circuit data and preserve exploded poses", async () => {
+  const browser = new Window({
+    url: "https://docs.test",
+    settings: { enableImageFileLoading: false },
+  })
+  const old = {
+    window: globalThis.window,
+    document: globalThis.document,
+    customElements: globalThis.customElements,
+    fetch: globalThis.fetch,
+  }
+  const requests: string[] = []
+  Object.assign(globalThis, {
+    window: browser,
+    document: browser.document,
+    customElements: browser.customElements,
+    IS_REACT_ACT_ENVIRONMENT: true,
+    fetch: (url: string) => {
+      requests.push(url)
+      return new Promise(() => {})
+    },
+  })
+  browser.customElements.define(
+    "model-viewer",
+    class extends browser.HTMLElement {},
+  )
+  const host = browser.document.createElement("div")
+  const root = createRoot(host as unknown as HTMLElement)
+  const click = async (label: string) =>
+    act(async () => {
+      ;(
+        host.querySelector(
+          `[aria-label="${label}"]`,
+        ) as unknown as HTMLButtonElement
+      ).click()
+    })
+  try {
+    await act(async () =>
+      root.render(
+        <ThreeDPreview
+          sourceUrl={`https://svg.tscircuit.com/?circuit_json=${"compressed".repeat(2000)}`}
+          imageOverride="/preview.png"
+          modelOverride="/models/board.glb"
+          stages={stages}
+        />,
+      ),
+    )
+    assert.equal(host.querySelector("model-viewer"), null)
+    assert.deepEqual(requests, [])
+    await click("Rotate the 3D circuit model")
+    assert.equal(
+      host.querySelector("model-viewer")?.getAttribute("src"),
+      "/models/board.glb",
+    )
+    assert.deepEqual(requests, [])
+    await act(async () => {
+      host
+        .querySelector("model-viewer")!
+        .dispatchEvent(new browser.Event("load"))
+    })
+    assert.equal(host.querySelector("output"), null)
+
+    await click("Next explosion stage")
+    assert.equal(host.querySelector("model-viewer"), null)
+    assert.equal(
+      new URL(requests[0]).searchParams.get("explosion_stage"),
+      "case.lift-cover",
+    )
+    await click("Previous explosion stage")
+    await click("Rotate the 3D circuit model")
+    assert.equal(
+      host.querySelector("model-viewer")?.getAttribute("src"),
+      "/models/board.glb",
+    )
+  } finally {
+    await act(async () => root.unmount())
+    Object.assign(globalThis, { ...old, IS_REACT_ACT_ENVIRONMENT: false })
+    await browser.happyDOM.close()
+  }
+})
+
 test("stage selector shows each pose, supports backwards playback, and resets for new input", async () => {
   const browser = new Window({
     url: "https://docs.test",

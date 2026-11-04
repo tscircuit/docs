@@ -134,6 +134,7 @@ export default function CircuitPreview({
   systemImageUrl,
   showSystemTab,
   threeDImageUrl,
+  threeDModelUrl,
   explosion,
   explosionStages,
   drawingPages,
@@ -176,6 +177,8 @@ export default function CircuitPreview({
   systemImageUrl?: string
   showSystemTab?: boolean
   threeDImageUrl?: string
+  /** Prebuilt GLB matching the assembled 3D preview image. */
+  threeDModelUrl?: string
   /** A single sampled 3D pose. Omit for the assembled view. */
   explosion?: ExplosionPose
   /** Named poses to step through as images and matching rotatable models. */
@@ -459,6 +462,7 @@ export default function CircuitPreview({
       sourceUrl={threeDUrl}
       cameraPreset={cameraPreset}
       imageOverride={threeDImageUrl}
+      modelOverride={threeDModelUrl}
       explosion={explosion}
       stages={explosionStages}
     />

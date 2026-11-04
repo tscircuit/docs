@@ -208,6 +208,13 @@
   min-height: 0;
 }
 
+/* Image-only examples have no fixed-height parent. Preserve their viewport
+   when the image is replaced by a model, whose lazy loader needs visible area. */
+.threeDStages:not(.assemblyStages) .glbPreview {
+  aspect-ratio: 4 / 3;
+  min-height: 320px;
+}
+
 @media (min-width: 997px) and (min-height: 600px) {
   .stickyPreview .previewContent:has(.assemblyStages) {
     top: calc(var(--ifm-navbar-height) + 1rem);

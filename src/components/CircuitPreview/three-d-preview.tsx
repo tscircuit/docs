@@ -13,12 +13,14 @@ export default function ThreeDPreview({
   sourceUrl,
   cameraPreset,
   imageOverride,
+  modelOverride,
   explosion,
   stages = [],
 }: {
   sourceUrl: string
   cameraPreset?: string
   imageOverride?: string
+  modelOverride?: string
   explosion?: ExplosionPose
   stages?: ExplosionStagePreview[]
 }) {
@@ -87,6 +89,8 @@ export default function ThreeDPreview({
       )}
       <GlbPreview
         {...assets}
+        glbUrl={!pose && modelOverride ? modelOverride : assets.glbUrl}
+        requestBody={!pose && modelOverride ? undefined : assets.requestBody}
         cameraPreset={effectiveCameraPreset}
         alt={
           stages[index]?.name
