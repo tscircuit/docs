@@ -726,7 +726,7 @@ export default function CircuitPreview({
                   v === "schematic" && selectedSimulationExperimentName
                     ? `Schematic simulation preview: ${selectedSimulationExperimentName}`
                     : `${v.toUpperCase()} Circuit Preview`,
-                imageClassName: `w-full m-0 object-contain ${
+                imageClassName: `w-full m-0 object-contain ${v === "system" ? "block max-h-[800px]" : ""} ${
                   v === "pcb"
                     ? "bg-black flex items-center justify-center"
                     : v === "schematic"
@@ -794,7 +794,8 @@ export default function CircuitPreview({
             src: systemUrl,
             alt: "System block diagram",
             hidden: view !== "system",
-            imageClassName: "w-full m-0 object-contain bg-white",
+            imageClassName:
+              "block w-full max-h-[800px] m-0 object-contain bg-white",
           })}
         {renderPreviewImage({
           src: pcbUrl,
