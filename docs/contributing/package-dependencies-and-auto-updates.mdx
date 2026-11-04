@@ -38,6 +38,9 @@ flowchart TD
     %% Circuit JSON to KiCad to Runframe
     circuitjsontokicad[circuit-json-to-kicad] --> runframe
 
+    %% Circuit JSON to KiCad directly to CLI
+    circuitjsontokicad --> cli
+
     %% Runframe to CLI
     runframe --> cli[tscircuit/cli]
 
