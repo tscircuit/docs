@@ -1,0 +1,45 @@
+---
+title: <systemblock.group />
+description: Organize related system blocks into a labeled subsystem.
+---
+
+`systemblock.group` encloses related blocks in a labeled region within a
+[`systemblock.page`](./systemblock-page.mdx). Its size and position are resolved
+from its children.
+
+```tsx
+<systemblock.group name="processing" displayName="Sensing and processing">
+  <systemblock.component name="sensor" displayName="Environment sensor" />
+  <systemblock.component name="mcu" displayName="Microcontroller" />
+</systemblock.group>
+```
+
+See the [system block diagrams guide](../guides/tscircuit-essentials/system-block-diagrams.mdx)
+for this group in a complete, rendered diagram.
+
+## Group properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Required group name; unique among all components and groups on the page. |
+| `displayName` | Visible label; defaults to `name`. |
+| `description` | Description of the subsystem's purpose. |
+| `children` | System block components, connections, and nested groups. |
+| `pcbComponentName` | One associated PCB component name, such as `U1`. |
+| `pcbComponentNames` | Several associated PCB component names, such as `["U1", "C1", "C2"]`. |
+| `pcbSubcircuitName` | Named PCB subcircuit in which to resolve component names. |
+
+Groups do not create a separate name scope. A
+[`systemblock.connection`](./systemblock-connection.mdx) can refer to a component
+inside a group by its name from anywhere on the same page. Connection endpoints
+must be components, not groups.
+
+## PCB associations
+
+Use either `pcbComponentName` or `pcbComponentNames`. Without
+`pcbSubcircuitName`, names resolve in the page's owning subcircuit. Used alone,
+`pcbSubcircuitName` associates the whole subcircuit.
+
+Associations do not inherit from groups, change placement, or create
+connectivity. Missing or ambiguous targets are errors, and referenced PCB
+output must be enabled and present.

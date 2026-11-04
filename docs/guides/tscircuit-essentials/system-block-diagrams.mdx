@@ -1,0 +1,59 @@
+---
+title: System block diagrams
+description: Build a high-level overview of a circuit and export it as a System SVG.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { systemBlockExample } from "@site/src/data/system-block-example"
+
+Use system blocks to explain what a circuit does. This wireless sensor node
+collects measurements, processes them, and transmits them through a radio.
+
+## Describe the system
+
+Start with a [`systemblock.page`](../../elements/systemblock-page.mdx). Add a
+[`systemblock.component`](../../elements/systemblock-component.mdx) for each
+function, and use a [`systemblock.group`](../../elements/systemblock-group.mdx)
+to collect related functions. Connect the blocks with
+[`systemblock.connection`](../../elements/systemblock-connection.mdx) elements
+that name the interfaces between them.
+
+<CircuitPreview code={systemBlockExample} systemImageUrl="/img/elements/system-blocks.svg" defaultView="system" hidePCBTab hideSchematicTab hide3DTab />
+
+Here, the sensor and microcontroller belong to the same subsystem. The I2C and
+SPI connections have arrows at both ends to indicate two-way communication.
+The page's `direction="down"` arranges the flow vertically. Core chooses block
+sizes, positions, routes, and label positions automatically.
+
+The preview is generated from this TSX using `circuit-to-svg`. Exported System
+SVGs work independently of the editor's available tabs. Save the example as
+`system-blocks.circuit.tsx` to use it in the export below.
+
+## Render an SVG
+
+Use `tscircuit` 0.0.3066 or later and `circuit-to-svg` 0.0.455 or later.
+The `tscircuit` package re-exports core's `systemblock` namespace; direct core
+consumers need `@tscircuit/core` 0.0.2261 or later.
+
+```tsx
+import { Circuit } from "tscircuit"
+import { convertCircuitJsonToSystemSvg } from "circuit-to-svg"
+import SystemOverview from "./system-blocks.circuit"
+
+const circuit = new Circuit()
+circuit.add(<SystemOverview />)
+await circuit.renderUntilSettled()
+const json = circuit.getCircuitJson()
+const page = json.find((record) =>
+  record.type === "system_block_page" && record.name === "overview")
+if (!page || page.type !== "system_block_page") throw new Error("Missing overview")
+const svg = convertCircuitJsonToSystemSvg(json, {
+  systemBlockPageId: page.system_block_page_id,
+  width: 1000,
+})
+```
+
+Omit `systemBlockPageId` to render the first page. The Circuit JSON records already
+contain resolved geometry in diagram millimeters, centered on the page with +X
+right and +Y up. Group membership does not introduce relative coordinates.
+Connections store `is_signal` and `is_power` flags and `label_anchor_center`.

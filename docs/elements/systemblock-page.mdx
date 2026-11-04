@@ -1,0 +1,42 @@
+---
+title: <systemblock.page />
+description: Define a system block diagram and its layout direction.
+---
+
+`systemblock.page` contains one system block diagram. It can stand alone or appear
+inside a board or subcircuit. Each page has its own layout and name scope.
+
+```tsx
+import { systemblock } from "tscircuit"
+
+export default () => (
+  <systemblock.page name="overview" displayName="Wireless sensor node" direction="down">
+    <systemblock.component name="sensor" displayName="Environment sensor" />
+    <systemblock.component name="mcu" displayName="Microcontroller" />
+    <systemblock.connection from="sensor" to="mcu" label="I2C" direction="both" />
+  </systemblock.page>
+)
+```
+
+For a rendered example and SVG export, see the
+[system block diagrams guide](../guides/tscircuit-essentials/system-block-diagrams.mdx).
+
+## Page properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Required page name; must be unique across the circuit. |
+| `displayName` | Visible label; defaults to `name`. |
+| `description` | Description of the page's purpose. |
+| `direction` | Layout direction: `right` (default), `left`, `down`, or `up`. |
+| `children` | System block components, groups, and connections. |
+
+Pages cannot be nested. Core resolves block sizes, positions, connection routes,
+and label positions automatically.
+
+Components and groups share a name scope across the entire page, including
+nested groups. Connections refer to component names on that page.
+
+See [`systemblock.component`](./systemblock-component.mdx),
+[`systemblock.group`](./systemblock-group.mdx), and
+[`systemblock.connection`](./systemblock-connection.mdx) for their properties.
