@@ -1,0 +1,56 @@
+---
+title: <analog.eyediagram />
+description: Declare a fixed-origin eye measurement for an external transient.
+---
+
+`<analog.eyediagram />` declares how an external runner should fold a voltage
+waveform into an eye diagram. It references an external
+[`<analog.transientsimulation />`](./analog-transientsimulation.mdx) using
+`spiceEngine="pcb_spice"` and a voltage probe in the same subcircuit. Rendering
+declares the measurement; it does not produce an eye plot or a compliance verdict.
+
+## Example
+
+Import `analog` from `"tscircuit"`. This fragment assumes the board already defines
+the external transient named `DDR`, the modeled receiver `U2`, and its physical
+`DQ` and `GND` pins. The experiment must record the full 40–160 ns measurement gate.
+Use [`<analog.digitalstimulus />`](./analog-digitalstimulus.mdx) for the driver's traffic.
+
+```tsx
+import { analog } from "tscircuit"
+
+export const ReceiverEye = () => (
+  <>
+    <voltageprobe
+      name="DQ_RX"
+      connectsTo=".U2 > .DQ"
+      referenceTo=".U2 > .GND"
+    />
+    <analog.eyediagram
+      name="DQ receive eye"
+      simulationRef=".DDR"
+      probeRef=".DQ_RX"
+      unitInterval="2.5ns"
+      timeOrigin="0ns"
+      startTime="40ns"
+      endTime="160ns"
+    />
+  </>
+)
+```
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Required measurement name. |
+| `simulationRef` | Required selector for one external transient experiment in the same subcircuit. |
+| `probeRef` | Required selector for one voltage probe in the same subcircuit. |
+| `unitInterval` | Required positive bit interval. Numeric times are milliseconds. |
+| `timeOrigin` | Required fixed time origin used to align eye windows. |
+| `startTime` | Optional nonnegative gate start; defaults to the experiment's recording start. |
+| `endTime` | Optional positive gate end; defaults to the experiment's end time. Must follow `startTime`. |
+
+The gate must lie inside the experiment's recorded interval and contain at least
+one complete two-unit-interval window aligned to `timeOrigin`. Increasing the gate
+captures more transitions; changing `timeOrigin` changes their alignment.

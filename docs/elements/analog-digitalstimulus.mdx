@@ -1,0 +1,65 @@
+---
+title: <analog.digitalstimulus />
+description: Declare binary traffic for an external PCB SPICE transient.
+---
+
+`<analog.digitalstimulus />` declares binary traffic for an external
+[`<analog.transientsimulation />`](./analog-transientsimulation.mdx) using
+`spiceEngine="pcb_spice"`. It targets a physical pin with an IBIS model and an
+explicit enabled-output state. Rendering records the stimulus in Circuit JSON;
+an external runner executes it.
+
+## Example
+
+Import `analog` from `"tscircuit"`. Place these declarations alongside the modeled
+chips in the same board/subcircuit. This fragment assumes `U1.DQ` already has a
+physical pad and a vendor IBIS model binding; it is not a standalone circuit.
+
+```tsx
+import { analog } from "tscircuit"
+
+export const Traffic = () => (
+  <>
+    <analog.transientsimulation
+      name="DDR"
+      duration="160ns"
+      timePerStep="10ps"
+      spiceEngine="pcb_spice"
+      ibisPinStates={{
+        ".U1 > .DQ": { isOutput: true, isOutputEnabled: true },
+      }}
+    />
+    <analog.digitalstimulus
+      name="DQ traffic"
+      simulationRef=".DDR"
+      sourcePinRef=".U1 > .DQ"
+      bitDuration="2.5ns"
+      startTime="0ns"
+      initialState={0}
+      transmittedData={{
+        transmissionType: "bits",
+        bits: "0110",
+        repeat: true,
+      }}
+    />
+  </>
+)
+```
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Required stimulus name, unique within the experiment. |
+| `simulationRef` | Required selector for one external transient experiment in the same subcircuit. |
+| `sourcePinRef` | Required selector for one physical source pin in the same subcircuit. |
+| `bitDuration` | Required positive duration per bit. Numeric times are milliseconds. |
+| `startTime` | Required nonnegative start time, before the experiment ends. |
+| `initialState` | Required `0` or `1`, before optional inversion. |
+| `inverted` | Invert the traffic; defaults to `false`. |
+| `transmittedData` | Required `{ transmissionType: "bits", bits, repeat }` object. `bits` is a nonempty binary string or array of `0`/`1` values (at most 65,536 bits). `repeat` is a required boolean. |
+
+A pin can have only one stimulus per experiment. Its `ibisPinStates` entry must
+set both `isOutput` and `isOutputEnabled` to `true`. No traffic defaults are
+inferred. Add an [`<analog.eyediagram />`](./analog-eyediagram.mdx) to measure a
+receiver's waveform.

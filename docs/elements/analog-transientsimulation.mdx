@@ -1,0 +1,88 @@
+---
+title: <analog.transientsimulation />
+description: Run a time-domain analog simulation.
+---
+
+`<analog.transientsimulation />` records voltages and currents over time. Import
+`analog` from `"tscircuit"` and place the element inside a board or group alongside
+sources and probes. Numeric time values are in **milliseconds**.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  showSimulationGraph
+  code={`
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" acMagnitude="1V" schX={-3} />
+    <resistor name="R1" resistance="1k" schY={2} />
+    <resistor name="R2" resistance="1k" schX={3} />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe
+      name="VOUT"
+      connectsTo=".R2 > .pin1"
+      referenceTo=".V1 > .pin2"
+    />
+    <analog.transientsimulation
+      name="Startup"
+      duration="10ms"
+      timePerStep="0.1ms"
+      spiceEngine="ngspice"
+    />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `duration` | End time of the simulation, measured from zero. Defaults to `"10ms"`. Must be positive. |
+| `startTime` | Time at which recording begins. Defaults to `"0ms"`; must be between zero and `duration`. |
+| `timePerStep` | Maximum simulation timestep. Defaults to `"0.01ms"`. Must be positive. |
+| `name` | Optional experiment name. Use a unique name for each experiment. |
+| `spiceEngine` | Engine to run the analysis, such as `"ngspice"`. Defaults to `"spicey"`; the selected engine must support the analysis. |
+| `spiceOptions` | Solver options: `method` (`"trap"` or `"gear"`), `reltol`, `abstol`, and `vntol`. |
+| `graphIndependentAxes` | Give each probe channel an independent vertical scale. |
+| `children` | An optional [`<analog.sweepparameter />`](./analog-sweepparameter.mdx) for repeated runs. |
+| `ibisPinStates` | Physical pin selectors mapped to `{ isOutput: false }` or `{ isOutput: true, isOutputEnabled: boolean }`. Requires `spiceEngine="pcb_spice"`. |
+| `pcbSpiceChannel` | PCB channel extraction settings. Requires `spiceEngine="pcb_spice"`; see below. |
+
+A board-level experiment collects probes throughout the board. An experiment in
+a group collects probes in that group while simulating the complete circuit.
+See [multiple simulations and group scope](./analogsimulation.mdx#multiple-simulations-and-group-scope).
+
+## External PCB and IBIS simulations
+
+With `spiceEngine="pcb_spice"`, IBIS experiments are declared for an external
+runner rather than executed during rendering. Bind the vendor IBIS model to the
+chip and explicitly set each modeled signal pin's state for this experiment.
+Use [`<analog.digitalstimulus />`](./analog-digitalstimulus.mdx) to drive an enabled
+output and [`<analog.eyediagram />`](./analog-eyediagram.mdx) to declare an eye measurement.
+
+`pcbSpiceChannel` describes the physical channel to extract:
+
+| Field | Description |
+| --- | --- |
+| `reduction` | `"routed-copper"` or `"straightened-stages"`. |
+| `sections` | Integer section count from 1 to 128. |
+| `lanes` | One to three `{ name, from, to }` entries selecting the lane endpoints. |
+| `referencePinRef` | Physical reference pin selector. |
+| `extraction` | Required positive `minimumFrequency`, `maximumFrequency`, `modelFrequency`, `filaments`, `refinementFilaments`, `convergenceTolerance`, `capacitanceTolerance`, `reciprocityTolerance`, `dcResistanceTolerance`, and `maxPanelLength`; optional `groundMeshSize`. Refinement filaments must exceed filaments. |
+| `passiveComponentRefs` | Optional selectors for passive components in the channel. |
+| `relativePermittivity` | Optional positive dielectric relative permittivity. |
+| `via` | Optional `platingThickness`, `equivalentWidth`, and `omitThroughViaStubs`. |
+| `straightenedStageProfiles` | Optional profiles keyed by stage name, with `spacing`, `relativePermittivity`, and `return` geometry (`width`, `thickness`, `lengthFactor`, `centerY`, `centerZ`). |
+
+The existing [`<analogsimulation />`](./analogsimulation.mdx) is also available
+for basic transient simulations. The namespaced component additionally supports
+nested parameter sweeps and the PCB/IBIS settings above.

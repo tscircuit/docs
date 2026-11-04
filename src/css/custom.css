@@ -832,6 +832,12 @@ figure img {
   padding-bottom: 1px;
 }
 
+/* Keep long page labels on one line and clip them at the sidebar edge. */
+.theme-doc-sidebar-item-link > .menu__link {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 /* Add spacing only between top-level category sections */
 .theme-doc-sidebar-item-category-level-1 {
   margin-top: 1rem !important;

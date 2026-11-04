@@ -1,0 +1,86 @@
+---
+title: <simulation.pcbreturncurrentsimulation />
+description: Declare a PCB return-current experiment with explicit signal and ground contacts.
+---
+
+`<simulation.pcbreturncurrentsimulation />` declares a pending PCB return-current
+experiment. Import `simulation` from `"tscircuit"` and place the element inside a
+board or subcircuit. Add one or more
+[`<simulation.pcbreturncurrentexcitation />`](./simulation-pcbreturncurrentexcitation.mdx)
+children to select the routed signals and their physical return contacts.
+
+The preview shows the PCB being measured. Rendering records the experiment in
+Circuit JSON; it does not run an electromagnetic solver or produce current plots.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  verticalStack
+  code={`
+import { simulation } from "tscircuit"
+
+export default () => (
+  <board width={8} height={6} layers={2} thickness={0.8} schematicDisabled>
+    <net name="GND" />
+    {[-2, 2].map((x, index) => (
+      <chip
+        key={index}
+        name={index === 0 ? "U1" : "U2"}
+        pcbX={x}
+        pinLabels={{ pin1: index === 0 ? "OUT" : "IN", pin2: "GND" }}
+        footprint={
+          <footprint>
+            <smtpad portHints={["pin1"]} width={0.8} height={0.8} shape="rect" />
+            <smtpad portHints={["pin2"]} pcbY={1.5} width={0.8} height={0.8} shape="rect" />
+          </footprint>
+        }
+      />
+    ))}
+    <trace name="SIGNAL" from=".U1 > .OUT" to=".U2 > .IN" thickness={0.18} pcbStraightLine />
+    <trace from=".U1 > .GND" to="net.GND" />
+    <trace from=".U2 > .GND" to="net.GND" />
+    <simulation.pcbreturncurrentsimulation name="Signal return">
+      <simulation.pcbreturncurrentexcitation
+        source=".U1 > .OUT"
+        load=".U2 > .IN"
+        trace=".SIGNAL"
+        ground="net.GND"
+        current="5mA"
+        sourceImpedance="25ohm"
+        loadImpedance="100ohm"
+        returnSource=".U2 > .GND"
+        returnSink=".U1 > .GND"
+      />
+    </simulation.pcbreturncurrentsimulation>
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Optional nonempty experiment name. Defaults to `"PCB return current"`. |
+| `children` | Nested `<simulation.pcbreturncurrentexcitation />` elements. |
+
+Multiple declarations create independent experiments. An empty declaration can
+reserve an experiment, but it needs an excitation before it can be simulated.
+PCB-disabled rendering skips these declarations.
+
+## Running the experiment
+
+Export the rendered Circuit JSON and pass it to the
+[simulate-return-current CLI](https://github.com/tscircuit/simulate-return-current).
+Select the experiment if more than one exists. Frequency, mesh/sampling settings,
+physical stackup, copper model, and solver configuration are CLI run parameters,
+not properties on this element. Read the resulting Circuit JSON separately.
+
+An experiment can contain multiple excitations on different routes sharing one
+ground net. To compare currents, directions, or ground nets for the same route,
+use separate experiments.
+
+The flat `<pcbreturncurrentsimulation />` form accepts the same properties.
