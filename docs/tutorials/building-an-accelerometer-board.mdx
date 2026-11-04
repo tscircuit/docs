@@ -1,0 +1,515 @@
+---
+title: Building an Accelerometer Breakout Board
+description: >-
+  Learn how to design a 3-axis I2C MEMS accelerometer breakout PCB in tscircuit,
+  complete with power decoupling, I2C pull-up resistors, interrupt pins, and
+  PCB layout best practices.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+A **3-axis MEMS accelerometer board** measures static acceleration (gravity for tilt/orientation sensing) and dynamic acceleration (vibration, shock, motion, and free-fall). In this tutorial, you will design a complete I2C accelerometer breakout PCB (modeled around an industry-standard 8-pin/14-pin digital accelerometer interface like the **ADXL345** / **LIS3DH**) using **tscircuit**.
+
+You will learn how to configure the sensor's schematic symbol, place high-frequency decoupling capacitors, wire I2C bus pull-up resistors, expose hardware interrupt pins (`INT1`, `INT2`), and lay out a compact breakout board ready for fabrication.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="32mm" height="24mm">
+    {/* 6-Pin Breakout Header */}
+    <pinheader
+      name="J1"
+      pinCount={6}
+      pitch="2.54mm"
+      footprint="pinrow6"
+      pinLabels={["VCC", "GND", "SCL", "SDA", "INT1", "INT2"]}
+      pcbX={-12}
+      pcbY={0}
+      pcbRotation="90deg"
+      schX={-7}
+      schY={0}
+    />
+
+    {/* 3-Axis Digital MEMS Accelerometer IC */}
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["CS"],
+        pin4: ["SDO"],
+        pin5: ["SDA"],
+        pin6: ["SCL"],
+        pin7: ["INT1"],
+        pin8: ["INT2"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "CS", "SDO", "GND"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["SCL", "SDA", "INT1", "INT2"],
+          direction: "top-to-bottom",
+        },
+      }}
+      pcbX={2}
+      pcbY={0}
+      schX={0}
+      schY={0}
+    />
+
+    {/* Power Supply Decoupling Capacitors */}
+    <capacitor
+      name="C1"
+      capacitance="100nF"
+      footprint="0603"
+      pcbX={-4}
+      pcbY={6}
+      schX={-3.5}
+      schY={3}
+    />
+    <capacitor
+      name="C2"
+      capacitance="10uF"
+      footprint="0805"
+      pcbX={-4}
+      pcbY={-6}
+      schX={-3.5}
+      schY={-3}
+    />
+
+    {/* I2C Pull-Up Resistors & Address Pull-Down */}
+    <resistor
+      name="R_SCL"
+      resistance="4.7k"
+      footprint="0603"
+      pcbX={9}
+      pcbY={5}
+      schX={4}
+      schY={3}
+    />
+    <resistor
+      name="R_SDA"
+      resistance="4.7k"
+      footprint="0603"
+      pcbX={9}
+      pcbY={0}
+      schX={6}
+      schY={3}
+    />
+    <resistor
+      name="R_ADDR"
+      resistance="10k"
+      footprint="0603"
+      pcbX={2}
+      pcbY={-7}
+      schX={-2}
+      schY={-3}
+    />
+
+    {/* Power & Ground Connections */}
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".U1 > .VDD" to="net.VCC" />
+    <trace from=".U1 > .GND" to="net.GND" />
+
+    {/* Tie CS to VCC to enable I2C mode */}
+    <trace from=".U1 > .CS" to="net.VCC" />
+
+    {/* Pull SDO low via 10k resistor to select default I2C address */}
+    <trace from=".U1 > .SDO" to=".R_ADDR > .pin1" />
+    <trace from=".R_ADDR > .pin2" to="net.GND" />
+
+    {/* Decoupling Capacitors across VCC and GND */}
+    <trace from=".C1 > .pos" to="net.VCC" />
+    <trace from=".C1 > .neg" to="net.GND" />
+    <trace from=".C2 > .pos" to="net.VCC" />
+    <trace from=".C2 > .neg" to="net.GND" />
+
+    {/* I2C Bus Lines & Pull-Ups */}
+    <trace from=".U1 > .SCL" to="net.SCL" />
+    <trace from=".U1 > .SDA" to="net.SDA" />
+    <trace from=".J1 > .SCL" to="net.SCL" />
+    <trace from=".J1 > .SDA" to="net.SDA" />
+    <trace from=".R_SCL > .pin1" to="net.VCC" />
+    <trace from=".R_SCL > .pin2" to="net.SCL" />
+    <trace from=".R_SDA > .pin1" to="net.VCC" />
+    <trace from=".R_SDA > .pin2" to="net.SDA" />
+
+    {/* Hardware Interrupt Outputs */}
+    <trace from=".U1 > .INT1" to=".J1 > .INT1" />
+    <trace from=".U1 > .INT2" to=".J1 > .INT2" />
+  </board>
+)
+`}
+/>
+
+---
+
+## Components Needed (Bill of Materials)
+
+| Reference | Component | Value / Package | Purpose |
+| --- | --- | --- | --- |
+| `U1` | 3-Axis Digital Accelerometer | ADXL345 / LIS3DH (`soic8` / LGA breakout) | Measures X, Y, and Z acceleration and outputs digital data over I2C |
+| `C1` | Ceramic Bypass Capacitor | `100nF` (`0603`) | Filters high-frequency switching noise right at the `VDD` pin |
+| `C2` | Bulk Reservoir Capacitor | `10uF` (`0805`) | Stabilizes the supply voltage during internal ADC conversion bursts |
+| `R_SCL`, `R_SDA` | I2C Pull-Up Resistors | `4.7kΩ` (`0603`) | Pulls open-drain `SCL` and `SDA` clock/data lines to `VCC` |
+| `R_ADDR` | Address Configuration Resistor | `10kΩ` (`0603`) | Pulls `SDO`/`SA0` to `GND` to set a deterministic I2C slave address |
+| `J1` | 6-Pin Breakout Header | `2.54mm` pitch (`pinrow6`) | Exposes `VCC`, `GND`, `SCL`, `SDA`, `INT1`, and `INT2` to a microcontroller |
+
+---
+
+## Key Design Concepts
+
+### 1. Selecting I2C Mode and Device Address
+
+Most MEMS accelerometers support both **I2C** and **SPI** serial interfaces using shared pins:
+
+- **Chip Select (`CS`):** Tying `CS` high to `VCC` configures the sensor to communicate over **I2C** instead of 3/4-wire SPI.
+- **Address Pin (`SDO` / `ALT ADDRESS`):** Pulling `SDO` low to `GND` through a `10kΩ` resistor (`R_ADDR`) selects the primary 7-bit I2C address (`0x53` on ADXL345, or `0x18` on LIS3DH).
+
+### 2. Why Low-Noise Decoupling Matters for Accelerometers
+
+Inside a MEMS accelerometer, microscopic capacitive plates deflect by fractions of a femtofarrad under acceleration. Noise on the `VDD` supply rail couples directly into the internal charge amplifier and analog-to-digital converter (ADC), causing jittery readings. Placing a **`100nF` ceramic capacitor (`C1`)** and a **`10uF` bulk capacitor (`C2`)** physically close to `U1`'s `VDD` pin keeps the analog front-end quiet.
+
+---
+
+## Step-by-Step Circuit Design in tscircuit
+
+### Step 1: Define the Accelerometer IC (`U1`)
+
+We start by defining the accelerometer chip (`U1`) with descriptive `pinLabels` and organizing power/configuration pins on the left and digital I/O signals on the right using `schPortArrangement`.
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="24mm" height="20mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["CS"],
+        pin4: ["SDO"],
+        pin5: ["SDA"],
+        pin6: ["SCL"],
+        pin7: ["INT1"],
+        pin8: ["INT2"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "CS", "SDO", "GND"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["SCL", "SDA", "INT1", "INT2"],
+          direction: "top-to-bottom",
+        },
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+### Step 2: Add Power Supply Decoupling and Mode Configuration
+
+Next, we add the `100nF` (`C1`) and `10uF` (`C2`) decoupling capacitors across `net.VCC` and `net.GND`, tie `CS` to `net.VCC` for I2C operation, and pull `SDO` to `net.GND` via `R_ADDR` (`10kΩ`).
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="28mm" height="22mm">
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["CS"],
+        pin4: ["SDO"],
+        pin5: ["SDA"],
+        pin6: ["SCL"],
+        pin7: ["INT1"],
+        pin8: ["INT2"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "CS", "SDO", "GND"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["SCL", "SDA", "INT1", "INT2"],
+          direction: "top-to-bottom",
+        },
+      }}
+      schX={1}
+      schY={0}
+    />
+
+    <capacitor name="C1" capacitance="100nF" footprint="0603" schX={-3} schY={2.5} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805" schX={-3} schY={-2.5} />
+    <resistor name="R_ADDR" resistance="10k" footprint="0603" schX={-1} schY={-3} />
+
+    <trace from=".U1 > .VDD" to="net.VCC" />
+    <trace from=".U1 > .GND" to="net.GND" />
+    <trace from=".U1 > .CS" to="net.VCC" />
+    <trace from=".U1 > .SDO" to=".R_ADDR > .pin1" />
+    <trace from=".R_ADDR > .pin2" to="net.GND" />
+
+    <trace from=".C1 > .pos" to="net.VCC" />
+    <trace from=".C1 > .neg" to="net.GND" />
+    <trace from=".C2 > .pos" to="net.VCC" />
+    <trace from=".C2 > .neg" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+### Step 3: Add I2C Pull-Ups and the 6-Pin Breakout Header
+
+Because I2C uses open-drain drivers on `SCL` and `SDA`, we add two `4.7kΩ` pull-up resistors (`R_SCL` and `R_SDA`) to `net.VCC` and route all power, I2C, and interrupt lines (`INT1`, `INT2`) to a 6-pin 2.54mm header (`J1`).
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="32mm" height="24mm">
+    <pinheader
+      name="J1"
+      pinCount={6}
+      pitch="2.54mm"
+      footprint="pinrow6"
+      pinLabels={["VCC", "GND", "SCL", "SDA", "INT1", "INT2"]}
+      schX={-7}
+      schY={0}
+    />
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["CS"],
+        pin4: ["SDO"],
+        pin5: ["SDA"],
+        pin6: ["SCL"],
+        pin7: ["INT1"],
+        pin8: ["INT2"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "CS", "SDO", "GND"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["SCL", "SDA", "INT1", "INT2"],
+          direction: "top-to-bottom",
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+    <capacitor name="C1" capacitance="100nF" footprint="0603" schX={-3.5} schY={3} />
+    <capacitor name="C2" capacitance="10uF" footprint="0805" schX={-3.5} schY={-3} />
+    <resistor name="R_SCL" resistance="4.7k" footprint="0603" schX={4} schY={3} />
+    <resistor name="R_SDA" resistance="4.7k" footprint="0603" schX={6} schY={3} />
+    <resistor name="R_ADDR" resistance="10k" footprint="0603" schX={-2} schY={-3} />
+
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".U1 > .VDD" to="net.VCC" />
+    <trace from=".U1 > .GND" to="net.GND" />
+    <trace from=".U1 > .CS" to="net.VCC" />
+    <trace from=".U1 > .SDO" to=".R_ADDR > .pin1" />
+    <trace from=".R_ADDR > .pin2" to="net.GND" />
+
+    <trace from=".C1 > .pos" to="net.VCC" />
+    <trace from=".C1 > .neg" to="net.GND" />
+    <trace from=".C2 > .pos" to="net.VCC" />
+    <trace from=".C2 > .neg" to="net.GND" />
+
+    <trace from=".U1 > .SCL" to="net.SCL" />
+    <trace from=".U1 > .SDA" to="net.SDA" />
+    <trace from=".J1 > .SCL" to="net.SCL" />
+    <trace from=".J1 > .SDA" to="net.SDA" />
+    <trace from=".R_SCL > .pin1" to="net.VCC" />
+    <trace from=".R_SCL > .pin2" to="net.SCL" />
+    <trace from=".R_SDA > .pin1" to="net.VCC" />
+    <trace from=".R_SDA > .pin2" to="net.SDA" />
+
+    <trace from=".U1 > .INT1" to=".J1 > .INT1" />
+    <trace from=".U1 > .INT2" to=".J1 > .INT2" />
+  </board>
+)
+`}
+/>
+
+### Step 4: PCB Layout & Mechanical Placement Best Practices
+
+When laying out an accelerometer PCB, follow these hardware engineering guidelines:
+
+1. **Place `C1` (`100nF`) Immediately Adjacent to `VDD`:** Minimize loop inductance on the high-frequency bypass path.
+2. **Rigid Mounting:** Place the accelerometer IC (`U1`) near the center or mounting point of the PCB where mechanical board flex and resonance are minimized.
+3. **Avoid Heat Sources:** Keep the MEMS package away from high-power regulators to prevent thermal zero-g offset drift.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="32mm" height="24mm">
+    <pinheader
+      name="J1"
+      pinCount={6}
+      pitch="2.54mm"
+      footprint="pinrow6"
+      pinLabels={["VCC", "GND", "SCL", "SDA", "INT1", "INT2"]}
+      pcbX={-12}
+      pcbY={0}
+      pcbRotation="90deg"
+      schX={-7}
+      schY={0}
+    />
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{
+        pin1: ["VDD"],
+        pin2: ["GND"],
+        pin3: ["CS"],
+        pin4: ["SDO"],
+        pin5: ["SDA"],
+        pin6: ["SCL"],
+        pin7: ["INT1"],
+        pin8: ["INT2"],
+      }}
+      pcbX={2}
+      pcbY={0}
+      schX={0}
+      schY={0}
+    />
+    <capacitor
+      name="C1"
+      capacitance="100nF"
+      footprint="0603"
+      pcbX={-4}
+      pcbY={6}
+      schX={-3.5}
+      schY={3}
+    />
+    <capacitor
+      name="C2"
+      capacitance="10uF"
+      footprint="0805"
+      pcbX={-4}
+      pcbY={-6}
+      schX={-3.5}
+      schY={-3}
+    />
+    <resistor
+      name="R_SCL"
+      resistance="4.7k"
+      footprint="0603"
+      pcbX={9}
+      pcbY={5}
+      schX={4}
+      schY={3}
+    />
+    <resistor
+      name="R_SDA"
+      resistance="4.7k"
+      footprint="0603"
+      pcbX={9}
+      pcbY={0}
+      schX={6}
+      schY={3}
+    />
+    <resistor
+      name="R_ADDR"
+      resistance="10k"
+      footprint="0603"
+      pcbX={2}
+      pcbY={-7}
+      schX={-2}
+      schY={-3}
+    />
+
+    <trace from=".J1 > .VCC" to="net.VCC" />
+    <trace from=".J1 > .GND" to="net.GND" />
+    <trace from=".U1 > .VDD" to="net.VCC" />
+    <trace from=".U1 > .GND" to="net.GND" />
+    <trace from=".U1 > .CS" to="net.VCC" />
+    <trace from=".U1 > .SDO" to=".R_ADDR > .pin1" />
+    <trace from=".R_ADDR > .pin2" to="net.GND" />
+    <trace from=".C1 > .pos" to="net.VCC" />
+    <trace from=".C1 > .neg" to="net.GND" />
+    <trace from=".C2 > .pos" to="net.VCC" />
+    <trace from=".C2 > .neg" to="net.GND" />
+    <trace from=".U1 > .SCL" to="net.SCL" />
+    <trace from=".U1 > .SDA" to="net.SDA" />
+    <trace from=".J1 > .SCL" to="net.SCL" />
+    <trace from=".J1 > .SDA" to="net.SDA" />
+    <trace from=".R_SCL > .pin1" to="net.VCC" />
+    <trace from=".R_SCL > .pin2" to="net.SCL" />
+    <trace from=".R_SDA > .pin1" to="net.VCC" />
+    <trace from=".R_SDA > .pin2" to="net.SDA" />
+    <trace from=".U1 > .INT1" to=".J1 > .INT1" />
+    <trace from=".U1 > .INT2" to=".J1 > .INT2" />
+  </board>
+)
+`}
+/>
+
+---
+
+## Reading 3-Axis Acceleration over I2C
+
+Once you wire `VCC` (`3.3V`), `GND`, `SCL`, and `SDA` from header `J1` to a microcontroller (such as an RP2040, ESP32, or Arduino), you can enable measurement mode and stream X, Y, and Z acceleration values:
+
+```cpp
+#include <Wire.h>
+
+#define ACCEL_ADDR 0x53 // Default I2C address when SDO is pulled to GND
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+
+  // Put ADXL345 into Measurement Mode (Register 0x2D, Bit D3 = 1)
+  Wire.beginTransmission(ACCEL_ADDR);
+  Wire.write(0x2D);
+  Wire.write(0x08);
+  Wire.endTransmission();
+}
+
+void loop() {
+  Wire.beginTransmission(ACCEL_ADDR);
+  Wire.write(0x32); // Start at DATAX0 register
+  Wire.endTransmission(false);
+  Wire.requestFrom(ACCEL_ADDR, 6, true);
+
+  int16_t rawX = Wire.read() | (Wire.read() << 8);
+  int16_t rawY = Wire.read() | (Wire.read() << 8);
+  int16_t rawZ = Wire.read() | (Wire.read() << 8);
+
+  // Convert raw LSB (~3.9 mg/LSB in +/-2g full-resolution mode) to g
+  Serial.print("X: "); Serial.print(rawX * 0.0039); Serial.print(" g, ");
+  Serial.print("Y: "); Serial.print(rawY * 0.0039); Serial.print(" g, ");
+  Serial.print("Z: "); Serial.print(rawZ * 0.0039); Serial.println(" g");
+  delay(100);
+}
+```
