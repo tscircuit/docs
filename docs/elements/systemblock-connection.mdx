@@ -1,0 +1,41 @@
+---
+title: <systemblock.connection />
+description: Show a signal or power interface between system blocks.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { systemBlockConnectionExample } from "@site/src/data/system-block-element-examples"
+
+`systemblock.connection` connects two
+[`systemblock.component`](./systemblock-component.mdx) elements on the same
+[`systemblock.page`](./systemblock-page.mdx). It represents a functional interface
+without creating electrical traces or nets.
+
+<CircuitPreview code={systemBlockConnectionExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />
+
+See the [system block diagrams guide](../guides/tscircuit-essentials/system-block-diagrams.mdx)
+for connections in a complete, rendered diagram.
+
+## Connection properties
+
+| Property | Description |
+| --- | --- |
+| `from` | Required source component name on the same page. |
+| `to` | Required destination component name on the same page. |
+| `name` | Optional connection name; must be unique among connections on the page. |
+| `label` | Label displayed along the route, such as `I2C` or `3.3 V`. |
+| `kind` | `signal` (default) or `power`. |
+| `direction` | Arrowheads: `forward` (default), `both`, or `none`. |
+
+Use component names such as `sensor`, rather than pin selectors. Components may
+belong to different groups on the same page. Parallel interfaces, feedback
+cycles, and self-loops are supported.
+
+Signal connections are solid blue; power connections are dashed orange.
+`direction="forward"` points from `from` to `to`; `both` adds arrows at both ends,
+and `none` removes arrowheads. This setting is independent of the page's layout
+direction.
+
+Core resolves the route and label position. Circuit JSON stores the connection's
+kind as `is_signal` and `is_power` flags, and its label position as
+`label_anchor_center`.

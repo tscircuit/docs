@@ -1,0 +1,45 @@
+---
+title: <systemblock.component />
+description: Represent a function or component in a system block diagram.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { systemBlockComponentExample, systemBlockPcbAssociationExample } from "@site/src/data/system-block-element-examples"
+
+`systemblock.component` represents one functional block inside a
+[`systemblock.page`](./systemblock-page.mdx) or
+[`systemblock.group`](./systemblock-group.mdx). Core sizes the block from its
+label and description and places it automatically.
+
+<CircuitPreview code={systemBlockComponentExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />
+
+See the [system block diagrams guide](../guides/tscircuit-essentials/system-block-diagrams.mdx)
+for this block in a complete, rendered diagram.
+
+## Component properties
+
+| Property | Description |
+| --- | --- |
+| `name` | Required component name; unique among all components and groups on the page. |
+| `displayName` | Visible label; defaults to `name`. |
+| `description` | Description of the block's purpose. |
+| `pcbComponentName` | One associated PCB component name, such as `U1`. |
+| `pcbComponentNames` | Several associated PCB component names, such as `["U1", "C1", "C2"]`. |
+| `pcbSubcircuitName` | Named PCB subcircuit in which to resolve component names. |
+
+Use the component's `name` as the `from` or `to` prop of a
+[`systemblock.connection`](./systemblock-connection.mdx).
+
+## PCB associations
+
+Use either `pcbComponentName` or `pcbComponentNames`. Without
+`pcbSubcircuitName`, names resolve in the page's owning subcircuit. Used alone,
+`pcbSubcircuitName` associates the whole subcircuit.
+
+Associations do not inherit from groups, change placement, or create
+connectivity. Missing or ambiguous targets are errors, and referenced PCB
+output must be enabled and present.
+
+For example, associate a regulator block with its physical circuit:
+
+<CircuitPreview code={systemBlockPcbAssociationExample} defaultView="system" hidePCBTab hideSchematicTab hide3DTab hideCodeTab verticalStack />

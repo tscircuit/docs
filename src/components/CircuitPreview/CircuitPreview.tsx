@@ -34,6 +34,7 @@ type CircuitPreviewView =
   | "3d"
   | "runframe"
   | "drawing"
+  | "system"
   | "pinout"
 
 const Tab = ({
@@ -130,6 +131,8 @@ export default function CircuitPreview({
   circuitJson,
   pcbImageUrl,
   schematicImageUrl,
+  systemImageUrl,
+  showSystemTab,
   threeDImageUrl,
   explosion,
   explosionStages,
@@ -169,6 +172,9 @@ export default function CircuitPreview({
   circuitJson?: Record<string, unknown>[]
   pcbImageUrl?: string
   schematicImageUrl?: string
+  /** Optional pre-rendered System diagram override. */
+  systemImageUrl?: string
+  showSystemTab?: boolean
   threeDImageUrl?: string
   /** A single sampled 3D pose. Omit for the assembled view. */
   explosion?: ExplosionPose
@@ -334,6 +340,20 @@ export default function CircuitPreview({
     circuitJson,
     pcbImageUrl,
   ])
+  const systemTabEnabled =
+    showSystemTab ??
+    Boolean(
+      systemImageUrl ||
+        defaultView === "system" ||
+        leftView === "system" ||
+        rightView === "system",
+    )
+  const systemUrl = useMemo(() => {
+    if (systemImageUrl) return systemImageUrl
+    const url = new URL(configurePreviewUrl(createSvgUrl(fsMapOrCode, "pcb")))
+    url.searchParams.set("svg_type", "system")
+    return url.toString()
+  }, [fsMapOrCode, mainComponentPath, circuitJson, systemImageUrl])
   const schUrl = useMemo(() => {
     if (schematicImageUrl) return schematicImageUrl
     const baseUrl = configurePreviewUrl(
@@ -594,6 +614,13 @@ export default function CircuitPreview({
               onClick={() => setView("drawing")}
             />
           )}
+          {systemTabEnabled && (
+            <Tab
+              label="System"
+              active={view === "system"}
+              onClick={() => setView("system")}
+            />
+          )}
           {showPinoutTab && (
             <Tab
               label="Pinout"
@@ -648,13 +675,15 @@ export default function CircuitPreview({
       const hasPreviewHeader = Boolean(editorUrl)
 
       const src =
-        v === "pcb"
-          ? pcbUrl
-          : v === "schematic"
-            ? schUrl
-            : v === "pinout"
-              ? pinoutUrl
-              : threeDUrl
+        v === "system"
+          ? systemUrl
+          : v === "pcb"
+            ? pcbUrl
+            : v === "schematic"
+              ? schUrl
+              : v === "pinout"
+                ? pinoutUrl
+                : threeDUrl
 
       return (
         <div
@@ -726,6 +755,7 @@ export default function CircuitPreview({
   const CodeView =
     (view === "code" ||
       shouldSplitCode ||
+      (verticalStack && hideCodeTab) ||
       (!_showTabs && windowSize === "mobile")) &&
     renderCodePane("border-r")
 
@@ -738,7 +768,8 @@ export default function CircuitPreview({
     view === "3d" ||
     view === "runframe" ||
     view === "pinout" ||
-    view === "drawing") && (
+    view === "drawing" ||
+    view === "system") && (
     <div
       className={`${tw(
         `flex-1 basis-1/2 min-w-0 m-0 p-0 ${
@@ -754,6 +785,13 @@ export default function CircuitPreview({
       <div
         className={`${styles.previewContent} ${imageViewHasHeader ? styles.previewContentWithHeader : ""}`}
       >
+        {systemTabEnabled &&
+          renderPreviewImage({
+            src: systemUrl,
+            alt: "System block diagram",
+            hidden: view !== "system",
+            imageClassName: "w-full m-0 object-contain bg-white",
+          })}
         {renderPreviewImage({
           src: pcbUrl,
           alt: "PCB Circuit Preview",
