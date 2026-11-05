@@ -35,6 +35,8 @@ For a purchased bearing CAD file, replace `cadModel={bearingModel}` with `modelU
 |----------|-------------|
 | `name` | Required stable identity. Trimmed and must not be empty. |
 | `displayName` | Optional human-facing name. |
+| `purchaseUrls` | Optional array of HTTP(S) purchase links, including Amazon or a manufacturer's store. |
+| `supplierPartNumbers` | Optional supplier-to-SKU map, for example `{ jlcpcb: ["C123"] }`. |
 | `model` | Modelprinter/footprinter specification or an HTTP(S) model URL. |
 | `modelUrl` | Imported model URL or asset path. |
 | `cadModel` | Existing CAD formats and model-alignment transforms, including CAD JSX; see [`cadmodel`](./cadmodel.mdx). |
@@ -44,6 +46,65 @@ For a purchased bearing CAD file, replace `cadModel={bearingModel}` with `modelU
 | `mountGap` | Nonnegative clearance along the target's outward normal, default zero. |
 
 Supply at most one of `model`, `modelUrl`, or `cadModel`. Omit all three for a part with no geometry. `cadModel={null}` also keeps the identity without rendering a model; it cannot be combined with another model source. For a `jscad` JSX prop, use [`assembly.printedpart`](./assembly-printedpart.mdx).
+
+## Bill of materials
+
+Assembly parts appear in the assembly bill of materials even when they have no CAD model. Use `purchaseUrls` for store links and `supplierPartNumbers` for supplier lookup identifiers. These are independent: URLs are not matched to SKUs by their position in an array, and a purchase link alone does not supply a price.
+
+```tsx
+import { assembly } from "@tscircuit/core"
+
+export default () => (
+  <assembly.device name="sensor">
+    <assembly.subassembly name="HOUSING" displayName="Sensor housing">
+      <assembly.part
+        name="COVER"
+        displayName="ABS cover"
+        purchaseUrls={[
+          "https://amazon.com/dp/example",
+          "https://store.example/cover",
+        ]}
+      />
+      {[1, 2].map((index) => (
+        <assembly.part
+          key={index}
+          name={`SCREW${index}`}
+          purchaseUrls={["https://store.example/m3-screw"]}
+        />
+      ))}
+      <assembly.part name="MODULE" supplierPartNumbers={{ jlcpcb: ["C123"] }} />
+    </assembly.subassembly>
+  </assembly.device>
+)
+```
+
+Replace the example URLs and SKU with your actual purchasing information. This example needs no geometry: it produces a housing material line with four children (cover, two screws and module). The model-less outer device contributes no line.
+
+Each assembly element contributes quantity **one**, regardless of how many CAD models it contains. Represent multiple physical instances with separate elements, as with the two screws above. Nesting determines BOM ownership; `mountedTo` determines placement and does not reparent BOM lines. `displayName`, where supported, supplies the material label; otherwise the label comes from `name`.
+
+The same purchasing props are available on `assembly.subassembly` (and its `assembly.cadassembly` alias), `assembly.device`, `assembly.bolt`, `assembly.printedpart`, `assembly.motor`, `assembly.screen` and `assembly.cable`. Reference surfaces, CAD primitives, drawings and explosion instructions do not add material lines. See [device BOM behavior](./assembly-device.mdx#bill-of-materials) for when a device contributes its own line.
+
+### Read the assembly BOM
+
+Core emits `cad_assembly_bom_item` records in Circuit JSON. Render the design, then use `convertCircuitJsonToAssemblyBom` from `circuit-json-to-bom-csv` (version 0.0.28 or later) to obtain the nested BOM:
+
+```tsx
+import { Circuit } from "@tscircuit/core"
+import { convertCircuitJsonToAssemblyBom } from "circuit-json-to-bom-csv"
+import SensorAssembly from "./sensor-assembly"
+
+const circuit = new Circuit()
+circuit.add(<SensorAssembly />)
+await circuit.renderUntilSettled()
+
+const bom = await convertCircuitJsonToAssemblyBom({
+  circuitJson: circuit.getCircuitJson(),
+})
+```
+
+Save the first example as `sensor-assembly.tsx`. Each resulting node exposes `name`, `quantity`, `total_quantity`, `purchase_urls` and `children`, with supplier identifiers when supplied. Remaining PCB components are grouped by their electrical subcircuits. Assembly materials do not enter the existing PCB manufacturing BOM CSV.
+
+Core records purchasing metadata without fetching prices. A consuming viewer can use a parts engine to quote supported supplier SKUs; arbitrary store links do not enable automatic pricing. Parent and child materials remain separate entries: nesting does not indicate that a parent's purchase price includes its children.
 
 ## Placement and CAD alignment
 

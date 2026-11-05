@@ -35,6 +35,8 @@ Offsets use the target face's local axes. Rotating a target frame changes the di
 |----------|-------------|
 | `name` | Required group name. |
 | `displayName` | Optional display label. |
+| `purchaseUrls` | Optional array of HTTP(S) purchase links for this subassembly. |
+| `supplierPartNumbers` | Optional supplier-to-SKU map for this subassembly. |
 | `model` | Modelprinter string or HTTP(S) model URL. |
 | `modelUrl` | Imported CAD model URL. |
 | `cadModel` | Model with advanced alignment options; see [`cadmodel`](./cadmodel.mdx). |
@@ -45,6 +47,12 @@ Offsets use the target face's local axes. Rotating a target frame changes the di
 | `children` | Reference surfaces, nested assembly elements, or CAD models. |
 
 Choose at most one of `model`, `modelUrl`, or `cadModel`. Omit all three for a group with no model. Reference surfaces can be children of either kind of group.
+
+## Bill of materials
+
+Each subassembly emits one assembly BOM material line, including a subassembly with no model. Nested assembly materials appear beneath their nearest material ancestor. `displayName` supplies the label when present; otherwise `name` is used. Moving the group with `mountedTo` does not change BOM ownership.
+
+Purchase links and supplier SKUs belong to the subassembly's own line. Its children remain separate materials; nesting does not mean their cost is included in the parent. See the [assembly BOM example](./assembly-part.mdx#bill-of-materials) for purchasing props, repeated parts and converting Circuit JSON to a nested BOM.
 
 ## Group placement and model alignment
 
