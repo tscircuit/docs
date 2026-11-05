@@ -30,17 +30,11 @@ export default () => (
 | Property | Description |
 |----------|-------------|
 | `name` | Optional device name. |
-| `purchaseUrls` | Optional array of HTTP(S) purchase links for the device. |
-| `supplierPartNumbers` | Optional supplier-to-SKU map for the device. |
+| `purchaseUrls` | Optional purchase links. |
+| `supplierPartNumbers` | Optional supplier part numbers, e.g. `{ jlcpcb: ["C123"] }`. |
 | `model` | Modelprinter string or HTTP(S) model URL. |
 | `modelUrl` | Imported CAD model URL. Use either `model` or `modelUrl`. |
 | `children` | Boards, motors, subassemblies, and screens. |
-
-## Bill of materials
-
-A device contributes its own assembly BOM line when it has `model`, `modelUrl`, `purchaseUrls` or `supplierPartNumbers`. An explicitly empty `purchaseUrls={[]}` or `supplierPartNumbers={{}}` also opts it into a line. Each device line has quantity one.
-
-Without a model or purchasing metadata, the device is transparent to the assembly BOM: its materials attach to the nearest material ancestor, or become root entries. This lets a device organize the design without adding an extra material to purchase. See the [assembly BOM example](./assembly-part.mdx#bill-of-materials) for nesting, purchasing links and converter usage.
 
 ## Modelprinter strings
 
