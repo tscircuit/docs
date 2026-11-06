@@ -1,0 +1,364 @@
+---
+title: Using tscircuit Without React
+description: >-
+  Build, render, and export tscircuit schematics and PCBs imperatively in plain
+  TypeScript or JavaScript using the @tscircuit/core class API without JSX or
+  React.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+While tscircuit is most often written with declarative JSX/TSX syntax, `@tscircuit/core` includes a complete object-oriented, imperative API. Every JSX element in tscircuit—such as `<board />`, `<resistor />`, `<chip />`, `<trace />`, and `<footprint />`—is backed by a standard TypeScript class (`Board`, `Resistor`, `Chip`, `Trace`, `Footprint`, etc.) that you can instantiate directly with `new` and compose using `.add()`.
+
+This means you can build, autoroute, simulate, and export circuits in plain TypeScript or JavaScript **without React, JSX, or any special compiler configuration**.
+
+### When to Use the Imperative API
+
+- **Plain TypeScript / Node.js / Bun scripts** where you don't want to configure JSX transforms.
+- **Procedural or parametric hardware generators** that construct boards dynamically from JSON configs, CLI flags, or database records.
+- **Non-React web applications** (Vue, Svelte, Solid, Angular, or vanilla DOM) that generate Circuit JSON in the browser.
+- **Automated testing and CI pipelines** that programmatically assemble and verify circuits.
+
+## Installation
+
+Install `@tscircuit/core` (along with optional export utilities such as `circuit-to-svg`):
+
+```bash
+bun add @tscircuit/core circuit-to-svg
+# or with npm
+npm install @tscircuit/core circuit-to-svg
+```
+
+## Quick Start: Creating a Circuit Imperatively
+
+To build a circuit without React:
+
+1. Create a `RootCircuit` instance.
+2. Instantiate a `Board` and add child components (`Resistor`, `Led`, `Capacitor`, `Chip`, `Trace`, etc.) using `board.add(...)`.
+3. Add the board to the circuit with `circuit.add(board)`.
+4. Run `await circuit.renderUntilSettled()` to execute schematic layout, PCB placement, and autorouting.
+5. Call `circuit.getCircuitJson()` to retrieve the compiled [Circuit JSON](https://github.com/tscircuit/circuit-json).
+
+```ts
+import { RootCircuit, Board, Resistor, Led, Trace } from "@tscircuit/core"
+
+const circuit = new RootCircuit()
+
+const board = new Board({
+  width: "24mm",
+  height: "14mm",
+})
+
+board.add(
+  new Resistor({
+    name: "R1",
+    resistance: "330ohm",
+    footprint: "0603",
+    pcbX: -5,
+    pcbY: 0,
+  }),
+)
+
+board.add(
+  new Led({
+    name: "D1",
+    color: "red",
+    footprint: "0603",
+    pcbX: 5,
+    pcbY: 0,
+  }),
+)
+
+board.add(
+  new Trace({
+    from: ".R1 > .pin2",
+    to: ".D1 > .anode",
+  }),
+)
+
+circuit.add(board)
+
+await circuit.renderUntilSettled()
+
+const circuitJson = circuit.getCircuitJson()
+console.log(`Generated ${circuitJson.length} circuit elements`)
+```
+
+The imperative circuit above produces the exact same output as its JSX counterpart:
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="24mm" height="14mm">
+    <resistor
+      name="R1"
+      resistance="330ohm"
+      footprint="0603"
+      pcbX={-5}
+      pcbY={0}
+    />
+    <led
+      name="D1"
+      color="red"
+      footprint="0603"
+      pcbX={5}
+      pcbY={0}
+    />
+    <trace from=".R1 > .pin2" to=".D1 > .anode" />
+  </board>
+)
+`}
+/>
+
+## Core Classes Reference
+
+All component classes are exported directly from `@tscircuit/core` and accept the exact same props object as their JSX equivalents (defined in `@tscircuit/props`).
+
+| JSX Element | Class Import (`@tscircuit/core`) | Description |
+| --- | --- | --- |
+| *(root)* | `RootCircuit` | Top-level circuit container that manages lifecycle phases, async solvers, and Circuit JSON output |
+| [`<board />`](../../elements/board.mdx) | `Board` | Defines the PCB outline, dimensions, layer count, and autorouter settings |
+| [`<group />`](../../elements/group.mdx) | `Group` / `Subcircuit` | Groups components together for modular layout or subcircuit routing |
+| [`<chip />`](../../elements/chip.mdx) | `Chip` | Generic IC, microcontroller, connector, or multi-pin package |
+| [`<resistor />`](../../elements/resistor.mdx) | `Resistor` | Two-terminal resistor component |
+| [`<capacitor />`](../../elements/capacitor.mdx) | `Capacitor` | Polarized or non-polarized capacitor |
+| [`<inductor />`](../../elements/inductor.mdx) | `Inductor` | Two-terminal inductor component |
+| [`<diode />`](../../elements/diode.mdx) | `Diode` | Standard, Schottky, or Zener diode |
+| [`<led />`](../../elements/led.mdx) | `Led` | Light-emitting diode |
+| [`<transistor />`](../../elements/transistor.mdx) | `Transistor` | BJT transistor (`npn` or `pnp`) |
+| [`<mosfet />`](../../elements/mosfet.mdx) | `Mosfet` | N-channel or P-channel MOSFET |
+| [`<pinheader />`](../../elements/pinheader.mdx) | `PinHeader` | Single- or multi-row pin header connector |
+| [`<pushbutton />`](../../elements/pushbutton.mdx) | `PushButton` | Momentary tactile pushbutton switch |
+| [`<trace />`](../../elements/trace.mdx) | `Trace` | Electrical connection routed between pins or nets |
+| [`<net />`](../../elements/net.mdx) | `Net` | Named electrical net (e.g. `VCC`, `GND`) |
+| [`<netlabel />`](../../elements/netlabel.mdx) | `NetLabel` | Schematic net label indicator |
+| [`<copperpour />`](../../elements/copperpour.mdx) | `CopperPour` | Copper plane fill connected to a net |
+| [`<footprint />`](../../elements/footprint.mdx) | `Footprint` | Custom PCB footprint container |
+| [`<smtpad />`](../../footprints/smtpad.mdx) | `SmtPad` | Surface-mount copper pad (`rect`, `circle`, `pill`, `polygon`) |
+| [`<platedhole />`](../../footprints/platedhole.mdx) | `PlatedHole` | Plated through-hole pad |
+| [`<hole />`](../../elements/hole.mdx) | `Hole` | Non-plated mechanical mounting hole |
+| [`<silkscreentext />`](../../footprints/silkscreentext.mdx) | `SilkscreenText` | Text label on the PCB silkscreen layer |
+
+## Building Chips and Custom Footprints
+
+You can configure multi-pin chips using a [footprinter string](../../footprints/footprinter-strings.mdx) or construct a custom `Footprint` instance using `SmtPad`, `PlatedHole`, `SilkscreenRect`, and `SilkscreenText`:
+
+```ts
+import {
+  RootCircuit,
+  Board,
+  Chip,
+  Capacitor,
+  Net,
+  Trace,
+  Footprint,
+  SmtPad,
+  SilkscreenRect,
+  SilkscreenText,
+} from "@tscircuit/core"
+
+const circuit = new RootCircuit()
+const board = new Board({ width: "30mm", height: "22mm" })
+
+// 1. Chip using a standard footprinter string
+const regulator = new Chip({
+  name: "U1",
+  footprint: "sot223",
+  pcbX: -5,
+  pcbY: 0,
+  pinLabels: {
+    pin1: "GND",
+    pin2: "VOUT",
+    pin3: "VIN",
+    pin4: "TAB",
+  },
+})
+board.add(regulator)
+
+// 2. Decoupling capacitor with a custom imperative Footprint
+const customCapFootprint = new Footprint()
+customCapFootprint.add(
+  new SmtPad({
+    shape: "rect",
+    width: "0.9mm",
+    height: "1.0mm",
+    pcbX: "-0.75mm",
+    pcbY: "0mm",
+    portHints: ["pin1", "pos"],
+  }),
+)
+customCapFootprint.add(
+  new SmtPad({
+    shape: "rect",
+    width: "0.9mm",
+    height: "1.0mm",
+    pcbX: "0.75mm",
+    pcbY: "0mm",
+    portHints: ["pin2", "neg"],
+  }),
+)
+customCapFootprint.add(
+  new SilkscreenRect({
+    pcbX: 0,
+    pcbY: 0,
+    width: "2.6mm",
+    height: "1.6mm",
+  }),
+)
+customCapFootprint.add(
+  new SilkscreenText({
+    text: "{REF}",
+    pcbX: 0,
+    pcbY: "1.5mm",
+    fontSize: "0.8mm",
+  }),
+)
+
+const outputCap = new Capacitor({
+  name: "C1",
+  capacitance: "10uF",
+  pcbX: 6,
+  pcbY: 0,
+})
+outputCap.add(customCapFootprint)
+board.add(outputCap)
+
+// 3. Connect pins and nets
+board.add(new Net({ name: "GND" }))
+board.add(new Trace({ from: ".U1 > .VOUT", to: ".C1 > .pin1" }))
+board.add(new Trace({ from: ".U1 > .GND", to: "net.GND" }))
+board.add(new Trace({ from: ".C1 > .pin2", to: "net.GND" }))
+
+circuit.add(board)
+await circuit.renderUntilSettled()
+```
+
+## Procedural Circuit Generation with Loops
+
+One of the biggest advantages of the imperative API is generating parametric hardware layouts with standard `for` loops and helper functions:
+
+```ts
+import {
+  RootCircuit,
+  Board,
+  PinHeader,
+  Resistor,
+  Led,
+  Net,
+  Trace,
+} from "@tscircuit/core"
+
+export async function createLedBarBoard(channelCount: number) {
+  const spacingMm = 4
+  const boardWidth = Math.max(20, (channelCount + 2) * spacingMm)
+
+  const circuit = new RootCircuit()
+  const board = new Board({
+    width: `${boardWidth}mm`,
+    height: "24mm",
+  })
+
+  board.add(new Net({ name: "GND" }))
+
+  const pinLabels: Record<string, string> = { pin1: "GND" }
+  for (let i = 0; i < channelCount; i++) {
+    pinLabels[`pin${i + 2}`] = `CH${i + 1}`
+  }
+
+  board.add(
+    new PinHeader({
+      name: "J1",
+      pinCount: channelCount + 1,
+      pitch: "2.54mm",
+      pcbX: 0,
+      pcbY: -8,
+      pinLabels,
+    }),
+  )
+
+  board.add(new Trace({ from: ".J1 > .GND", to: "net.GND" }))
+
+  const startX = -((channelCount - 1) * spacingMm) / 2
+
+  for (let i = 0; i < channelCount; i++) {
+    const ch = i + 1
+    const x = startX + i * spacingMm
+
+    board.add(
+      new Resistor({
+        name: `R${ch}`,
+        resistance: "1k",
+        footprint: "0402",
+        pcbX: x,
+        pcbY: -1,
+      }),
+    )
+
+    board.add(
+      new Led({
+        name: `D${ch}`,
+        color: "green",
+        footprint: "0603",
+        pcbX: x,
+        pcbY: 6,
+      }),
+    )
+
+    board.add(new Trace({ from: `.J1 > .CH${ch}`, to: `.R${ch} > .pin1` }))
+    board.add(new Trace({ from: `.R${ch} > .pin2`, to: `.D${ch} > .anode` }))
+    board.add(new Trace({ from: `.D${ch} > .cathode`, to: "net.GND" }))
+  }
+
+  circuit.add(board)
+  await circuit.renderUntilSettled()
+  return circuit
+}
+```
+
+## Exporting Circuit JSON to SVG, Gerber, or Files
+
+Once `await circuit.renderUntilSettled()` finishes, you can save the Circuit JSON directly or pass it to any tool in the tscircuit ecosystem, such as `circuit-to-svg`:
+
+```ts
+import fs from "node:fs/promises"
+import {
+  convertCircuitJsonToPcbSvg,
+  convertCircuitJsonToSchematicSvg,
+} from "circuit-to-svg"
+import { createLedBarBoard } from "./create-led-bar"
+
+const circuit = await createLedBarBoard(4)
+const circuitJson = circuit.getCircuitJson()
+
+// Save Circuit JSON
+await fs.writeFile("circuit.json", JSON.stringify(circuitJson, null, 2))
+
+// Render PCB and Schematic SVGs
+const pcbSvg = convertCircuitJsonToPcbSvg(circuitJson)
+const schematicSvg = convertCircuitJsonToSchematicSvg(circuitJson)
+
+await fs.writeFile("pcb.svg", pcbSvg)
+await fs.writeFile("schematic.svg", schematicSvg)
+```
+
+## Observing Render Lifecycle Events
+
+When debugging complex circuits or tracking progress in a CLI/server environment, you can subscribe to lifecycle events on `RootCircuit` before calling `renderUntilSettled()`:
+
+```ts
+const circuit = new RootCircuit()
+
+circuit.on("autorouting:start", (event) => {
+  console.log("Autorouting started:", event)
+})
+
+circuit.on("autorouting:end", () => {
+  console.log("Autorouting finished!")
+})
+
+circuit.add(board)
+await circuit.renderUntilSettled()
+```
