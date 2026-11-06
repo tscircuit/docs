@@ -1,0 +1,354 @@
+---
+title: Simulating PCB Traces with tsci simulate
+sidebar_label: PCB Trace Simulation (tsci simulate)
+sidebar_position: 3
+description: >-
+  Run analog simulations from the command line with tsci simulate, from a
+  schematic RC circuit with ngspice to a routed DDR3 trace with IBIS models and
+  an eye diagram using pcb_spice.
+---
+
+## Overview
+
+`tsci simulate` runs the analog experiments declared in a tscircuit file. It
+works with two engines:
+
+| `spiceEngine` | What it simulates | Output |
+| --- | --- | --- |
+| `"ngspice"` | The schematic netlist. Traces are ideal wires. | A table printed to the terminal |
+| `"pcb_spice"` | The routed copper and the board stackup. FastHenry extracts R and L, FasterCap extracts C, and ngspice runs the result with vendor IBIS buffer models. | A `results.html` report with waveforms, eye diagrams, CSV files and solver logs |
+
+This guide starts with an RC circuit on ngspice. It then goes through a real
+`pcb_spice` run: DQ0 of the DDR3 interface on the
+[AM3352 board](https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007)
+(see also [Routing DDR](../routing-ddr.mdx)).
+
+```
+board.tsx
+ ├─ physical design: <chip> <resistor> <trace> …
+ ├─ <voltagesource>, <voltageprobe>
+ ├─ <ibismodel>                         (pcb_spice only)
+ └─ <analog.transientsimulation> …      the experiment
+    <analog.digitalstimulus>            bit pattern     (pcb_spice)
+    <analog.eyediagram>                 eye measurement (pcb_spice)
+          │  render → Circuit JSON
+          ▼
+   tsci simulate board.tsx
+          ├─ ngspice   → netlist → ngspice → terminal table
+          └─ pcb_spice → copper + stackup → FastHenry (R, L) + FasterCap (C)
+                       → RLC sections + IBIS buffers → ngspice → results.html
+```
+
+## Rules for `tsci simulate`
+
+- The CLI runs `ngspice` and `pcb_spice` experiments. `spicey` is only for the
+  browser preview.
+- One file can't mix `pcb_spice` with other engines. Put each engine in its own
+  entry file.
+- `--output <dir>` and `--solver-timeout-ms` only work with `pcb_spice`. The
+  output directory must not exist yet. The default is
+  `.tscircuit/simulation-<file>-<timestamp>/`.
+- A time prop given as a bare number means **milliseconds**. Pass strings such
+  as `"10ps"` or `"512ns"` to be explicit.
+
+## Step 1: RC step response with ngspice
+
+```tsx title="rc.circuit.tsx"
+import { analog } from "tscircuit"
+
+export default () => (
+  <board width="20mm" height="12mm" routingDisabled>
+    <voltagesource name="V1" voltage="3.3V" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <capacitor name="C1" capacitance="1uF" footprint="0402" />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe name="VOUT" connectsTo=".C1 > .pin1" referenceTo=".V1 > .pin2" />
+    <analog.transientsimulation
+      name="RC_STEP"
+      spiceEngine="ngspice"
+      duration="5ms"
+      timePerStep="10us"
+    />
+  </board>
+)
+```
+
+Run it:
+
+```bash
+bunx tsci simulate rc.circuit.tsx
+```
+
+```
+Index  time         v(n1)        v(n2)        i(vsimulation_voltage_source_0)
+0      1.000000e-7  3.300000e+0  3.299670e-4  -3.299670e-3
+…
+510    5.000000e-3  3.300000e+0  3.277766e+0  -2.223431e-5
+```
+
+`v(n2)` is the capacitor node. At 5 ms, which is five time constants
+(τ = RC = 1 ms), it reaches 3.2778 V. That matches the analytic value
+3.3 × (1 − e⁻⁵).
+
+`routingDisabled` turns off the autorouter. The simulation only uses the
+netlist, so routing isn't needed.
+
+For a frequency sweep, use
+[`<analog.acsweepsimulation />`](../../elements/analog-acsweepsimulation.mdx).
+See the [low-pass filter guide](<./Passive Filters/low-pass-filter.mdx>) for an
+example.
+
+## Step 2: Simulate a routed DDR3 trace with pcb_spice
+
+ngspice treats a trace as an ideal wire. `pcb_spice` uses the routed trace, the
+layer stackup and the GND pours, and extracts the trace's R, L and C from them.
+It builds an RLC ladder, connects vendor IBIS driver and receiver models to the
+two ends, and runs the transient.
+
+### Run the example
+
+```bash
+git clone https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007
+cd am3352-ddr-track-a-local-dfm-wip-20261007
+bun install --frozen-lockfile
+# put the two IBIS files in simulations-next/model-review/ (see below)
+tsci simulate simulate.circuit.tsx      # or: bun run simulate, about 3–4 minutes
+open .tscircuit/simulation-simulate-*/results.html   # Plots → Eye
+```
+
+You need `fasthenry`, `FasterCap` and `ngspice` on your `PATH`. The CLI calls
+them by those exact names.
+
+Vendor IBIS files aren't distributed with the repo. Put
+`sprm552c-candidate-models.ibs` (TI) and `W631GG6MB-12.ibs` (Winbond) in
+`simulations-next/model-review/`. The download URLs, the TI subset
+transformation and the SHA-256 hashes are in `review-receipt.json` in that
+folder.
+
+### File map
+
+| File | Role |
+| --- | --- |
+| `simulate.circuit.tsx` | CLI entry. Re-exports `simulations-next/run-dq-stages.circuit`. |
+| `simulations-next/run-ddr.circuit.tsx` | Compiles the physical board once and exports `physicalRecords`. |
+| `simulations-next/channels.tsx` | `resolveDdrChannel()` follows the routed `pcb_trace` from CPU `U1` to RAM `U3`. |
+| `simulations-next/ibis-models.tsx` | Builds the `<ibismodel>` props. |
+| `simulations-next/ibis.circuit.tsx` | `DdrIbisBoard`: the real board with the simulation declarations added as extra children. |
+| `simulations-next/run-dq-stages.circuit.tsx` | Selects DQ only, the quiet case, and `straightened-stages`. |
+
+### Add declarations to the real board
+
+You don't need a separate simulation copy of the board. Render the board
+component and append the declarations to its children:
+
+```tsx
+import { cloneElement } from "react"
+import Board from "../index"
+
+const board = Board()
+return cloneElement(
+  board,
+  { fabricatorPreset: "jlcpcb_standard" },
+  board.props.children, // unchanged physical design
+  <>{/* simulation declarations */}</>,
+)
+```
+
+Board-level selectors can reach into subcircuits, for example
+`.Processor > .U1 > .M3`.
+
+### Find the routed pins from Circuit JSON
+
+DDR byte lanes often permute DQ balls between the controller and the memory, so
+don't hard-code them. Compile the board once and follow the copper:
+
+```tsx
+import { Circuit } from "@tscircuit/core"
+
+const physical = new Circuit({
+  platform: { partsEngineDisabled: true, netlistDrcChecksDisabled: true },
+})
+physical.add(cloneElement(Board(), { fabricatorPreset: "jlcpcb_standard" }))
+await physical.renderUntilSettled()
+export const physicalRecords = physical.getCircuitJson()
+
+// → { source: ".Processor > .U1 > .M3", load: ".DDR3 > .U3 > .E3", trace, … }
+const data = resolveDdrChannel(physicalRecords, "DDR_D0")
+```
+
+`resolveDdrChannel` throws on anything ambiguous: a missing pin, more than one
+trace, an endpoint that isn't on its pad, or two ends on different nets.
+
+### Declare the experiment
+
+This is the DQ0 write case, trimmed from `ibis.circuit.tsx`.
+
+**IBIS buffer models.** Bind one model to each chip. The props set the IBIS
+file, the component name, which model each pin uses, and which pins are the
+pull-up, pull-down and clamp rails:
+
+```tsx
+<ibismodel componentRef=".Processor > .U1" {...models.cpu} />  {/* TI Model_343, slow 9 mA */}
+<ibismodel componentRef=".DDR3 > .U3" {...models.ram} />       {/* Winbond ODT_60 */}
+```
+
+**Supply and probes.** Reference each probe to the local ground ball at its own
+end of the line:
+
+```tsx
+<voltagesource
+  name="DDR_VDDQ"
+  voltage="1.5V"
+  connections={{ pin1: ".Processor > .U1 > .E5", pin2: ".Processor > .U1 > .A1" }}
+/>
+<voltageprobe name="DQ_TX" connectsTo={data.source} referenceTo=".Processor > .U1 > .A1" />
+<voltageprobe name="DQ_RX" connectsTo={data.load} referenceTo=".DDR3 > .U3 > .B1" />
+```
+
+**Transient with a PCB channel.** `pcbSpiceChannel` sets which copper is
+extracted and how. `ibisPinStates` sets the direction of each bound pin for
+this experiment:
+
+```tsx
+<analog.transientsimulation
+  name="BYTE0_WRITE_QUIET"
+  spiceEngine="pcb_spice"
+  duration="512ns"
+  timePerStep="10ps"
+  ibisPinStates={{
+    [data.source]: { isOutput: true, isOutputEnabled: true }, // CPU drives
+    [data.load]: { isOutput: false }, // RAM receives
+  }}
+  pcbSpiceChannel={{
+    reduction: "straightened-stages",
+    sections: 12,
+    lanes: [{ name: "DQ", from: data.source, to: data.load }],
+    referencePinRef: ".Processor > .U1 > .A1",
+    extraction: {
+      minimumFrequency: "1Hz",
+      maximumFrequency: "1GHz",
+      modelFrequency: "100MHz",
+      filaments: 9,
+      refinementFilaments: 15, // coarse vs refined solve
+      convergenceTolerance: 0.05, // R/L may change at most 5%
+      capacitanceTolerance: 0.02,
+      reciprocityTolerance: 0.025,
+      dcResistanceTolerance: 0.002,
+      maxPanelLength: "0.5mm",
+    },
+  }}
+/>
+```
+
+**Traffic.** A repeating PRBS7 pattern at 640 MT/s, so one bit (UI) is
+1.5625 ns:
+
+```tsx
+<analog.digitalstimulus
+  name="BYTE0_WRITE_QUIET_DQ"
+  simulationRef=".BYTE0_WRITE_QUIET"
+  sourcePinRef={data.source}
+  bitDuration="1.5625ns"
+  startTime="0ns"
+  initialState={0}
+  transmittedData={{ transmissionType: "bits", bits: prbs7(), repeat: true }}
+/>
+```
+
+**Eye diagram.** Fold the receiver probe into an eye. The first 40 ns are
+skipped so start-up settling stays out of the eye:
+
+```tsx
+<analog.eyediagram
+  name="BYTE0_WRITE_QUIET_DQ_eye"
+  simulationRef=".BYTE0_WRITE_QUIET"
+  probeRef=".DQ_RX"
+  unitInterval="1.5625ns"
+  timeOrigin="0ns"
+  startTime="40ns"
+/>
+```
+
+`simulationRef` and `probeRef` are selectors, so one board can declare several
+experiments. `run-ddr.circuit.tsx` declares quiet and switching-strobe cases
+side by side. It adds DQS and DQSn stimuli, shifted half a UI for writes, and a
+differential `DQS_RX` probe.
+
+### Choose a channel reduction
+
+| `reduction` | What it meshes | Status on the AM3352 board |
+| --- | --- | --- |
+| `"straightened-stages"` | Each route becomes straight stages over a finite return bar. The bar comes from `pcb_stackup` and the adjacent GND pour: DQ0 on `top` returns on `inner1`, 0.1245 mm away, εr 4.1, 2 mm bar. | Passes every extraction check. The DQ0 eye is about 0.96 V by 1.45 ns in a 1.5625 ns UI. |
+| `"routed-copper"` | The actual curved copper, the GND planes (`groundMeshSize`) and the vias (`via`). | No accepted result yet. FastHenry stops with numerical errors ([pcb-spice-pipeline#46](https://github.com/tscircuit/pcb-spice-pipeline/issues/46)). |
+
+Start with `"straightened-stages"`. Change one thing at a time to test
+sensitivity. On this board, a 1 mm and a 2 mm bar give the same eye, and
+straightening the route adds about 4% loop inductance compared with the curved
+route.
+
+### Read the report
+
+`results.html` has tabs for plots and data:
+
+- **Plots → Eye** shows the folded eye.
+- The tables list the probes (minimum and maximum), the eyes (gate, UI, window
+  count, voltage range), the stimuli and pin states, the selected IBIS buffers
+  and corner, and the channel settings.
+- If both quiet and switching cases ran, a switching-minus-quiet ΔV table
+  compares them.
+- Waveform CSVs (seconds and volts) and every FastHenry, FasterCap and ngspice
+  deck and log are saved beside the report.
+
+If an extraction or convergence check fails, the CLI stops with an error and
+writes no result. A waveform from an earlier run doesn't count as a result for
+the current one.
+
+### Check the setup without the solvers
+
+Rendering only declares the experiments, so you can test the setup in a
+`bun test` without running the field solvers:
+
+```tsx
+const circuit = new Circuit()
+circuit.add(<RunDdr />)
+await circuit.renderUntilSettled()
+const json = circuit.getCircuitJson()
+expect(json.filter((r) => r.type === "simulation_experiment")).toHaveLength(2)
+expect(json.filter((r) => r.type === "simulation_eye_diagram")).toHaveLength(4)
+```
+
+## What this result does not cover
+
+The DQ0 eye is one bit lane with an ideal strobe. It isn't a pass/fail verdict
+for byte 0 or for the DDR interface. The model leaves out:
+
+- the DQS strobes, which change layer onto `inner2` stripline;
+- coupling from neighbouring nets;
+- plane cutouts;
+- supply impedance;
+- package parasitics (`includePackageParasitics: false`);
+- through-via stubs.
+
+The stackup values are nominal assumptions.
+
+## Checklist for your own board
+
+1. Get a small ngspice circuit working first (Step 1).
+2. Give the board a real stackup, for example with `fabricatorPreset`, and a
+   GND pour on the layer next to the signal.
+3. Compile once and find the routed endpoints from Circuit JSON.
+4. Add `<ibismodel>`, the supply, the probes, a `pcb_spice` transient, a
+   stimulus and an eye as board children.
+5. Give every bound IBIS pin an explicit `ibisPinStates` entry.
+6. Run `tsci simulate`, and check that the extraction passed before you read
+   the eye.
+
+## Related
+
+- [`<analog.transientsimulation />`](../../elements/analog-transientsimulation.mdx)
+- [`<analog.digitalstimulus />`](../../elements/analog-digitalstimulus.mdx)
+- [`<analog.eyediagram />`](../../elements/analog-eyediagram.mdx)
+- [`<voltageprobe />`](../../elements/voltageprobe.mdx)
+- [`tsci simulate`](../../command-line/tsci-simulate.md)

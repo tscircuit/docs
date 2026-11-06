@@ -1,0 +1,7 @@
+{
+  "label": "Signal Integrity Course",
+  "position": 2,
+  "link": { "type": "doc", "id": "guides/spice-simulation/si-course/index" },
+  "collapsible": true,
+  "collapsed": false
+}

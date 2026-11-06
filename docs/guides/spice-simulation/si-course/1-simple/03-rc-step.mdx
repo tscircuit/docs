@@ -1,0 +1,63 @@
+---
+title: "3 · RC step response"
+sidebar_label: "3 · RC step"
+sidebar_position: 3
+description: A transient analysis of an RC charging curve.
+---
+
+**Status: ✅ Runs today**
+
+**Goal:** simulate in the time domain.
+
+## Build
+
+```tsx title="03-rc-step.circuit.tsx"
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="3.3V" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <capacitor name="C1" capacitance="1uF" footprint="0402" />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe name="VOUT" connectsTo=".C1 > .pin1" referenceTo=".V1 > .pin2" />
+    <analog.transientsimulation name="RC_STEP" spiceEngine="ngspice"
+      duration="5ms" timePerStep="10us" />
+  </board>
+)
+```
+
+- `duration` is how long to simulate.
+- `timePerStep` is the largest step the solver may take.
+- A bare number means **milliseconds**, so write units such as `"10us"`.
+
+The simulation starts with the capacitor empty, so the source acts like a step
+at t = 0.
+
+## Run
+
+```bash
+bunx tsci simulate 03-rc-step.circuit.tsx
+```
+
+## What you see
+
+```
+Index  time         v(n1)        v(n2)        i(vsimulation_voltage_source_0)
+…      9.996000e-4  3.300000e+0  2.085522e+0  …
+510    5.000000e-3  3.300000e+0  3.277766e+0  -2.223431e-5
+```
+
+## Check by hand
+
+- τ = RC = 1k × 1 µF = 1 ms.
+- At t = τ: 3.3 × (1 − e⁻¹) = **2.086 V** ✓ (sim: 2.0855 V)
+- At t = 5τ: 3.3 × (1 − e⁻⁵) = **3.2778 V** ✓
+- The current at the end is (3.3 − 3.2778) / 1k = **22 µA** ✓
+
+## Try this
+
+Change C1 to `10uF`. Predict V at 5 ms before you run it. The answer is
+3.3 × (1 − e⁻⁰·⁵) = 1.30 V.

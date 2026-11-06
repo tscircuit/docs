@@ -1,0 +1,397 @@
+---
+title: "A Bit's Journey Across the Board"
+sidebar_label: "Adventure: A Bit's Journey"
+sidebar_position: 4
+description: >-
+  An adventure-style walkthrough of tsci simulate. Follow one bit from the
+  practice village of ngspice to a real DDR3 trace on the AM3352 board, through
+  the field solvers, past the IBIS gatekeepers, to the eye diagram at the end
+  of the road.
+---
+
+> Somewhere inside an AM3352 processor, a single bit waits to leave for the
+> RAM on the other side of the board. It has 1.5625 nanoseconds to arrive
+> looking like itself. This is its journey, and yours.
+
+This is the story version of
+[Simulating PCB Traces with tsci simulate](./simulating-pcb-traces-with-tsci-simulate.mdx).
+The code, commands and numbers are the same as in that guide.
+
+## The map
+
+```
+   🏘  The Practice Village ─────────────┐   (ngspice, schematic only)
+                                         │
+   🏰  The Board Kingdom                 │   (your real routed board)
+        │                                │
+   🧭  The Cartographer's Hut            │   (find the routed pins)
+        │                                │
+   🛡  The IBIS Gatekeepers              │   (vendor buffer models)
+        │                                │
+   🛤  The Copper Road                   │   (pcbSpiceChannel)
+        │                                │
+   🗼  The Tower of Field Solvers        │   (FastHenry, FasterCap)
+        │                                │
+   👁  The Eye at the End of the Road ◄──┘   (results.html)
+```
+
+### Supplies for the road
+
+- [ ] `bun` and the `tsci` CLI
+- [ ] `fasthenry`, `FasterCap` and `ngspice` on your `PATH`. The CLI calls them
+      by exactly those names.
+- [ ] Two vendor IBIS files. You'll collect them at the gate (chapter 4).
+
+### Laws of the land
+
+Every traveller learns these the hard way, so here they are up front:
+
+1. **Two roads only.** `tsci simulate` runs `ngspice` and `pcb_spice`
+   experiments. `spicey` lives only in the browser preview.
+2. **Don't mix the roads.** One file can't hold both `pcb_spice` and other
+   engines. Give each its own entry file.
+3. **A fresh camp every night.** `--output` must point to a directory that
+   doesn't exist yet. It only works with `pcb_spice`, and so does
+   `--solver-timeout-ms`.
+4. **Time is measured in milliseconds.** A bare number means ms. Write
+   `"10ps"` or `"512ns"` so nobody gets lost.
+
+## Chapter 1: The Practice Village
+
+Every adventurer starts small. In the village, wires are perfect, copper has no
+length, and ngspice reads only the schematic. Here you learn to light a
+capacitor:
+
+```tsx title="rc.circuit.tsx"
+import { analog } from "tscircuit"
+
+export default () => (
+  <board width="20mm" height="12mm" routingDisabled>
+    <voltagesource name="V1" voltage="3.3V" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <capacitor name="C1" capacitance="1uF" footprint="0402" />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe name="VOUT" connectsTo=".C1 > .pin1" referenceTo=".V1 > .pin2" />
+    <analog.transientsimulation
+      name="RC_STEP"
+      spiceEngine="ngspice"
+      duration="5ms"
+      timePerStep="10us"
+    />
+  </board>
+)
+```
+
+Run it:
+
+```bash
+bunx tsci simulate rc.circuit.tsx
+```
+
+```
+Index  time         v(n1)        v(n2)        i(vsimulation_voltage_source_0)
+510    5.000000e-3  3.300000e+0  3.277766e+0  -2.223431e-5
+```
+
+After five time constants (τ = RC = 1 ms) the capacitor holds 3.2778 V, which
+matches 3.3 × (1 − e⁻⁵). The village elder nods. You're ready to leave.
+
+`routingDisabled` tells the autorouter to stay home. The village has no roads,
+only the netlist.
+
+## Chapter 2: The Board Kingdom
+
+Beyond the village is the real thing: the
+[AM3352 board](https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007),
+with its BGA processor, its DDR3 chip, and 46 timing-critical traces routed
+through a six-layer stackup.
+
+```bash
+git clone https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007
+cd am3352-ddr-track-a-local-dfm-wip-20261007
+bun install --frozen-lockfile
+```
+
+The kingdom has one rule that newcomers often break: **don't build a copy of
+the castle.** You don't redraw the board for simulation. Bring the real board
+and add your declarations as extra children:
+
+```tsx
+import { cloneElement } from "react"
+import Board from "../index"
+
+const board = Board()
+return cloneElement(
+  board,
+  { fabricatorPreset: "jlcpcb_standard" },
+  board.props.children, // the kingdom, untouched
+  <>{/* your expedition's gear */}</>,
+)
+```
+
+From the throne room (board level), selectors can reach into any district,
+like `.Processor > .U1 > .M3`.
+
+Here's who lives where:
+
+| Place | Who lives there |
+| --- | --- |
+| `simulate.circuit.tsx` | The city gate. It points to `run-dq-stages.circuit`. |
+| `simulations-next/run-ddr.circuit.tsx` | The scribe, who compiles the board once and keeps `physicalRecords`. |
+| `simulations-next/channels.tsx` | The cartographer, `resolveDdrChannel()`. |
+| `simulations-next/ibis-models.tsx` | The gatekeepers' armoury. |
+| `simulations-next/ibis.circuit.tsx` | `DdrIbisBoard`, the expedition itself. |
+| `simulations-next/run-dq-stages.circuit.tsx` | The chosen route: DQ only, the quiet case, `straightened-stages`. |
+
+## Chapter 3: The Cartographer's Hut
+
+You'd think the bit leaving from `DDR_D0` arrives at RAM ball `E3`. Don't trust
+old maps. DDR byte lanes swap their DQ balls around, and a frozen assumption
+means simulating copper that doesn't exist.
+
+The cartographer doesn't guess. She compiles the kingdom and follows the
+copper:
+
+```tsx
+import { Circuit } from "@tscircuit/core"
+
+const physical = new Circuit({
+  platform: { partsEngineDisabled: true, netlistDrcChecksDisabled: true },
+})
+physical.add(cloneElement(Board(), { fabricatorPreset: "jlcpcb_standard" }))
+await physical.renderUntilSettled()
+export const physicalRecords = physical.getCircuitJson()
+
+const data = resolveDdrChannel(physicalRecords, "DDR_D0")
+// → { source: ".Processor > .U1 > .M3", load: ".DDR3 > .U3 > .E3", trace, … }
+```
+
+She refuses to hand over a map she isn't sure of. `resolveDdrChannel` throws
+if any of these is true:
+
+- The pin is missing.
+- More than one trace leaves the pin.
+- An endpoint doesn't sit on its pad.
+- The two ends are on different nets.
+
+A loud error at the hut is better than a quiet wrong answer at the end of the
+road.
+
+## Chapter 4: The IBIS Gatekeepers
+
+At each end of the road stands a gatekeeper, the chip's I/O buffer. The
+gatekeepers decide how hard the bit is pushed out and how it's caught. Their
+behaviour is written in vendor IBIS scrolls:
+
+- `sprm552c-candidate-models.ibs`: TI's reviewed subset.
+- `W631GG6MB-12.ibs`: Winbond's scroll, unchanged.
+
+The kingdom isn't allowed to hand out these scrolls. Fetch them yourself and
+place them in `simulations-next/model-review/`. The URLs and SHA-256 seals are
+in `review-receipt.json`. **Check the seals.** A scroll with the wrong hash
+tells a different story.
+
+Then swear in the gatekeepers:
+
+```tsx
+<ibismodel componentRef=".Processor > .U1" {...models.cpu} />  {/* TI Model_343, slow 9 mA */}
+<ibismodel componentRef=".DDR3 > .U3" {...models.ram} />       {/* Winbond ODT_60 */}
+```
+
+Each oath states:
+
+- which scroll and component;
+- which model each ball uses;
+- which pins are the pull-up, pull-down and clamp rails (nothing is assumed);
+- the corner (`typical`, `minimum` or `maximum`).
+
+Give the gatekeepers power, and post a lookout at each end. Each lookout is a
+probe referenced to its own local ground:
+
+```tsx
+<voltagesource
+  name="DDR_VDDQ"
+  voltage="1.5V"
+  connections={{ pin1: ".Processor > .U1 > .E5", pin2: ".Processor > .U1 > .A1" }}
+/>
+<voltageprobe name="DQ_TX" connectsTo={data.source} referenceTo=".Processor > .U1 > .A1" />
+<voltageprobe name="DQ_RX" connectsTo={data.load} referenceTo=".DDR3 > .U3 > .B1" />
+```
+
+## Chapter 5: The Copper Road
+
+Now you can describe the road itself. This is the expedition charter, an
+`analog.transientsimulation` that runs on the `pcb_spice` engine:
+
+```tsx
+<analog.transientsimulation
+  name="BYTE0_WRITE_QUIET"
+  spiceEngine="pcb_spice"
+  duration="512ns"
+  timePerStep="10ps"
+  ibisPinStates={{
+    [data.source]: { isOutput: true, isOutputEnabled: true }, // the CPU sends
+    [data.load]: { isOutput: false }, // the RAM listens
+  }}
+  pcbSpiceChannel={{
+    reduction: "straightened-stages",
+    sections: 12,
+    lanes: [{ name: "DQ", from: data.source, to: data.load }],
+    referencePinRef: ".Processor > .U1 > .A1",
+    extraction: {
+      minimumFrequency: "1Hz",
+      maximumFrequency: "1GHz",
+      modelFrequency: "100MHz",
+      filaments: 9,
+      refinementFilaments: 15,
+      convergenceTolerance: 0.05,
+      capacitanceTolerance: 0.02,
+      reciprocityTolerance: 0.025,
+      dcResistanceTolerance: 0.002,
+      maxPanelLength: "0.5mm",
+    },
+  }}
+/>
+```
+
+Then send the travellers: PRBS7, a pseudo-random bit pattern, marching at
+640 MT/s, which gives one bit 1.5625 ns:
+
+```tsx
+<analog.digitalstimulus
+  name="BYTE0_WRITE_QUIET_DQ"
+  simulationRef=".BYTE0_WRITE_QUIET"
+  sourcePinRef={data.source}
+  bitDuration="1.5625ns"
+  startTime="0ns"
+  initialState={0}
+  transmittedData={{ transmissionType: "bits", bits: prbs7(), repeat: true }}
+/>
+```
+
+### Two roads diverge
+
+There are two ways to describe the road, and only one of them gets you there
+today:
+
+| `reduction` | The road | What happened to those who took it |
+| --- | --- | --- |
+| `"straightened-stages"` | The surveyed highway. The route is straightened into stages over a return bar. The bar comes from `pcb_stackup`: DQ0 on `top`, returning on the `inner1` GND plane 0.1245 mm below, εr 4.1, 2 mm wide. | **They arrived.** Every extraction check passes. |
+| `"routed-copper"` | The wild path. It follows every real curve, plane and via. | **Lost in the mountains.** FastHenry stops with numerical errors ([pcb-spice-pipeline#46](https://github.com/tscircuit/pcb-spice-pipeline/issues/46)). Nobody has an accepted result yet. |
+
+Take the highway. A seasoned traveller checks whether the shortcut mattered:
+
+- A 1 mm bar and a 2 mm bar give the same eye.
+- Straightening adds only about 4% loop inductance compared with the real
+  curves.
+
+## Chapter 6: The Tower of Field Solvers
+
+```bash
+tsci simulate simulate.circuit.tsx      # or: bun run simulate, about 3–4 minutes
+```
+
+At the tower, the road is turned into physics:
+
+1. **FastHenry** works out the copper's resistance and inductance. It does this
+   twice, with 9 filaments and then 15, and the two answers must agree within
+   5%. They agree within 0.7%.
+2. **FasterCap** measures the capacitance between the trace and its return.
+3. The road becomes a 12-section RLC ladder, the gatekeepers stand at both
+   ends, and **ngspice** marches the bits across.
+
+The tower is strict. If an extraction or convergence check fails, it closes
+its doors: the CLI stops with an error and writes no result. An old waveform
+from an earlier trip doesn't count as a new arrival.
+
+## Chapter 7: The Eye at the End of the Road
+
+At the RAM's door, the lookout `DQ_RX` records every bit that arrives. Fold all
+of those bits on top of each other, one UI at a time, and an eye opens:
+
+```tsx
+<analog.eyediagram
+  name="BYTE0_WRITE_QUIET_DQ_eye"
+  simulationRef=".BYTE0_WRITE_QUIET"
+  probeRef=".DQ_RX"
+  unitInterval="1.5625ns"
+  timeOrigin="0ns"
+  startTime="40ns" // let the dust of departure settle
+/>
+```
+
+Open the report and look:
+
+```bash
+open .tscircuit/simulation-simulate-*/results.html   # Plots → Eye
+```
+
+**The eye is about 0.96 V tall and about 1.45 ns wide, out of a 1.5625 ns
+UI.** The bit made it, and it still looks like itself.
+
+The report also holds the expedition's logbook:
+
+- the probe ranges;
+- the eye gates and windows;
+- the stimuli and pin states;
+- the gatekeepers' models and corner;
+- the channel settings.
+
+Next to it are CSVs and every FastHenry, FasterCap and ngspice deck and log
+from the tower.
+
+## Epilogue: what the bards leave out
+
+Every honest tale says what it didn't cover. This eye is **one bit lane with an
+ideal strobe**. It isn't a pass/fail verdict for byte 0 or for the DDR
+interface. These lands are still unexplored:
+
+- **The DQS strobes.** They dive to `inner2` stripline, and this road can't
+  follow them there yet.
+- **Neighbouring travellers**, meaning coupling from other nets.
+- **Holes in the ground planes**, meaning plane cutouts.
+- **The kingdom's power grid**, meaning supply impedance.
+- **The gatekeepers' armour**, meaning package parasitics.
+- **Via stubs.**
+
+The stackup itself is still a nominal assumption.
+
+## Your own quest
+
+Ready to send a bit across your own board?
+
+1. Win a battle in the Practice Village first (chapter 1).
+2. Give your kingdom a real stackup, with `fabricatorPreset`, and a GND pour on
+   the layer next to the signal.
+3. Visit the cartographer. Find your routed endpoints from Circuit JSON, never
+   from memory.
+4. Swear in the gatekeepers (`<ibismodel>`), post the lookouts (probes), write
+   the charter (a `pcb_spice` transient), send the travellers (a stimulus) and
+   wait for the eye.
+5. Give every bound pin an `ibisPinStates` order. No gatekeeper should be left
+   guessing.
+6. Climb the tower with `tsci simulate`. Only read the eye if the extraction
+   passed.
+
+Before a long journey, rehearse without the tower. Rendering only declares the
+experiments, so a `bun test` can check that your gear is packed:
+
+```tsx
+const circuit = new Circuit()
+circuit.add(<RunDdr />)
+await circuit.renderUntilSettled()
+const json = circuit.getCircuitJson()
+expect(json.filter((r) => r.type === "simulation_experiment")).toHaveLength(2)
+expect(json.filter((r) => r.type === "simulation_eye_diagram")).toHaveLength(4)
+```
+
+## Field guide
+
+- [`<analog.transientsimulation />`](../../elements/analog-transientsimulation.mdx)
+- [`<analog.digitalstimulus />`](../../elements/analog-digitalstimulus.mdx)
+- [`<analog.eyediagram />`](../../elements/analog-eyediagram.mdx)
+- [`<voltageprobe />`](../../elements/voltageprobe.mdx)
+- [`tsci simulate`](../../command-line/tsci-simulate.md)
+- [Routing DDR](../routing-ddr.mdx)

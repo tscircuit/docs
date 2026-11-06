@@ -1,0 +1,69 @@
+---
+title: "13 · The return path"
+sidebar_label: "13 · Return path"
+sidebar_position: 13
+description: Move the ground plane away from the trace and watch L, Z0 and the eye change.
+---
+
+**Status: ✅ Runs today** (about 1.5 minutes per run)
+
+**Goal:** see that the return current's path, not just the trace, sets the
+line's inductance and impedance.
+
+## The idea
+
+Every signal current has a return current. At high frequency, the return
+flows in the nearest plane, right under the trace, because that path has the
+least loop inductance. The farther the plane is from the trace, the larger
+the loop. L rises, C falls, and Z0 rises with both.
+
+## Build
+
+Use the same 20 mm, 0.16 mm trace and the same 24 mA driver, with the GND
+plane at two distances:
+
+```tsx title="13-near-plane.circuit.tsx"
+import { LineBoard } from "./teaching-board"
+// Reference case: same trace and driver, GND plane on inner1, 0.1 mm below.
+export default () => <LineBoard name="NEAR_PLANE" drive="LVCMOS33_24MA" />
+```
+
+```tsx title="13-far-plane.circuit.tsx"
+import { LineBoard } from "./teaching-board"
+// Lesson 11's trace, but on a 2-layer board: the GND plane is 1.43 mm away instead of 0.1 mm.
+export default () => <LineBoard name="FAR_PLANE" drive="LVCMOS33_24MA" layers={2} pours={["bottom"]} />
+```
+
+## What you see
+
+| GND plane | Distance | L | C | Z0 | Delay | RX eye height |
+| --- | --- | --- | --- | --- | --- | --- |
+| `inner1` (4-layer) | 0.10 mm | 6.67 nH | 3.37 pF | **44.5 Ω** | 150 ps | **3.14 V** |
+| `bottom` (2-layer) | 1.43 mm | 18.1 nH | 1.15 pF | **125 Ω** | 144 ps | **2.70 V** |
+
+The far-plane eye also gets 34 ps of crossing jitter. The near-plane eye has
+about 1 ps.
+
+## Check by hand
+
+- **The delay barely changes:** 150 ps vs 144 ps. Delay depends on the
+  dielectric, not the geometry.
+- **L × C stays about constant** (22.5 vs 20.8 × 10⁻²¹), while L/C, and so
+  Z0, grows about 8×. Moving the plane changes the impedance, not the speed.
+- **The 15 Ω driver against 125 Ω** reflects hard, with Γ = −0.79 at the
+  source. That's why the eye shrinks even on a short line.
+
+## What about slots in the plane?
+
+A slot cut across the return path forces the current to detour around it. To
+simulate that, you need the full 3D field solve in
+[`<simulation.pcbreturncurrentsimulation />`](../../../../elements/simulation-pcbreturncurrentsimulation.mdx),
+run with `tsci simulate return-current`. That needs the
+[Palace](https://github.com/awslabs/palace) solver on your machine.
+`straightened-stages` only sees which layer the plane is on, not holes in it.
+
+## Try this
+
+Put the GND pour on `inner2` of the 4-layer board, leaving `inner1` empty.
+The extraction only uses a pour on the copper layer **directly adjacent** to
+the trace. Predict what happens, then run it and read what the pipeline says.

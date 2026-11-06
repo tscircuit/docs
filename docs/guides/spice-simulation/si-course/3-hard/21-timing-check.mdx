@@ -1,0 +1,43 @@
+---
+title: "21 · Timing check"
+sidebar_label: "21 · Timing check"
+sidebar_position: 21
+description: Compare the eye against the DDR3 setup/hold and VREF thresholds.
+---
+
+**Status: 🟡 Not run yet.** The repo has `winbondWriteScreen()` in
+`ibis-models.tsx`, and the report has setup/hold margin columns. They haven't
+been checked on a run with DQS.
+
+**Goal:** turn an eye picture into a margin number.
+
+## Write thresholds (Winbond W631GG6MB, DDR3-1600)
+
+| Quantity | Value at VDDQ = 1.5 V |
+| --- | --- |
+| VREF | VDDQ / 2 = 0.75 V |
+| VIH(AC) / VIL(AC) | VREF ± 150 mV |
+| VIH(DC) / VIL(DC) | VREF ± 100 mV |
+| Setup (screen) | 85 ps |
+| Hold (screen) | 95 ps |
+| Min. DQS differential | 0.3 V |
+
+## The check
+
+1. At each DQS crossing, DQ must be past VIH(AC) or VIL(AC) **at least
+   setup** before the crossing.
+2. It must then stay past VIH(DC) or VIL(DC) for **at least hold** after it.
+3. Margin = the smallest slack over all bits, edges and corners.
+
+## Reads
+
+For reads, swap the direction (`direction="read"`). The RAM drives with
+`DATA_34`/`DATA_40`, and the TI PHY terminates. DQS arrives **edge-aligned**,
+so you have to model the PHY's sampling shift explicitly. TI doesn't publish a
+full read receiver mask, so read margin is an estimate.
+
+## Check by hand
+
+Eye width at VREF − (setup + hold) is roughly your timing margin before jitter.
+With the lesson 16 numbers, 1.45 ns − 0.18 ns leaves plenty. The real squeeze
+comes from DQS skew, corners and crosstalk.

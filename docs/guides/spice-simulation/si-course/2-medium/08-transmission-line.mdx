@@ -1,0 +1,100 @@
+---
+title: "8 · Transmission line"
+sidebar_label: "8 · Transmission line"
+sidebar_position: 8
+description: Build a 50 Ω line from LC sections and see delay and reflections.
+---
+
+**Status: ✅ Runs today**
+
+**Goal:** see a trace as a distributed line, with an impedance and a delay.
+
+One LC is a single resonance. Many small LCs in a row behave like a
+transmission line.
+
+## Build
+
+The line becomes a reusable component. Each section is 3 nH + 1.2 pF:
+
+```tsx title="08-tline.circuit.tsx"
+import { analog } from "tscircuit"
+
+// Z0 = √(L/C) = √(3n / 1.2p) = 50 Ω, delay = 10 × √(LC) = 0.6 ns
+const SECTIONS = 10
+export const TransmissionLine = ({ from, to }: { from: string; to: string }) => (
+  <>
+    {Array.from({ length: SECTIONS }, (_, i) => {
+      const a = i === 0 ? from : `net.TL${i}`
+      const b = i === SECTIONS - 1 ? to : `net.TL${i + 1}`
+      return (
+        <group key={i}>
+          <inductor name={`L${i}`} inductance="3nH" footprint="0402"
+            connections={{ pin1: a, pin2: b }} />
+          <capacitor name={`C${i}`} capacitance="1.2pF" footprint="0402"
+            connections={{ pin1: b, pin2: "net.GND" }} />
+        </group>
+      )
+    })}
+  </>
+)
+
+export default ({ sourceR = "10", loadR = undefined as string | undefined }) => (
+  <board routingDisabled>
+    <voltagesource name="V1" waveShape="square" voltage="1V" frequency="50MHz"
+      dutyCycle={0.5} riseTime="0.1ns" fallTime="0.1ns"
+      connections={{ pin1: "net.SRC", pin2: "net.GND" }} />
+    <resistor name="RS" resistance={sourceR} footprint="0402"
+      connections={{ pin1: "net.SRC", pin2: "net.TX" }} />
+    <TransmissionLine from="net.TX" to="net.RX" />
+    {loadR && <resistor name="RT" resistance={loadR} footprint="0402"
+      connections={{ pin1: "net.RX", pin2: "net.GND" }} />}
+    <voltageprobe name="V_TX" connectsTo="net.TX" referenceTo="net.GND" />
+    <voltageprobe name="V_RX" connectsTo="net.RX" referenceTo="net.GND" />
+    <analog.transientsimulation name="TLINE" spiceEngine="ngspice"
+      duration="10ns" timePerStep="0.01ns" />
+  </board>
+)
+```
+
+There are two new ideas in this file:
+
+- `connections={{ pin1: "net.TX" }}` connects pins by **net name**, so you
+  don't have to draw every trace.
+- The board is an ordinary function, so you can loop, export components and
+  pass props. Lesson 9 reuses this line with different props.
+
+## Run
+
+```bash
+bunx tsci simulate 08-tline.circuit.tsx
+```
+
+The table has a column per node. `TX` is the second node and `RX` is the last.
+
+## What you see
+
+With a 10 Ω driver and an open far end:
+
+| Time | V_TX | V_RX |
+| --- | --- | --- |
+| 0.5 ns | **0.833 V** | 0.02 V |
+| 0.8 ns | 0.834 V | **1.82 V** |
+| 2.4 ns | 1.10 V | 0.65 V |
+| 4.4 ns | 1.04 V | 1.19 V |
+
+## Check by hand
+
+- **Launch:** the line looks like 50 Ω to the driver, so V_TX = 1 V × 50/(10+50)
+  = **0.833 V** ✓
+- **Delay:** V_RX starts rising after about 10 × √(3n × 1.2p) = **0.6 ns** ✓
+- **Open end:** Γ = +1, so the far end jumps to about 2 × 0.833 = 1.67 V. The
+  sim peaks a bit higher, at 1.82–1.93 V. That extra is ripple from using only
+  10 lumped sections.
+- **Ringing:** the reflection returns to a 10 Ω source, where
+  Γ = (10 − 50)/(10 + 50) = −0.67, so it bounces back and forth.
+
+## Try this
+
+Set `SECTIONS = 40` with 0.75 nH + 0.3 pF per section. Z0 and the delay stay
+the same, but the ripple shrinks. A lumped model is accurate only while the
+edge is several section-delays long.

@@ -1,0 +1,45 @@
+---
+title: "20 · Routed copper"
+sidebar_label: "20 · Routed copper"
+sidebar_position: 20
+description: Extract the real curved copper, planes and vias instead of straightened stages.
+---
+
+**Status: 🚧 Not supported yet on this board.** FastHenry fails on the AM3352
+`routed-copper` case:
+
+- separate meshing of touching GND bands gives `filaments had identical centers`
+  ([#45](https://github.com/tscircuit/pcb-spice-pipeline/pull/45));
+- after that, finely sampled curves give `mutual inductance = infinity`
+  ([#46](https://github.com/tscircuit/pcb-spice-pipeline/issues/46));
+- refined meshes don't converge at 1 GHz.
+
+**Goal:** remove the straightening approximation.
+
+## The idea
+
+`straightened-stages` swaps the route for straight segments over a finite
+return bar. `routed-copper` meshes what's actually on the board:
+
+- the curves and 45° bends;
+- the whole-board GND planes (`groundMeshSize`);
+- the vias (`via: { platingThickness, equivalentWidth, omitThroughViaStubs }`).
+
+## Build
+
+This is the default in `ibis.circuit.tsx` when you pass no `pcbSpiceChannel`:
+
+```tsx
+<DdrIbisBoard circuitJson={physicalRecords} lanes={["DQ"]} activities={["QUIET"]} />
+```
+
+## Why it's hard
+
+DQ0 sits 0.12 mm above `inner1`, so the ground cells under it have to be about
+0.1 mm. At that size, the three whole-board planes are far too large to mesh.
+
+## Check by hand
+
+Once it runs, compare it with lesson 16. On a solid plane, curved vs straight
+loop L differed by about 4 % (9.53 nH vs 9.89 nH). A much larger difference
+points to a modelling problem, not physics.

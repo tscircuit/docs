@@ -1,0 +1,65 @@
+---
+title: "4 · RC Bode plot"
+sidebar_label: "4 · RC Bode"
+sidebar_position: 4
+description: An AC sweep of an RC low-pass filter.
+---
+
+**Status: ✅ Runs today**
+
+**Goal:** simulate in the frequency domain.
+
+## Build
+
+```tsx title="04-rc-bode.circuit.tsx"
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="0V" acMagnitude="1V" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe name="VOUT" connectsTo=".C1 > .pin1" referenceTo=".V1 > .pin2" />
+    <analog.acsweepsimulation name="RC_BODE" spiceEngine="ngspice"
+      sweepType="decade" startFrequency="10Hz" stopFrequency="1MHz"
+      samplesPerInterval={10} />
+  </board>
+)
+```
+
+- `acMagnitude="1V"` makes V1 a 1 V small-signal source, so every output reads
+  directly as gain.
+- A decade sweep takes `samplesPerInterval` points per decade. A linear sweep
+  takes `sampleCount` instead.
+
+## Run
+
+```bash
+bunx tsci simulate 04-rc-bode.circuit.tsx
+```
+
+## What you see
+
+Each node has a real and an imaginary column (`v(n2)_real`, `v(n2)_img`).
+Magnitude = √(re² + im²), and dB = 20·log₁₀(magnitude):
+
+| f | \|Vout\| | dB |
+| --- | --- | --- |
+| 1.00 kHz | 0.847 | −1.45 |
+| 1.58 kHz | 0.709 | **−2.99** |
+| 10.0 kHz | 0.157 | −16.07 |
+| 100 kHz | 0.0159 | −35.96 |
+
+## Check by hand
+
+- fc = 1 / (2π × 1k × 100 nF) = **1.59 kHz**, and the sim shows −2.99 dB at
+  1.58 kHz ✓
+- Well above fc the slope is **−20 dB/decade**: −16.07 dB at 10 kHz, then
+  −35.96 dB at 100 kHz ✓
+
+## Try this
+
+Add a second RC stage after the first. The slope should become −40 dB/decade.

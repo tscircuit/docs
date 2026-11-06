@@ -1,0 +1,57 @@
+---
+title: "16 · One DQ lane"
+sidebar_label: "16 · One DQ lane"
+sidebar_position: 16
+description: Run the DQ0 write eye on the routed AM3352 DDR3 board.
+---
+
+**Status: ✅ Runs today** (needs the vendor TI and Winbond IBIS files)
+
+**Goal:** run lesson 10 on a real, dense board.
+
+Everything here is something you've already done. What's new is the scale: a
+BGA processor, a DDR3 chip, a 6-layer stackup and 46 routed DDR traces.
+
+## Run it
+
+```bash
+git clone https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007
+cd am3352-ddr-track-a-local-dfm-wip-20261007
+bun install --frozen-lockfile
+# put sprm552c-candidate-models.ibs and W631GG6MB-12.ibs in simulations-next/model-review/
+tsci simulate simulate.circuit.tsx       # about 3–4 minutes
+open .tscircuit/simulation-simulate-*/results.html   # Plots → Eye
+```
+
+## What's new compared with lesson 10
+
+| Lesson 10 | Lesson 16 |
+| --- | --- |
+| A board you wrote for the test | The **real** board, with the simulation added as extra children: `cloneElement(Board(), {}, board.props.children, <>…</>)` |
+| You know which pin connects to which | DDR swaps DQ balls, so `resolveDdrChannel()` compiles the board and **follows the routed copper** to find the endpoints |
+| Synthetic teaching IBIS | Vendor models: TI `Model_343` (slow 9 mA) driving, Winbond `ODT_60` receiving |
+| A short bit pattern | PRBS7 at 640 MT/s, so UI = 1.5625 ns |
+
+The full walkthrough is in
+[Simulating PCB Traces with tsci simulate](../../simulating-pcb-traces-with-tsci-simulate.mdx).
+
+## What you see
+
+DQ0 returns on the `inner1` GND plane 0.1245 mm below, with εr 4.1. The
+`straightened-stages` extraction passes every check: L and R change less than
+0.7 % between 9 and 15 filaments.
+
+**Eye: about 0.96 V high and 1.45 ns wide, in a 1.5625 ns UI.**
+
+## Check by hand
+
+- 0.1245 mm over a plane is a thin dielectric, so Z0 is low and the loop L per
+  mm is small. The eye should be wide open, and it is.
+- Making the return bar 1 mm or 2 mm wide gives the same eye (0.957 V vs
+  0.958 V). Straightening the route adds only about 4 % loop L compared with
+  the curved route.
+
+## Scope
+
+This is one bit with an ideal strobe. It isn't a pass/fail verdict for the
+byte. Lessons 17–22 add the rest.

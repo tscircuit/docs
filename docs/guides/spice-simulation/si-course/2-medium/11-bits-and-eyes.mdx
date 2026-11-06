@@ -1,0 +1,81 @@
+---
+title: "11 · Bits and eyes"
+sidebar_label: "11 · Bits and eyes"
+sidebar_position: 11
+description: Drive a long line with a bit pattern and watch the eye close as the bit rate rises.
+---
+
+**Status: ✅ Runs today** (about 2 minutes per run)
+
+**Goal:** go from single edges to real traffic, and learn to read an eye.
+
+## The ideas
+
+- **UI (unit interval):** the time for one bit. 2 ns per bit is 500 Mb/s.
+- **Eye diagram:** cut the received waveform into windows and overlay them.
+  - **Eye height** is the voltage margin at the centre of the bit.
+  - **Eye width** is the timing margin at the threshold (VREF = 1.65 V here).
+- **ISI (inter-symbol interference):** if one bit's reflections are still
+  ringing when the next bit arrives, they close the eye.
+
+## Build
+
+Use a longer line, 72 mm as a serpentine. Drive it with the strong
+24 mA buffer and leave the far end unterminated. The shared `LineBoard` in
+[`teaching-board.tsx`](https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007/tree/main/tutorial/course/teaching-board.tsx)
+is lesson 10's board as a component, with props for the bends, the drive and
+the bit rate.
+
+```tsx title="11-long-line.circuit.tsx"
+import { LineBoard } from "./teaching-board"
+
+// About 72 mm of serpentine: eleven straight runs, none longer than 13 mm. Strong 24 mA driver, nothing at the far end.
+export const serpentine = [
+  { x: -6, y: 1 }, { x: -6, y: 7 }, { x: -3, y: 7 }, { x: -3, y: -6 }, { x: 0, y: -6 },
+  { x: 0, y: 7 }, { x: 3, y: 7 }, { x: 3, y: -6 }, { x: 6, y: -6 }, { x: 6, y: 1 },
+]
+
+export default () => <LineBoard name="LONG_LINE" drive="LVCMOS33_24MA" bends={serpentine} />
+```
+
+```tsx title="11-long-line-fast.circuit.tsx"
+import { LineBoard } from "./teaching-board"
+import { serpentine } from "./11-long-line.circuit"
+// Same line and driver, 2.5x the bit rate: 0.8 ns per bit.
+export default () => <LineBoard name="LONG_LINE_FAST" drive="LVCMOS33_24MA" bends={serpentine} bitDuration="0.8ns" />
+```
+
+The pipeline straightens the serpentine into **one** 72 mm stage. Coupling
+between neighbouring runs of the serpentine is not modelled.
+
+## What you see
+
+Extraction: L = 24.1 nH and C = 11.6 pF, so **Z0 = 45.6 Ω** and the
+**delay is 529 ps**. Per mm that matches lesson 10.
+
+| | 2 ns per bit | 0.8 ns per bit |
+| --- | --- | --- |
+| RX swing | −0.88 V to 4.20 V | −0.90 V to 4.20 V |
+| Eye height | **3.29 V** | **0.04 V** (closed) |
+| Eye width | **2.0 ns** of 2 ns | **0.73 ns** of 0.8 ns |
+
+It's the same line and the same driver. Only the bit rate changed.
+
+## Check by hand
+
+- **Overshoot:** the 15 Ω driver sees a 44.5 Ω line, so the step it launches
+  is 3.3 × 45.6 / (15 + 45.6) ≈ 2.48 V. At the open end it doubles to about
+  4.9 V. The clamp diodes catch part of that, which gives the **4.20 V** you
+  see.
+- **Settling:** the reflection takes 2 × 529 ps = **1.06 ns** to come back and
+  bounce again.
+  - At 2 ns per bit it settles before the centre of the bit, so the eye is
+    open.
+  - At 0.8 ns per bit, one round trip is already longer than a bit, so every
+    bit inherits the previous bit's ringing, and the eye closes.
+
+## Try this
+
+Switch to `drive="LVCMOS33_12MA"`. Its 30 Ω output is much closer to Z0,
+so it behaves like the series termination from lesson 9. Predict the eye
+first; lesson 12 shows the result.

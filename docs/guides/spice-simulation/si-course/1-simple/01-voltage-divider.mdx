@@ -1,0 +1,68 @@
+---
+title: "1 · Voltage divider"
+sidebar_label: "1 · Voltage divider"
+sidebar_position: 1
+description: Your first tsci simulate run, a DC operating point on a resistor divider.
+---
+
+**Status: ✅ Runs today**
+
+**Goal:** run a simulation and find your answer in the output.
+
+## Build
+
+```tsx title="01-divider.circuit.tsx"
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="5V" />
+    <resistor name="R1" resistance="10k" footprint="0402" />
+    <resistor name="R2" resistance="4.7k" footprint="0402" />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".R2 > .pin1" />
+    <trace from=".R2 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe name="VOUT" connectsTo=".R2 > .pin1" referenceTo=".V1 > .pin2" />
+    <analog.dcoperatingpointsimulation name="DIVIDER_OP" spiceEngine="ngspice" />
+  </board>
+)
+```
+
+This is what each line does:
+
+- `<voltagesource>` is an ideal 5 V source. `pin2` is its negative terminal,
+  and we use it as ground.
+- `<trace from to>` is a wire. `".R1 > .pin2"` reads as "pin 2 of R1".
+- `<voltageprobe>` marks the node you care about, and the node it's measured
+  against.
+- `<analog.dcoperatingpointsimulation>` is the analysis, the same as `.op` in
+  SPICE.
+- `routingDisabled` skips PCB autorouting, which a schematic simulation doesn't
+  need.
+
+## Run
+
+```bash
+bunx tsci simulate 01-divider.circuit.tsx
+```
+
+## What you see
+
+```
+Index  v(n1)        v(n2)        i(vsimulation_voltage_source_0)
+0      5.000000e+0  1.598639e+0  -3.401361e-4
+```
+
+- `v(n1)` = 5 V is the source node.
+- `v(n2)` = 1.5986 V is the divider output, your `VOUT`.
+- The last column is the source current: −340 µA, flowing out of the `+`
+  terminal.
+
+## Check by hand
+
+- Vout = 5 × 4.7k / (10k + 4.7k) = **1.5986 V** ✓
+- I = 5 / 14.7k = **340.1 µA** ✓
+
+## Try this
+
+Change R2 to `10k`. Before you run it, predict both numbers.

@@ -1,0 +1,54 @@
+---
+title: "18 · Corners and settings"
+sidebar_label: "18 · Corners and settings"
+sidebar_position: 18
+description: Sweep IBIS corners, drive strength and ODT on the DQ0 lane.
+---
+
+**Status: 🟡 Not run yet.** `DdrIbisBoard` already accepts `corner`, `drive`
+and `ramOdt` props. Nobody has run the sweep yet.
+
+**Goal:** find the worst combination, not the typical one.
+
+## Settings to cover
+
+| Prop | Values | What it changes |
+| --- | --- | --- |
+| `corner` | `typical`, `minimum`, `maximum` | Silicon speed and supply: 1.5, 1.425 and 1.575 V |
+| `drive` | `slow9mA`, `fast9mA`, `fast8mA`, `fast12mA` | The TI DDR PHY's output drive and slew |
+| `ramOdt` | `ODT_20` … `ODT_120`, `ODT_off` | Winbond on-die termination (writes) |
+
+## Build
+
+One entry file per combination, so each gets its own report:
+
+```tsx title="corner-min-fast12-odt40.circuit.tsx"
+import DdrIbisBoard from "./simulations-next/ibis.circuit"
+import { physicalRecords } from "./simulations-next/run-ddr.circuit"
+import { dqStagesChannel } from "./simulations-next/run-dq-stages.circuit"
+
+export default () => (
+  <DdrIbisBoard circuitJson={physicalRecords} lanes={["DQ"]} activities={["QUIET"]}
+    corner="minimum" drive="fast12mA" ramOdt="ODT_40" pcbSpiceChannel={dqStagesChannel} />
+)
+```
+
+## What you should see
+
+- **Weaker ODT** (`ODT_120`, `ODT_off`): a taller eye, but more overshoot and
+  ringing.
+- **Stronger ODT** (`ODT_20`): flatter edges, a shorter eye, and more DC
+  current.
+- **Minimum corner:** slower edges and a smaller eye. This is often the
+  worst-case eye height.
+
+## Check by hand
+
+With a driver of about R_drv into ODT R_odt, the DC swing ≈
+VDDQ × R_odt / (R_drv + R_odt), centred on VDDQ/2. The eye can't be taller
+than that.
+
+## Try this
+
+Make a table of eye height and width for all 3 × 4 × 6 combinations, and mark
+the worst cell.
