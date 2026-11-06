@@ -1,0 +1,513 @@
+---
+title: Building a Stepper Motor Driver Board
+description: >-
+  Learn how to design a bipolar stepper motor driver carrier PCB in tscircuit
+  with STEP/DIR logic inputs, microstepping configuration, current-sense
+  resistors, and bulk motor supply decoupling.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+A **bipolar stepper motor driver board** translates low-current `STEP` and `DIR` logic pulses from a microcontroller into high-current, PWM-chopped H-bridge coil currents (`A1`/`A2` and `B1`/`B2`) capable of driving NEMA 17 and NEMA 23 stepper motors with precise microstepping.
+
+In this tutorial, you will design a complete stepper motor driver carrier board (modeled around a standard dual H-bridge microstepping driver IC such as the **A4988** / **DRV8825**) using **tscircuit**.
+
+<CircuitPreview
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="42mm" height="28mm">
+    {/* 6-Pin Logic Control Header */}
+    <pinheader
+      name="J_CTRL"
+      pinCount={6}
+      pitch="2.54mm"
+      footprint="pinrow6"
+      pinLabels={["VDD", "GND", "STEP", "DIR", "MS1", "EN"]}
+      pcbX={-17}
+      pcbY={0}
+      pcbRotation="90deg"
+      schX={-8}
+      schY={0}
+    />
+
+    {/* Bipolar Stepper Motor Driver IC */}
+    <chip
+      name="U1"
+      footprint="tssop16"
+      pinLabels={{
+        pin1: ["STEP"],
+        pin2: ["DIR"],
+        pin3: ["MS1"],
+        pin4: ["EN"],
+        pin5: ["RST"],
+        pin6: ["VDD"],
+        pin7: ["GND1"],
+        pin8: ["SENSE_A"],
+        pin9: ["SENSE_B"],
+        pin10: ["GND2"],
+        pin11: ["VMOT"],
+        pin12: ["B2"],
+        pin13: ["B1"],
+        pin14: ["A2"],
+        pin15: ["A1"],
+        pin16: ["SLP"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "STEP", "DIR", "MS1", "EN", "RST", "SLP", "GND1"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["VMOT", "A1", "A2", "B1", "B2", "SENSE_A", "SENSE_B", "GND2"],
+          direction: "top-to-bottom",
+        },
+      }}
+      pcbX={0}
+      pcbY={0}
+      schX={0}
+      schY={0}
+    />
+
+    {/* 6-Pin Motor Coil & High-Voltage Supply Header */}
+    <pinheader
+      name="J_MOT"
+      pinCount={6}
+      pitch="2.54mm"
+      footprint="pinrow6"
+      pinLabels={["VMOT", "GND", "A1", "A2", "B1", "B2"]}
+      pcbX={17}
+      pcbY={0}
+      pcbRotation="90deg"
+      schX={8}
+      schY={1}
+    />
+
+    {/* Decoupling Capacitors */}
+    <capacitor
+      name="C_VDD"
+      capacitance="100nF"
+      footprint="0603"
+      pcbX={-9}
+      pcbY={8}
+      schX={-4.5}
+      schY={4}
+    />
+    <capacitor
+      name="C_VMOT"
+      capacitance="47uF"
+      footprint="1210"
+      pcbX={9}
+      pcbY={8}
+      schX={4.5}
+      schY={4.5}
+    />
+
+    {/* Pull-Up on RST/SLP and Low-Ohm Current-Sense Resistors */}
+    <resistor
+      name="R_SLP"
+      resistance="10k"
+      footprint="0603"
+      pcbX={-9}
+      pcbY={-8}
+      schX={-4.5}
+      schY={-3.5}
+    />
+    <resistor
+      name="R_SA"
+      resistance="0.1"
+      footprint="1206"
+      pcbX={8}
+      pcbY={-6}
+      schX={3.5}
+      schY={-4}
+    />
+    <resistor
+      name="R_SB"
+      resistance="0.1"
+      footprint="1206"
+      pcbX={8}
+      pcbY={-10}
+      schX={5.5}
+      schY={-4}
+    />
+
+    {/* Logic Power & Control Connections */}
+    <trace from=".J_CTRL > .VDD" to="net.VDD" />
+    <trace from=".J_CTRL > .GND" to="net.GND" />
+    <trace from=".U1 > .VDD" to="net.VDD" />
+    <trace from=".U1 > .GND1" to="net.GND" />
+    <trace from=".U1 > .GND2" to="net.GND" />
+    <trace from=".J_CTRL > .STEP" to=".U1 > .STEP" />
+    <trace from=".J_CTRL > .DIR" to=".U1 > .DIR" />
+    <trace from=".J_CTRL > .MS1" to=".U1 > .MS1" />
+    <trace from=".J_CTRL > .EN" to=".U1 > .EN" />
+
+    {/* Tie RST and SLP high via 10k pull-up for active operation */}
+    <trace from=".R_SLP > .pin1" to="net.VDD" />
+    <trace from=".R_SLP > .pin2" to=".U1 > .RST" />
+    <trace from=".U1 > .SLP" to=".U1 > .RST" />
+
+    {/* Decoupling Capacitors */}
+    <trace from=".C_VDD > .pos" to="net.VDD" />
+    <trace from=".C_VDD > .neg" to="net.GND" />
+    <trace from=".C_VMOT > .pos" to="net.VMOT" />
+    <trace from=".C_VMOT > .neg" to="net.GND" />
+
+    {/* Current-Sense Resistors to Ground */}
+    <trace from=".U1 > .SENSE_A" to=".R_SA > .pin1" />
+    <trace from=".R_SA > .pin2" to="net.GND" />
+    <trace from=".U1 > .SENSE_B" to=".R_SB > .pin1" />
+    <trace from=".R_SB > .pin2" to="net.GND" />
+
+    {/* Motor Power & H-Bridge Coil Outputs */}
+    <trace from=".J_MOT > .VMOT" to="net.VMOT" />
+    <trace from=".J_MOT > .GND" to="net.GND" />
+    <trace from=".U1 > .VMOT" to="net.VMOT" />
+    <trace from=".U1 > .A1" to=".J_MOT > .A1" />
+    <trace from=".U1 > .A2" to=".J_MOT > .A2" />
+    <trace from=".U1 > .B1" to=".J_MOT > .B1" />
+    <trace from=".U1 > .B2" to=".J_MOT > .B2" />
+  </board>
+)
+`}
+/>
+
+---
+
+## Components Needed (Bill of Materials)
+
+| Reference | Component | Value / Package | Purpose |
+| --- | --- | --- | --- |
+| `U1` | Bipolar Stepper Driver IC | A4988 / DRV8825 (`tssop16`) | Dual full-bridge MOSFET driver with built-in microstepping translator |
+| `J_CTRL` | 6-Pin Logic Header | `2.54mm` pitch (`pinrow6`) | Connects microcontroller `VDD` (`3.3V`/`5V`), `GND`, `STEP`, `DIR`, `MS1`, `EN` |
+| `J_MOT` | 6-Pin Motor & Power Header | `2.54mm` pitch (`pinrow6`) | Connects motor supply `VMOT` (`8V–35V`), `GND`, and coils `A1`, `A2`, `B1`, `B2` |
+| `R_SA`, `R_SB` | Current-Sense Resistors | `0.1Ω` (`1206`, `0.5W`+) | Measures coil current for the internal PWM constant-current chopper |
+| `R_SLP` | Reset/Sleep Pull-Up Resistor | `10kΩ` (`0603`) | Holds `RST` and `SLP` high to keep the driver awake by default |
+| `C_VDD` | Logic Bypass Capacitor | `100nF` (`0603`) | Decouples the `3.3V`/`5V` digital logic supply |
+| `C_VMOT` | Bulk Motor Supply Capacitor | `47uF` (`1210`, `50V` rated) | Absorbs inductive kickback and supplies peak coil switching currents |
+
+---
+
+## How a Chopper Stepper Motor Driver Works
+
+### 1. STEP and DIR Interface
+
+Instead of energizing individual H-bridge transistors from software, a microstepping translator IC advances its internal sine/cosine current table on every rising edge of the **`STEP`** pin. The logic level on **`DIR`** (`HIGH` or `LOW`) determines whether the motor shaft rotates clockwise or counter-clockwise.
+
+### 2. Constant-Current PWM Regulation (`R_SA` and `R_SB`)
+
+Stepper motor coils have low winding resistance (`1Ω–3Ω`). Driving them directly from `12V` or `24V` minimizes inductive rise time at high RPMs, but requires active current limiting to prevent overheating. The driver monitors the voltage across low-value sense resistors (`R_SA = 0.1Ω`, `R_SB = 0.1Ω`). For an A4988-class driver, the peak trip current `I_MAX` is set by:
+
+```text
+I_MAX = V_REF / (8 * R_SENSE)
+```
+
+With `R_SENSE = 0.1Ω` and `V_REF = 0.8V`, the driver regulates each coil to `I_MAX = 0.8V / 0.8Ω = 1.0A`.
+
+---
+
+## Step-by-Step Circuit Design in tscircuit
+
+### Step 1: Define the Stepper Motor Driver IC (`U1`)
+
+We start by placing the 16-pin driver chip (`U1`) with logic inputs on the left side of the schematic symbol and high-current motor pins (`VMOT`, `A1`, `A2`, `B1`, `B2`, `SENSE_A`, `SENSE_B`) on the right side.
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="28mm" height="22mm">
+    <chip
+      name="U1"
+      footprint="tssop16"
+      pinLabels={{
+        pin1: ["STEP"],
+        pin2: ["DIR"],
+        pin3: ["MS1"],
+        pin4: ["EN"],
+        pin5: ["RST"],
+        pin6: ["VDD"],
+        pin7: ["GND1"],
+        pin8: ["SENSE_A"],
+        pin9: ["SENSE_B"],
+        pin10: ["GND2"],
+        pin11: ["VMOT"],
+        pin12: ["B2"],
+        pin13: ["B1"],
+        pin14: ["A2"],
+        pin15: ["A1"],
+        pin16: ["SLP"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "STEP", "DIR", "MS1", "EN", "RST", "SLP", "GND1"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["VMOT", "A1", "A2", "B1", "B2", "SENSE_A", "SENSE_B", "GND2"],
+          direction: "top-to-bottom",
+        },
+      }}
+    />
+  </board>
+)
+`}
+/>
+
+### Step 2: Add Current-Sense Resistors and Power Decoupling
+
+Next, we connect the two `0.1Ω` `1206` current-sense resistors (`R_SA`, `R_SB`) between `SENSE_A`/`SENSE_B` and `net.GND`, pull `RST` and `SLP` high to `net.VDD` via `R_SLP` (`10kΩ`), and add decoupling capacitors `C_VDD` (`100nF`) and `C_VMOT` (`47uF`).
+
+<CircuitPreview
+  hidePCBTab
+  hide3DTab
+  defaultView="schematic"
+  code={`
+export default () => (
+  <board width="34mm" height="26mm">
+    <chip
+      name="U1"
+      footprint="tssop16"
+      pinLabels={{
+        pin1: ["STEP"],
+        pin2: ["DIR"],
+        pin3: ["MS1"],
+        pin4: ["EN"],
+        pin5: ["RST"],
+        pin6: ["VDD"],
+        pin7: ["GND1"],
+        pin8: ["SENSE_A"],
+        pin9: ["SENSE_B"],
+        pin10: ["GND2"],
+        pin11: ["VMOT"],
+        pin12: ["B2"],
+        pin13: ["B1"],
+        pin14: ["A2"],
+        pin15: ["A1"],
+        pin16: ["SLP"],
+      }}
+      schPortArrangement={{
+        leftSide: {
+          pins: ["VDD", "STEP", "DIR", "MS1", "EN", "RST", "SLP", "GND1"],
+          direction: "top-to-bottom",
+        },
+        rightSide: {
+          pins: ["VMOT", "A1", "A2", "B1", "B2", "SENSE_A", "SENSE_B", "GND2"],
+          direction: "top-to-bottom",
+        },
+      }}
+      schX={0}
+      schY={0}
+    />
+
+    <capacitor name="C_VDD" capacitance="100nF" footprint="0603" schX={-4.5} schY={4} />
+    <capacitor name="C_VMOT" capacitance="47uF" footprint="1210" schX={4.5} schY={4.5} />
+    <resistor name="R_SLP" resistance="10k" footprint="0603" schX={-4.5} schY={-3.5} />
+    <resistor name="R_SA" resistance="0.1" footprint="1206" schX={3.5} schY={-4} />
+    <resistor name="R_SB" resistance="0.1" footprint="1206" schX={5.5} schY={-4} />
+
+    <trace from=".U1 > .VDD" to="net.VDD" />
+    <trace from=".U1 > .VMOT" to="net.VMOT" />
+    <trace from=".U1 > .GND1" to="net.GND" />
+    <trace from=".U1 > .GND2" to="net.GND" />
+
+    <trace from=".R_SLP > .pin1" to="net.VDD" />
+    <trace from=".R_SLP > .pin2" to=".U1 > .RST" />
+    <trace from=".U1 > .SLP" to=".U1 > .RST" />
+
+    <trace from=".C_VDD > .pos" to="net.VDD" />
+    <trace from=".C_VDD > .neg" to="net.GND" />
+    <trace from=".C_VMOT > .pos" to="net.VMOT" />
+    <trace from=".C_VMOT > .neg" to="net.GND" />
+
+    <trace from=".U1 > .SENSE_A" to=".R_SA > .pin1" />
+    <trace from=".R_SA > .pin2" to="net.GND" />
+    <trace from=".U1 > .SENSE_B" to=".R_SB > .pin1" />
+    <trace from=".R_SB > .pin2" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+### Step 3: PCB Layout and High-Current Routing Guidelines
+
+When laying out a stepper driver PCB, keep these power-electronics layout rules in mind:
+
+1. **Short Sense-Resistor Ground Paths:** Place `R_SA` and `R_SB` (`1206`) close to the driver IC with direct, low-inductance connections to `GND` so switching spikes do not falsely trip the current comparator.
+2. **Place `C_VMOT` Close to `VMOT` and `GND`:** The `47uF` bulk capacitor handles rapid current reversals when the H-bridges chop coil current.
+3. **Separate Logic and Motor Sides:** Place the microcontroller header (`J_CTRL`) on the left edge of the board and the high-voltage motor header (`J_MOT`) on the right edge.
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="42mm" height="28mm">
+    <pinheader
+      name="J_CTRL"
+      pinCount={6}
+      pitch="2.54mm"
+      footprint="pinrow6"
+      pinLabels={["VDD", "GND", "STEP", "DIR", "MS1", "EN"]}
+      pcbX={-17}
+      pcbY={0}
+      pcbRotation="90deg"
+      schX={-8}
+      schY={0}
+    />
+    <chip
+      name="U1"
+      footprint="tssop16"
+      pinLabels={{
+        pin1: ["STEP"],
+        pin2: ["DIR"],
+        pin3: ["MS1"],
+        pin4: ["EN"],
+        pin5: ["RST"],
+        pin6: ["VDD"],
+        pin7: ["GND1"],
+        pin8: ["SENSE_A"],
+        pin9: ["SENSE_B"],
+        pin10: ["GND2"],
+        pin11: ["VMOT"],
+        pin12: ["B2"],
+        pin13: ["B1"],
+        pin14: ["A2"],
+        pin15: ["A1"],
+        pin16: ["SLP"],
+      }}
+      pcbX={0}
+      pcbY={0}
+      schX={0}
+      schY={0}
+    />
+    <pinheader
+      name="J_MOT"
+      pinCount={6}
+      pitch="2.54mm"
+      footprint="pinrow6"
+      pinLabels={["VMOT", "GND", "A1", "A2", "B1", "B2"]}
+      pcbX={17}
+      pcbY={0}
+      pcbRotation="90deg"
+      schX={8}
+      schY={1}
+    />
+    <capacitor
+      name="C_VDD"
+      capacitance="100nF"
+      footprint="0603"
+      pcbX={-9}
+      pcbY={8}
+      schX={-4.5}
+      schY={4}
+    />
+    <capacitor
+      name="C_VMOT"
+      capacitance="47uF"
+      footprint="1210"
+      pcbX={9}
+      pcbY={8}
+      schX={4.5}
+      schY={4.5}
+    />
+    <resistor
+      name="R_SLP"
+      resistance="10k"
+      footprint="0603"
+      pcbX={-9}
+      pcbY={-8}
+      schX={-4.5}
+      schY={-3.5}
+    />
+    <resistor
+      name="R_SA"
+      resistance="0.1"
+      footprint="1206"
+      pcbX={8}
+      pcbY={-6}
+      schX={3.5}
+      schY={-4}
+    />
+    <resistor
+      name="R_SB"
+      resistance="0.1"
+      footprint="1206"
+      pcbX={8}
+      pcbY={-10}
+      schX={5.5}
+      schY={-4}
+    />
+
+    <trace from=".J_CTRL > .VDD" to="net.VDD" />
+    <trace from=".J_CTRL > .GND" to="net.GND" />
+    <trace from=".U1 > .VDD" to="net.VDD" />
+    <trace from=".U1 > .GND1" to="net.GND" />
+    <trace from=".U1 > .GND2" to="net.GND" />
+    <trace from=".J_CTRL > .STEP" to=".U1 > .STEP" />
+    <trace from=".J_CTRL > .DIR" to=".U1 > .DIR" />
+    <trace from=".J_CTRL > .MS1" to=".U1 > .MS1" />
+    <trace from=".J_CTRL > .EN" to=".U1 > .EN" />
+    <trace from=".R_SLP > .pin1" to="net.VDD" />
+    <trace from=".R_SLP > .pin2" to=".U1 > .RST" />
+    <trace from=".U1 > .SLP" to=".U1 > .RST" />
+    <trace from=".C_VDD > .pos" to="net.VDD" />
+    <trace from=".C_VDD > .neg" to="net.GND" />
+    <trace from=".C_VMOT > .pos" to="net.VMOT" />
+    <trace from=".C_VMOT > .neg" to="net.GND" />
+    <trace from=".U1 > .SENSE_A" to=".R_SA > .pin1" />
+    <trace from=".R_SA > .pin2" to="net.GND" />
+    <trace from=".U1 > .SENSE_B" to=".R_SB > .pin1" />
+    <trace from=".R_SB > .pin2" to="net.GND" />
+    <trace from=".J_MOT > .VMOT" to="net.VMOT" />
+    <trace from=".J_MOT > .GND" to="net.GND" />
+    <trace from=".U1 > .VMOT" to="net.VMOT" />
+    <trace from=".U1 > .A1" to=".J_MOT > .A1" />
+    <trace from=".U1 > .A2" to=".J_MOT > .A2" />
+    <trace from=".U1 > .B1" to=".J_MOT > .B1" />
+    <trace from=".U1 > .B2" to=".J_MOT > .B2" />
+  </board>
+)
+`}
+/>
+
+---
+
+## Driving the Stepper Motor from Firmware
+
+Connect `J_CTRL` to your microcontroller (`STEP` -> `GPIO 2`, `DIR` -> `GPIO 3`, `EN` -> `GND`) and connect a `12V–24V` supply plus your bipolar stepper motor coils to `J_MOT`:
+
+```cpp
+const int STEP_PIN = 2;
+const int DIR_PIN  = 3;
+const int STEPS_PER_REV = 200; // 1.8 deg/step NEMA 17 motor in full-step mode
+
+void setup() {
+  pinMode(STEP_PIN, OUTPUT);
+  pinMode(DIR_PIN, OUTPUT);
+}
+
+void stepMotor(int steps, bool clockwise, int pulseDelayUs) {
+  digitalWrite(DIR_PIN, clockwise ? HIGH : LOW);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(STEP_PIN, HIGH);
+    delayMicroseconds(pulseDelayUs);
+    digitalWrite(STEP_PIN, LOW);
+    delayMicroseconds(pulseDelayUs);
+  }
+}
+
+void loop() {
+  // Rotate 1 full revolution clockwise
+  stepMotor(STEPS_PER_REV, true, 800);
+  delay(500);
+
+  // Rotate 1 full revolution counter-clockwise
+  stepMotor(STEPS_PER_REV, false, 800);
+  delay(500);
+}
+```
