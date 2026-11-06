@@ -1,0 +1,81 @@
+---
+title: "12 · Real buffers (IBIS)"
+sidebar_label: "12 · IBIS buffers"
+sidebar_position: 12
+description: Swap the driver's drive strength on the same line and compare eyes.
+---
+
+**Status: ✅ Runs today** (about 2 minutes per run)
+
+**Goal:** learn what an IBIS model gives you, and why drive strength can be
+wrong in either direction.
+
+## What an IBIS file is
+
+A chip vendor publishes an `.ibs` file per part. It holds:
+
+- I–V tables for the pull-up, the pull-down and the clamps;
+- V–t waveforms for rising and falling edges into test loads;
+- pin capacitance (`C_comp`);
+- package R, L and C.
+
+It describes the pin's behaviour without giving away the transistors. A
+`[Model Selector]` lists the settings you can choose, such as drive strength
+or ODT.
+
+`<ibismodel>` binds that file to a chip. You have to state:
+
+| Prop | Why |
+| --- | --- |
+| `ibisPinNameToModelName` | Which buffer each pin uses, from the selector |
+| `ibisPinNameToReferencePortLabels` | Which pins are the pull-up, pull-down and clamp rails. Nothing is guessed. |
+| `modelValueCorner` | `typical`, `minimum` (slow, weak) or `maximum` (fast, strong) |
+| `includePackageParasitics` | Whether the package R, L and C are included |
+
+`ibisPinStates` on the experiment sets each pin as a driver or a receiver,
+**per experiment**.
+
+## Build
+
+Use lesson 11's 72 mm line and change only the drive:
+
+```tsx title="12-drive-4ma.circuit.tsx"
+import { LineBoard } from "./teaching-board"
+import { serpentine } from "./11-long-line.circuit"
+// Lesson 10's line with a 4 mA driver.
+export default () => <LineBoard name="DRIVE_4MA" drive="LVCMOS33_4MA" bends={serpentine} />
+```
+
+`12-drive-12ma.circuit.tsx` and `12-drive-24ma.circuit.tsx` are the same
+except for the `drive` prop.
+
+## What you see
+
+At 2 ns per bit:
+
+| Drive | Output R | RX swing | Eye height | Eye width |
+| --- | --- | --- | --- | --- |
+| 4 mA | 75 Ω, 20 mA limit | 0.04 → 3.30 V | **0.17 V** | **0.59 ns** |
+| 12 mA | 30 Ω | −0.35 → 3.66 V | **3.30 V** | **1.99 ns** |
+| 24 mA | 15 Ω | −0.88 → 4.20 V | 3.29 V | 2.0 ns |
+
+## Check by hand
+
+- **Too weak (4 mA):** the current limit sets the first step:
+  20 mA × 45.6 Ω ≈ **0.9 V**. The line then charges in steps, one per
+  1.06 ns round trip, and doesn't reach the 1.65 V threshold early enough.
+  The eye collapses even though the edge rate is slow.
+- **About right (12 mA):** 30 Ω against 45.6 Ω gives Γ = −0.21 at the source.
+  The far end overshoots once, to 3.66 V, and the next reflection is small.
+- **Too strong (24 mA):** 15 Ω gives Γ = −0.50, so the line rings hard
+  (−0.88 V to 4.20 V). The eye still passes at 2 ns, but it fails at 0.8 ns
+  (lesson 11).
+
+Pick the drive whose output impedance is closest to Z0, not the strongest
+one.
+
+## Try this
+
+Set `corner="minimum"` on the 12 mA board. The weak corner adds 30 % to the
+drive resistance. Note how much eye height you lose. You'll use that spread
+again in lesson 18.

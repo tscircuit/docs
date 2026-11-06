@@ -1,0 +1,57 @@
+---
+title: "9 · Termination"
+sidebar_label: "9 · Termination"
+sidebar_position: 9
+description: Remove reflections with series and parallel termination.
+---
+
+**Status: ✅ Runs today**
+
+**Goal:** stop the reflections from lesson 8.
+
+Reuse the line from lesson 8 and change only the resistors.
+
+## Build
+
+```tsx title="09-series-term.circuit.tsx"
+import Line from "./08-tline.circuit"
+// Series termination: the source resistance matches Z0
+export default () => <Line sourceR="50" />
+```
+
+```tsx title="09-parallel-term.circuit.tsx"
+import Line from "./08-tline.circuit"
+// Parallel termination: 50 Ω to ground at the receiver
+export default () => <Line sourceR="10" loadR="50" />
+```
+
+## Run
+
+```bash
+bunx tsci simulate 09-series-term.circuit.tsx
+bunx tsci simulate 09-parallel-term.circuit.tsx
+```
+
+## What you see
+
+| | V_TX at launch | V_RX after the edge arrives | V_RX at 4 ns |
+| --- | --- | --- | --- |
+| Open, 10 Ω (lesson 8) | 0.833 V | 1.82 V, rings | 1.19 V |
+| **Series 50 Ω** | **0.496 V** | 1.12 V, then settles | **1.00 V** |
+| **Parallel 50 Ω** | 0.833 V | 0.95 V, then settles | **0.83 V** |
+
+## Check by hand
+
+- **Series:** the source launches half the step, 1 × 50/(50 + 50) = 0.5 V ✓.
+  The open far end doubles it to the full **1.0 V** ✓. The reflection returns
+  to a matched 50 Ω source, so it stops there.
+- **Parallel:** the far end matches Z0, so Γ = 0 and nothing reflects. V_RX =
+  1 × 50/60 = **0.833 V** ✓
+- The trade-off: series termination draws no DC current, but the waveform is
+  only half amplitude along the line. Parallel termination gives a clean
+  waveform everywhere, but it burns V²/50 Ω.
+
+## Try this
+
+Try a series resistor of 33 Ω, or a parallel resistor of 100 Ω. Predict Γ
+first, then check the sim.

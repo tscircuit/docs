@@ -1,0 +1,65 @@
+---
+title: "2 · Diode I–V curve"
+sidebar_label: "2 · Diode I–V"
+sidebar_position: 2
+description: Use a DC sweep to trace a diode's forward I–V curve.
+---
+
+**Status: ✅ Runs today**
+
+**Goal:** sweep a source and watch a nonlinear part respond.
+
+## Build
+
+```tsx title="02-diode-iv.circuit.tsx"
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="0V" />
+    <resistor name="R1" resistance="100" footprint="0402" />
+    <diode name="D1" footprint="sod123" />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".D1 > .anode" />
+    <trace from=".D1 > .cathode" to=".V1 > .pin2" />
+    <voltageprobe name="VD" connectsTo=".D1 > .anode" referenceTo=".D1 > .cathode" />
+    <analog.dcsweepsimulation name="DIODE_IV" spiceEngine="ngspice"
+      sweepSource=".V1" sweepStart="0V" sweepStop="2V" sweepStep="0.1V" />
+  </board>
+)
+```
+
+`analog.dcsweepsimulation` steps `V1` from 0 V to 2 V and solves the DC
+circuit at each step, the same as `.dc` in SPICE.
+
+## Run
+
+```bash
+bunx tsci simulate 02-diode-iv.circuit.tsx
+```
+
+## What you see
+
+One row per step. `v(n2)` is the diode voltage, and the last column is the
+current (shown negative, as it flows out of the source):
+
+| V1 | Diode V | Current |
+| --- | --- | --- |
+| 0.5 V | 0.4998 V | 2.5 µA |
+| 0.6 V | 0.5915 V | 85 µA |
+| 0.7 V | 0.6413 V | 0.59 mA |
+| 1.0 V | 0.6851 V | 3.15 mA |
+| 2.0 V | 0.7210 V | 12.8 mA |
+
+## Check by hand
+
+- Below about 0.5 V, almost no current flows and the whole voltage sits across
+  the diode.
+- Above the knee, the diode holds about 0.65–0.72 V, and R1 takes the rest:
+  (2 − 0.721) / 100 Ω = **12.8 mA** ✓
+- The diode voltage rises about 36 mV between 3.15 mA and 12.8 mA, roughly a
+  factor of 4. That fits about 60 mV per decade of current.
+
+## Try this
+
+Sweep to 5 V and work out the current at the end from R1 alone.

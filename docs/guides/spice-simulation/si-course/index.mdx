@@ -1,0 +1,99 @@
+---
+title: Signal Integrity Course
+sidebar_label: Course overview
+sidebar_position: 0
+description: >-
+  A step-by-step course for electrical engineers new to tscircuit. Start with a
+  voltage divider in ngspice and finish with a DDR3 eye diagram on a real
+  routed board.
+---
+
+This course is for electrical engineers who are new to tscircuit. It takes you
+from a voltage divider to an eye diagram on a routed DDR3 trace. Each lesson
+adds **one** new idea and ends with a check you can do on paper.
+
+You don't need to know React. A tscircuit file is a function that returns your
+circuit as tags. `<resistor>` is a resistor, `<trace>` is a connection, and
+`tsci simulate` runs the analysis you declare.
+
+## Route
+
+### Part 1 · Simple: schematic circuits
+
+Engine: `ngspice`. Traces are ideal wires.
+
+| # | Lesson | You learn | Check by hand |
+| --- | --- | --- | --- |
+| 1 | [Voltage divider](./1-simple/01-voltage-divider.mdx) | Sources, probes, DC operating point, reading the output | Vout = V·R2/(R1+R2) |
+| 2 | [Diode I–V curve](./1-simple/02-diode-iv.mdx) | DC sweep | Knee near 0.6–0.7 V |
+| 3 | [RC step response](./1-simple/03-rc-step.mdx) | Transient analysis | 63 % at τ = RC |
+| 4 | [RC Bode plot](./1-simple/04-rc-bode.mdx) | AC sweep | −3 dB at fc = 1/(2πRC) |
+| 5 | [Parameter sweeps](./1-simple/05-parameter-sweeps.mdx) | `analog.sweepparameter` | τ scales with R |
+| 6 | [Real circuits](./1-simple/06-real-circuits.mdx) | Rectifiers, switches, converters | Datasheet behaviour |
+
+### Part 2 · Medium: the trace is real
+
+| # | Lesson | You learn | Check by hand |
+| --- | --- | --- | --- |
+| 7 | [A trace is an RLC](./2-medium/07-trace-is-an-rlc.mdx) | Fast edges ring on a lumped trace | f ≈ 1/(2π√LC) |
+| 8 | [Transmission line](./2-medium/08-transmission-line.mdx) | Z0, delay, reflections | Open end doubles the step |
+| 9 | [Termination](./2-medium/09-termination.mdx) | Series vs parallel termination | Clean when R = Z0 |
+| 10 | [Your first `pcb_spice` run](./2-medium/10-first-pcb-spice.mdx) | The board supplies the R, L and C | Microstrip Z0 formula |
+| 11 | [Bits and eyes](./2-medium/11-bits-and-eyes.mdx) | Bit patterns, UI, eye diagrams, ISI | Eye closes once a round trip exceeds a bit |
+| 12 | [Real buffers (IBIS)](./2-medium/12-ibis-buffers.mdx) | `<ibismodel>`, drive strength | Best drive ≈ Z0, not the strongest |
+| 13 | [The return path](./2-medium/13-return-path.mdx) | Plane distance sets L and Z0 | L grows with distance to the plane |
+| 14 | [Changing layers](./2-medium/14-vias.mdx) | Vias and stubs | A dip at the via |
+| 15 | [Crosstalk](./2-medium/15-crosstalk.mdx) | Several lanes, aggressor vs victim, sanity-checking a model | Should fall with spacing |
+
+### Part 3 · Hard: DDR3 on the AM3352 board
+
+| # | Lesson | You learn |
+| --- | --- | --- |
+| 16 | [One DQ lane](./3-hard/16-ddr-one-lane.mdx) | Simulate the real board, find routed pins, vendor IBIS models, the DQ0 eye |
+| 17 | [Add the strobe](./3-hard/17-strobe.mdx) | DQS/DQSn, centre-aligned writes, quiet vs switching |
+| 18 | [Corners and settings](./3-hard/18-corners.mdx) | IBIS corners, drive strength, ODT |
+| 19 | [The full byte lane](./3-hard/19-full-byte.mdx) | Eight DQ bits, DM and DQS with coupling, worst bit |
+| 20 | [Routed copper](./3-hard/20-routed-copper.mdx) | Real curves, planes and vias |
+| 21 | [Timing check](./3-hard/21-timing-check.mdx) | Setup/hold, VREF thresholds, reads |
+| 22 | [Power](./3-hard/22-power.mdx) | VDDQ impedance, simultaneous switching noise |
+
+## Lesson status
+
+Each lesson starts with a status badge:
+
+- **✅ Runs today.** We ran the code with `tsci simulate`, and the numbers on
+  the page come from that run.
+- **🟡 Not run yet.** The code uses elements tscircuit already has, but nobody
+  has run this exact example yet. Expect to adjust it.
+- **🚧 Not supported yet.** This is the setup we're aiming for. The page says
+  what's missing today.
+
+## How every lesson is laid out
+
+1. **Goal:** one sentence.
+2. **Build:** one `*.circuit.tsx` file.
+3. **Run:** `bunx tsci simulate <file>`.
+4. **What you see:** the real output.
+5. **Check by hand:** the paper calculation it should match.
+6. **Try this:** one change to make on your own.
+
+## Example files
+
+Every runnable lesson has a file in
+[`tutorial/course`](https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007/tree/main/tutorial/course)
+of the AM3352 repo. That folder also has the synthetic teaching IBIS model
+used in Part 2. Clone the repo and run them from its root.
+
+## Before you start
+
+```bash
+bun install -g tscircuit     # or use bunx tsci in a project
+brew install ngspice         # Part 1 onwards
+# Part 2 onwards (pcb_spice): fasthenry and FasterCap on your PATH
+```
+
+### Reading `tsci simulate` output
+
+The ngspice engine prints a table. Columns are **node voltages**
+(`v(n1)`, `v(n2)`, …) and source currents, not your probe names. In a small
+circuit, find your node by its value. Lesson 1 shows how.

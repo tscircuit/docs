@@ -1,0 +1,164 @@
+---
+title: "10 · Your first pcb_spice run"
+sidebar_label: "10 · First pcb_spice run"
+sidebar_position: 10
+description: Let the board supply R, L and C for a straight microstrip, then compare with the formula.
+---
+
+**Status: ✅ Runs today** (about 1.5 minutes)
+
+**Goal:** stop typing in L and C. Extract them from the copper, then check the
+result against the microstrip formula.
+
+This is the bridge lesson. In lessons 7–9 you typed the line's L and C in by
+hand. From here on, `pcb_spice` reads them from the routed trace and the
+stackup.
+
+## What changes from Part 1
+
+| | `ngspice` | `pcb_spice` |
+| --- | --- | --- |
+| Line model | Your own L and C | Extracted from the trace and the stackup |
+| Tools | ngspice | FastHenry (R, L) and FasterCap (C), then ngspice |
+| Drivers | Ideal sources | IBIS buffer models |
+| Traffic and eyes | Not available | `analog.digitalstimulus` and `analog.eyediagram` |
+| Output | A terminal table | A `results.html` report, CSVs and solver logs |
+
+You need `fasthenry`, `FasterCap` and `ngspice` on your `PATH`.
+
+## The teaching buffer
+
+`pcb_spice` drives pins through IBIS models, so every chip needs one. For
+Part 2, we use `lvcmos33-teaching.ibs`. It's a **synthetic** 3.3 V LVCMOS
+buffer written for this course, not a real part. It has resistive pull-up
+and pull-down drivers with a soft current limit, diode clamps, and a
+`[Model Selector]` with three drive strengths:
+
+| Model | Drive resistance | Current limit | Edge |
+| --- | --- | --- | --- |
+| `LVCMOS33_4MA` | 75 Ω | 20 mA | 1.6 ns |
+| `LVCMOS33_12MA` | 30 Ω | 60 mA | 0.8 ns |
+| `LVCMOS33_24MA` | 15 Ω | 120 mA | 0.4 ns |
+
+The file, the script that generates it, and every example in Part 2 are in
+[`tutorial/course`](https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007/tree/main/tutorial/course) of the AM3352 repo. The shared parts are in
+[`teaching-buffer.tsx`](https://github.com/0hmX/am3352-ddr-track-a-local-dfm-wip-20261007/tree/main/tutorial/course/teaching-buffer.tsx):
+
+- `Buffer`: a small 4-pad chip with pins IO1, IO2, VDD and GND. GND is a
+  plated hole, so it reaches every GND plane.
+- `teachingIbis(drive)`: the `<ibismodel>` props for that chip.
+- `extraction`: the solver settings used in every Part 2 lesson.
+
+## Build
+
+A 4-layer board with a 20 mm, 0.16 mm-wide trace on `top`, over a GND pour
+on `inner1` 0.0994 mm below:
+
+```tsx title="10-microstrip.circuit.tsx"
+import { analog } from "tscircuit"
+import { Buffer, extraction, teachingIbis } from "./teaching-buffer"
+
+export default () => (
+  <board width="30mm" height="12mm" layers={4} thickness="1.6mm" fabricatorPreset="jlcpcb_standard" routingDisabled>
+    <Buffer name="U1" x={-10} side={1} />
+    <Buffer name="U2" x={10} side={-1} />
+    <trace name="LINE" from=".U1 > .IO1" to=".U2 > .IO1" thickness="0.16mm"
+      pcbPath={[".U1 > .IO1", ".U2 > .IO1"]} />
+    <copperpour connectsTo="net.GND" layer="inner1" />
+
+    <ibismodel componentRef=".U1" {...teachingIbis()} />
+    <ibismodel componentRef=".U2" {...teachingIbis()} />
+    <voltagesource name="VSUPPLY" voltage="3.3V" connections={{ pin1: ".U1 > .VDD", pin2: ".U1 > .GND" }} />
+    <voltageprobe name="TX" connectsTo=".U1 > .IO1" referenceTo=".U1 > .GND" />
+    <voltageprobe name="RX" connectsTo=".U2 > .IO1" referenceTo=".U2 > .GND" />
+
+    <analog.transientsimulation name="MICROSTRIP" spiceEngine="pcb_spice"
+      duration="200ns" timePerStep="10ps"
+      ibisPinStates={{
+        ".U1 > .IO1": { isOutput: true, isOutputEnabled: true },
+        ".U2 > .IO1": { isOutput: false },
+        ".U1 > .IO2": { isOutput: false },
+        ".U2 > .IO2": { isOutput: false },
+      }}
+      pcbSpiceChannel={{
+        reduction: "straightened-stages",
+        sections: 12,
+        lanes: [{ name: "LINE", from: ".U1 > .IO1", to: ".U2 > .IO1" }],
+        referencePinRef: ".U1 > .GND",
+        extraction,
+      }} />
+    <analog.digitalstimulus name="MICROSTRIP_BITS" simulationRef=".MICROSTRIP"
+      sourcePinRef=".U1 > .IO1" bitDuration="2ns" startTime="0ns" initialState={0}
+      transmittedData={{ transmissionType: "bits", bits: "1011001110001111", repeat: true }} />
+    <analog.eyediagram name="MICROSTRIP_EYE" simulationRef=".MICROSTRIP"
+      probeRef=".RX" unitInterval="2ns" timeOrigin="0ns" startTime="20ns" />
+  </board>
+)
+```
+
+This is what each new piece does:
+
+- `routingDisabled` plus `pcbPath`: you route the trace yourself, from pad
+  centre to pad centre. The pipeline checks that the trace ends sit on the
+  pads.
+- `<ibismodel>` binds the IBIS file to each chip.
+- `ibisPinStates` sets every bound pin as a driver or a receiver for this
+  experiment.
+- `pcbSpiceChannel` sets which lane to extract and how. With
+  `"straightened-stages"`, the route becomes one straight stage over a
+  2 mm-wide return bar on the adjacent GND layer.
+- `analog.digitalstimulus` drives a bit pattern from U1's IO1, and
+  `analog.eyediagram` folds the RX probe into an eye.
+
+## Run
+
+```bash
+bunx tsci simulate tutorial/course/10-microstrip.circuit.tsx --output out/10
+open out/10/results.html
+```
+
+## What you see
+
+The extracted values are in `out/10/stage-0/extraction.json`, taken at
+100 MHz:
+
+| Quantity | Extracted | Per mm |
+| --- | --- | --- |
+| L | 6.67 nH | 0.334 nH/mm |
+| C | 3.37 pF | 0.169 pF/mm |
+| Z0 = √(L/C) | **44.5 Ω** | |
+| Delay = √(LC) | **150 ps** | 7.5 ps/mm |
+
+**Eye:** 3.29 V high and 2.0 ns wide, in a 2 ns UI. A 20 mm line is
+electrically short for a 0.8 ns edge, so the eye is wide open.
+
+## Check by hand
+
+Use the stackup values: h = 0.0994 mm, w = 0.16 mm, t = 35 µm, εr = 4.1.
+
+- **Microstrip formula** (air above the trace):
+  Z0 ≈ 87/√(εr + 1.41) · ln(5.98h / (0.8w + t)) = **47.9 Ω**, and
+  εeff ≈ 3.08, so the delay is about 5.9 ps/mm.
+- **The pipeline's model** puts the whole trace in εr 4.1. There's no air
+  above it, so the delay is √4.1 / c = **6.75 ps/mm**. The extracted value is
+  7.5 ps/mm, and C per mm is about 4.1/3.08 = 1.33× the open-air value, as
+  expected.
+- Z0 agrees within about 7 %. The rest comes from the finite 2 mm return bar
+  and the embedded dielectric.
+
+The lesson here: check against **the model's assumptions**, not just a
+textbook formula.
+
+## Lessons from getting this to run
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `endpoint_position` | The trace ended at the pad edge | Route pad centre to pad centre with `pcbPath` |
+| `mesh_convergence` on R | A wide trace (2.9 mm on a 2-layer board) | Use a thin dielectric and a narrow trace |
+| FasterCap `not converging` | A long stage with fine panels | `maxPanelLength: "2mm"` |
+| `overlapping_edges` | The IBIS edge table was longer than one bit | Use shorter IBIS waveform tables, or a longer `bitDuration` |
+
+## Try this
+
+Change the trace width to 0.3 mm. L per mm should fall, C per mm should rise,
+and Z0 should drop to roughly 28–30 Ω (the formula gives 28.6 Ω).

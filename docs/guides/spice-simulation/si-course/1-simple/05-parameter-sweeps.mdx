@@ -1,0 +1,55 @@
+---
+title: "5 · Parameter sweeps"
+sidebar_label: "5 · Parameter sweeps"
+sidebar_position: 5
+description: Repeat an analysis across component values with analog.sweepparameter.
+---
+
+**Status: 🟡 Partly works.** The file renders, but `tsci simulate` prints only
+the nominal run (R1 = 1k) today. The sweep runs aren't printed yet.
+
+**Goal:** run one experiment for several component values.
+
+## Build
+
+```tsx title="05-rc-sweep.circuit.tsx"
+import { analog } from "tscircuit"
+
+export default () => (
+  <board routingDisabled>
+    <voltagesource name="V1" voltage="3.3V" />
+    <resistor name="R1" resistance="1k" footprint="0402" />
+    <capacitor name="C1" capacitance="1uF" footprint="0402" />
+    <trace from=".V1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".C1 > .pin1" />
+    <trace from=".C1 > .pin2" to=".V1 > .pin2" />
+    <voltageprobe name="VOUT" connectsTo=".C1 > .pin1" referenceTo=".V1 > .pin2" />
+    <analog.transientsimulation name="RC_FAMILY" spiceEngine="ngspice"
+      duration="5ms" timePerStep="50us">
+      <analog.sweepparameter parameterType="resistance" resistorRef=".R1"
+        values={["500", "1k", "2k"]} />
+    </analog.transientsimulation>
+  </board>
+)
+```
+
+`analog.sweepparameter` goes **directly inside** an analysis and repeats it for
+each value. The component's own value doesn't change. You can sweep
+`resistance`, `capacitance`, `inductance`, `voltage` (a net) or `current`.
+
+## What you should see
+
+Three charging curves, one per R:
+
+| R1 | τ | V at 1 ms |
+| --- | --- | --- |
+| 500 Ω | 0.5 ms | 3.3 × (1 − e⁻²) = 2.85 V |
+| 1 kΩ | 1 ms | 2.09 V |
+| 2 kΩ | 2 ms | 3.3 × (1 − e⁻⁰·⁵) = 1.30 V |
+
+Until the CLI prints the sweep, you can run each value as its own file. Or
+export a component that takes `resistance` as a prop, the way lesson 9 does.
+
+## Check by hand
+
+τ scales linearly with R, so doubling R halves how fast the capacitor charges.

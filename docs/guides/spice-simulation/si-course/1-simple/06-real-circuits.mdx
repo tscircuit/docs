@@ -1,0 +1,32 @@
+---
+title: "6 · Real circuits"
+sidebar_label: "6 · Real circuits"
+sidebar_position: 6
+description: Practice on rectifiers, transistor switches, filters and converters.
+---
+
+**Status: ✅ Existing guides**
+
+**Goal:** get comfortable with nonlinear parts and pulse sources before moving
+on to signal integrity.
+
+Work through these guides. Each one uses the same pattern: parts, traces, a
+source, a probe and a transient.
+
+- [Half-wave rectifier](../../Diodes/half-wave-rectifier.mdx)
+- [Full-wave rectifier](../../Diodes/full-wave-rectifier.mdx)
+- [Transistor switch](../../Transistors/transistor-switch-example.mdx)
+- [High-pass filter](<../../Passive Filters/high-pass-filter.mdx>)
+- [Low-pass filter](<../../Passive Filters/low-pass-filter.mdx>)
+- [Boost converter](<../../Power Converters/boost-converter.mdx>)
+
+Run each one with `bunx tsci simulate <file>`.
+
+## Checkpoint
+
+Before Part 2, you should be able to:
+
+- [ ] write a source, a probe and an analysis from memory;
+- [ ] pick `duration` and `timePerStep` for the signal you care about;
+- [ ] find your node in the ngspice table;
+- [ ] check a result on paper.

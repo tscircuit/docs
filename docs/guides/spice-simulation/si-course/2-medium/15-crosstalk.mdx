@@ -1,0 +1,89 @@
+---
+title: "15 · Crosstalk"
+sidebar_label: "15 · Crosstalk"
+sidebar_position: 15
+description: Two coupled traces, one switching and one quiet, and how to tell when a model can't be trusted.
+---
+
+**Status: 🟡 Runs, but don't trust the numbers yet.** The two-lane
+extraction runs, but its coupling doesn't behave physically as spacing
+changes. That makes this lesson about checking a model as much as about
+crosstalk.
+
+**Goal:** measure how much a switching trace disturbs its quiet neighbour,
+and sanity-check the result.
+
+## The idea
+
+Coupled traces share mutual inductance (Lm) and mutual capacitance (Cm). When
+the aggressor switches, the victim sees two kinds of noise:
+
+- **NEXT** (near-end crosstalk) at the driver end. It scales with
+  (Cm/C + Lm/L).
+- **FEXT** (far-end crosstalk) at the receiver. It scales with
+  (Cm/C − Lm/L) × length. In microstrip it's usually **negative**, because
+  inductive coupling dominates.
+
+Both should **fall** as the spacing grows.
+
+## Build
+
+The aggressor (IO1) and the victim (IO2) run straight and parallel for
+20 mm. The chips' I/O pad pitch sets the spacing. The victim is driven but
+held at 0:
+
+```tsx title="15-crosstalk.circuit.tsx"
+import { LineBoard } from "./teaching-board"
+
+// Aggressor (IO1) and victim (IO2) run straight and parallel for 20 mm.
+// `spacing` is centre to centre in mm; the chips' I/O pads use the same pitch.
+export const Crosstalk = ({ spacing = 0.32 }: { spacing?: number }) => (
+  <LineBoard name="XTALK" drive="LVCMOS33_24MA" victimSpacing={spacing} />
+)
+
+export default () => <Crosstalk spacing={0.32} />
+```
+
+`LineBoard` adds the second lane, a quiet stimulus (`bits: "0"`), and
+`VIC_NEAR`/`VIC_FAR` probes when `victimSpacing` is set. The spacing
+variants are `15-crosstalk-032`, `-064` and `-128`.
+
+## What you see
+
+24 mA aggressor, 2 ns per bit, peak victim noise:
+
+| Spacing (centre to centre) | Lm/L | Cm/C | NEXT peak | FEXT peak |
+| --- | --- | --- | --- | --- |
+| 0.32 mm (gap = 1 trace width) | +0.066 | 0.145 | 71 mV | 75 mV |
+| 0.64 mm (gap = 3 trace widths) | **−0.019** | 0.046 | 51 mV | **107 mV** |
+| 1.28 mm (gap = 7 trace widths) | +0.017 | 0.020 | 13 mV | 27 mV |
+
+## Check by hand, and why this fails the check
+
+- **Cm/C falls about 3×** from 0.32 mm to 0.64 mm. That's sensible.
+- **Lm/L goes negative** at 0.64 mm. Two parallel traces over a solid plane
+  always have positive mutual inductance, so this is not physical.
+- **FEXT grows** from 0.32 mm to 0.64 mm, the opposite of what it should
+  do, before falling at 1.28 mm.
+- From 0.32 mm to 1.28 mm overall, NEXT falls about 5× and FEXT about 3×.
+  The end-to-end trend is right; the middle point is the warning sign.
+
+The cause is the model, not the board. `straightened-stages` puts both
+traces over one **2 mm-wide return bar**, not a whole ground plane. At
+0.64 mm the traces sit near the bar's edges, and the bar's own current
+crowding produces the odd mutual terms. A real plane is tens of mm wide.
+
+This is the habit the lesson teaches: **when a trend goes the wrong way,
+suspect the model before the physics.**
+
+## What would fix it
+
+- A return bar much wider than the trace spacing. Try
+  `straightenedStageProfiles` with a custom `return.width`.
+- `reduction: "routed-copper"`, which meshes the real pour, once it
+  converges (see lesson 20).
+
+## Try this
+
+Add a `straightenedStageProfiles` entry with a 10 mm return width, then
+check whether Lm/L turns positive and FEXT falls with spacing.

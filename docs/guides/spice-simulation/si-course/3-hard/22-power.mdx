@@ -1,0 +1,45 @@
+---
+title: "22 · Power"
+sidebar_label: "22 · Power"
+sidebar_position: 22
+description: Add VDDQ impedance and simultaneous switching noise to the eye.
+---
+
+**Status: 🚧 Not supported yet.** The pipeline uses an ideal `DDR_VDDQ`
+source today. Supply impedance, decoupling and SSO coupling aren't modelled.
+
+**Goal:** stop assuming the rails are ideal.
+
+## The idea
+
+When all eight DQ bits switch the same way, their current flows through the
+shared VDDQ and GND paths. Any supply impedance turns that current into rail
+noise, which shows up in every bit's eye and in VREF.
+
+## Target setup
+
+1. Extract the VDDQ plane and vias together with the decoupling capacitors,
+   including their ESL and ESR.
+2. Check the PDN impedance with an AC sweep (lesson 4) at the RAM's VDDQ
+   balls. Target: below about VDDQ × ripple / ΔI up to the edge-rate knee.
+3. Run the full byte (lesson 19), all bits switching in phase, with that PDN
+   in place of the ideal source.
+
+## Check by hand
+
+- Target impedance: Z_target = (1.5 V × 5 %) / ΔI. With 8 bits × about 20 mA,
+  that's **about 0.47 Ω**.
+- The VREF divider must follow VDDQ/2 at low frequency, but be filtered
+  against the fast switching noise.
+
+## Done
+
+At this point you have:
+
+- the DQ and DQS eyes;
+- across corners and settings;
+- with coupling, real copper and real power;
+- checked against the datasheet thresholds.
+
+That's what a DDR signal-integrity signoff checks. Check every result by hand,
+and treat any simulation you can't explain as unverified.

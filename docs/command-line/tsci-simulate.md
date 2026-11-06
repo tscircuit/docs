@@ -8,17 +8,7 @@ description: Run circuit simulations from the command line
 ## Usage
 
 ```bash
-tsci simulate <subcommand> <file> [options]
-```
-
-## Subcommands
-
-### `tsci simulate analog`
-
-Run an analog SPICE simulation on a circuit file.
-
-```bash
-tsci simulate analog <file> [options]
+tsci simulate <file> [options]
 ```
 
 #### Arguments
@@ -26,13 +16,26 @@ tsci simulate analog <file> [options]
 
 #### Options
 - `--disable-parts-engine` – disable the parts engine during circuit evaluation
+- `--output <directory>` – fresh report directory (`spiceEngine="pcb_spice"` only)
+- `--solver-timeout-ms <milliseconds>` – per-process solver timeout, default 900000 (`spiceEngine="pcb_spice"` only)
 
-The command generates a SPICE netlist from your circuit, runs the simulation, and prints the results in a table format.
+The engine comes from the `spiceEngine` of the experiments in the file:
+
+- `"ngspice"` – generates a SPICE netlist from the schematic, runs ngspice and prints the results as a table.
+- `"pcb_spice"` – extracts the routed copper with FastHenry and FasterCap, runs ngspice with IBIS buffer models and writes `results.html` to `.tscircuit/simulation-<file>-<timestamp>/`. Requires `fasthenry`, `FasterCap` and `ngspice` on `PATH`.
+
+One file can't mix `pcb_spice` with other engines. See
+[Simulating PCB Traces with tsci simulate](../guides/spice-simulation/simulating-pcb-traces-with-tsci-simulate.mdx).
+
+### `tsci simulate return-current`
+
+Run a PCB return-current EM simulation with Palace. See
+[`<simulation.pcbreturncurrentsimulation />`](../elements/simulation-pcbreturncurrentsimulation.mdx).
 
 ## Example
 
 ```bash
-$ tsci simulate analog my-circuit.circuit.tsx
+$ tsci simulate my-circuit.circuit.tsx
 ngspice 1 -> ngspice 1 -> 
 Note: No compatibility mode selected!
 

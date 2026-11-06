@@ -1,0 +1,92 @@
+---
+title: "14 · Changing layers"
+sidebar_label: "14 · Vias"
+sidebar_position: 14
+description: Route a trace through two vias and extract each via as its own stage.
+---
+
+**Status: ✅ Runs today** (about 2 minutes)
+
+**Goal:** see a via as a short, high-impedance piece of the line.
+
+## The idea
+
+A via is a short vertical conductor. It has a few hundred pH to about 1 nH of
+inductance, but very little capacitance, because there's no plane right next
+to it. To the signal it looks like a short section of high-Z line.
+
+## Build
+
+Route top → via → bottom → via → top. There's a GND pour on `inner1` under
+the `top` sections and on `inner2` over the `bottom` section:
+
+```tsx title="14-vias.circuit.tsx"
+import { LineBoard } from "./teaching-board"
+// Top → via → bottom → via → top. GND pours on inner1 (under top) and inner2 (over bottom).
+// Each via needs a wire vertex at the same spot just before it.
+export default () => (
+  <LineBoard name="VIAS" drive="LVCMOS33_24MA" pours={["inner1", "inner2"]}
+    bends={[
+      { x: -4, y: 1 },
+      { x: -4, y: 1, via: true, fromLayer: "top", toLayer: "bottom" },
+      { x: 4, y: 1 },
+      { x: 4, y: 1, via: true, fromLayer: "bottom", toLayer: "top" },
+    ]} />
+)
+```
+
+A via in `pcbPath` needs a wire point at the same spot just before it.
+Otherwise the pipeline stops with `via_geometry`.
+
+When a route has vias, `LineBoard` adds two things to `pcbSpiceChannel`.
+The pipeline asks for each of them in turn:
+
+```tsx
+via: { platingThickness: "0.025mm", equivalentWidth: "0.1mm", omitThroughViaStubs: true },
+// The via barrel has no plane under it, so you write its return by hand:
+// a GND return 1 mm to the side, like a stitching via next to the signal via.
+straightenedStageProfiles: {
+  via: {
+    spacing: "0.1mm", relativePermittivity: 4.42,
+    return: { width: "0.3mm", thickness: "0.025mm", lengthFactor: 1, centerY: "1mm", centerZ: "0mm" },
+  },
+},
+```
+
+| Error you'll hit | Meaning |
+| --- | --- |
+| `viaPlatingMm … must be a positive number` | Add `via.platingThickness` |
+| `requires explicit omitThroughViaStubs=true` | This reduction can't model stubs, so you have to say you're leaving them out |
+| `Missing via return/material profile` | Write the via's return path with `straightenedStageProfiles.via` |
+
+## What you see
+
+The route becomes five stages:
+
+| Stage | Length | L | C | Z0 | Delay |
+| --- | --- | --- | --- | --- | --- |
+| top | 6.0 mm | 1.98 nH | 1.00 pF | 44.6 Ω | 44 ps |
+| **via** | 1.53 mm | **1.24 nH** | **0.10 pF** | **111 Ω** | 11 ps |
+| bottom | 8.0 mm | 2.65 nH | 1.32 pF | 44.7 Ω | 59 ps |
+| **via** | 1.53 mm | 1.24 nH | 0.10 pF | 111 Ω | 11 ps |
+| top | 6.0 mm | 1.98 nH | 1.00 pF | 44.6 Ω | 44 ps |
+
+The eye at 2 ns per bit with the 24 mA driver is 3.30 V high and 2.0 ns wide.
+That's no worse than lesson 13's straight line.
+
+## Check by hand
+
+- **Via inductance:** L ≈ 0.2·h·(1 + ln(4h/d)) nH, with h = 1.53 mm and
+  d = 0.4 mm, gives **1.14 nH**. The extraction gives 1.24 nH ✓
+- **Why the eye doesn't care:** each via is 11 ps long, much shorter than the
+  0.4 ns edge. A discontinuity matters roughly when its delay gets close to
+  the edge's rise time divided by 6, which is about 70 ps here.
+- **The return profile matters:** move `centerY` to 3 mm and the via's L
+  rises. That's the extraction showing you why stitching vias next to signal
+  vias are good practice.
+
+## Try this
+
+Set `centerY: "3mm"` and predict the change in the via's L and Z0 before you
+run it. Then remove a via, so the route stays on `top`, and compare the
+total delay.

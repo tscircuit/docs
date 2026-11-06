@@ -1,0 +1,38 @@
+---
+title: "19 · The full byte lane"
+sidebar_label: "19 · Full byte lane"
+sidebar_position: 19
+description: All eight DQ bits, DM and the strobe together, with coupling.
+---
+
+**Status: 🚧 Not supported yet.** `pcbSpiceChannel.lanes` takes at most
+three lanes, and shared DQ/DQS stages are blocked by
+[pcb-spice-pipeline#49](https://github.com/tscircuit/pcb-spice-pipeline/issues/49).
+
+**Goal:** find the worst bit in the byte, with its neighbours switching.
+
+## The idea
+
+Bits in a byte are routed close together. A victim's worst case is when its
+neighbours switch the opposite way. Length mismatch inside the byte also skews
+bits against DQS.
+
+## Target setup
+
+- **Lanes:** `DQ0` … `DQ7`, `DM0`, `DQS0` and `DQSn0`, each resolved with
+  `resolveDdrChannel`.
+- **Stimuli:** one PRBS per bit, with a different seed or a shifted start for
+  each, so the neighbours aren't in lockstep.
+- **Eyes:** one per DQ, all against the DQS crossing.
+
+## What you should see
+
+Ten eyes. The one in the middle of the bus, with the most coupled neighbours
+and the longest route, is usually the worst. Report the worst bit, not the
+average.
+
+## Check by hand
+
+- Skew budget: the length difference to DQS × about 6–7 ps/mm should stay
+  well inside the setup/hold window from lesson 21.
+- Coupling: rerun lesson 15's spacing rule on the tightest pair in the byte.

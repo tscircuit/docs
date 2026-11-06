@@ -1,0 +1,52 @@
+---
+title: "17 · Add the strobe"
+sidebar_label: "17 · Add the strobe"
+sidebar_position: 17
+description: Simulate DQ together with its DQS/DQSn strobe pair.
+---
+
+**Status: 🚧 Not supported yet.** On this board, DQS0/DQSn0 change layer onto
+`inner2`, between the `inner1` and `inner3` planes. `straightened-stages`
+can't share stages between DQ and DQS yet
+([pcb-spice-pipeline#49](https://github.com/tscircuit/pcb-spice-pipeline/issues/49)),
+and the via stages still need a hand-written `via` profile.
+
+**Goal:** check DQ against its own strobe, not an ideal clock.
+
+## The idea
+
+DDR3 has no shared data clock. Each byte has a differential strobe, DQS/DQSn.
+
+- **Writes:** the controller places the DQS edge in the **centre** of the DQ
+  eye, half a UI later.
+- **Reads:** the RAM sends DQS **edge-aligned**, and the controller's PHY
+  shifts it internally.
+
+## Build
+
+The repo already declares this in `simulations-next/run-ddr.circuit.tsx`:
+
+```tsx
+<DdrIbisBoard circuitJson={physicalRecords}
+  lanes={["DQ", "DQS", "DQSn"]} activities={["QUIET", "SWITCHING"]} />
+```
+
+That adds:
+
+- DQS and DQSn stimuli starting at `uiNs / 2`, with DQSn `inverted`;
+- a differential probe, `<voltageprobe name="DQS_RX" connectsTo={dqs.load}
+  referenceTo={dqsn.load} />`;
+- two experiments, **QUIET** (the strobe parked) and **SWITCHING** (the strobe
+  toggling every UI);
+- a second eye on `DQS_RX`.
+
+## What you should see
+
+- A DQS differential eye centred on the DQ eye.
+- A **switching − quiet** ΔV table in the report. That's how much the toggling
+  strobe disturbs DQ through coupling.
+
+## Check by hand
+
+The DQS crossing should sit about 0.78 ns (UI/2) after the DQ transitions. A
+skew larger than about a quarter UI eats directly into setup or hold.
