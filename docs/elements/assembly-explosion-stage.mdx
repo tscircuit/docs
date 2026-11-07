@@ -67,6 +67,31 @@ The JSON contains `cad_explosion_stage` records with resolved order and explicit
 
 Use the same supported core version for both the TSX imports and the `Circuit` renderer. A CLI that bundles an older renderer can build the assembled geometry while omitting the explosion records; check the exported JSON for both record types.
 
+## Export an explosion MP4
+
+The CLI can turn the authored stages into a video with a fixed camera, stage captions, and automatic movement guide lines. Install FFmpeg with the `libx264` encoder on `PATH`, then run:
+
+```bash
+tsci export assembly.circuit.tsx --format explosion-mp4 -o assembly.mp4
+```
+
+An assembled `.circuit.json` file containing the explosion instructions works too. Use `--fps`, `--width`, `--height`, `--stage-duration`, and `--hold-duration` to control the output. See the [CLI reference](../command-line/tsci-export.md#exporting-explosion-videos) for defaults, ranges, and output paths.
+
+This 6.5-second CLI export uses our real RP2040 motor controller, NEMA17, cover, spacers, and M3 bolts. The cover and bolts lift together first, followed by separate bolt, motor, and spacer movements.
+
+<video
+  controls
+  playsInline
+  preload="metadata"
+  aria-label="RP2040 and NEMA17 assembly explosion, showing four labeled stages"
+  style={{ width: "100%", maxWidth: "480px", display: "block", margin: "0 auto" }}
+>
+  <source src="/videos/rp2040-explosion.mp4" type="video/mp4" />
+  <a href="/videos/rp2040-explosion.mp4">Download the RP2040 explosion video.</a>
+</video>
+
+[Download the MP4](/videos/rp2040-explosion.mp4). This is the [committed CLI test video](https://github.com/tscircuit/cli/blob/88e59a419e1f3564672bf28d96182771b2d770d2/tests/cli/export/__snapshots__/rp2040-explosion.mp4); its tests check decoded stage images, frame count, and timing.
+
 ## Sample a stage or export each frame
 
 ```ts
@@ -144,4 +169,6 @@ The [complete TSX and reproduction instructions](https://github.com/tscircuit/3d
 
 ## Limits
 
-Explosion moves translate mechanical CAD and reference surfaces. Targets containing PCB or cable geometry are rejected, and rotation instructions are not supported. Guide lines show the requested motion; an exploded image does not verify assembly clearance. Continuous collision diagnostics are being added separately in [core #5011](https://github.com/tscircuit/core/pull/5011).
+Explosion moves translate mechanical CAD and reference surfaces. Targets containing PCB or cable geometry are rejected, and rotation instructions are not supported. Guide lines and videos show the requested motion; they do not verify assembly clearance.
+
+Core reports collisions introduced during explosion movement as `cad_explosion_collision_error` records. Existing overlap in the assembled pose is excluded. Unsupported, missing, or invalid geometry produces `cad_explosion_collision_check_warning` records, so review both errors and warnings when assessing clearance.

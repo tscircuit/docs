@@ -1,6 +1,6 @@
 ---
 title: tsci export
-description: Export tscircuit files to various formats including SVG schematics, PCB layouts, and fabrication files.
+description: Export tscircuit files to SVG schematics, PCB layouts, fabrication files, 3D models, and explosion videos.
 ---
 
 import ImageWithCaption from "../../src/components/ImageWithCaption"
@@ -53,6 +53,7 @@ The following export formats are supported:
 | `specctra-dsn` | Specctra DSN format for autorouting |
 | `gltf` | Text-based 3D scene (glTF 2.0) that references board meshes and textures |
 | `glb` | Binary glTF bundle that packs geometry, materials, and textures into a single file |
+| `explosion-mp4` | H.264 video playing an assembly's authored explosion stages |
 | `step` | STEP 3D model (ISO-10303-21) for high-fidelity CAD integration |
 | `kicad_sch` | KiCad schematic file |
 | `kicad_pcb` | KiCad PCB layout file |
@@ -129,6 +130,42 @@ tsci export circuit.tsx --format step
 ```
 
 This produces a `.step` file that can be imported into most mechanical CAD tools.
+
+## Exporting explosion videos
+
+Add [`assembly.explosion.stage`](../elements/assembly-explosion-stage.mdx) and [`assembly.explosion.move`](../elements/assembly-explosion-move.mdx) instructions to your design, then export an MP4:
+
+```bash
+tsci export assembly.circuit.tsx --format explosion-mp4 -o assembly.mp4
+```
+
+Use an up-to-date CLI whose `tsci export --help` lists `explosion-mp4`. Install FFmpeg with the `libx264` encoder and make sure `ffmpeg` is on `PATH`.
+
+You can also use Circuit JSON containing the original `cad_explosion_stage` and `cad_explosion_move` records:
+
+```bash
+tsci export assembly.circuit.json -f explosion-mp4 -o assembly.mp4
+```
+
+Playback starts assembled, animates each stage's ordered moves, and pauses after each stage. Whole-stage targets move their members together. The camera stays fixed and fits every move endpoint; movement guide lines are included automatically. The output is H.264/YUV420p with fast-start metadata for browser playback. [Watch the real RP2040/NEMA17 example](../elements/assembly-explosion-stage.mdx#export-an-explosion-mp4).
+
+These options apply only to `--format explosion-mp4`:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--fps <number>` | `24` | Integer frames per second, 1–60 |
+| `--width <pixels>` | `960` | Even pixel width, 128–3840 |
+| `--height <pixels>` | `720` | Even pixel height, 128–3840 |
+| `--stage-duration <seconds>` | `1` | Movement time per stage, greater than 0 and at most 60 seconds |
+| `--hold-duration <seconds>` | `0.5` | Pause at the assembled pose and after each stage, 0–60 seconds |
+
+```bash
+tsci export assembly.circuit.tsx -f explosion-mp4 \
+  --fps 30 --width 1280 --height 720 \
+  --stage-duration 2 --hold-duration 1 -o assembly.mp4
+```
+
+Durations round to whole frames. Every stage gets at least one movement frame; the assembled pose gets at least one frame even when holds are disabled. Without `--output`, the file is named `<input-stem>-explosion.mp4` beside the input. Relative output paths also resolve from the input directory.
 
 ## Output Files
 

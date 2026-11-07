@@ -46,4 +46,4 @@ Offsets are directions in the owning assembly's resolved local frame, measured i
 
 The axes supplied on one move act simultaneously. Two moves execute sequentially: an `offZ` move followed by an `offX` move makes a lift-then-slide path. During partial playback, each move receives an equal portion of its stage's progress.
 
-Selected subassemblies move all descendant CAD and reference-surface centers. Surface axes do not rotate. Movement of a target containing PCB or cable geometry is unsupported, and no collision clearance is verified.
+Selected subassemblies move all descendant CAD and reference-surface centers. Surface axes do not rotate. Movement of a target containing PCB or cable geometry is unsupported. See [collision diagnostics](./assembly-explosion-stage.mdx#limits) for movement collision errors and incomplete geometry warnings.
