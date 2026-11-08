@@ -63,6 +63,19 @@ const circuitJson = circuit.getCircuitJson()
 
 In the 3D viewer, right-click and select **Advanced → Exploded view…**. Scrub the slider through each stage, use **Reset** to return to the assembled pose, or close the panel to restore it. Use the stage selector above to compare rendered poses, or click an image to rotate that pose. The full 3D viewer also supports continuous scrubbing.
 
+This recording shows the 3D viewer playing a handheld console's explosion stages in reverse, with movement guides visible as the parts come back together.
+
+<video
+  controls
+  playsInline
+  preload="metadata"
+  aria-label="Handheld console explosion stages playing in reverse in the 3D viewer"
+  style={{ width: "100%", maxWidth: "480px", display: "block", margin: "0 auto" }}
+>
+  <source src="/videos/handheld-explosion-playback.mp4" type="video/mp4" />
+  <a href="/videos/handheld-explosion-playback.mp4">Download the handheld console explosion video.</a>
+</video>
+
 The JSON contains `cad_explosion_stage` records with resolved order and explicit member IDs, plus `cad_explosion_move` records with targets and world-space translations. A live TSX tree or a separate exploded JSON file is not needed for playback.
 
 Use the same supported core version for both the TSX imports and the `Circuit` renderer. A CLI that bundles an older renderer can build the assembled geometry while omitting the explosion records; check the exported JSON for both record types.
