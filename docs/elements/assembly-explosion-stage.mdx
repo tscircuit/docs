@@ -60,10 +60,6 @@ This recording shows the 3D viewer playing a handheld console's explosion stages
   <a href="/videos/handheld-explosion-playback.mp4">Download the handheld console explosion video.</a>
 </video>
 
-The JSON contains `cad_explosion_stage` records with resolved order and explicit member IDs, plus `cad_explosion_move` records with targets and world-space translations. A live TSX tree or a separate exploded JSON file is not needed for playback.
-
-A CLI that bundles an older renderer can build the assembled geometry while omitting the explosion records; check the exported JSON for both record types.
-
 ## Export an explosion MP4
 
 The CLI can turn the authored stages into a video with a fixed camera, stage captions, and automatic movement guide lines. Install FFmpeg with the `libx264` encoder on `PATH`, then run:
