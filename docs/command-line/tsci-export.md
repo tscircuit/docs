@@ -141,7 +141,7 @@ tsci export assembly.circuit.tsx --format explosion-mp4 -o assembly.mp4
 
 Use an up-to-date CLI whose `tsci export --help` lists `explosion-mp4`. Install FFmpeg with the `libx264` encoder and make sure `ffmpeg` is on `PATH`.
 
-You can also use Circuit JSON containing the original `cad_explosion_stage` and `cad_explosion_move` records:
+You can also export a previously built assembly containing explosion stages:
 
 ```bash
 tsci export assembly.circuit.json -f explosion-mp4 -o assembly.mp4
