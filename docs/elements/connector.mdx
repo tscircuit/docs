@@ -143,14 +143,6 @@ footprint takes priority over `standard`-based selection.
   `}
 />
 
-This example is adapted from the core test for connector cable insertion center behavior: [connector-cable-insertion-center.test.tsx](https://github.com/tscircuit/core/blob/09243a083fae6aacad06b31b4439c58e722dffd0/tests/components/normal-components/connector-cable-insertion-center.test.tsx).
-
-## Cable insertion center
-
-When a connector footprint is rendered, tscircuit computes `pcb_component.cable_insertion_center` for the connector in circuit JSON. This gives a useful reference point for cable entry direction, annotation, or automation workflows.
-
-In the linked test, the computed cable insertion center is validated and then visualized as a small PCB note rectangle.
-
 ## Properties
 
 The TypeScript interface for `<connector />` is defined in [`@tscircuit/props`](https://github.com/tscircuit/props/blob/main/lib/components/connector.ts):
