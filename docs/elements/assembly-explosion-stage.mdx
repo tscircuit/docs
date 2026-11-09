@@ -1,6 +1,6 @@
 ---
 title: <assembly.explosion.stage />
-description: Author ordered assembly explosion stages and play them from Circuit JSON.
+description: Author ordered assembly explosion stages and play them in the 3D viewer.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
@@ -110,7 +110,7 @@ for (const frame of getAssemblyExplosionFrames(circuitJson)) {
 }
 ```
 
-`stageProgress` ranges from `0` to `1`, dividing the selected stage equally among its sequential moves. Earlier stages stay complete. Each evaluation starts from the original assembled positions, so backward scrubbing does not accumulate movement. Derived pose JSON omits the instructions to prevent applying them twice; keep the original document for further playback.
+`stageProgress` ranges from `0` to `1`, dividing the selected stage equally among its sequential moves. Earlier stages stay complete. Each evaluation starts from the original assembled positions, so backward scrubbing does not accumulate movement. Use the original assembled export as the input for each playback or export operation.
 
 `getAssemblyExplosionFrames` returns the assembled frame and every completed stage in order. Each exported GLB is a static pose, not an animation track.
 
@@ -133,11 +133,11 @@ Pass `explosion={{ throughStageRef: "case.remove-bolts", stageProgress: 0.5 }}` 
 
 Each selected image and its rotatable model use the same pose. The image service accepts `explosion_stage` and `explosion_progress` for 3D PNG, SVG, and GLB output. Omit both for the assembled pose. See the [image service API](https://github.com/tscircuit/svg.tscircuit.com#assembly-explosion-images).
 
-Movement guides are included automatically when exporting an exploded pose from the original Circuit JSON. There is no `showExplosionLines` prop to add to the TSX. Keep the original `cad_explosion_stage` and `cad_explosion_move` records when requesting images so the renderer can derive the guides as well as the displaced parts.
+Movement guides are included automatically when exporting an exploded pose. Use the original assembled export as input. No additional TSX props are needed to show the guides.
 
 ## Real RP2040 / NEMA17 assembly
 
-This example uses the routed [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller), a NEMA17, four spacers, bolts, and a cover. The cover and bolts first lift together, followed by separate bolt, motor, and spacer removal. The preview renders its original TSX-generated Circuit JSON. Step through each completed stage or the halfway bolt-removal pose; click the image to rotate it.
+This example uses the routed [RP2040 motor controller](https://tscircuit.com/imrishabh18/rp2040-motor-controller), a NEMA17, four spacers, bolts, and a cover. The cover and bolts first lift together, followed by separate bolt, motor, and spacer removal. Step through each completed stage or the halfway bolt-removal pose; click the image to rotate it.
 
 <CircuitPreview
   circuitJson={rp2040Preview}
@@ -166,4 +166,4 @@ The [complete TSX and reproduction instructions](https://github.com/tscircuit/3d
 
 Explosion moves translate mechanical CAD and reference surfaces. Targets containing PCB or cable geometry are rejected, and rotation instructions are not supported. Guide lines and videos show the requested motion; they do not verify assembly clearance.
 
-Core reports collisions introduced during explosion movement as `cad_explosion_collision_error` records. Existing overlap in the assembled pose is excluded. Unsupported, missing, or invalid geometry produces `cad_explosion_collision_check_warning` records, so review both errors and warnings when assessing clearance.
+tscircuit reports errors for collisions introduced during explosion movement. Existing overlap in the assembled pose is excluded. Unsupported, missing, or invalid geometry produces warnings, so review both errors and warnings when assessing clearance.
