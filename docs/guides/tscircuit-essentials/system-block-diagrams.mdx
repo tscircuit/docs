@@ -42,16 +42,10 @@ const circuit = new Circuit()
 circuit.add(<SystemOverview />)
 await circuit.renderUntilSettled()
 const json = circuit.getCircuitJson()
-const page = json.find((record) =>
-  record.type === "system_block_page" && record.name === "overview")
-if (!page || page.type !== "system_block_page") throw new Error("Missing overview")
 const svg = convertCircuitJsonToSystemSvg(json, {
-  systemBlockPageId: page.system_block_page_id,
   width: 1000,
 })
 ```
 
-Omit `systemBlockPageId` to render the first page. The Circuit JSON records already
-contain resolved geometry in diagram millimeters, centered on the page with +X
-right and +Y up. Group membership does not introduce relative coordinates.
-Connections store `is_signal` and `is_power` flags and `label_anchor_center`.
+This exports the first system block page. Pass the generated circuit output
+directly to the converter; no inspection or editing is needed.
