@@ -105,12 +105,6 @@ import { readFileSync } from "node:fs"
 
 const fileContent = readFileSync("SW_SP3T_PCM13.kicad_mod")
 const circuitJson = await parseKicadModToCircuitJson(fileContent)
-/* [
- *  {
- *    "type": "pcb_smtpad",
- *    "x": 0.345,
- *    ...
- */
 ```
 
 [Circuit JSON](https://github.com/tscircuit/circuit-json) can then be converted
