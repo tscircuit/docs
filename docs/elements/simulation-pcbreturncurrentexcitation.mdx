@@ -49,7 +49,7 @@ export const SignalReturn = () => (
 | `trace` | Optional trace selector to disambiguate routes. May be omitted when exactly one complete routed trace connects the signal ports. |
 | `returnSourceLayer` | Contact layer when the load-side ground port spans multiple copper layers. |
 | `returnSinkLayer` | Contact layer when the driver-side ground port spans multiple copper layers. |
-| `name` | Optional diagnostic name; not stored on the excitation's Circuit JSON record. |
+| `name` | Optional diagnostic name. |
 
 For positive signal current from `source` to `load`, ground return current flows
 from the load-side `returnSource` back to the driver-side `returnSink`.
