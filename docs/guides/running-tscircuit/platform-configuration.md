@@ -105,7 +105,7 @@ the parts engine's optional `fetchPartAvailability` method. The default JLCPCB
 engine looks up live stock at [jlcsearch.tscircuit.com](https://jlcsearch.tscircuit.com).
 
 If none of a component's checked alternatives for a supplier has known positive
-stock, Circuit JSON includes a `source_component_availability_warning`, for example:
+stock, tscircuit reports an availability warning, for example:
 
 ```text
 R1 may not have availability from JLCPCB (C1525).
