@@ -42,7 +42,7 @@ A part included directly and through a subassembly or stage moves only once per 
 
 ## Axes and sequential moves
 
-Offsets are directions in the owning assembly's resolved local frame, measured in millimetres. An unrotated assembly uses right-handed circuit coordinates: +X right, +Y top, +Z above the PCB. Mounting can rotate those local axes. Core resolves each direction into a world-space vector before writing Circuit JSON.
+Offsets are directions in the owning assembly's resolved local frame, measured in millimetres. An unrotated assembly uses right-handed circuit coordinates: +X right, +Y top, +Z above the PCB. Mounting can rotate those local axes.
 
 The axes supplied on one move act simultaneously. Two moves execute sequentially: an `offZ` move followed by an `offX` move makes a lift-then-slide path. During partial playback, each move receives an equal portion of its stage's progress.
 
