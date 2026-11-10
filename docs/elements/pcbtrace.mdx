@@ -1,23 +1,14 @@
 ---
 title: <pcbtrace />
-description: Define explicit PCB copper geometry with wire and via route points.
+description: Define explicit PCB copper geometry.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<pcbtrace />` element draws PCB copper from an explicit `route`. Use it for
-low-level copper geometry, such as traces inside a custom footprint.
-
-For electrical connections between component pins or nets, use [`<trace />`](./trace.mdx).
-To control the path of one of those connections, use [`<trace pcbPath={...} />`](./trace.mdx#manual-pcb-paths).
-
-## Basic Usage
-
-Every wire point needs `route_type: "wire"`, `x`, `y`, `width`, and `layer`.
-Set the width and layer on each point, including the last point. Bare `{ x, y }`
-objects are not complete `<pcbtrace />` route points.
+The `<pcbtrace />` element defines explicit PCB copper geometry. Use
+[`<trace />`](./trace.mdx) to connect component pins or nets.
 
 <CircuitPreview
   defaultView="pcb"
@@ -36,55 +27,14 @@ objects are not complete `<pcbtrace />` route points.
 )`}
 />
 
-The wire points are joined in route order. Numeric distances are in millimeters;
-unit strings such as `"0.3mm"` are also accepted. These examples disable autorouting
-because they demonstrate explicit copper geometry without electrical connections.
+## Properties
 
-## Wire Route Points
+The required `route` prop is an array of points joined in order. Each wire point
+requires these fields:
 
-| Field | Description | Example |
-| --- | --- | --- |
-| `route_type` | Identifies a wire point; required on every wire point. | `"wire"` |
-| `x`, `y` | Position of the point. | `x: -5, y: 0` |
-| `width` | Copper trace width. | `0.3` |
-| `layer` | Copper layer for the wire. | `"top"` |
-
-The required `route` prop is an array of route points. Use at least two wire
-points to draw a segment. A `layer` or `thickness` prop on `<pcbtrace />` does
-not replace the required fields on its wire points.
-
-## Changing Layers
-
-Insert a `route_type: "via"` point where the route changes layers. A via point
-uses `from_layer` and `to_layer` instead of a wire point's `layer` and `width`.
-The wires on either side meet the via at the same coordinates.
-
-<CircuitPreview
-  defaultView="pcb"
-  hideSchematicTab
-  hide3DTab
-  code={`export default () => (
-  <board width="20mm" height="10mm" routingDisabled>
-    <pcbtrace
-      route={[
-        { route_type: "wire", x: -5, y: -1, width: 0.3, layer: "top" },
-        { route_type: "wire", x: 0, y: -1, width: 0.3, layer: "top" },
-        {
-          route_type: "via",
-          x: 0,
-          y: -1,
-          from_layer: "top",
-          to_layer: "bottom",
-          outer_diameter: 0.8,
-          hole_diameter: 0.4,
-        },
-        { route_type: "wire", x: 0, y: -1, width: 0.3, layer: "bottom" },
-        { route_type: "wire", x: 5, y: 1, width: 0.3, layer: "bottom" },
-      ]}
-    />
-  </board>
-)`}
-/>
-
-The optional `outer_diameter` and `hole_diameter` fields set the via's copper
-diameter and drill diameter. To place a standalone via, use [`<via />`](./via.mdx).
+| Field | Description |
+| --- | --- |
+| `route_type` | `"wire"` for a wire point. |
+| `x`, `y` | Position in millimeters. |
+| `width` | Copper trace width in millimeters. |
+| `layer` | Copper layer, such as `"top"` or `"bottom"`. |
