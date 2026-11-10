@@ -48,8 +48,8 @@ signal arrive at different times.
 form the pair and how much their routed lengths may differ. It does not create
 electrical connections; add those with [`<trace />`](./trace.mdx).
 
-This element currently constrains length matching only. It does not configure
-differential impedance, trace width, pair spacing, or parallel routing.
+Use `pcbTraceGap` to request the edge-to-edge copper spacing between the two
+traces. The pad pitch can require a wider separation at the endpoints.
 
 ## Quick start with trace names
 
@@ -98,6 +98,37 @@ to avoid an ambiguous match. In
 [phased autorouting](./autoroutingphase.mdx), the `routingPhaseIndex` prop
 assigns a `<trace />` to a phase. Both traces in a pair must use the same value.
 
+## Route a pair through several pads
+
+Give each two-pad section a positive and negative trace name. The example
+routes a connector through an ESD device and test points to an IC. Each
+polarity keeps its electrical net across all three sections. Each phase routes
+one pair and sees the copper from the preceding phase.
+
+export const usbFourPadExample = `export default () => (
+  <board width={24} height={12} schematicDisabled routeRemaining={false}>
+    <pinheader name="J1" pinCount={2} pcbX={-8} pcbRotation={90} />
+    <chip name="D1" footprint="sot23" pcbX={-4} />
+    <testpoint name="TP1" footprintVariant="pad" pcbX={1} pcbY={1.5} />
+    <testpoint name="TP2" footprintVariant="pad" pcbX={1} pcbY={-1.5} />
+    <chip name="U1" footprint="soic8" pcbX={7} />
+    <autoroutingphase name="USB0" phaseIndex={0} autorouter="auto_local" />
+    <trace name="P0" path={["J1.pin1", "D1.pin1", "net.USB_P"]} routingPhaseIndex={0} />
+    <trace name="N0" path={["J1.pin2", "D1.pin2", "net.USB_N"]} routingPhaseIndex={0} />
+    <differentialpair name="PAIR0" positiveConnection="P0" negativeConnection="N0" pcbTraceGap={0.2} />
+    <autoroutingphase name="USB1" phaseIndex={1} autorouter="auto_local" />
+    <trace name="P1" path={["D1.pin1", "TP1.pin1", "net.USB_P"]} routingPhaseIndex={1} />
+    <trace name="N1" path={["D1.pin2", "TP2.pin1", "net.USB_N"]} routingPhaseIndex={1} />
+    <differentialpair name="PAIR1" positiveConnection="P1" negativeConnection="N1" pcbTraceGap={0.2} />
+    <autoroutingphase name="USB2" phaseIndex={2} autorouter="auto_local" />
+    <trace name="P2" path={["TP1.pin1", "U1.pin1", "net.USB_P"]} routingPhaseIndex={2} />
+    <trace name="N2" path={["TP2.pin1", "U1.pin2", "net.USB_N"]} routingPhaseIndex={2} />
+    <differentialpair name="PAIR2" positiveConnection="P2" negativeConnection="N2" pcbTraceGap={0.2} />
+  </board>
+)`
+
+<CircuitPreview defaultView="pcb" code={usbFourPadExample} />
+
 ## Properties
 
 | Property | Type | Description |
@@ -106,3 +137,4 @@ assigns a `<trace />` to a phase. Both traces in a pair must use the same value.
 | `positiveConnection` | `string` | Exact positive trace name or port selector. |
 | `negativeConnection` | `string` | Exact negative trace name or port selector. |
 | `maxLengthSkew` | `number` | Maximum absolute difference between the routed lengths, in millimeters. Accepts any non-negative distance and defaults to `0.1` mm. |
+| `pcbTraceGap` | `number \| string` | Requested copper edge-to-edge gap between the pair. A number is in millimeters. |
