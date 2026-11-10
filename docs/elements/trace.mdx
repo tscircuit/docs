@@ -95,6 +95,10 @@ You can customize the autorouting behavior by setting the `autorouter` property 
 
 Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port). Entries in `pcbPath` can mix coordinate objects with [port selectors](../guides/tscircuit-essentials/port-and-net-selectors.md) so you can anchor the path to specific component pins.
 
+For low-level copper geometry, such as traces inside a custom footprint, use
+[`<pcbtrace />`](./pcbtrace.mdx). Its route points explicitly include their type,
+layer, and width; bare `{ x, y }` points belong to the `pcbPath` API shown here.
+
 <CircuitPreview leftView='code' rightView='pcb' code={`
   export default () => (
     <board width="20mm" height="10mm">
