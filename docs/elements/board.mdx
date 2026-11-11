@@ -39,7 +39,8 @@ import CircuitPreview from '@site/src/components/CircuitPreview'
 | `autorouterEffortLevel` | `'1x' \| '2x' \| '5x' \| '10x' \| '100x'` | Increase autorouter compute effort for harder routing problems (higher values are slower and can improve completion rate). |
 | `autorouterVersion` | `'beta_pipeline1' \| 'beta_pipeline3' \| 'beta_pipeline4' \| 'beta_pipeline5' \| 'beta_pipeline7' \| 'beta_pipeline9' \| 'latest'` | Pin routing to a known autorouter implementation when comparing routing behavior across versions. Unknown values fall back to `latest` with a warning. |
 | `routingDisabled` | `boolean` | Skip routing to speed up development. |
-| `routeRemaining` | `boolean` | Set to `false` to skip implicit routing of remaining connections while keeping explicit routing phases and breakouts. Unrouted connections still produce DRC errors. `true` or omission keeps normal remaining routing; nested subcircuits inherit the setting. |
+| `routeRemaining` | `boolean` | Set to `true` to route all remaining connections, or `false` to skip the implicit remaining phase. When omitted, the default preflight permits up to 50 remaining connections and skips the entire implicit phase at 51 or more. Explicit routing phases and breakouts still run. Nested subcircuits inherit the setting. |
+| `preflightRoutingCheckPolicy` | `"basic" \| "conservative" \| "none"` | Both `"basic"` (the default) and `"conservative"` apply the 50-connection check to the implicit remaining phase. `"none"` disables the 50-connection check for the implicit remaining phase. |
 | `bomDisabled` | `boolean` | Skip bill-of-material generation for this board. |
 | `schematicDisabled` | `boolean` | Skip schematic generation for boards that only need the PCB view. |
 | `schAutoLayoutEnabled` | `boolean` | Enable automatic schematic layout for supported grouped circuits. |
