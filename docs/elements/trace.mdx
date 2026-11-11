@@ -35,6 +35,7 @@ Here's a simple example connecting two components:
 | -------- | ----------- | ------- |
 | `from` | Starting point of the trace using a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md) | `".R1 > .pin1"` |
 | `to` | Ending point of the trace using a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md) | `".C1 > .pin1"` |
+| `path` | Ports to connect, in order. The trace is routed as a chain from the first port to the last. | `[".J1 > .pin1", ".U1 > .pin1"]` |
 | `name` | Names the trace and renders as the schematic net label for direct port-to-port traces (optional) | `"SENSE"` |
 | `maxLength` | Maximum length the trace can be (optional) | `"10mm"` |
 | `minLength` | Minimum length the trace must be (optional) | `"5mm"` |
@@ -90,6 +91,16 @@ Traces are automatically routed by tscircuit's [autorouting system](./board.mdx#
 4. Try to minimize the number of vias used
 
 You can customize the autorouting behavior by setting the `autorouter` property on the parent [`<board />`](./board.mdx) or [`<subcircuit />`](./subcircuit.mdx).
+
+## Ordered Paths
+
+Use `path` to connect ports in the given order, as a chain:
+
+```tsx
+<trace path={[".J1 > .pin1", ".ESD > .pin1", ".U1 > .pin1"]} />
+```
+
+Entries like `net.GND` are also allowed and attach the trace to a net. `path` specifies which ports to connect and their order; the router still draws the copper. Use `pcbPath` to specify manual copper geometry.
 
 ## Manual PCB Paths
 
