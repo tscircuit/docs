@@ -1,0 +1,226 @@
+---
+title: 'Using M.2 Connectors for MicroMod Modules'
+description: 'Learn how to design SparkFun MicroMod processor and carrier boards using M.2 E-Key 67-pin connectors in tscircuit'
+icon: 'microchip'
+---
+
+## Overview
+
+The **SparkFun MicroMod** ecosystem uses a standardized **M.2 (NGFF) E-Key 67-pin connector** (0.5mm pitch) to let you swap microcontroller "Processor Boards" into different peripheral "Carrier Boards" without soldering.
+
+In this tutorial, we cover:
+1. How the MicroMod M.2 interface works mechanically and electrically.
+2. Standard pinout mappings across power, USB, UART, I2C, SPI, CAN, SDIO, and GPIO.
+3. How to define a reusable MicroMod M.2 67-pin connector component and footprint in `tscircuit`.
+4. How to wire a Carrier Board to a MicroMod Processor slot using `<chip />`, `<smtpad />`, `<platedhole />`, and `<trace />`.
+
+---
+
+## 1. The MicroMod M.2 Physical Interface
+
+Every MicroMod connection consists of three physical elements:
+- **Processor Board**: A 22mm × 22mm PCB with gold-plated M.2 edge fingers (beveled card edge) and an E-Key notch between pins 24 and 31.
+- **Carrier Board Connector**: A 67-pin SMD M.2 E-Key female socket (typically 4.2mm height, 0.5mm pin pitch) mounted on the Carrier Board.
+- **M2.5 Phillips Standoff & Screw**: Located 18mm from the connector origin to hold the Processor Board flat against the spring contacts.
+
+### Odd vs. Even Pin Numbering
+
+On the M.2 socket:
+- **Odd pins (1, 3, 5, ..., 75)** correspond to the **top row** of edge contacts on the Processor Board.
+- **Even pins (2, 4, 6, ..., 74)** correspond to the **bottom row** of edge contacts on the Processor Board.
+- **Pins 24–31** are omitted to form the physical **E-Key mechanical polarization notch**, preventing reversed insertion.
+
+---
+
+## 2. Standard MicroMod v1.0 Pinout Reference
+
+To ensure any MicroMod Processor (ESP32, RP2040, STM32, Teensy, nRF52840, etc.) works seamlessly in any Carrier Board, SparkFun standardizes the 67 pins into functional groups:
+
+| Bus / Group | M.2 Pin Numbers | Primary Signals | Description |
+|---|---|---|---|
+| **Power & Battery** | `2, 4` | `3.3V` | Main regulated 3.3V supply rail (up to 1A) |
+| **Input / USB Power** | `74` (`VIN`), `70` (`USB_VIN`) | `5V / VIN` | Carrier input supply & USB VBUS monitor |
+| **Backup Battery** | `6` | `BATT_VIN / RTC_3V` | Coin-cell or LiPo backup for RTC |
+| **Ground (GND)** | `1, 7, 23, 33, 39, 59, 69, 75` | `GND` | Distributed return and signal shield grounds |
+| **Control & Boot** | `5` (`RESET#`), `73` (`BOOT`), `3` (`3.3V_EN`) | System Control | Active-low reset, bootloader entry, and regulator enable |
+| **USB (Device/Host)** | `17` (`USB_D-`), `19` (`USB_D+`), `21` (`USBH_D-`), `23` | Differential 90Ω | Native USB enumeration and programming |
+| **UART (Serial)** | `18` (`TX1`), `20` (`RX1`), `22` (`RTS1`), `32` (`CTS1`) | Primary Hardware UART | Hardware flow-controlled serial interface |
+| **Secondary UART** | `34` (`TX2`), `36` (`RX2`) | UART2 | Secondary peripheral serial port |
+| **I2C (Primary & Int)** | `12` (`SDA`), `14` (`SCL`), `16` (`I2C_INT#`) | Qwiic / I2C Bus | Primary I2C bus (typically pulled up to 3.3V via 2.2kΩ–4.7kΩ) |
+| **I2C1 (Split)** | `50` (`SDA1`), `52` (`SCL1`) | Secondary I2C | Dedicated secondary I2C bus |
+| **Primary SPI** | `55` (`CS`), `57` (`SCK`), `59` (`GND`), `61` (`COPI`), `63` (`CIPO`) | High-Speed SPI | Flash/display/sensor SPI bus |
+| **SDIO / SPI1** | `60, 62, 64, 66, 68, 72` | `SDIO_SCK/CMD/DATA0-3` | 4-bit SD card interface or secondary SPI |
+| **Audio / I2S / PDM** | `41, 43, 45, 47, 49` | `AUD_MCLK/OUT/IN/LRCLK/BCLK` | Digital audio I2S and PDM microphone bus |
+| **Analog (ADC)** | `38` (`A0`), `35` (`A1`), `4` (`BATT_MEAS/3`) | Analog Inputs | 0–3.3V ADC inputs |
+| **PWM** | `42` (`PWM0`), `44` (`PWM1`) | Dedicated PWM | Timer-backed PWM channels |
+| **Digital GPIO** | `40` (`D0`), `42` (`D1`), `10, 18, 20, 32, 34, 36, 38` | `G0` – `G11` | General-purpose digital I/O |
+
+---
+
+## 3. Creating a MicroMod M.2 Carrier Connector in `tscircuit`
+
+When designing a **Carrier Board** in `tscircuit`, you can wrap the M.2 E-Key socket footprint and pin labels into a reusable component:
+
+```tsx title="MicroModConnector.tsx"
+const MICROMOD_PIN_LABELS = {
+  pin1: ["GND1"],
+  pin2: ["V3_3_1"],
+  pin3: ["EN_3V3"],
+  pin4: ["V3_3_2"],
+  pin5: ["RESET_N"],
+  pin6: ["RTC_3V"],
+  pin12: ["I2C_SDA"],
+  pin14: ["I2C_SCL"],
+  pin16: ["I2C_INT_N"],
+  pin17: ["USB_DM"],
+  pin18: ["UART_TX1"],
+  pin19: ["USB_DP"],
+  pin20: ["UART_RX1"],
+  pin38: ["ADC0"],
+  pin40: ["D0"],
+  pin42: ["PWM0"],
+  pin55: ["SPI_CS"],
+  pin57: ["SPI_SCK"],
+  pin61: ["SPI_COPI"],
+  pin63: ["SPI_CIPO"],
+  pin73: ["BOOT"],
+  pin75: ["GND2"],
+} as const
+
+export const MicroModM2Connector = ({
+  name,
+  pcbX = 0,
+  pcbY = 0,
+}: {
+  name: string
+  pcbX?: number
+  pcbY?: number
+}) => (
+  <chip
+    name={name}
+    pcbX={pcbX}
+    pcbY={pcbY}
+    pinLabels={MICROMOD_PIN_LABELS}
+    footprint={
+      <footprint>
+        {/* 67-pin 0.5mm pitch SMD row + mechanical mounting bosses */}
+        {Array.from({ length: 38 }).map((_, idx) => {
+          const pinNum = idx * 2 + 1
+          // Skip E-Key notch (pins 24..31)
+          if (pinNum >= 25 && pinNum <= 31) return null
+          const xOffset = (idx - 18.5) * 0.5
+          return (
+            <smtpad
+              key={`odd-${pinNum}`}
+              portHints={[`pin${pinNum}`]}
+              shape="rect"
+              pcbX={`${xOffset}mm`}
+              pcbY="0mm"
+              width="0.28mm"
+              height="1.15mm"
+            />
+          )
+        })}
+        {/* M2.5 Standoff Mounting Hole 18mm from connector edge */}
+        <platedhole
+          portHints={["MOUNT_GND"]}
+          pcbX="0mm"
+          pcbY="18mm"
+          holeDiameter="2.7mm"
+          outerDiameter="5.0mm"
+        />
+      </footprint>
+    }
+  />
+)
+```
+
+---
+
+## 4. Wiring a Complete MicroMod Carrier Board Circuit
+
+Below is an example Carrier Board that wires a **MicroMod M.2 Socket (`U1`)** to:
+- Bypass decoupling capacitors (`C1`, `C2`) on the `3.3V` rail,
+- Pull-up resistors (`R1`, `R2`) on the primary **I2C (`SDA`/`SCL`)** bus,
+- A status LED (`D1` + `R3`) driven by `D0`.
+
+```tsx title="micromod-carrier-board.tsx"
+import { MicroModM2Connector } from "./MicroModConnector"
+
+export const MicroModCarrierBoard = () => (
+  <board width="45mm" height="45mm" centerX={0} centerY={8}>
+    <MicroModM2Connector name="U1" pcbX={0} pcbY={0} />
+
+    {/* 3.3V Rail Decoupling */}
+    <capacitor
+      name="C1"
+      capacitance="10uF"
+      footprint="0603"
+      pcbX={-12}
+      pcbY={2}
+    />
+    <capacitor
+      name="C2"
+      capacitance="100nF"
+      footprint="0402"
+      pcbX={-12}
+      pcbY={5}
+    />
+
+    {/* I2C Pull-Up Resistors (4.7k to 3.3V) */}
+    <resistor
+      name="R1"
+      resistance="4.7k"
+      footprint="0402"
+      pcbX={12}
+      pcbY={2}
+    />
+    <resistor
+      name="R2"
+      resistance="4.7k"
+      footprint="0402"
+      pcbX={12}
+      pcbY={5}
+    />
+
+    {/* Status LED on D0 */}
+    <resistor
+      name="R3"
+      resistance="1k"
+      footprint="0603"
+      pcbX={14}
+      pcbY={12}
+    />
+    <led name="D1" footprint="0603" pcbX={14} pcbY={16} />
+
+    {/* Power & Decoupling Traces */}
+    <trace from=".U1 > .V3_3_1" to=".C1 > .pos" />
+    <trace from=".C1 > .pos" to=".C2 > .pos" />
+    <trace from=".U1 > .GND1" to=".C1 > .neg" />
+    <trace from=".C1 > .neg" to=".C2 > .neg" />
+
+    {/* I2C Pull-ups */}
+    <trace from=".U1 > .I2C_SDA" to=".R1 > .pin1" />
+    <trace from=".U1 > .I2C_SCL" to=".R2 > .pin1" />
+    <trace from=".R1 > .pin2" to=".U1 > .V3_3_1" />
+    <trace from=".R2 > .pin2" to=".U1 > .V3_3_1" />
+
+    {/* Status LED Wiring */}
+    <trace from=".U1 > .D0" to=".R3 > .pin1" />
+    <trace from=".R3 > .pin2" to=".D1 > .pos" />
+    <trace from=".D1 > .neg" to=".U1 > .GND2" />
+  </board>
+)
+```
+
+---
+
+## 5. Layout & Design Best Practices
+
+1. **Keep-Out Zone Under the Processor Board**: The 22mm × 22mm area between the M.2 socket and the M2.5 standoff sits directly beneath the Processor Board. Avoid placing tall components (>1.5mm height) in this region on the Carrier Board.
+2. **USB Differential Pair Routing**: Route `USB_DP` (Pin 19) and `USB_DM` (Pin 17) as a 90Ω differential pair with minimal stub length and matched trace lengths.
+3. **3.3V Enable (`3.3V_EN`, Pin 3)**: Tie `3.3V_EN` to your Carrier Board's 3.3V regulator `EN` pin with a 100kΩ pull-up to `VIN` so the processor or an external switch can power-cycle the 3.3V rail cleanly.
+4. **References & Datasheets**:
+   - [SparkFun MicroMod Interface v1.0 — Pin Descriptions (PDF)](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pin_Descriptions.pdf)
+   - [SparkFun MicroMod Interface v1.0 — Pinout Table (PDF)](https://cdn.sparkfun.com/assets/learn_tutorials/1/2/0/6/SparkFun_MicroMod_Interface_v1.0_-_Pinout.pdf)
+   - [MicroMod General Pinout Graphical Datasheet (PDF)](https://cdn.sparkfun.com/assets/learn_tutorials/1/1/8/9/MicroMod_General_Pinout_v10_Graphical_Datasheet.pdf)
