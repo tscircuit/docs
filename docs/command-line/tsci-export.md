@@ -43,6 +43,7 @@ The following export formats are supported:
 |--------|-------------|
 | `json` | Circuit JSON format (alias for `circuit-json`) |
 | `circuit-json`| Circuit JSON format |
+| `srj` | Simple Route JSON for inspecting or sharing PCB routing input |
 | `schematic-svg` | Schematic view as SVG |
 | `pcb-svg` | PCB layout as SVG |
 | `pcb-png` | PCB layout as PNG |
@@ -100,6 +101,60 @@ Export selected nets across all copper layers (PCB SVG or PNG only):
 ```bash
 tsci export board.tsx -f pcb-png --x-ray-net GND --x-ray-net VCC --hidden-layer-opacity 0.2 -o power.png
 ```
+
+## Exporting Simple Route JSON
+
+Use `srj` to inspect a PCB routing problem or provide input to an external
+autorouter. Simple Route JSON contains board bounds, layers, obstacles, and
+connections. It can also include fixed copper routes from child subcircuits.
+
+```bash
+tsci export circuit.tsx -f srj -o routing-input.simple-route.json
+```
+
+You can also convert an existing Circuit JSON file:
+
+```bash
+tsci export circuit.circuit.json -f srj -o routing-input.simple-route.json
+```
+
+### Trace widths
+
+Exported widths are in millimeters. The [board trace-width settings](../elements/board.mdx#controlling-trace-width)
+have different purposes:
+
+| Setting | Meaning |
+|---------|---------|
+| `minTraceWidth` | Minimum width requested by the board's routing rules |
+| `defaultTraceWidth` / `nominalTraceWidth` | Preferred board width when a connection has no more specific width |
+| `connections[].nominalTraceWidth` | Preferred width for an individual SRJ connection |
+
+For example, a board with `minTraceWidth="0.1mm"` and
+`defaultTraceWidth="0.35mm"` should give an otherwise unspecified connection a
+nominal width of `0.35`, while keeping the SRJ minimum at `0.1`. An explicit
+`thickness="0.55mm"` on a trace should take precedence over the board default.
+Check both `nominalTraceWidth` and `width` on the exported connections.
+
+### Current export limitations
+
+TSX SRJ export currently uses the full circuit build path. A cold export can run
+autorouting before writing the file, and a cached build can supply already-routed
+data. Completed routing can leave fewer connections in the SRJ than the original
+routing problem.
+
+Regenerating SRJ from Circuit JSON can also lose the board's preferred trace
+width and fill unspecified connection widths from `minTraceWidth`. The intended
+width distinction above is therefore something to verify in the exported file.
+
+Exporting an existing `.circuit.json` file skips TSX evaluation, but uses the
+route state and width metadata already stored in that file. It cannot recover a
+board default that was not serialized.
+
+When reporting an SRJ export problem in [tscircuit/cli](https://github.com/tscircuit/cli/issues),
+include the CLI and core versions, the export command, whether a full build was
+already cached, and the expected connection count and widths. A small circuit
+with different minimum, default, and explicit trace widths helps isolate width
+loss from routing behavior.
 
 ## Exporting 3D models
 
