@@ -17,6 +17,7 @@ larger circuits. You can also re-use reference designators. Your subcircuit is
 essentially isolated from other subcircuits.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import { exposedNetFiles } from "@site/src/data/cc2340r5-interface/examples"
 
 <CircuitPreview
   defaultView="schematic"
@@ -34,6 +35,26 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   )
   `}
 />
+
+## Exposed ports on a standalone schematic
+
+Export a root `<subcircuit />` with `exposedNets` to draw its public terminals
+on a boundary, wired to the internal circuit. This example adapts the real
+[CC2340R5 reference design](https://tscircuit.com/ShiboSoftwareDev/cc2340r5-reference-design)
+with 13 exports for power, ground, reset, SWD, and GPIOs.
+
+<CircuitPreview
+  fsMap={exposedNetFiles}
+  mainComponentPath="index.tsx"
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+/>
+
+`schPinArrangement` controls terminal sides and ordering; core places and routes
+them automatically. Render the subcircuit directly, without a `<board />` wrapper.
+You can also export individual pins using [direct `<port />` children](./port.mdx#expanded-subcircuit-ports).
 
 ## Reuse Reference Designators
 

@@ -13,9 +13,10 @@ its parent:
 
 - Inside `<symbol />`, it defines the position and direction of a custom
   schematic pin.
-- As a direct child of `<group />`, it defines a public port for a module. When
+- As a direct child of `<group />` or `<subcircuit />`, it defines a public port for a module. When
   the group uses `showAsSchematicBox`, the port appears as a pin on the module's
-  collapsed schematic symbol.
+  collapsed schematic symbol. A standalone expanded subcircuit instead places
+  these ports on a boundary around the visible internal circuit.
 
 ## Custom symbol pins
 
@@ -85,15 +86,22 @@ export default () => (
 `R1.pin1` and `R1.pin2`, respectively. Outside the group, the trace connects
 `net.VCC` to `FILTER.VIN`, while the load connects to `FILTER.VOUT`.
 
+## Expanded subcircuit ports
+
+Direct `<port name="…" connectsTo="…" />` children of a root `<subcircuit />`
+appear on its boundary, wired to the selected internal pins. See the
+[standalone schematic example](./subcircuit.mdx#exposed-ports-on-a-standalone-schematic),
+which exports named nets using the equivalent `exposedNets` API.
+
 ## Props
 
 | Prop | Type | Description |
 | --- | --- | --- |
 | `name` | `string` | Port name used in selectors. Either `name` or `pinNumber` is required. |
 | `pinNumber` | `number` | Numeric pin identifier. When `name` is omitted, the port name defaults to `pin` followed by the number, such as `pin1`. |
-| `connectsTo` | `string \| string[]` | For a direct group child, the internal port selector or selectors represented by this module port. For example, `"D1.anode"` or `["D1.anode", "D2.anode"]`. |
-| `direction` | `"left" \| "right" \| "up" \| "down"` | Schematic-facing direction. In a schematic-box group, it determines the default side unless `schPinArrangement` overrides it. This prop affects presentation, not connectivity. |
-| `schX`, `schY` | `number` | Schematic coordinates within a custom symbol. They are not required for direct group-child ports. |
+| `connectsTo` | `string \| string[]` | For a direct group or subcircuit child, the internal port selector or selectors represented by this module port. For example, `"D1.anode"` or `["D1.anode", "D2.anode"]`. |
+| `direction` | `"left" \| "right" \| "up" \| "down"` | Schematic-facing direction. In a schematic-box group or standalone subcircuit, it determines the default side unless `schPinArrangement` overrides it. This prop affects presentation, not connectivity. |
+| `schX`, `schY` | `number` | Schematic coordinates within a custom symbol. They are not required for direct group or subcircuit ports. |
 | `aliases` | `string[]` | Alternative names by which the port can be selected. |
 | `schStemLength` | `number` | Length of the stem line extending from a custom-symbol port. |
 
