@@ -71,6 +71,12 @@ For example, `src/blink.circuit.tsx` becomes `dist/src/blink/circuit.json`.
 
 ##### Diagnostics
 - `--profile` – log per-circuit `circuit.json` generation time during build.
+- `--autorouter-debug` – log each autorouting phase and write debug artifacts (see [Debugging autorouting and solvers](#debugging-autorouting-and-solvers)).
+- `--autorouter-phase <name>` – enable autorouter debugging through the named `<autoroutingphase name="..." />`; later phases are left out of the artifacts.
+- `--autorouter-debug-dir <path>` – directory for autorouting debug artifacts (default: `dist/autorouter-debug`).
+- `--autorouter-dump-srj [mode]` – dump Simple Route JSON inputs and outputs: `all`, `failed`, or `phase:<index>` (default: `failed`).
+- `--solver-debug` – write the constructor inputs for every solver the circuit runs during the build.
+- `--solver-debug-dir <path>` – directory for solver input artifacts (default: `dist/solver-debug`).
 
 ##### Library & Site Generation
 - `--transpile` – transpile the entry file to JavaScript for use as a library.
@@ -133,6 +139,23 @@ dist/
 ├── index.cjs                 # With --transpile
 └── index.d.ts                # With --transpile
 ```
+
+## Debugging autorouting and solvers
+
+```bash
+tsci build index.circuit.tsx --autorouter-debug --autorouter-dump-srj all --solver-debug
+```
+
+`--autorouter-debug` writes these files to `dist/autorouter-debug`:
+
+- `placement-unrouted.png` – PCB placement before routing starts.
+- `phase-N-routed.png` – cumulative routing after each zero-indexed phase.
+- `phase-N.input.simple-route.json` and `phase-N.output.traces.json` – written with `--autorouter-dump-srj`.
+- `board.meta.json` – per-phase timing, connection counts, the resolved router, and cache status.
+
+To send a phase input to the tscircuit team, see [Report an Autorouter Bug](../contributing/report-autorouter-bugs.md).
+
+`--solver-debug` writes a `solver-inputs.json` for each circuit under `dist/solver-debug`. It lists every solver in the order it ran with its full constructor arguments, so a solver run can be reproduced on its own.
 
 ## Transpiling circuit entrypoints
 

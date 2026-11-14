@@ -13,6 +13,7 @@ tscircuit ecosystem.
 - `--lcsc` – alias for `--jlcpcb`
 - `--digikey` – search DigiKey components
 - `--mouser` – search Mouser components
+- `--ti` – search Texas Instruments components
 - `--tscircuit` – search tscircuit registry packages
 - `--json` – output search results as JSON
 
@@ -37,6 +38,9 @@ $ tsci search --mouser "10k 0603 resistor"
 # Compare DigiKey and Mouser in one result set
 $ tsci search --digikey --mouser "STM32F4 microcontroller"
 
+# Texas Instruments catalog
+$ tsci search --ti TPS62160
+
 # Footprints or reusable tscircuit packages
 $ tsci search --kicad "QFP-32"
 $ tsci search --tscircuit "ESP32"
@@ -47,13 +51,16 @@ orderable part number, description, and cached stock quantity. DigiKey results
 are served through
 [digikeysearch.tscircuit.com](https://digikeysearch.tscircuit.com), while
 Mouser results are served through
-[mousersearch.tscircuit.com](https://mousersearch.tscircuit.com).
+[mousersearch.tscircuit.com](https://mousersearch.tscircuit.com). `--ti` results
+come from the TI catalog indexed by
+[tisearch.tscircuit.com](https://tisearch.tscircuit.com) and use
+`source: "ti"` in JSON output.
 
 :::note
 
 Stock and price values are cached snapshots and may differ from the supplier's
-checkout page. `--digikey` and `--mouser` are discovery options; `tsci import`
-does not currently import components directly from those distributors.
+checkout page. `--digikey`, `--mouser`, and `--ti` are discovery options; `tsci import`
+does not currently import components directly from those sources.
 
 :::
 
