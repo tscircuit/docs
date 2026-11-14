@@ -32,6 +32,10 @@ The first stage below lifts the cover and every part targeted by `remove-bolts`.
 
 Targeting another stage selects its members; it does not execute that stage's instructions or change playback order. A stage can be referenced before its declaration, as `remove-bolts` is here.
 
+## Draw a stage on paper
+
+Reference this same stage from [`assembly.drawing.explosionview`](./assembly-drawing-explosionview.mdx) to produce an annotated drawing sheet. The view inherits the ordered moves through that stage, with optional separation scaling and movement guides. See the fidget-counter example there; no moves need to be duplicated in drawing props.
+
 ## Stage properties
 
 | Property | Description |

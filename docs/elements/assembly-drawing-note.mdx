@@ -1,0 +1,26 @@
+---
+title: <assembly.drawing.note />
+description: Add page-relative or view-relative text to a drawing sheet.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { assemblyDrawingCode, assemblyDrawingPages } from "@site/src/data/drawing-previews/assembly-code"
+
+`assembly.drawing.note` adds plain text inside a drawing page or view. Unlike a [part label](./assembly-drawing-partlabel.mdx), it has no geometry anchor or leader.
+
+<CircuitPreview code={assemblyDrawingCode} drawingPages={assemblyDrawingPages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `text` | Required nonblank text. |
+| `name` | Optional annotation identity. |
+| `fontSize` | Positive paper-space text size, in mm or a distance string. Default `2.7mm`. |
+| `paperX`, `paperY` | Position relative to the page's `anchorAlignment`. |
+| `xOffsetFromViewCenter`, `yOffsetFromViewCenter` | Position relative to the enclosing or referenced view's center. |
+| `viewRef` | View selector for a page-level note that uses view offsets, such as `".exploded"`. Omit inside a view to use that parent. |
+
+Specify exactly one position per axis. For example, `paperX={15}` with `yOffsetFromViewCenter={-48}` puts the text at page X=15 mm and 48 mm below the view center. Positive X points right and positive Y points up, regardless of the page anchor.
+
+A page-level note using only `paperX` and `paperY` needs no `viewRef`. Referenced views must resolve uniquely on the same page. Notes do not affect model fitting or move with exploded parts.
