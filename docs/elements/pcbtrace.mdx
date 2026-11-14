@@ -1,0 +1,40 @@
+---
+title: <pcbtrace />
+description: Define explicit PCB copper geometry.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<pcbtrace />` element defines explicit PCB copper geometry. Use
+[`<trace />`](./trace.mdx) to connect component pins or nets.
+
+<CircuitPreview
+  defaultView="pcb"
+  hideSchematicTab
+  hide3DTab
+  code={`export default () => (
+  <board width="20mm" height="10mm" routingDisabled>
+    <pcbtrace
+      route={[
+        { route_type: "wire", x: -5, y: 0, width: 0.3, layer: "top" },
+        { route_type: "wire", x: 0, y: 2, width: 0.3, layer: "top" },
+        { route_type: "wire", x: 5, y: 0, width: 0.3, layer: "top" },
+      ]}
+    />
+  </board>
+)`}
+/>
+
+## Properties
+
+The required `route` prop is an array of points joined in order. Each wire point
+requires these fields:
+
+| Field | Description |
+| --- | --- |
+| `route_type` | `"wire"` for a wire point. |
+| `x`, `y` | Position in millimeters. |
+| `width` | Copper trace width in millimeters. |
+| `layer` | Copper layer, such as `"top"` or `"bottom"`. |
