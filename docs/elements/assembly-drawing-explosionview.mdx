@@ -8,6 +8,8 @@ import { fidgetFsMap } from "@site/src/data/drawing-previews/fidget-counter/exam
 
 `assembly.drawing.explosionview` places an exploded view inside an [`assembly.drawing.page`](./assembly-drawing-page.mdx). Its `stageRef` selects an [`assembly.explosion.stage`](./assembly-explosion-stage.mdx) and inherits the stage's [`assembly.explosion.move`](./assembly-explosion-move.mdx) instructions. Author movement once in those stages; the drawing has no `moves` prop.
 
+Available in `tscircuit@0.0.3187` and later.
+
 ## Fidget-counter spinner
 
 This example uses the circular-cap models from [rushabhcodes/fidget-counter 1.0.31](https://tscircuit.com/rushabhcodes/fidget-counter#3d), plus its published board outline, mounting holes, and fitted component models. The JSON file contains drawing geometry, not a routable electrical design.
@@ -16,7 +18,7 @@ The first stage lifts the cap, bearing, and encoder magnet together. The second 
 
 <CircuitPreview fsMap={fidgetFsMap} mainComponentPath="index.circuit.tsx" drawingPages={[{ name: "fidget-explosion", url: "/img/elements/assembly-drawing-fidget-explosion.svg" }]} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab verticalStack />
 
-The PCB stays assembled. These offsets spread the parts out for the drawing; they are not manufacturing clearances or a validated assembly procedure. See the original project's assembly instructions for the physical build.
+The PCB stays assembled. The source model's press-fit bearing produces a non-fatal collision diagnostic when lifted through the base; `tsci build --ignore-errors` still exports this drawing example. See the original project's assembly instructions for the physical build.
 
 ## Properties
 

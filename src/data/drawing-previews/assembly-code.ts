@@ -7,7 +7,8 @@ export default () => <assembly.device name="case">
     <assembly.explosion.move targetRefs="cover, bolt" offZ={12} />
   </assembly.explosion.stage>
   <assembly.explosion.stage name="remove-bolt" prevStageRef="lift-cover">
-    <assembly.explosion.move targetRefs="bolt" offX={6} offZ={8} />
+    <assembly.explosion.move targetRefs="bolt" offZ={8} />
+    <assembly.explosion.move targetRefs="bolt" offX={6} />
   </assembly.explosion.stage>
   <assembly.drawing.stage name="hardware" partRefs={[".cover", ".bolt"]} />
   <assembly.drawing.stage name="complete" boardRefs={[".carrier"]} includeStageRefs={[".hardware"]} />
