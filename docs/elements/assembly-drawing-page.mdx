@@ -1,6 +1,6 @@
 ---
 title: <assembly.drawing.page />
-description: Configure a named drawing sheet with part views and a title block.
+description: Configure drawing sheets, page anchors, views, and annotations.
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
@@ -26,11 +26,18 @@ The exported sheet shows the carrier's outline and four mounting holes:
 | `size` | Standard paper size: `iso_a0` through `iso_a4`, or `ansi_a` through `ansi_e`. |
 | `orientation` | `landscape` (default) or `portrait`, when using `size`. |
 | `width`, `height` | Both required for a custom sheet. Numbers are millimetres; unit strings such as `"210mm"` also work. Use these instead of `size` and `orientation`. |
-| `children` | One or more [`assembly.drawing.partview`](./assembly-drawing-partview.mdx) elements and optionally one [`assembly.drawing.titleblock`](./assembly-drawing-titleblock.mdx). |
+| `anchorAlignment` | Coordinate anchor: `center` (default), `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, or `bottom_right`. |
+| `children` | One or more [`assembly.drawing.partview`](./assembly-drawing-partview.mdx) or [`assembly.drawing.explosionview`](./assembly-drawing-explosionview.mdx) elements, [`notes`](./assembly-drawing-note.mdx), and optionally one [`assembly.drawing.titleblock`](./assembly-drawing-titleblock.mdx). |
 
-Choose either a standard `size` or custom `width` and `height`. Page dimensions describe paper, not the physical assembly. A page needs at least one part view to export.
+Choose either a standard `size` or custom `width` and `height`. Page dimensions describe paper, not the physical assembly. A page needs at least one part or explosion view to export.
 
-To annotate measurements, put [`assembly.drawing.dimension`](./assembly-drawing-dimension.mdx) elements inside a part view. Dimensions can measure view extents, named CAD outlines, hole spacing, and edge-to-hole offsets.
+To annotate measurements, put [`assembly.drawing.dimension`](./assembly-drawing-dimension.mdx) elements inside either kind of view. Dimensions can measure view extents, named CAD outlines, hole spacing, and edge-to-hole offsets.
+
+## Page coordinates
+
+`anchorAlignment` chooses where `(0, 0)` lies on the sheet. View centers and annotation `paperX`/`paperY` values are relative to that anchor. Axes always remain positive X right and positive Y up. For `bottom_left`, positions inside the sheet are positive; for `top_left`, positions below the top edge use negative Y.
+
+Annotations can instead use `xOffsetFromViewCenter` and `yOffsetFromViewCenter` to follow a view. Each axis chooses either a page-relative coordinate or a view-relative offset. See the [fidget explosion example](./assembly-drawing-explosionview.mdx) for a bottom-left anchored sheet with both kinds of positioning.
 
 ## Export the page
 

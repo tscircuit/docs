@@ -17,17 +17,18 @@ import carrierPreview from "@site/src/data/drawing-previews/carrier.json"
 
 | Property | Description |
 |----------|-------------|
-| `partRef` | Required selector for exactly one board, assembly group, or part, such as `".carrier"`. Selection is scoped to the containing assembly. |
+| `partRef` | Selector for exactly one board, assembly group, or part, such as `".carrier"`. Selection is scoped to the containing assembly. |
+| `stageRef` | Selector for one reusable [`assembly.drawing.stage`](./assembly-drawing-stage.mdx), such as `".rotor"`. Provide exactly one of `partRef` or `stageRef`. |
 | `name` | View name used by sibling placement selectors. |
 | `displayName` | Optional caption; otherwise the view's name is used. |
 | `direction` | Required: `"x+"`, `"x-"`, `"y+"`, `"y-"`, `"z+"`, `"z-"`, or `"isometric"`. Axis directions describe where the camera is, looking toward the part. |
 | `width`, `height` | Required viewport dimensions on paper, in millimetres or unit strings. The exporter fits the selected geometry into the viewport. |
-| `centerX`, `centerY` | Viewport center relative to the sheet center. Default: `0` on each axis. Positive X is right; positive Y is up. |
+| `centerX`, `centerY` | Viewport center relative to the page's `anchorAlignment`. Default: `0` on each axis. Positive X is right; positive Y is up. |
 | `leftOfRef`, `rightOfRef` | Place beside a sibling view using a selector such as `".plan"`. This infers `centerX`. |
 | `aboveRef`, `belowRef` | Place above or below a sibling view. This infers `centerY`. |
 | `showHiddenEdges` | Draw hidden edges as dashed lines. Default: `false`. |
 | `section` | Optional cut plane; see below. |
-| `children` | Optional [`assembly.drawing.dimension`](./assembly-drawing-dimension.mdx) elements for view extents, named outlines, and hole-to-hole or edge-to-hole measurements. |
+| `children` | Optional [`dimension`](./assembly-drawing-dimension.mdx), [`partlabel`](./assembly-drawing-partlabel.mdx), and [`note`](./assembly-drawing-note.mdx) annotations. |
 
 Paper coordinates do not move the model. Model directions and section planes use CAD world coordinates: millimetres, +Z up.
 
@@ -63,3 +64,7 @@ Views produce outline SVGs through [`tsci export`](/command-line/tsci-export#exp
 ## Dimensions
 
 Add [`assembly.drawing.dimension`](./assembly-drawing-dimension.mdx) children to annotate physical measurements. For example, `widthOfView` measures the selected geometry's width, while paired `fromRef` and `toRef` selectors measure hole spacing or an edge-to-hole offset. Anchors are optional and inferred from the referenced geometry.
+
+## Assembled subassemblies
+
+Use `stageRef=".rotor"` to draw a reusable selection of assembled parts. See [`assembly.drawing.stage`](./assembly-drawing-stage.mdx) for composing parts, boards, and nested stages. To show a separated pose inherited from assembly moves, use [`assembly.drawing.explosionview`](./assembly-drawing-explosionview.mdx). Both view types can be targets of sibling placement references on the same page.

@@ -70,3 +70,7 @@ In a section view, extent dimensions measure retained geometry. Referenced ancho
 Labels, units, precision, offsets, and line placement are automatic; there are no props to override them. Dedicated diameter/radius, angular, tolerance, and GD&T annotations are not currently supported.
 
 Export the enclosing sheet with [`tsci export --drawing`](/command-line/tsci-export#exporting-drawing-sheets), just like any other [drawing page](./assembly-drawing-page.mdx).
+
+## Exploded views
+
+Dimensions can also be children of [`assembly.drawing.explosionview`](./assembly-drawing-explosionview.mdx). They measure the geometry after inherited stage movements and the view's `factor` are applied. Extent dimensions therefore include the displayed separation, while named features follow their moved parts. Section dimensions measure the retained posed geometry. Drawing-stage selections work in assembled part views too.

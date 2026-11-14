@@ -1,0 +1,40 @@
+---
+title: <assembly.drawing.explosionview />
+description: Draw a named assembly explosion stage with labels and subassembly views.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { fidgetFsMap } from "@site/src/data/drawing-previews/fidget-counter/example"
+
+`assembly.drawing.explosionview` places an exploded view inside an [`assembly.drawing.page`](./assembly-drawing-page.mdx). Its `stageRef` selects an [`assembly.explosion.stage`](./assembly-explosion-stage.mdx) and inherits the stage's [`assembly.explosion.move`](./assembly-explosion-move.mdx) instructions. Author movement once in those stages; the drawing has no `moves` prop.
+
+## Fidget-counter spinner
+
+This example uses the circular-cap models from [rushabhcodes/fidget-counter 1.0.31](https://tscircuit.com/rushabhcodes/fidget-counter#3d), plus its published board outline, mounting holes, and fitted component models. The JSON file contains drawing geometry, not a routable electrical design.
+
+The first stage lifts the cap, bearing, and encoder magnet together. The second separates the cap and magnet further. The drawing shows that cumulative pose, an assembled view with `factor={0}`, and a reusable rotor subassembly selected with `partview`.
+
+<CircuitPreview fsMap={fidgetFsMap} mainComponentPath="index.circuit.tsx" drawingPages={[{ name: "fidget-explosion", url: "/img/elements/assembly-drawing-fidget-explosion.svg" }]} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab verticalStack />
+
+The PCB stays assembled. These offsets spread the parts out for the drawing; they are not manufacturing clearances or a validated assembly procedure. See the original project's assembly instructions for the physical build.
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `stageRef` | Required explosion-stage name, such as `"separate-rotor"` or the qualified `"FIDGET.separate-rotor"`. Resolves in the owning assembly. |
+| `factor` | Separation multiplier from `0` to `1`; default `1`. `0` shows the assembled pose. |
+| `showTrails` | Draw depth-tested movement guides. Default `false`. |
+| `name`, `displayName` | View identity and optional printed caption. |
+| `direction` | Required: `"x+"`, `"x-"`, `"y+"`, `"y-"`, `"z+"`, `"z-"`, or `"isometric"`. |
+| `width`, `height` | Required viewport size on paper, in mm or distance strings. |
+| `centerX`, `centerY` | Center relative to the page's `anchorAlignment`; default `0` on unconstrained axes. |
+| `leftOfRef`, `rightOfRef`, `aboveRef`, `belowRef` | Place beside another view on the same page, using selectors such as `".assembled"`. |
+| `showHiddenEdges`, `section` | The same hidden-edge and CAD-world section controls as [`partview`](./assembly-drawing-partview.mdx). Sections cut the posed geometry. |
+| `children` | [`dimension`](./assembly-drawing-dimension.mdx), [`partlabel`](./assembly-drawing-partlabel.mdx), and [`note`](./assembly-drawing-note.mdx) annotations. |
+
+The selected explosion stage determines its owning assembly's visible geometry, including stationary parts and boards. Earlier ordered stages are included. `factor` scales the complete resolved translation from assembled placement; it is not the playback progress of just the last stage.
+
+`stageRef` here names an **explosion stage**, not an `assembly.drawing.stage` selector. To draw an assembled subset, use [`partview stageRef`](./assembly-drawing-stage.mdx). Explosion views do not accept `partRef`.
+
+Paper placement follows the same rules as [part views](./assembly-drawing-partview.mdx): positive X is right and positive Y is up. Labels follow their selected parts, and dimensions measure the posed geometry. Views do not change the underlying assembly's 3D placement.

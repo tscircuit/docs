@@ -1,0 +1,29 @@
+---
+title: <assembly.drawing.stage />
+description: Define reusable assembled part selections for drawing views and labels.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { assemblyDrawingCode, assemblyDrawingPages } from "@site/src/data/drawing-previews/assembly-code"
+
+`assembly.drawing.stage` names a reusable selection of assembled parts and board substrates. Put it inside the owning assembly and select it with `assembly.drawing.partview stageRef=".complete"`.
+
+<CircuitPreview code={assemblyDrawingCode} drawingPages={assemblyDrawingPages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+Here `hardware` contains the cover and bolt. `complete` includes that stage plus the carrier board. The left view shows this assembled selection; the right view inherits movement from the separate explosion-stage definitions.
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `name` | Required name used by `stageRef` and `includeStageRefs` selectors. |
+| `displayName` | Optional human-readable label. |
+| `partRefs` | Array of component or assembly selectors, such as `[".cover", ".bolt"]`. |
+| `boardRefs` | Array of board-substrate selectors, such as `[".carrier"]`. |
+| `includeStageRefs` | Array of other drawing-stage selectors to include, such as `[".hardware"]`. |
+
+Provide at least one nonempty selection array. Nested selections are combined as a set, so repeated members appear once. Missing or ambiguous references and inclusion cycles are errors.
+
+For a populated board, use `partRefs={[".carrier"]}` for its fitted parts and `boardRefs={[".carrier"]}` for its substrate. A board reference alone does not add component models.
+
+Drawing stages describe membership, with no playback order or motion. Use [`assembly.explosion.stage`](./assembly-explosion-stage.mdx) for movement, and [`explosionview`](./assembly-drawing-explosionview.mdx) to draw its resulting pose.

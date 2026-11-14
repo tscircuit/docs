@@ -1,0 +1,26 @@
+---
+title: <assembly.drawing.partlabel />
+description: Attach a paper-space label to a part in an assembled or exploded drawing.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { assemblyDrawingCode, assemblyDrawingPages } from "@site/src/data/drawing-previews/assembly-code"
+
+Nest `assembly.drawing.partlabel` in a [`partview`](./assembly-drawing-partview.mdx) or [`explosionview`](./assembly-drawing-explosionview.mdx). It draws text with a leader from an explicit point on the selected parts. The cover label below follows the cover's exploded position.
+
+<CircuitPreview code={assemblyDrawingCode} drawingPages={assemblyDrawingPages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `text` | Required nonblank label text. |
+| `name` | Optional annotation identity. |
+| `anchor` | Required `{ x, y, z }` point in assembled CAD-world coordinates, in mm or distance strings, with positive Z up. |
+| `partRefs`, `boardRefs`, `includeStageRefs` | Select parts, substrates, or reusable [drawing stages](./assembly-drawing-stage.mdx). Provide at least one nonempty array. |
+| `paperX`, `paperY` | Text position relative to the page's `anchorAlignment`. |
+| `xOffsetFromViewCenter`, `yOffsetFromViewCenter` | Text position relative to the parent view's center. |
+
+Specify exactly one position per axis: `paperX` **or** `xOffsetFromViewCenter`, and `paperY` **or** `yOffsetFromViewCenter`. You can mix page-relative X with view-relative Y. Paper coordinates use positive X right and positive Y up.
+
+The anchor stays in the assembled coordinate system. The renderer applies the selected parts' explosion translation and the view's `factor`; do not manually add the move to the anchor. Every selected member must be visible in the parent view and have the same translation, so one leader cannot target parts separated by different moves.
