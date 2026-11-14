@@ -5,7 +5,6 @@ description: >-
 ---
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
-import { directPortFiles } from "@site/src/data/cc2340r5-interface/examples"
 
 ## Overview
 
@@ -89,30 +88,10 @@ export default () => (
 
 ## Expanded subcircuit ports
 
-Declare `<port />` directly inside a root `<subcircuit />` and use `connectsTo`
-to identify each internal pin. This CC2340R5 reference design exposes 13 terminals
-while keeping all 27 components visible. For example, `VDDS` connects to the
-MCU's physical pin 11 and `SWDIO` connects to pin 7; the schematic draws their
-wires from the boundary to the chip.
-
-<CircuitPreview
-  fsMap={directPortFiles}
-  mainComponentPath="index.tsx"
-  defaultView="schematic"
-  hidePCBTab
-  hide3DTab
-  verticalStack
-  schematicImageUrl="/img/elements/cc2340r5-interface/direct-ports.svg"
-/>
-
-The parent `schPinArrangement` controls sides and ordering. Without an explicit
-arrangement, a port's `direction` determines its default side. You do not need
-to assign `schX` or `schY` to these boundary ports.
-
-Export the subcircuit directly to display its standalone interface. Wrapping it
-in a board makes it nested and removes the automatic frame. See
-[standalone schematic interfaces](./subcircuit.mdx#exposed-ports-on-a-standalone-schematic)
-for the equivalent `exposedNets` API and reference-design provenance.
+Direct `<port name="…" connectsTo="…" />` children of a root `<subcircuit />`
+appear on its boundary, wired to the selected internal pins. See the
+[standalone schematic example](./subcircuit.mdx#exposed-ports-on-a-standalone-schematic),
+which exports named nets using the equivalent `exposedNets` API.
 
 ## Props
 
