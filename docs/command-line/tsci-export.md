@@ -58,6 +58,7 @@ The following export formats are supported:
 | `kicad_sch` | KiCad schematic file |
 | `kicad_pcb` | KiCad PCB layout file |
 | `kicad_zip` | Zipped KiCad project (schematic + PCB) |
+| `altium` | Zipped Altium project (`.PrjPcb`, `.PcbDoc`, `.SchDoc`) to open in Altium Designer |
 | `kicad-library` | KiCad library with symbols, footprints, and 3D models (see [Exporting KiCad Library](../guides/kicad/exporting-kicad-library.md)) |
 | `spice` | SPICE netlist with simulation results exported as `.spice.cir` and `.csv` |
 
