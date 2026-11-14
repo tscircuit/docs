@@ -48,7 +48,7 @@ The following export formats are supported:
 | `pcb-png` | PCB layout as PNG |
 | `assembly-svg` | Assembly view as SVG |
 | `drawing-svg` | One configured assembly drawing sheet, including its part views and title block |
-| `gerbers` | Gerber fabrication files (zipped) |
+| `gerbers` | [Fabrication files](#exporting-fabrication-files) zip: Gerbers, drill files, BOM CSV and pick'n'place CSV |
 | `readable-netlist` | Human-readable netlist |
 | `specctra-dsn` | Specctra DSN format for autorouting |
 | `gltf` | Text-based 3D scene (glTF 2.0) that references board meshes and textures |
@@ -100,6 +100,31 @@ Export selected nets across all copper layers (PCB SVG or PNG only):
 ```bash
 tsci export board.tsx -f pcb-png --x-ray-net GND --x-ray-net VCC --hidden-layer-opacity 0.2 -o power.png
 ```
+
+## Exporting fabrication files
+
+Use the `gerbers` format to generate the [fabrication files](../guides/understanding-fabrication-files.md) zip you upload to a manufacturer:
+
+```bash
+tsci export board.circuit.tsx -f gerbers
+```
+
+This writes `board.circuit-gerbers.zip` beside the input file. Use `--output` to choose a different path:
+
+```bash
+tsci export board.circuit.tsx -f gerbers -o fabrication-files.zip
+```
+
+The zip contains:
+
+| File | Contents |
+|------|----------|
+| `F_Cu.gbr`, `B_Cu.gbr`, `F_Mask.gbr`, `F_SilkScreen.gbr`, `Edge_Cuts.gbr`, ... | One Gerber file per copper, soldermask, paste and silkscreen layer, plus the board outline |
+| `drill-L1-L2.drl`, `drill_npth.drl` | Excellon drill files for plated and non-plated holes (only present when the board has them) |
+| `bom.csv` | Bill of materials with designators, values, footprints and JLCPCB part numbers |
+| `pick_and_place.csv` | Component positions and rotations in JLCPCB's format |
+
+An existing `.circuit.json` file can be exported the same way: `tsci export board.circuit.json -f gerbers`.
 
 ## Exporting 3D models
 

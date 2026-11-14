@@ -30,8 +30,13 @@ On the web, you can just hit "Download" or "Export" on any circuit, then hit "Fa
 
 ### CLI
 
-The easiest way to get fabrication files is to go to `File > Export > Fabrication Files`
-in the web browser after doing `tsci dev`
+Run [`tsci export`](../command-line/tsci-export.md#exporting-fabrication-files) with the `gerbers` format to write the fabrication files zip next to your circuit file:
+
+```bash
+tsci export board.circuit.tsx -f gerbers
+```
+
+You can also go to `File > Export > Fabrication Files` in the web browser after doing `tsci dev`
 
 <figure>
 <img src="/img/tsci-dev-export.png" alt="CLI Export Button" />
@@ -42,10 +47,11 @@ in the web browser after doing `tsci dev`
 
 The zip file contains three types of files:
 
-- `gerbers` Describes the copper layers of your PCB
-- `bill-of-materials.csv` This is a csv file with the components in the circuit and their
-  quantity.
-- `pick-n-place.csv` This is a csv file with the components in the circuit and their
+- Gerber (`.gbr`) and drill (`.drl`) files describe the copper layers, soldermask,
+  silkscreen, board outline and holes of your PCB
+- `bom.csv` This is a csv file with the components in the circuit and their
+  supplier part numbers.
+- `pick_and_place.csv` This is a csv file with the components in the circuit and their
   position on the board.
 
 <figure>

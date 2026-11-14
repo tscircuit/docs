@@ -170,16 +170,17 @@ tsci build --site  # Build a static site
 
 **Output:** Generates circuit JSON and other output files in the `dist/` directory.
 
-### `tsci export [format]`
+### `tsci export <file> -f <format>`
 
 Export your circuit to various formats.
 
 **Usage:**
 ```bash
-tsci export gerber
-tsci export svg
-tsci export png
-tsci export circuit-json
+tsci export index.circuit.tsx -f gerbers        # fabrication files zip (Gerbers, drill, BOM, pick'n'place)
+tsci export index.circuit.tsx -f pcb-svg
+tsci export index.circuit.tsx -f schematic-svg
+tsci export index.circuit.tsx -f pcb-png
+tsci export index.circuit.tsx -f circuit-json
 ```
 
 **Output:** Generates files in the specified format for fabrication or documentation.
