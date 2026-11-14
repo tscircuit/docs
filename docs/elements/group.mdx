@@ -8,6 +8,7 @@ A group is the basic container element that can contain other elements.
 By default, a group doesn't have any effect on the circuit.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import { nestedFiles } from "@site/src/data/cc2340r5-interface/examples"
 
 <CircuitPreview
   defaultView="schematic"
@@ -26,6 +27,26 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   )
   `}
 />
+
+## Expanded subcircuit boundaries
+
+Ordinary groups and nested subcircuits do not automatically draw a boundary
+around their contents. Here, the same real CC2340R5 module is inside a board:
+its internal schematic remains visible without the standalone interface frame.
+
+<CircuitPreview
+  fsMap={nestedFiles}
+  mainComponentPath="index.tsx"
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  schematicImageUrl="/img/elements/cc2340r5-interface/nested.svg"
+/>
+
+To show a frame with wired public terminals, render the
+[subcircuit as the root circuit](./subcircuit.mdx#exposed-ports-on-a-standalone-schematic).
+Use `showAsSchematicBox` when you want a collapsed module symbol instead.
 
 ## Props
 

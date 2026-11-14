@@ -17,6 +17,7 @@ larger circuits. You can also re-use reference designators. Your subcircuit is
 essentially isolated from other subcircuits.
 
 import CircuitPreview from "@site/src/components/CircuitPreview"
+import { exposedNetFiles } from "@site/src/data/cc2340r5-interface/examples"
 
 <CircuitPreview
   defaultView="schematic"
@@ -34,6 +35,45 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
   )
   `}
 />
+
+## Exposed ports on a standalone schematic
+
+When a subcircuit is the root of a single-sheet schematic, tscircuit draws a
+boundary around its contents and connects its public ports to the internal
+circuit. Export the subcircuit directly, without wrapping it in a `<board />`.
+This is available in `tscircuit@0.0.3187` and later.
+
+Use `exposedNets` to select the internal nets that form the public interface.
+This example adapts the real
+[CC2340R5 reference design](https://tscircuit.com/ShiboSoftwareDev/cc2340r5-reference-design):
+all 27 components remain, including the RF network, crystals, decoupling, reset,
+and debug header. Eight previously unused GPIOs are connected to named nets;
+together with power, ground, reset, and SWD, they form 13 exported terminals.
+
+<CircuitPreview
+  fsMap={exposedNetFiles}
+  mainComponentPath="index.tsx"
+  defaultView="schematic"
+  hidePCBTab
+  hide3DTab
+  verticalStack
+  schematicImageUrl="/img/elements/cc2340r5-interface/exposed-nets.svg"
+/>
+
+Open `cc2340r5.tsx` in the file picker to see the internal circuit and exported
+net names. `schPinArrangement` sets the sides and ordering of the terminals;
+core assigns their positions after laying out the contents and routes wires to
+the internal pins. Optional `schWidth` and `schHeight` set minimum boundary dimensions.
+
+You can instead declare [direct `<port />` children](./port.mdx#expanded-subcircuit-ports)
+with `connectsTo` to map public names to internal pin selectors. `exposeNets`
+exposes all internal nets; use `exposedNets` when only selected signals should
+be public.
+
+The automatic boundary applies to a standalone expanded subcircuit with public
+ports. [Nested subcircuits and ordinary groups](./group.mdx#expanded-subcircuit-boundaries)
+do not automatically get this frame. `showAsSchematicBox` still displays a
+collapsed symbol instead of the internal circuit.
 
 ## Reuse Reference Designators
 
