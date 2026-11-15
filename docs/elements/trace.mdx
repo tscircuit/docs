@@ -40,8 +40,9 @@ Here's a simple example connecting two components:
 | `minLength` | Minimum length the trace must be (optional) | `"5mm"` |
 | `width` | Width of the trace (optional) | `"0.2mm"` |
 | `thickness` | Same as `width`; sets the copper width for the trace (optional) | `"0.2mm"` |
-| `pcbPath` | Array of points defining a manual PCB path relative to an anchor port | `[{ x: 1, y: 0 }, { x: 1, y: 1 }]` |
-| `pcbPathRelativeTo` | Port selector that `pcbPath` coordinates are relative to (defaults to the `from` port) | `".R1 > .pin2"` |
+| `pcbPath` | Array of points or port selectors defining a manual PCB path; `{ x, y }` coordinates are in the local frame of the component that owns the anchor port | `[{ x: 1, y: 0 }, { x: 1, y: 1 }]` |
+| `pcbPaths` | Array of manual PCB paths when drawing multiple segments or branches for the same trace | `[["R1.pin2", { x: 0, y: 2 }, "R2.pin1"]]` |
+| `pcbPathRelativeTo` | Port selector choosing the anchor port (defaults to the `from` port); `{ x, y }` points in `pcbPath` and `pcbPaths` use that port's owning component origin (`pcbX`/`pcbY`) and `pcbRotation` | `".R1 > .pin2"` |
 
 ## Connecting to Nets
 
@@ -93,7 +94,9 @@ You can customize the autorouting behavior by setting the `autorouter` property 
 
 ## Manual PCB Paths
 
-Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` to override autorouting and draw the route yourself. The coordinates are relative to a specific port defined by `pcbPathRelativeTo` (defaults to the `from` port). Entries in `pcbPath` can mix coordinate objects with [port selectors](../guides/tscircuit-essentials/port-and-net-selectors.md) so you can anchor the path to specific component pins.
+Sometimes you may want to manually specify the exact path a trace should take on the PCB. Provide a list of points with `pcbPath` (or multiple paths with `pcbPaths`) to override autorouting and draw the route yourself.
+
+The `{ x, y }` points in `pcbPath` and `pcbPaths` are in the local frame of the component that owns the anchor port: the origin is that component's PCB origin (`pcbX`/`pcbY`, which is the component center for standard footprints such as `0402`), and the axes rotate with the component's `pcbRotation`. `pcbPathRelativeTo` (default: the `from` port) chooses that anchor component through one of its ports and sets the starting port when `pcbPath` does not begin with a selector. Entries can mix `{ x, y }` coordinate objects with [port selectors](../guides/tscircuit-essentials/port-and-net-selectors.md) so you can land segments directly on specific component pins.
 
 <CircuitPreview leftView='code' rightView='pcb' code={`
   export default () => (
@@ -109,6 +112,8 @@ Sometimes you may want to manually specify the exact path a trace should take on
     </board>
   )
 `} />
+
+In this example, `R1` is centered at `(-3, 0)`, so `{ x: 0, y: 4 }` resolves to board coordinate `(-3, 4)` while the port selectors keep both trace ends anchored on `R1.pin2` and `R2.pin1`.
 
 ## Length Constraints
 
