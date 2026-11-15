@@ -1,0 +1,323 @@
+---
+title: ESP32 PCB Layout Routing Guide
+description: A placement, routing, and fabrication checklist for ESP32 module boards in tscircuit.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+This guide walks through a review-focused ESP32 board layout flow in tscircuit.
+It is meant for the point where the schematic is already close, but the board
+still needs careful placement, power routing, antenna clearance, and pre-fab
+checks.
+
+The examples use a module-style ESP32 footprint so the layout decisions are easy
+to inspect:
+
+- Place the module at a board edge with the antenna facing outward.
+- Reserve a copper-free antenna area before routing any signals.
+- Keep the USB input, regulator, and bulk capacitors in one short power path.
+- Route 3.3 V and ground first, then route boot, reset, UART, and GPIO signals.
+- Use `routingDisabled` while arranging parts, then enable the autorouter for
+  final checks.
+
+Espressif's hardware design guidance for ESP32 boards calls out the same review
+areas: stable power, reset and boot strapping, clock/RF layout, UART download
+connections, and antenna clearance. See the
+[ESP32 schematic checklist](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/schematic-checklist.html)
+when adapting this layout to a production design.
+
+## Start With Placement
+
+Begin by putting the ESP32 module on the top edge of the board. The dashed
+rectangle marks the antenna keepout. Treat it as a visual contract: no copper
+pour, vias, mounting hardware, tall connectors, or noisy power routing should be
+placed under the antenna area.
+
+<CircuitPreview
+  splitView
+  defaultView="pcb"
+  hide3DTab
+  code={`
+export default () => (
+  <board width="64mm" height="42mm" routingDisabled>
+    <chip
+      name="U_ESP32"
+      pcbX={8}
+      pcbY={8}
+      footprint={
+        <footprint>
+          <smtpad portHints={["V3_3"]} pcbX={-9} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["EN"]} pcbX={-6} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["IO0"]} pcbX={-3} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["TXD0"]} pcbX={0} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["RXD0"]} pcbX={3} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["GND"]} pcbX={6} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["GPIO18"]} pcbX={9} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["GPIO23"]} pcbX={12} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <silkscreenpath
+            route={[
+              { x: -12, y: -10 },
+              { x: 14, y: -10 },
+              { x: 14, y: 10 },
+              { x: -12, y: 10 },
+              { x: -12, y: -10 },
+            ]}
+          />
+        </footprint>
+      }
+    />
+
+    <pcbnoterect
+      pcbX={8}
+      pcbY={18}
+      width={28}
+      height={10}
+      strokeWidth={0.25}
+      color="#d97706"
+      isStrokeDashed
+    />
+    <pcbnotetext
+      pcbX={8}
+      pcbY={18}
+      text="ANTENNA KEEP OUT"
+      fontSize={1.2}
+      anchorAlignment="center"
+      color="#d97706"
+    />
+
+    <connector
+      name="J_USB"
+      pcbX={-27}
+      pcbY={-8}
+      standard="usb_c"
+      pinLabels={{ pin1: "VBUS", pin2: "D-", pin3: "D+", pin4: "GND" }}
+    />
+    <chip
+      name="U_REG"
+      pcbX={-13}
+      pcbY={-8}
+      footprint="sot223"
+      pinLabels={{ pin1: "GND", pin2: "VOUT", pin3: "VIN" }}
+    />
+    <capacitor name="C_IN" capacitance="10uF" footprint="0805" pcbX={-19} pcbY={-15} />
+    <capacitor name="C_OUT" capacitance="10uF" footprint="0805" pcbX={-6} pcbY={-15} />
+    <capacitor name="C_ESP_A" capacitance="100nF" footprint="0402" pcbX={2} pcbY={-4} />
+    <capacitor name="C_ESP_B" capacitance="100nF" footprint="0402" pcbX={10} pcbY={-4} />
+    <pinheader name="J_UART" pinCount={4} footprint="pinrow4" pcbX={25} pcbY={-12} />
+    <pushbutton name="SW_BOOT" pcbX={-4} pcbY={12} />
+    <pushbutton name="SW_RESET" pcbX={8} pcbY={12} />
+  </board>
+)
+`}
+/>
+
+Use this first preview as a placement review:
+
+| Region | Placement goal |
+| --- | --- |
+| Antenna edge | Module antenna at the board edge, with a visible keepout. |
+| Input power | USB, regulator, and input/output capacitors grouped tightly. |
+| ESP32 decoupling | 100 nF capacitors close to the module 3.3 V and ground pads. |
+| Human controls | Boot and reset buttons reachable from the board edge. |
+| Programming header | UART header away from the regulator and USB power path. |
+
+## Route Power Before Signals
+
+Route power deliberately before asking the autorouter to solve every signal.
+Make `VBUS`, `V3_3`, and `GND` wider than normal GPIO traces. The exact width
+depends on current, copper weight, and board house rules, but using named nets
+with explicit trace widths makes the intent visible in the design.
+
+<CircuitPreview
+  splitView
+  defaultView="pcb"
+  hide3DTab
+  code={`
+export default () => (
+  <board width="64mm" height="42mm" autorouter="sequential-trace">
+    <net name="VBUS" traceWidth="0.55mm" />
+    <net name="V3_3" traceWidth="0.4mm" />
+    <net name="GND" traceWidth="0.4mm" />
+
+    <connector
+      name="J_USB"
+      pcbX={-27}
+      pcbY={-8}
+      standard="usb_c"
+      pinLabels={{ pin1: "VBUS", pin2: "D-", pin3: "D+", pin4: "GND" }}
+    />
+    <chip
+      name="U_REG"
+      pcbX={-13}
+      pcbY={-8}
+      footprint="sot223"
+      pinLabels={{ pin1: "GND", pin2: "VOUT", pin3: "VIN" }}
+    />
+    <chip
+      name="U_ESP32"
+      pcbX={8}
+      pcbY={8}
+      footprint={
+        <footprint>
+          <smtpad portHints={["V3_3"]} pcbX={-9} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["EN"]} pcbX={-6} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["IO0"]} pcbX={-3} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["TXD0"]} pcbX={0} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["RXD0"]} pcbX={3} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["GND"]} pcbX={6} pcbY={-8} width={1.2} height={2} shape="rect" />
+        </footprint>
+      }
+    />
+    <capacitor name="C_IN" capacitance="10uF" footprint="0805" pcbX={-19} pcbY={-15} />
+    <capacitor name="C_OUT" capacitance="10uF" footprint="0805" pcbX={-6} pcbY={-15} />
+    <capacitor name="C_ESP_A" capacitance="100nF" footprint="0402" pcbX={2} pcbY={-4} />
+    <capacitor name="C_ESP_B" capacitance="100nF" footprint="0402" pcbX={10} pcbY={-4} />
+
+    <trace from=".J_USB > .VBUS" to=".U_REG > .VIN" />
+    <trace from=".J_USB > .GND" to="net.GND" />
+    <trace from=".U_REG > .GND" to="net.GND" />
+    <trace from=".U_REG > .VOUT" to="net.V3_3" />
+    <trace from=".U_ESP32 > .V3_3" to="net.V3_3" />
+    <trace from=".U_ESP32 > .GND" to="net.GND" />
+    <trace from=".C_IN > .pos" to="net.VBUS" />
+    <trace from=".C_IN > .neg" to="net.GND" />
+    <trace from=".C_OUT > .pos" to="net.V3_3" />
+    <trace from=".C_OUT > .neg" to="net.GND" />
+    <trace from=".C_ESP_A > .pos" to="net.V3_3" />
+    <trace from=".C_ESP_A > .neg" to="net.GND" />
+    <trace from=".C_ESP_B > .pos" to="net.V3_3" />
+    <trace from=".C_ESP_B > .neg" to="net.GND" />
+  </board>
+)
+`}
+/>
+
+Power routing review points:
+
+- Keep the regulator output path short and direct.
+- Put the bulk output capacitor on the same side of the regulator output as the
+  ESP32 3.3 V route.
+- Give each decoupling capacitor a short ground return instead of sending the
+  return path across the board.
+- Avoid sending switching or high-current traces through the antenna keepout.
+
+## Add Boot, Reset, And UART
+
+ESP32 download mode depends on the boot strap pins. A practical board should
+make `EN`, `IO0`, `TXD0`, `RXD0`, `V3_3`, and `GND` easy to inspect. Put boot and
+reset controls close to the module, and cross the external UART header so a USB
+UART adapter's `TXD0` connects to ESP32 `RXD0`.
+
+<CircuitPreview
+  splitView
+  defaultView="schematic"
+  hide3DTab
+  code={`
+export default () => (
+  <board width="64mm" height="42mm" autorouter="sequential-trace">
+    <net name="V3_3" traceWidth="0.35mm" />
+    <net name="GND" traceWidth="0.35mm" />
+
+    <chip
+      name="U_ESP32"
+      pcbX={8}
+      pcbY={8}
+      footprint={
+        <footprint>
+          <smtpad portHints={["V3_3"]} pcbX={-9} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["EN"]} pcbX={-6} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["IO0"]} pcbX={-3} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["TXD0"]} pcbX={0} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["RXD0"]} pcbX={3} pcbY={-8} width={1.2} height={2} shape="rect" />
+          <smtpad portHints={["GND"]} pcbX={6} pcbY={-8} width={1.2} height={2} shape="rect" />
+        </footprint>
+      }
+    />
+    <pinheader
+      name="J_UART"
+      pinCount={4}
+      footprint="pinrow4"
+      pcbX={25}
+      pcbY={-12}
+      pinLabels={["V3_3", "GND", "TXD0", "RXD0"]}
+    />
+    <pushbutton name="SW_BOOT" pcbX={-4} pcbY={12} />
+    <pushbutton name="SW_RESET" pcbX={8} pcbY={12} />
+    <resistor name="R_BOOT" resistance="10k" footprint="0402" pcbX={-4} pcbY={17} />
+    <resistor name="R_EN" resistance="10k" footprint="0402" pcbX={8} pcbY={17} />
+
+    <trace from=".R_BOOT > .pin1" to="net.V3_3" />
+    <trace from=".R_BOOT > .pin2" to=".U_ESP32 > .IO0" />
+    <trace from=".SW_BOOT > .pin1" to=".U_ESP32 > .IO0" />
+    <trace from=".SW_BOOT > .pin2" to="net.GND" />
+    <trace from=".R_EN > .pin1" to="net.V3_3" />
+    <trace from=".R_EN > .pin2" to=".U_ESP32 > .EN" />
+    <trace from=".SW_RESET > .pin1" to=".U_ESP32 > .EN" />
+    <trace from=".SW_RESET > .pin2" to="net.GND" />
+    <trace from=".J_UART > .V3_3" to="net.V3_3" />
+    <trace from=".J_UART > .GND" to="net.GND" />
+    <trace from=".J_UART > .TXD0" to=".U_ESP32 > .RXD0" />
+    <trace from=".J_UART > .RXD0" to=".U_ESP32 > .TXD0" />
+  </board>
+)
+`}
+/>
+
+Before fabrication, verify these nets by name in the schematic and PCB views:
+
+| Net | Expected route |
+| --- | --- |
+| `EN` | 10 k pull-up to `V3_3`, reset button to `GND`, short trace to module. |
+| `IO0` | 10 k pull-up to `V3_3`, boot button to `GND`, short trace to module. |
+| `TXD0` | ESP32 transmit pin to external header receive pin. |
+| `RXD0` | ESP32 receive pin to external header transmit pin. |
+| `V3_3` | Header power pin tied to regulator output and ESP32 3.3 V rail. |
+| `GND` | Header ground, buttons, regulator, capacitors, and module tied together. |
+
+## Turn Routing Back On
+
+Keep `routingDisabled` during placement experiments so previews stay quick.
+When component positions are stable, remove it and use an autorouter. Start with
+`sequential-trace` for a small board, then move to `auto-cloud` or a higher
+`autorouterEffortLevel` when the board becomes dense.
+
+```tsx
+<board
+  width="64mm"
+  height="42mm"
+  autorouter="sequential-trace"
+  defaultTraceWidth="0.18mm"
+  minTraceWidth="0.15mm"
+>
+  {/* final component placement and traces */}
+</board>
+```
+
+If the router struggles, change placement before adding manual trace paths:
+
+- Move decoupling capacitors closer to the ESP32 3.3 V and ground pads.
+- Rotate the UART header so its pins leave the module without crossing power.
+- Move the regulator so `VIN`, `VOUT`, and ground paths are direct.
+- Increase board height below the module instead of routing under the antenna.
+
+## Pre-Fab Review Checklist
+
+Use this checklist before exporting Gerbers:
+
+| Area | Acceptance check |
+| --- | --- |
+| Antenna | Antenna area is on the edge, marked, and free of traces, vias, fills, and tall parts. |
+| Power input | USB `VBUS` reaches the regulator with a short, wider trace. |
+| 3.3 V rail | Regulator output reaches ESP32 and decoupling capacitors without a long detour. |
+| Ground | Decoupling capacitors have short returns and enough ground stitching near the module. |
+| Boot mode | `EN` and `IO0` each have pull-ups and a button path to ground. |
+| UART | Header `TXD0` and `RXD0` cross to the ESP32 receive/transmit pins. |
+| USB data | `D+` and `D-` are kept together and away from regulator copper. |
+| Silkscreen | Boot, reset, UART pin order, and antenna keepout are labeled. |
+
+The main win is to make the important constraints visible in code. A reviewer can
+see the keepout, named rails, explicit trace widths, and boot/download nets before
+opening a board viewer, and the PCB preview can confirm that the physical layout
+matches the ESP32 design intent.
