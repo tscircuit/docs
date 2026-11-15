@@ -7,7 +7,9 @@ tscircuit automatically sponsors regular contributors based on the impact of
 their work. This activity is tracked in the open-source
 [contribution-tracker](https://github.com/tscircuit/contribution-tracker),
 which powers [contributions.tscircuit.com](https://contributions.tscircuit.com)
-and resets every Wednesday.
+and groups contributions into reporting weeks ending on Tuesday at 18:00 UTC.
+The [reporting window logic](https://github.com/tscircuit/contribution-tracker/blob/main/lib/ai/date-utils.ts)
+defines the current cutoff.
 
 ## How the contribution tracker works
 
