@@ -120,6 +120,7 @@ without changing the mesh spacing.
 | `traceMargin` | Minimum distance from traces on other nets. Overrides `clearance`. | `"0.1mm"` |
 | `boardEdgeMargin` | Minimum distance from the board edge. Overrides `clearance`. | `"2mm"` |
 | `cutoutMargin` | Minimum distance from board cutouts. Overrides `clearance`. | `"0.1mm"` |
+| `unbroken` | Reserve the pour region during autorouting so other nets' traces can't split it. Same-net pads then connect to the pour with a via instead of traces. See [Keeping a pour unbroken](#keeping-a-pour-unbroken). | `true` |
 | `useThermalReliefs` | Connect same-net plated holes through four thermal spokes instead of solid copper. | `true` |
 | `outline` | Optional polygon describing a custom pour boundary. | `[{ x: -10, y: -8 }, { x: 10, y: -8 }, ...]` |
 
@@ -184,6 +185,50 @@ explicit pours with a fanout routing phase:
 
 See [`<autoroutingphase />`](./autoroutingphase.mdx#terminate-power-connections-on-copper-planes)
 for details.
+
+## Keeping a Pour Unbroken
+
+By default the autorouter treats a pour's layer like any other, so it can
+connect same-net pads with traces and run other signals across the pour area.
+Set `unbroken` to reserve the pour region instead. The autorouter keeps other
+nets out of it, and each pad on the pour's net connects with a short trace and
+a via down to the pour.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  code={`
+export default () => (
+  <board width="20mm" height="14mm">
+    <pinheader name="J1" pinCount={2} pitch="2.54mm" pinLabels={["VCC", "GND"]} pcbX={-7} pcbRotation={90} />
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{ pin1: "GND", pin2: "IN", pin3: "OUT", pin4: "EN", pin5: "NC1", pin6: "NC2", pin7: "NC3", pin8: "VCC" }}
+      pcbX={3}
+    />
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={7.5} pcbY={2} pcbRotation={90} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-2} pcbY={-3} pcbRotation={90} />
+
+    <trace from="J1.VCC" to="net.VCC" />
+    <trace from="U1.VCC" to="net.VCC" />
+    <trace from="C1.pin1" to="net.VCC" />
+    <trace from="U1.EN" to="R1.pin1" />
+    <trace from="R1.pin2" to="net.VCC" />
+
+    <trace from="J1.GND" to="net.GND" />
+    <trace from="U1.GND" to="net.GND" />
+    <trace from="C1.pin2" to="net.GND" />
+
+    <copperpour connectsTo="net.GND" layer="bottom" unbroken />
+  </board>
+)
+`}
+/>
+
+Here U1's and C1's ground pads each get their own via, and no signal crosses
+the bottom layer. Without `unbroken`, the same board joins the ground pads
+with traces on the top layer instead.
 
 ## Tips for Effective Groundplanes
 

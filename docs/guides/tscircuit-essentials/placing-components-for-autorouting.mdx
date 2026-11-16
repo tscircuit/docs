@@ -1,0 +1,154 @@
+---
+title: Placing Components for Autorouting
+description: >-
+  Get cleaner autorouted boards by placing parts in the right order, pointing
+  connected pins at each other, and fixing placement instead of fighting
+  routing.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+The autorouter can only route the placement you give it. When a board comes out
+with long detours, extra vias or failed connections, the cause is usually where
+the parts sit, not the router. Move or rotate parts, rebuild, and check again.
+
+## A Placement-First Workflow
+
+Place a few parts, check how they route, and only then place more. Work from
+the parts with the least freedom to the most:
+
+1. **Fixed parts.** Connectors, buttons, LEDs, knobs and mounting holes are set
+   by the enclosure and the user. Place them first.
+2. **Critical circuits.** High-current paths, switching regulators, decoupling
+   capacitors, crystals and sensitive analog parts. Keep these loops small and
+   place them before anything else crowds them out.
+3. **Everything else, in functional groups.** Keep each block (power,
+   microcontroller, sensor, outputs) together, and arrange the blocks so
+   signals flow in one direction across the board. A
+   [`<group />`](./using-groups-for-pcb-layout.mdx) lets you move a block as one
+   unit.
+4. **Route, check, adjust.** Build, look at the result, and go back to
+   placement whenever a connection is forced to be ugly.
+
+## Point Connected Pins at Each Other
+
+Rotate parts so that pins connected to each other face each other, and keep
+the same pin order on both ends of a bus. A reversed order makes every
+connection cross every other one.
+
+In this board, J2 is rotated so its pin order runs opposite to J1's. The
+autorouter needs vias and a second layer to untangle the crossing:
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="24mm" height="14mm">
+    <pinheader name="J1" pinCount={4} pitch="2.54mm" pcbX={-8} pcbRotation={90} />
+    <pinheader name="J2" pinCount={4} pitch="2.54mm" pcbX={8} pcbRotation={-90} />
+    <trace from="J1.pin1" to="J2.pin1" />
+    <trace from="J1.pin2" to="J2.pin2" />
+    <trace from="J1.pin3" to="J2.pin3" />
+    <trace from="J1.pin4" to="J2.pin4" />
+  </board>
+)
+`}
+/>
+
+Rotating J2 to match J1 gives four straight traces on one layer, with no vias:
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="24mm" height="14mm">
+    <pinheader name="J1" pinCount={4} pitch="2.54mm" pcbX={-8} pcbRotation={90} />
+    <pinheader name="J2" pinCount={4} pitch="2.54mm" pcbX={8} pcbRotation={90} />
+    <trace from="J1.pin1" to="J2.pin1" />
+    <trace from="J1.pin2" to="J2.pin2" />
+    <trace from="J1.pin3" to="J2.pin3" />
+    <trace from="J1.pin4" to="J2.pin4" />
+  </board>
+)
+`}
+/>
+
+The same applies to chips. If a chip's output pin faces away from the part it
+drives, try rotating the chip by 180° and moving its passive parts to the other
+side.
+
+## Place Decoupling Capacitors and Ground First
+
+Put each decoupling capacitor right next to the power pin it serves, before
+placing other parts around the chip. For ground, a solid pour on one layer
+with [`unbroken`](../../elements/copperpour.mdx#keeping-a-pour-unbroken)
+lets every ground pin connect with a short via instead of long traces, and
+keeps other signals from cutting the plane apart.
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="20mm" height="14mm">
+    <pinheader name="J1" pinCount={2} pitch="2.54mm" pinLabels={["VCC", "GND"]} pcbX={-7} pcbRotation={90} />
+    <chip
+      name="U1"
+      footprint="soic8"
+      pinLabels={{ pin1: "GND", pin2: "IN", pin3: "OUT", pin4: "EN", pin5: "NC1", pin6: "NC2", pin7: "NC3", pin8: "VCC" }}
+      pcbX={3}
+    />
+    {/* decoupling capacitor next to the VCC pin */}
+    <capacitor name="C1" capacitance="100nF" footprint="0402" pcbX={7.5} pcbY={2} pcbRotation={90} />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={-2} pcbY={-3} pcbRotation={90} />
+
+    <trace from="J1.VCC" to="net.VCC" />
+    <trace from="U1.VCC" to="net.VCC" />
+    <trace from="C1.pin1" to="net.VCC" />
+    <trace from="U1.EN" to="R1.pin1" />
+    <trace from="R1.pin2" to="net.VCC" />
+
+    <trace from="J1.GND" to="net.GND" />
+    <trace from="U1.GND" to="net.GND" />
+    <trace from="C1.pin2" to="net.GND" />
+
+    <copperpour connectsTo="net.GND" layer="bottom" unbroken />
+  </board>
+)
+`}
+/>
+
+## When to Move Parts Instead
+
+Go back to placement when you see any of these:
+
+- A connection detours around a large part of the board or needs several vias.
+- The same two groups of connections keep crossing each other.
+- A decoupling capacitor or high-current loop ended up far from its chip.
+- Routing errors stay in the same area after small changes.
+
+Small placement changes can change the routed result a lot, so it is worth
+trying a few variants (a different rotation, a part moved by 0.5–1mm) and
+keeping the one with the fewest errors and vias.
+
+## Checking a Layout
+
+Build a PCB image to look at the routing, then run the checks:
+
+```bash
+tsci build --pcb-png
+tsci check placement
+tsci check routing-difficulty
+tsci check shorts
+tsci check pcb-style
+```
+
+`routing-difficulty` points out congested areas before you spend time on them.
+See [`tsci check`](../../command-line/tsci-check.md) for all checks. If the
+autorouter itself fails on a reasonable placement, please
+[report an autorouter bug](../../contributing/report-autorouter-bugs.md).
