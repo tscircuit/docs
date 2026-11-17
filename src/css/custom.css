@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@800&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -474,9 +474,10 @@ figure img {
 }
 
 .navbar__title {
+  font-family: "Roboto", sans-serif;
   font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.04em;
+  font-weight: 800;
+  letter-spacing: normal;
 }
 
 .navbar__link {
