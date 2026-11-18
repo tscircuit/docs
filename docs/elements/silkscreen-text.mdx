@@ -1,0 +1,57 @@
+---
+title: <silkscreentext />
+description: Add text to the silkscreen layer of a PCB.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<silkscreentext />` element adds readable text to a PCB's silkscreen
+layer. Use it for labels, board names, revision numbers, or other markings
+that should be printed on the finished board.
+
+The text position is controlled by its PCB x and y coordinates, while
+`anchorAlignment` determines how the text is aligned around that position.
+
+## Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <silkscreentext
+      text="TS CIRCUIT"
+      pcbX={0}
+      pcbY={0}
+      anchorAlignment="center"
+      fontSize="2mm"
+    />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `text` | `string` | Yes | - | Text content to display on the silkscreen. |
+| `pcbX` | `distance` | No | `0` | X position of the text on the PCB. |
+| `pcbY` | `distance` | No | `0` | Y position of the text on the PCB. |
+| `anchorAlignment` | `nine-point anchor` | No | `"center"` | Alignment of the text relative to its position. Options include `"center"`, `"top_left"`, `"top_right"`, `"bottom_left"`, and `"bottom_right"`. |
+| `fontSize` | `distance` | No | Board setting | Size of the text. If omitted, the board's silkscreen font size is used when configured. |
+| `font` | `string` | No | `"tscircuit2024"` | Font used to render the text. |
+| `pcbRotation` | `angle` | No | `0` | Rotation of the text on the PCB. |
+| `layer` | `"top" \| "bottom"` | No | `"top"` | Silkscreen layer where the text is placed. |
+
+## Notes
+
+- Keep silkscreen text clear of pads and other important markings.
+- Use `anchorAlignment` to position text relative to its `pcbX` and `pcbY`
+  coordinates.
+- Set `fontSize` on the board with `pcbStyle.silkscreenFontSize` to provide a
+  default for all silkscreen text elements.
