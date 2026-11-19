@@ -118,19 +118,22 @@ without changing the mesh spacing.
 | `clearance` | Default minimum distance between the pour and other features (e.g. pads, traces, board edge). This is used as a fallback for specific margin properties. Defaults to `0.2mm`. | `"0.3mm"` |
 | `padMargin` | Minimum distance from component pads. Overrides `clearance`. | `"0.4mm"` |
 | `traceMargin` | Minimum distance from traces on other nets. Overrides `clearance`. | `"0.1mm"` |
-| `boardEdgeMargin` | Minimum distance from the board edge. Overrides `clearance`. With a custom `outline`, the outline itself is also inset by this margin. | `"2mm"` |
+| `boardEdgeMargin` | Minimum distance from the board edge. Overrides `clearance`. With a custom `outline`, the copper also stops this far inside the outline. | `"2mm"` |
 | `cutoutMargin` | Minimum distance from board cutouts. Overrides `clearance`. | `"0.1mm"` |
 | `useThermalReliefs` | Connect same-net plated holes through four thermal spokes instead of solid copper. | `true` |
-| `outline` | Optional polygon describing a custom pour boundary. The copper is inset from it by `boardEdgeMargin`. | `[{ x: -10, y: -8 }, { x: 10, y: -8 }, ...]` |
+| `outline` | Optional polygon describing a custom pour boundary. The copper stops `boardEdgeMargin` inside it. | `[{ x: -10, y: -8 }, { x: 10, y: -8 }, ...]` |
 
-### Custom Outlines Are Inset
+### Pours Are Smaller Than Their Outline
 
-The copper does not fill `outline` exactly. It is inset from every edge of the
-outline by `boardEdgeMargin`, which falls back to `clearance` (`0.2mm` by
-default), even where the outline is far from the board edge. A 4mm square
-outline with `clearance="0.5mm"` produces a 3mm square pour, and any part of the
-outline narrower than twice the margin is removed, which can split one pour into
-several.
+The copper does not fill `outline` exactly. Every edge of the copper stops
+short of the outline you drew by `boardEdgeMargin`, even where the outline is
+far from the board edge. If `boardEdgeMargin` is not set, `clearance` is used
+(`0.2mm` by default).
+
+For example, a 4mm square outline with `clearance="0.5mm"` produces a 3mm
+square pour: 0.5mm is lost on each side. Any part of the outline narrower than
+twice the margin disappears completely, which can split one pour into several
+unconnected pieces.
 
 To fill the outline exactly, set `boardEdgeMargin="0mm"`. This also removes the
 clearance to the board edge, so keep the outline inside the board edge by the
