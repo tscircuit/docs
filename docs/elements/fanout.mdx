@@ -89,8 +89,9 @@ routing props shared with `<breakout />`:
 | `paddingLeft` / `paddingRight` / `paddingTop` / `paddingBottom` | Set padding on individual sides. |
 | `autorouter` | Escape router or configuration. Defaults to `fanout`. |
 | `pcbTracePaths` | Saved port-to-exit wire/via routes covering all routing connections in the fanout. |
-| `busFanoutDirections` | Maps named buses to preferred escape directions. |
+| `busFanoutDirections` | Maps named buses to [preferred escape directions](./breakout.mdx#fanout-directions). |
 | `fanoutBoundaryPadding` | Padding between source pads and the shared boundary where fanout traces terminate. |
+| `fanoutMargin` | Minimum non-negative PCB clearance enforced between sibling fanout/breakout boundaries on at least one axis. |
 | `fanoutRoutingLayers` | Routing layers; the destination layer for local dogbones. |
 | `fanoutPourNetMap` | Maps plane layers to nets for source-only escapes; inferred from matching copper pours when omitted. |
 
