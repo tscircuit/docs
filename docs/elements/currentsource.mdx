@@ -1,0 +1,58 @@
+---
+title: <currentsource />
+description: Add a current source for SPICE simulations and analog circuit stimulus.
+---
+
+## Overview
+
+`<currentsource />` defines a two-pin current source (`pin1` / `pos` and `pin2` / `neg`)
+that can drive your circuit in SPICE simulations. It supports DC current sources
+as well as waveform-driven transient sources (`"sinewave"`, `"square"`, `"triangle"`,
+and `"sawtooth"`) and small-signal AC analysis.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="schematic"
+  hidePCBTab={true}
+  hide3DTab={true}
+  verticalStack={true}
+  showSimulationGraph={true}
+  code={`
+export default () => (
+  <board routingDisabled>
+    <currentsource
+      name="I1"
+      waveShape="sinewave"
+      current="10mA"
+      frequency="1kHz"
+    />
+    <resistor name="R1" resistance="1k" />
+
+    <trace from=".I1 > .pin1" to=".R1 > .pin1" />
+    <trace from=".I1 > .pin2" to=".R1 > .pin2" />
+
+    <voltageprobe name="VP_OUT" connectsTo=".R1 > .pin1" />
+    <analogsimulation duration="3ms" timePerStep="0.02ms" spiceEngine="ngspice" />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+| Property | Description | Example |
+| --- | --- | --- |
+| `name` | Reference designator for the current source. | `"I1"` |
+| `current` | DC current or waveform amplitude current (amperes). | `"10mA"` |
+| `peakToPeakCurrent` | Peak-to-peak current for waveform-driven sources. | `"20mA"` |
+| `waveShape` | Waveform shape for transient sources: `"sinewave"`, `"square"`, `"triangle"`, or `"sawtooth"`. | `"sinewave"` |
+| `frequency` | Frequency of the waveform. | `"1kHz"` |
+| `phase` | Waveform phase in degrees. | `90` |
+| `dutyCycle` | Duty cycle for square waves, from `0` to `1` (or percentage string such as `"50%"`). | `0.5` |
+| `acMagnitude`, `acPhase` | Small-signal AC analysis magnitude (amperes) and phase (degrees). | `acMagnitude="1mA"` |
+| `connections` | Pin connections for `pin1`/`pin2` (or aliases `pos`/`neg`). | `{{ pin1: "net.IN", pin2: "net.GND" }}` |
+| `schX`, `schY`, `schRotation` | Schematic placement controls. | `schRotation={270}` |
+
+Use `<currentsource />` alongside `<analogsimulation />` and `<voltageprobe />`
+to define current-driven stimulus for SPICE analysis.
