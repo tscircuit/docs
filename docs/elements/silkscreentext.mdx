@@ -1,0 +1,81 @@
+---
+title: <silkscreentext />
+description: Render custom labels, version stamps, and knockout text on the PCB silkscreen layer.
+---
+
+## Overview
+
+`<silkscreentext />` places text directly onto a PCB silkscreen layer (top or bottom). Use it to add board titles, revision numbers, pin labels, polarity markings, or high-contrast knockout badges inside a `<board />` or custom `<footprint />`.
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`
+export default () => (
+  <board width="30mm" height="16mm">
+    <silkscreentext
+      text="REV 1.0"
+      pcbX={0}
+      pcbY={3}
+      fontSize="1.6mm"
+      anchorAlignment="center"
+    />
+    <silkscreentext
+      text="GND"
+      pcbX={-8}
+      pcbY={-3}
+      fontSize="1.2mm"
+      anchorAlignment="bottom_left"
+    />
+    <silkscreentext
+      text="5V"
+      pcbX={8}
+      pcbY={-3}
+      fontSize="1.2mm"
+      isKnockout
+      knockoutPadding="0.4mm"
+    />
+  </board>
+)
+`}
+/>
+
+## Properties
+
+All properties below match `silkscreenTextProps` in `@tscircuit/props`:
+
+| Property | Type | Description | Example |
+| --- | --- | --- | --- |
+| `text` | `string` (required) | The text string rendered on the silkscreen layer. | `"REV 1.0"` |
+| `pcbX` | `number \| string` | Horizontal PCB coordinate relative to the parent board or footprint. | `0`, `"5mm"` |
+| `pcbY` | `number \| string` | Vertical PCB coordinate relative to the parent board or footprint. | `3`, `"-2.5mm"` |
+| `pcbRotation` | `number \| string` | Rotation angle in degrees around the text anchor. | `90`, `"180deg"` |
+| `layer` | `"top" \| "bottom"` | Primary silkscreen layer (`"top"` by default). | `"bottom"` |
+| `layers` | `LayerRef[]` | Optional list of layers to render the silkscreen text onto. | `["top", "bottom"]` |
+| `anchorAlignment` | `NinePointAnchor` | Nine-point anchor alignment (`"center"` by default; supports `"top_left"`, `"top_center"`, `"top_right"`, `"center_left"`, `"center"`, `"center_right"`, `"bottom_left"`, `"bottom_center"`, `"bottom_right"`). | `"bottom_left"` |
+| `font` | `"tscircuit2024"` | Optional built-in silkscreen font face. | `"tscircuit2024"` |
+| `fontSize` | `number \| string` | Character height of the silkscreen text. | `"1.5mm"` |
+| `isKnockout` | `boolean` | If `true`, renders the text as a cutout inside a filled silkscreen box. | `true` |
+| `knockoutPadding` | `number \| string` | Uniform padding around knockout text. | `"0.4mm"` |
+| `knockoutPaddingLeft` | `number \| string` | Left padding override for knockout text. | `"0.5mm"` |
+| `knockoutPaddingRight` | `number \| string` | Right padding override for knockout text. | `"0.5mm"` |
+| `knockoutPaddingTop` | `number \| string` | Top padding override for knockout text. | `"0.3mm"` |
+| `knockoutPaddingBottom` | `number \| string` | Bottom padding override for knockout text. | `"0.3mm"` |
+
+## Bottom-Layer & Rotated Labels
+
+Use `layer="bottom"` and `pcbRotation` to place silkscreen legends on the back side of the PCB or align labels vertically along connectors:
+
+```tsx
+<board width="20mm" height="12mm">
+  <silkscreentext
+    text="BACK REV A"
+    layer="bottom"
+    pcbX={0}
+    pcbY={0}
+    pcbRotation={90}
+    fontSize="1.2mm"
+  />
+</board>
+```
