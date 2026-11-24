@@ -128,6 +128,47 @@ define a bullet connector model. The two cable ends must have the same contact
 count. An explicit model also supports other combinations, such as
 `adaptercable_a(jst_sh_pins4)_b(jst_ph_pins4)`.
 
+## Route a cable through waypoints
+
+Use `waypoints` to guide a cable around a nearby part, such as a bracket or phone holder. Each waypoint is an ordered `{ x, y, z }` offset in millimetres, and Core draws a smooth curve through the points:
+
+<CircuitPreview
+  wrapCode
+  defaultView="3d"
+  hideSchematicTab
+  code={`import { assembly, jscad } from "tscircuit"
+
+export default () => (
+  <assembly.device>
+    <board width={64} height={40} thickness={1.6} routingDisabled>
+      <connector name="J1" standard="jst_ph" pinCount={3}
+        footprint="jst3_ph" pcbX={-24} />
+      <connector name="J2" standard="jst_ph" pinCount={3}
+        footprint="jst3_ph" pcbX={24} />
+    </board>
+    <assembly.printedpart
+      name="HOLDER"
+      jscad={
+        <jscad.translate offset={[0, 0, 10]}>
+          <jscad.cuboid size={[18, 16, 18]} />
+        </jscad.translate>
+      }
+    />
+    <assembly.cable name="HARNESS" from=".J1" to=".J2"
+      waypointAnchor="start"
+      waypointAxisOrientation="board_at_start"
+      waypoints={[
+        { x: 10, y: 15, z: 12 },
+        { x: 38, y: 15, z: 12 },
+      ]} />
+  </assembly.device>
+)`}
+/>
+
+In this example, `waypointAnchor="start"` measures offsets from `J1`'s mating center, and `waypointAxisOrientation="board_at_start"` expresses `{ x, y, z }` along `J1`'s board axes so the harness passes around `HOLDER` at `y = 15 mm`. Use `waypointAnchor="end"` to measure from the `to` connector, or `waypointAxisOrientation="board_at_end"` to use that endpoint's board axes.
+
+Both `waypointAnchor` and `waypointAxisOrientation` are required whenever `waypoints` is provided. Omit `waypoints` (or pass `[]`) to keep automatic routing.
+
 ## Cable properties
 
 | Property | Type | Description |
@@ -137,7 +178,10 @@ count. An explicit model also supports other combinations, such as
 | `to` | `string` | Required ending endpoint, distinct from `from`. |
 | `model` | `string` | Optional explicit cable model, including different-ended adapter cables. Omit to infer the model from the endpoints. |
 | `standard` | `"usb_c"` | Optional USB-C preset. Omit to infer USB-C, JST SH (1 mm pitch), or JST PH (2 mm pitch) from the endpoints. |
+| `waypoints` | `{ x: number; y: number; z: number }[]` | Ordered `{ x, y, z }` route offsets in millimetres. Omit (or pass `[]`) for automatic routing. |
+| `waypointAnchor` | `"start" \| "end"` | Origin connector mating center (`from` or `to`) for `waypoints`. Required when `waypoints` is provided. |
+| `waypointAxisOrientation` | `"board_at_start" \| "board_at_end"` | Board axes used for `waypoints` offsets. Required when `waypoints` is provided. |
 
 When `model` is omitted, both JST connectors must have the same standard and `pinCount`. Select a matching footprint, such as `jst6_ph` for a six-pin PH header. Inferred cables reject incompatible standards or pin counts. Missing or ambiguous endpoints report errors with either mode. Endpoints resolve within the nearest `assembly.device`, including components declared later.
 
-Add one `assembly.cable` for each physical cable; several cables can share a device. Each creates an independent cable path. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There are no length or route-hint props.
+Add one `assembly.cable` for each physical cable; several cables can share a device. Each creates an independent cable path. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts.
