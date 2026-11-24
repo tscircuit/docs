@@ -9,13 +9,14 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 
 ## Overview
 
-The `<bus />` element tells the autorouter that two or more connections belong
+The `<bus />` element tells the autorouter that one or more connections belong
 to the same group. Each entry in `connections` can be a named [`<trace />`](./trace.mdx)
 or a [port selector](../guides/tscircuit-essentials/port-and-net-selectors.md).
 
-A bus does not electrically connect its members. It groups existing
-connections so the autorouter can apply shared constraints such as layer
-selection, trace width, and maximum length skew.
+A bus can contain a single connection when you want to apply bus constraints—such
+as trace width, layer preferences, or routing phase—to one critical control or
+clock line. When two or more connections are present, it also keeps them
+grouped for length-skew and fanout direction rules.
 
 For recommendations on dividing DDR signals into buses and fanning them out of
 opposing packages, see [Routing DDR](../guides/routing-ddr.mdx).
@@ -62,7 +63,7 @@ export default () => (
   >
     <autoroutingphase
       autorouter="fanout"
-      busFanoutDirections={{ DATA: { direction: "center_right" } }}
+      busFanoutDirections={{ DATA: { direction: "rightside_center" } }}
       fanoutBoundaryPadding={{ right: "1.2mm" }}
     />
 
@@ -105,13 +106,42 @@ export default () => (
 `preferredLayer` is considered first, followed by the entries in
 `preferredLayers`; duplicate layers are removed. If `pcbAllowedLayers` is also
 set, the fanout solver uses the intersection of the two sets, so make sure at
-least one layer remains.
+least one layer remains. See
+[fanout directions](./breakout.mdx#fanout-directions) for all canonical
+edge-first `busFanoutDirections` values and legacy nine-point compatibility.
+
+## Singleton control nets
+
+A `<bus />` only requires one connection. Use a singleton bus when you want
+bus-level controls—such as `preferredLayers`, `pcbTraceWidth`, or
+`routingPhaseIndex`—on a single reset, enable, or clock signal:
+
+<CircuitPreview defaultView="pcb" code={`
+export default () => (
+  <board width="18mm" height="10mm" layers={4}>
+    <chip
+      name="U1"
+      footprint="soic8"
+      pcbX={-4}
+      pinLabels={{ pin1: "RESET" }}
+    />
+    <resistor name="R1" resistance="10k" footprint="0402" pcbX={5} />
+    <trace name="RESET" from="U1.RESET" to="R1.pin1" />
+    <bus
+      name="RESET_CTRL"
+      connections={["RESET"]}
+      preferredLayers={["inner2"]}
+      pcbTraceWidth="0.2mm"
+    />
+  </board>
+)
+`} />
 
 ## Bus Properties
 
 | Property | Description | Example |
 | -------- | ----------- | ------- |
-| `connections` | Two or more trace names or port selectors in the bus. | `["D0", "D1"]` |
+| `connections` | One or more trace names or port selectors in the bus. | `["RESET"]`, `["D0", "D1"]` |
 | `name` | Optional bus name. Name the bus when referring to it from `busFanoutDirections`. | `"DATA"` |
 | `routingPhaseIndex` | Assigns every member of the bus to an autorouting phase. | `0` |
 | `maxLengthSkew` | Maximum routed-length difference between members. Raw numbers are millimeters. | `"0.2mm"` |
