@@ -1,0 +1,36 @@
+---
+title: <assembly.cablewire />
+description: State the pin-to-pin wiring, color and gauge of one conductor in an assembly cable.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { harnessSignals, harnessCrossings } from "@site/src/data/drawing-previews/harness-examples"
+
+`assembly.cablewire` is one insulated conductor of its parent [`assembly.cable`](./assembly-cable.mdx). It says which contact the wire leaves at the cable's `from` end and which contact it lands on at the `to` end. Wires feed [harness drawings](../guides/wire-harness-drawings.mdx) and the cable's parts list; they do not create electrical traces.
+
+<CircuitPreview wrapCode code={harnessSignals.code} drawingPages={harnessSignals.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `fromPin` | `number \| string` | Required contact position on the connector at the cable's `from` end: `1` or `"pin1"`. |
+| `toPin` | `number \| string` | Required contact position on the connector at the cable's `to` end. |
+| `name` | `string` | Signal or conductor name, such as `"SDA"`. Shown in the wiring list's `SIGNAL` column. |
+| `color` | `string` | Insulation color as it should read on the drawing, such as `"black"` or `"red/white"`. |
+| `awg` | `number \| string` | Conductor gauge: `22` or `"22awg"`. Omit to inherit the cable's `wireAwg`. |
+
+Pins are positions on the cable's plugs, counted from 1. They are not the pin labels of the board connectors the cable mates with.
+
+## Rules
+
+- Each contact takes at most one wire at each end.
+- A pin number cannot exceed the connector's contact count.
+- A cavity with no wire is left empty.
+- A cable with numbered contacts needs at least one wire before it can appear in a harness view or a wiring list.
+
+## Generate wires from data
+
+Wires are ordinary JSX children, so a pinout array can produce them:
+
+<CircuitPreview wrapCode code={harnessCrossings.code} drawingPages={harnessCrossings.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />

@@ -27,9 +27,9 @@ The exported sheet shows the carrier's outline and four mounting holes:
 | `orientation` | `landscape` (default) or `portrait`, when using `size`. |
 | `width`, `height` | Both required for a custom sheet. Numbers are millimetres; unit strings such as `"210mm"` also work. Use these instead of `size` and `orientation`. |
 | `anchorAlignment` | Coordinate anchor: `center` (default), `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, or `bottom_right`. |
-| `children` | One or more [`assembly.drawing.partview`](./assembly-drawing-partview.mdx) or [`assembly.drawing.explosionview`](./assembly-drawing-explosionview.mdx) elements, [`notes`](./assembly-drawing-note.mdx), and optionally one [`assembly.drawing.titleblock`](./assembly-drawing-titleblock.mdx). |
+| `children` | One or more [`assembly.drawing.partview`](./assembly-drawing-partview.mdx), [`assembly.drawing.explosionview`](./assembly-drawing-explosionview.mdx) or [`assembly.drawing.harnessview`](./assembly-drawing-harnessview.mdx) elements, [`wiring`](./assembly-drawing-wiringtable.mdx) and [`parts`](./assembly-drawing-bomtable.mdx) tables, [`notes`](./assembly-drawing-note.mdx), and optionally one [`assembly.drawing.titleblock`](./assembly-drawing-titleblock.mdx). |
 
-Choose either a standard `size` or custom `width` and `height`. Page dimensions describe paper, not the physical assembly. A page needs at least one part or explosion view to export.
+Choose either a standard `size` or custom `width` and `height`. Page dimensions describe paper, not the physical assembly. A page needs at least one part, explosion or harness view to export.
 
 To annotate measurements, put [`assembly.drawing.dimension`](./assembly-drawing-dimension.mdx) elements inside either kind of view. Dimensions can measure view extents, named CAD outlines, hole spacing, and edge-to-hole offsets.
 

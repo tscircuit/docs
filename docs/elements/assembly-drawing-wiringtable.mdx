@@ -1,0 +1,33 @@
+---
+title: <assembly.drawing.wiringtable />
+description: Add a pin-to-pin wiring list for one assembly cable to a drawing sheet.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { harnessSignals, harnessCrossings } from "@site/src/data/drawing-previews/harness-examples"
+
+`assembly.drawing.wiringtable` lists the wires of one [`assembly.cable`](./assembly-cable.mdx) on an [`assembly.drawing.page`](./assembly-drawing-page.mdx), one row per [`assembly.cablewire`](./assembly-cablewire.mdx) in `fromPin` order.
+
+<CircuitPreview wrapCode code={harnessSignals.code} drawingPages={harnessSignals.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `cableRef` | Required. The cable's name or a selector that matches exactly one `assembly.cable` with wires. |
+| `paperX`, `paperY` | Required position relative to the page's `anchorAlignment`, in millimetres or unit strings. Positive X is right; positive Y is up. |
+| `anchorAlignment` | Required. Which point of the table `paperX`/`paperY` locates: `top_left`, `top_center`, `top_right`, `center_left`, `center`, `center_right`, `bottom_left`, `bottom_center` or `bottom_right`. |
+| `title` | Optional heading row spanning the table. |
+| `name` | Optional table identity. |
+
+A table's position is never implied, so all three placement props are required. With `anchorAlignment="top_right"`, for example, `paperX`/`paperY` is the table's top-right corner and the table extends left and down from it.
+
+## Columns
+
+The first and last columns hold the pin at each end. They are headed with the cable's `fromConnectorName` and `toConnectorName`, or `A` and `B`.
+
+`SIGNAL`, `COLOR` and `AWG` columns appear only when at least one wire states a `name`, a `color` or a gauge. A cable whose wires state only pins and a gauge gets a narrower table:
+
+<CircuitPreview wrapCode code={harnessCrossings.code} drawingPages={harnessCrossings.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+Pin columns are 14 mm wide, detail columns are 24 mm wide and rows are 6 mm tall, so a table's size follows from its wire count and columns.

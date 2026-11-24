@@ -1,0 +1,38 @@
+---
+title: <assembly.drawing.bomtable />
+description: Add a numbered parts list for a cable or an assembly to a drawing sheet.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { harnessMixedGauge, harnessTwoCables } from "@site/src/data/drawing-previews/harness-examples"
+
+`assembly.drawing.bomtable` places a numbered parts list on an [`assembly.drawing.page`](./assembly-drawing-page.mdx). Its item numbers are the numbers that [harness view](./assembly-drawing-harnessview.mdx#balloons) balloons display.
+
+<CircuitPreview wrapCode code={harnessMixedGauge.code} drawingPages={harnessMixedGauge.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `partRef` | The name of a cable or a selector for one assembly part whose parts are listed. Omit to list the top-level parts of the assembly that owns the page. |
+| `paperX`, `paperY` | Required position relative to the page's `anchorAlignment`, in millimetres or unit strings. Positive X is right; positive Y is up. |
+| `anchorAlignment` | Required. Which point of the table `paperX`/`paperY` locates: `top_left`, `top_center`, `top_right`, `center_left`, `center`, `center_right`, `bottom_left`, `bottom_center` or `bottom_right`. |
+| `name` | Optional table identity. |
+
+The table is 100 mm wide with `NO.`, `DESCRIPTION` and `QTY` columns.
+
+## A cable's parts
+
+With `partRef` set to a wired [`assembly.cable`](./assembly-cable.mdx), the table lists what the cable is built from:
+
+- one line for each combination of wire gauge and color, counted in cut pieces and stating the cable's `length`,
+- the housing at each end,
+- one crimp contact for each wire end.
+
+Identical lines merge, so a cable with the same housing at both ends lists that housing once with a quantity of 2.
+
+## An assembly's parts
+
+Without `partRef`, the table lists the assembly's own parts, such as each of its cables. A table whose `anchorAlignment` starts with `bottom` is hung from its bottom edge: the heading sits at the bottom and item numbers read upward, as is usual above a title block.
+
+<CircuitPreview wrapCode code={harnessTwoCables.code} drawingPages={harnessTwoCables.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />

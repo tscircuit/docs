@@ -7,6 +7,7 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 import preview1 from "@site/src/data/assembly-previews/assembly-cable-1.json"
 import preview2 from "@site/src/data/assembly-previews/assembly-cable-2.json"
 import preview3 from "@site/src/data/assembly-previews/assembly-cable-3.json"
+import { harnessSignals } from "@site/src/data/drawing-previews/harness-examples"
 
 `assembly.cable` connects two endpoints inside an [`assembly.device`](./assembly-device.mdx). Give it a `name`, `from`, and `to`. Core infers a compatible cable and its route from the connectors' positions and orientations, then renders its wires and plugs in 3D.
 
@@ -128,6 +129,14 @@ define a bullet connector model. The two cable ends must have the same contact
 count. An explicit model also supports other combinations, such as
 `adaptercable_a(jst_sh_pins4)_b(jst_ph_pins4)`.
 
+## State the wiring and length
+
+Add one [`assembly.cablewire`](./assembly-cablewire.mdx) child per conductor, a `length`, and names for the two ends to describe how the cable is built. An [`assembly.drawing.harnessview`](./assembly-drawing-harnessview.mdx) then draws it for manufacturing:
+
+<CircuitPreview wrapCode code={harnessSignals.code} drawingPages={harnessSignals.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+`length` is a build specification. It is never measured from the 3D route, and the route does not change to match it. See the [wire harness drawings guide](../guides/wire-harness-drawings.mdx) for wiring lists, parts lists and complete sheets.
+
 ## Cable properties
 
 | Property | Type | Description |
@@ -137,7 +146,12 @@ count. An explicit model also supports other combinations, such as
 | `to` | `string` | Required ending endpoint, distinct from `from`. |
 | `model` | `string` | Optional explicit cable model, including different-ended adapter cables. Omit to infer the model from the endpoints. |
 | `standard` | `"usb_c"` | Optional USB-C preset. Omit to infer USB-C, JST SH (1 mm pitch), or JST PH (2 mm pitch) from the endpoints. |
+| `length` | `number \| string` | Optional manufactured length between the two connectors' wire exits, such as `"50mm"`. |
+| `lengthTolerance` | `number \| string` | Optional symmetric plus/minus tolerance on `length`. Requires `length`. |
+| `fromConnectorName`, `toConnectorName` | `string` | Optional designators for the connectors at the `from` and `to` ends on drawings, such as `"H1"` and `"H2"`. |
+| `wireAwg` | `number \| string` | Optional conductor gauge inherited by the cable's wires: `22` or `"22awg"`. |
+| `children` | | Optional [`assembly.cablewire`](./assembly-cablewire.mdx) elements stating the pin-to-pin wiring. |
 
 When `model` is omitted, both JST connectors must have the same standard and `pinCount`. Select a matching footprint, such as `jst6_ph` for a six-pin PH header. Inferred cables reject incompatible standards or pin counts. Missing or ambiguous endpoints report errors with either mode. Endpoints resolve within the nearest `assembly.device`, including components declared later.
 
-Add one `assembly.cable` for each physical cable; several cables can share a device. Each creates an independent cable path. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There are no length or route-hint props.
+Add one `assembly.cable` for each physical cable; several cables can share a device. Each creates an independent cable path. The initial route includes connector exit directions and a clearance arch. It does not perform obstacle avoidance or calculate gravity sag, so inspect the rendered path when placing enclosures and nearby parts. There are no route-hint props, and `length` does not affect the route.
