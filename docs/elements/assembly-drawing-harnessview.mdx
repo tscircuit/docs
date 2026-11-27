@@ -1,0 +1,53 @@
+---
+title: <assembly.drawing.harnessview />
+description: Place a flattened wiring view of one assembly cable on a drawing sheet.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import { harnessBasic, harnessMixedGauge, harnessTwoCables, harnessNotes } from "@site/src/data/drawing-previews/harness-examples"
+
+`assembly.drawing.harnessview` draws one [`assembly.cable`](./assembly-cable.mdx) for cable manufacturing inside an [`assembly.drawing.page`](./assembly-drawing-page.mdx). It shows both connectors, one line per [`assembly.cablewire`](./assembly-cablewire.mdx), the pin numbers at each end and the cable's length.
+
+<CircuitPreview wrapCode code={harnessBasic.code} drawingPages={harnessBasic.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `cableRef` | Required. The cable's name, such as `"I2C"`, or a selector that matches exactly one `assembly.cable`. |
+| `width`, `height` | Required viewport size on paper, in millimetres or unit strings. |
+| `name` | View name used by sibling placement selectors. |
+| `displayName` | Caption text. Defaults to the view's name, then the cable's name. |
+| `centerX`, `centerY` | Viewport center relative to the page's `anchorAlignment`. Default: `0` on each axis. |
+| `leftOfRef`, `rightOfRef`, `aboveRef`, `belowRef` | Place the view beside a sibling view, as on [`assembly.drawing.partview`](./assembly-drawing-partview.mdx#relative-placement). |
+| `showBalloons` | Circle the item numbers of the cable's wire, housings and contacts. Default: `false`. |
+| `children` | Optional [`assembly.drawing.note`](./assembly-drawing-note.mdx) annotations. |
+
+## What the view shows
+
+- **Connectors.** Each end is drawn from the cable's connector definition and labeled with the cable's `fromConnectorName` or `toConnectorName`. Without those, the ends are labeled `A` and `B`.
+- **Pin numbers.** The first and last positions are always numbered. Every populated cavity is numbered when the pitch leaves room.
+- **Wires.** Both housings are drawn from the same face of the cable: pin 1 is at the top of the `from` end and at the bottom of the `to` end. Wires that change position cross in the middle of the run, with a gap in the wire that passes underneath.
+- **Length.** A cable with a `length` gets a dimension between the two wire exits, including its `lengthTolerance`. The drawing itself is not to scale, and the caption says so.
+
+The view does not show the cable's 3D route. Wire colors appear in the [wiring list](./assembly-drawing-wiringtable.mdx).
+
+## Balloons
+
+`showBalloons` adds three callouts along the top of the view: one for each connector, giving its housing and contact item numbers, and one for the wire bundle. The numbers come from an [`assembly.drawing.bomtable`](./assembly-drawing-bomtable.mdx) on the same page whose `partRef` selects the same cable, so that table is required.
+
+<CircuitPreview wrapCode code={harnessMixedGauge.code} drawingPages={harnessMixedGauge.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Several views on a page
+
+Harness views take part in relative placement with each other and with part views:
+
+<CircuitPreview wrapCode code={harnessTwoCables.code} drawingPages={harnessTwoCables.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Notes
+
+A note inside the view is positioned with `xOffsetFromViewCenter` and `yOffsetFromViewCenter`:
+
+<CircuitPreview wrapCode code={harnessNotes.code} drawingPages={harnessNotes.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+See the [wire harness drawings guide](../guides/wire-harness-drawings.mdx) for more examples.

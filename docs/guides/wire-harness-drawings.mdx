@@ -1,0 +1,102 @@
+---
+title: Wire Harness Drawings
+description: Draw cable manufacturing sheets with pin-to-pin wiring, lengths, wiring lists, parts lists and balloons.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+import {
+  harnessBasic,
+  harnessFlat,
+  harnessSignals,
+  harnessMixedGauge,
+  harnessSheet,
+  harnessPartial,
+  harnessCrossings,
+  harnessTwoCables,
+  harnessUsb,
+  harnessNotes,
+} from "@site/src/data/drawing-previews/harness-examples"
+
+A harness drawing is the sheet a cable shop builds from: both connectors, which pin each wire lands on, the cut length, and the parts to order. Describe the cable once with [`assembly.cable`](../elements/assembly-cable.mdx) and [`assembly.cablewire`](../elements/assembly-cablewire.mdx), then place it on an [`assembly.drawing.page`](../elements/assembly-drawing-page.mdx) with [`assembly.drawing.harnessview`](../elements/assembly-drawing-harnessview.mdx).
+
+:::info
+Harness drawings need `tscircuit` 0.0.3290 or later.
+:::
+
+## Draw a cable
+
+Give the cable a `length` and one `assembly.cablewire` per conductor. `fromPin` and `toPin` are contact positions on the cable's own two connectors.
+
+<CircuitPreview wrapCode code={harnessBasic.code} drawingPages={harnessBasic.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+Both housings are drawn from the same face of the cable, so pin 1 is at the top of the `from` end and at the bottom of the `to` end. A pin-to-pin cable therefore shows its half twist. The drawn length is not to scale; the dimension states the `length` you authored.
+
+## Draw a flat cable
+
+Reverse the pinout and the same housings need no twist:
+
+<CircuitPreview wrapCode code={harnessFlat.code} drawingPages={harnessFlat.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+`lengthTolerance` adds the plus/minus value to the dimension, and `displayName` replaces the cable name in the caption.
+
+## Add a wiring list
+
+[`assembly.drawing.wiringtable`](../elements/assembly-drawing-wiringtable.mdx) lists every wire in a table. This adapter joins a 1 mm pitch JST SH plug to a 2 mm pitch JST PH plug, swapping power and ground on the way:
+
+<CircuitPreview wrapCode code={harnessSignals.code} drawingPages={harnessSignals.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+`fromConnectorName` and `toConnectorName` label the two ends in the view and head the table's pin columns. The `SIGNAL`, `COLOR` and `AWG` columns appear because the wires state a `name`, a `color` and a gauge.
+
+## Add a parts list and balloons
+
+[`assembly.drawing.bomtable`](../elements/assembly-drawing-bomtable.mdx) with `partRef` set to the cable lists what the cable is built from. `showBalloons` then points each item number at the part it names. Per-wire `awg` overrides the cable's `wireAwg`, so the power pair and the data pair order as different wire:
+
+<CircuitPreview wrapCode code={harnessMixedGauge.code} drawingPages={harnessMixedGauge.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Build a complete manufacturing sheet
+
+A standard sheet size, a [title block](../elements/assembly-drawing-titleblock.mdx) and [notes](../elements/assembly-drawing-note.mdx) turn the same pieces into a drawing you can send out. With `anchorAlignment="bottom_left"` on the page, every position is measured from the sheet's bottom-left corner:
+
+<CircuitPreview wrapCode code={harnessSheet.code} drawingPages={harnessSheet.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+Save it as `motor-cable.circuit.tsx` and export the sheet by its page name:
+
+```bash
+tsci export motor-cable.circuit.tsx --drawing motor-cable
+```
+
+## Leave cavities empty
+
+A cavity with no `assembly.cablewire` stays empty. Its position is still drawn, and only populated pins plus the first and last positions are numbered:
+
+<CircuitPreview wrapCode code={harnessPartial.code} drawingPages={harnessPartial.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Draw a shuffled pinout
+
+Any one-to-one pinout can be drawn. Wires change lanes in the middle of the run, and gaps show which wire passes underneath at each crossing. Wires are ordinary JSX children, so they can be generated from data:
+
+<CircuitPreview wrapCode code={harnessCrossings.code} drawingPages={harnessCrossings.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Put several cables on one sheet
+
+Each cable gets its own view and tables. `belowRef` stacks the second view under the first, and a `bomtable` without `partRef` lists the assembly's cables. A table anchored at its bottom edge reads upward from its heading:
+
+<CircuitPreview wrapCode code={harnessTwoCables.code} drawingPages={harnessTwoCables.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Draw a moulded cable
+
+Cables without numbered contacts, such as USB-C, need no `assembly.cablewire` children. The view shows both plugs, the jacket and the length:
+
+<CircuitPreview wrapCode code={harnessUsb.code} drawingPages={harnessUsb.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Annotate a view
+
+Notes placed inside a harness view are positioned from the view's center and move with it. Page-level notes use `paperX` and `paperY`:
+
+<CircuitPreview wrapCode code={harnessNotes.code} drawingPages={harnessNotes.pages} defaultView="drawing" hideSchematicTab hidePCBTab hide3DTab />
+
+## Limits
+
+- Both ends of a wired cable must have the same number of contacts. Use larger housings and leave cavities empty when the ends differ.
+- A harness view is a flattened diagram. It does not show the cable's 3D route, and `length` is the authored build length, never measured from the route.
+- Wire colors are listed in the wiring list. The view itself is drawn in black line work.
