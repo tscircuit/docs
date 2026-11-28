@@ -1,0 +1,55 @@
+---
+title: <silkscreentext />
+description: Add text to the silkscreen layer of a PCB.
+---
+
+import CircuitPreview from "@site/src/components/CircuitPreview"
+
+## Overview
+
+The `<silkscreentext />` element places text on the silkscreen layer of a PCB.
+It can be used for labels, component markings, instructions, and other text
+that should appear on the printed circuit board.
+
+## Basic Example
+
+<CircuitPreview
+  defaultView="pcb"
+  hide3DTab
+  hideSchematicTab
+  code={`
+export default () => (
+  <board width="30mm" height="20mm">
+    <silkscreentext
+      pcbX={0}
+      pcbY={0}
+      text="HELLO"
+      fontSize="2mm"
+      layer="top"
+      anchorAlignment="center"
+    />
+  </board>
+)
+`}
+/>
+
+## Props
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `text` | `string` | Yes | - | Text to display |
+| `pcbX` | `distance` | No | - | X position on the PCB |
+| `pcbY` | `distance` | No | - | Y position on the PCB |
+| `anchorAlignment` | `nine-point anchor` | No | `"center"` | Alignment of the text relative to its anchor |
+| `fontSize` | `length` | No | - | Font size |
+| `font` | `"tscircuit2024"` | No | `"tscircuit2024"` | Font family |
+| `layer` | `layer reference` | No | `"top"` | Single silkscreen layer |
+| `layers` | `layer reference[]` | No | - | Multiple silkscreen layers |
+| `isKnockout` | `boolean` | No | `false` | Knock out the underlying silkscreen |
+| `knockoutPadding` | `length` | No | - | Uniform padding around knockout text |
+| `knockoutPaddingLeft` | `length` | No | - | Left knockout padding |
+| `knockoutPaddingRight` | `length` | No | - | Right knockout padding |
+| `knockoutPaddingTop` | `length` | No | - | Top knockout padding |
+| `knockoutPaddingBottom` | `length` | No | - | Bottom knockout padding |
+
+EOF
