@@ -47,10 +47,37 @@ import CircuitPreview from "@site/src/components/CircuitPreview"
 | platedDiameter | number \| string | "1.7mm" | Diameter of the plated area around each hole |
 | pinLabels | string[] | undefined | Labels for each pin |
 | facingDirection | "left" \| "right" | "right" | Direction the header is facing |
+| layer | "top" \| "bottom" | "top" | Board side where the pin header is placed |
+| connectsFromAbove | boolean | undefined | Mount on the top side so the mating connector plugs in from above (alias for `layer="top"`) |
+| connectsFromBelow | boolean | undefined | Mount on the underside so the mating connector plugs in from below (alias for `layer="bottom"`) |
 | pcbX | number | 0 | X position of the component |
 | pcbY | number | 0 | Y position of the component |
 | rotation | number | 0 | Rotation of the component in degrees |
 | id | string | auto-generated | Unique identifier for the component |
+
+### Mating side (`connectsFromAbove` / `connectsFromBelow`)
+
+`connectsFromAbove` and `connectsFromBelow` provide mating-side aliases that
+resolve to `layer="top"` and `layer="bottom"` at parse time:
+
+- `connectsFromAbove` and `connectsFromBelow` are mutually exclusive—setting both throws a validation error.
+- An explicit `layer` prop takes precedence if provided alongside either alias.
+- Use `connectsFromBelow` to place a header on the underside of the board without flipping it backwards (unlike `invert` in a footprint string, which reverses pin insertion on the active side).
+
+<CircuitPreview
+  defaultView="pcb"
+  code={`export default () => (
+    <board width="20mm" height="10mm">
+      <pinheader
+        name="J1"
+        pinCount={4}
+        pitch="2.54mm"
+        connectsFromBelow
+      />
+    </board>
+  )
+`}
+/>
 
 
 
