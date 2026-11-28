@@ -251,6 +251,12 @@ const config: Config = {
           target: "_self",
         },
         {
+          href: "https://shop.tscircuit.com/",
+          label: "Shop",
+          position: "left",
+          target: "_self",
+        },
+        {
           type: "dropdown",
           label: "Community",
           position: "left",
@@ -304,6 +310,10 @@ const config: Config = {
             {
               label: "tscircuit.com",
               href: "https://tscircuit.com",
+            },
+            {
+              label: "Shop",
+              href: "https://shop.tscircuit.com/",
             },
           ],
         },
